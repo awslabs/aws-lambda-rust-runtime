@@ -1,22 +1,20 @@
-#[macro_use]
 extern crate lambda_runtime as lambda;
-#[macro_use]
 extern crate serde_derive;
-#[macro_use]
 extern crate log;
 extern crate simple_logger;
 
-use lambda::error::HandlerError;
-
+use serde_derive::{Serialize, Deserialize};
+use lambda::{lambda, error::HandlerError};
+use log::error;
 use std::error::Error;
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize)]
 struct CustomEvent {
     #[serde(rename = "firstName")]
     first_name: String,
 }
 
-#[derive(Serialize, Clone)]
+#[derive(Serialize)]
 struct CustomOutput {
     message: String,
 }

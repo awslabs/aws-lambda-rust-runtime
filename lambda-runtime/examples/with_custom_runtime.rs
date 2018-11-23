@@ -1,15 +1,13 @@
-#[macro_use]
 extern crate lambda_runtime as lambda;
-#[macro_use]
 extern crate serde_derive;
-#[macro_use]
 extern crate log;
 extern crate simple_logger;
 extern crate tokio;
 
-use lambda::error::HandlerError;
+use lambda::{lambda, error::HandlerError};
 use tokio::runtime::Runtime;
-
+use serde_derive::{Serialize, Deserialize};
+use log::error;
 use std::error::Error;
 
 #[derive(Deserialize, Clone)]

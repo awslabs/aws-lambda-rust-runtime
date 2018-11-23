@@ -5,6 +5,7 @@ authors = ["Stefano Buliani", "David Barsky"]
 description = "Rust runtime for AWS Lambda"
 keywords = ["AWS", "Lambda", "Runtime", "Rust"]
 license = "Apache-2.0"
+build = "build.rs"
 
 [dependencies]
 serde = "^1"
@@ -22,3 +23,7 @@ simple_logger = "^1"
 hyper-tls = "^0.3"
 rusoto_core = "^0.35"
 rusoto_dynamodb = "^0.35"
+skeptic = "^0.13"
+
+[build-dependencies]
+skeptic = "^0.13"

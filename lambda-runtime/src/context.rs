@@ -101,7 +101,7 @@ impl Context {
     /// Returns the remaining time in the execution in milliseconds. This is based on the
     /// deadline header passed by Lambda's Runtime APIs.
     pub fn get_time_remaining_mills(&self) -> u128 {
-        (self.deadline - systime::get_time_ns()) / 1000 / 1000
+        self.deadline - systime::get_time_ms()
     }
 }
 
@@ -112,17 +112,17 @@ mod systime {
     use libc;
 
     #[cfg(any(target_os = "macos", target_os = "ios"))]
-    pub(super) fn get_time_ns() -> u128 {
-        unsafe { u128::from(libc::mach_absolute_time()) }
+    pub(super) fn get_time_ms() -> u128 {
+        unsafe { u128::from(libc::mach_absolute_time()) / 1_000_000 }
     }
 
     #[cfg(not(any(windows, target_os = "macos", target_os = "ios")))]
-    pub(super) fn get_time_ns() -> u128 {
+    pub(super) fn get_time_ms() -> u128 {
         let mut ts = libc::timespec { tv_sec: 0, tv_nsec: 0 };
         unsafe {
             libc::clock_gettime(libc::CLOCK_MONOTONIC, &mut ts);
         }
-        return (ts.tv_sec as u128) * 1000000000 + (ts.tv_nsec as u128);
+        return ((ts.tv_sec as u128) * 1_000) + ((ts.tv_nsec as u128) / 1_000_000);
     }
 }
 
@@ -133,7 +133,7 @@ pub(crate) mod tests {
     use std::{thread::sleep, time};
 
     fn get_deadline(secs: u8) -> u128 {
-        systime::get_time_ns() + (u128::from(secs) * 1000 * 1000 * 1000)
+        systime::get_time_ms() + (u128::from(secs) * 1_000)
     }
 
     pub(crate) fn test_context(deadline: u8) -> Context {

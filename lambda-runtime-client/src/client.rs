@@ -34,12 +34,12 @@ pub enum LambdaHeaders {
 impl fmt::Display for LambdaHeaders {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            LambdaHeaders::RequestId => write!(f, "X-Amz-Aws-Request-Id"),
-            LambdaHeaders::FunctionArn => write!(f, "X-Amz-Invoked-Function-Arn"),
-            LambdaHeaders::TraceId => write!(f, "X-Amzn-Trace-Id"),
-            LambdaHeaders::Deadline => write!(f, "X-Amz-Deadline-Ns"),
-            LambdaHeaders::ClientContext => write!(f, "X-Amz-Client-Context"),
-            LambdaHeaders::CognitoIdentity => write!(f, "X-Amz-Cognito-Identity"),
+            LambdaHeaders::RequestId => write!(f, "Lambda-Runtime-Aws-Request-Id"),
+            LambdaHeaders::FunctionArn => write!(f, "Lambda-Runtime-Invoked-Function-Arn"),
+            LambdaHeaders::TraceId => write!(f, "Lambda-Runtime-Trace-Id"),
+            LambdaHeaders::Deadline => write!(f, "Lambda-Runtime-Deadline-Ms"),
+            LambdaHeaders::ClientContext => write!(f, "Lambda-Runtime-Client-Context"),
+            LambdaHeaders::CognitoIdentity => write!(f, "Lambda-Runtime-Cognito-Identity"),
         }
     }
 }

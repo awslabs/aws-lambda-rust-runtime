@@ -100,7 +100,7 @@ impl Context {
 
     /// Returns the remaining time in the execution in milliseconds. This is based on the
     /// deadline header passed by Lambda's Runtime APIs.
-    pub fn get_time_remaining_mills(&self) -> u128 {
+    pub fn get_time_remaining_millis(&self) -> u128 {
         self.deadline - systime::get_time_ms()
     }
 }
@@ -120,7 +120,7 @@ mod systime {
     pub(super) fn get_time_ms() -> u128 {
         let mut ts = libc::timespec { tv_sec: 0, tv_nsec: 0 };
         unsafe {
-            libc::clock_gettime(libc::CLOCK_MONOTONIC, &mut ts);
+            libc::clock_gettime(libc::CLOCK_REALTIME, &mut ts);
         }
         return ((ts.tv_sec as u128) * 1_000) + ((ts.tv_nsec as u128) / 1_000_000);
     }
@@ -160,7 +160,7 @@ pub(crate) mod tests {
         println!("Set deadline to: {}", ctx.deadline);
         sleep(time::Duration::new(2, 0));
 
-        let remaining = ctx.get_time_remaining_mills();
+        let remaining = ctx.get_time_remaining_millis();
         assert!(
             remaining > 7800 && remaining < 8200,
             "Remaining time in millis outside the expected range: {}",

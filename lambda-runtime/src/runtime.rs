@@ -1,9 +1,9 @@
 use std::{error::Error, result};
 
-use lambda_runtime_client;
 use serde;
 use serde_json;
 
+use lambda_runtime_client::RuntimeClient;
 use context::Context;
 use env::{ConfigProvider, EnvConfigProvider, FunctionSettings};
 use error::{HandlerError, RuntimeError};
@@ -22,12 +22,12 @@ pub type Handler<E, O> = fn(E, Context) -> Result<O, HandlerError>;
 ///
 /// # Panics
 /// The function panics if the Lambda environment variables are not set.
-pub fn start<E: 'static, O: 'static>(f: Handler<E, O>, runtime: Option<TokioRuntime>)
+pub fn start<E, O>(f: Handler<E, O>, runtime: Option<TokioRuntime>)
 where
     for<'invocation> E: serde::Deserialize<'invocation>,
     O: serde::Serialize,
 {
-    start_with_config(f, &EnvConfigProvider {}, runtime)
+    start_with_config(f, EnvConfigProvider::new(), runtime)
 }
 
 #[macro_export]
@@ -53,13 +53,14 @@ macro_rules! lambda {
 /// The function panics if the `ConfigProvider` returns an error from the `get_runtime_api_endpoint()`
 /// or `get_function_settings()` methods. The panic forces AWS Lambda to terminate the environment
 /// and spin up a new one for the next invocation.
-pub(crate) fn start_with_config<E: 'static, O: 'static>(
+pub(crate) fn start_with_config<E, O, C>(
     f: Handler<E, O>,
-    config: &'static ConfigProvider,
+    config: C,
     runtime: Option<TokioRuntime>,
 ) where
     for<'invocation> E: serde::Deserialize<'invocation>,
     O: serde::Serialize,
+    C: ConfigProvider,
 {
     // if we cannot find the endpoint we panic, nothing else we can do.
     let endpoint: String;
@@ -81,10 +82,9 @@ pub(crate) fn start_with_config<E: 'static, O: 'static>(
         }
     }
 
-    match lambda_runtime_client::HttpRuntimeClient::new(endpoint, runtime) {
+    match RuntimeClient::new(endpoint, runtime) {
         Ok(client) => {
-            let trait_client: &lambda_runtime_client::RuntimeClient = &client;
-            start_with_runtime_client(f, function_config, trait_client);
+            start_with_runtime_client(f, function_config, client);
         }
         Err(e) => {
             panic!("Could not create runtime client SDK: {}", e);
@@ -103,10 +103,10 @@ pub(crate) fn start_with_config<E: 'static, O: 'static>(
 ///
 /// # Panics
 /// The function panics if we cannot instantiate a new `RustRuntime` object.
-pub(crate) fn start_with_runtime_client<'env, E: 'static, O: 'static>(
+pub(crate) fn start_with_runtime_client<E, O>(
     f: Handler<E, O>,
     func_settings: FunctionSettings,
-    client: &'env lambda_runtime_client::RuntimeClient,
+    client: RuntimeClient,
 ) where
     for<'invocation> E: serde::Deserialize<'invocation>,
     O: serde::Serialize,
@@ -125,15 +125,15 @@ pub(crate) fn start_with_runtime_client<'env, E: 'static, O: 'static>(
 
 /// Internal representation of the runtime object that polls for events and communicates
 /// with the Runtime APIs
-pub(super) struct Runtime<'env, E: 'static, O: 'static> {
-    runtime_client: &'env lambda_runtime_client::RuntimeClient,
+pub(super) struct Runtime<E, O> {
+    runtime_client: RuntimeClient,
     handler: Handler<E, O>,
     max_retries: i8,
     settings: FunctionSettings,
 }
 
 // generic methods implementation
-impl<'env, E, O> Runtime<'env, E, O> {
+impl<E, O> Runtime<E, O> {
     /// Creates a new instance of the `Runtime` object populated with the environment
     /// settings.
     ///
@@ -151,8 +151,8 @@ impl<'env, E, O> Runtime<'env, E, O> {
         f: Handler<E, O>,
         config: FunctionSettings,
         retries: i8,
-        client: &'env lambda_runtime_client::RuntimeClient,
-    ) -> result::Result<Runtime<'env, E, O>, RuntimeError> {
+        client: RuntimeClient,
+    ) -> result::Result<Runtime<E, O>, RuntimeError> {
         debug!(
             "Creating new runtime with {} max retries for endpoint {}",
             retries,
@@ -169,7 +169,7 @@ impl<'env, E, O> Runtime<'env, E, O> {
 
 // implementation of methods that require the Event and Output types
 // to be compatible with `serde`'s Deserialize/Serialize.
-impl<'env, E, O> Runtime<'env, E, O>
+impl<'env, E, O> Runtime<E, O>
 where
     for<'de> E: serde::Deserialize<'de>,
     O: serde::Serialize,
@@ -300,12 +300,12 @@ pub(crate) mod tests {
     use super::*;
     use context;
     use env;
-    use lambda_runtime_client as cli;
+    use lambda_runtime_client::RuntimeClient;
 
     #[test]
     fn runtime_invokes_handler() {
         let config: &env::ConfigProvider = &env::tests::MockConfigProvider { error: false };
-        let client: &lambda_runtime_client::RuntimeClient = &cli::HttpRuntimeClient::new(
+        let client = RuntimeClient::new(
             config
                 .get_runtime_api_endpoint()
                 .expect("Could not get runtime endpoint"),

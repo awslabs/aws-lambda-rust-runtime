@@ -1,5 +1,7 @@
 use std::env;
 
+use chrono::Utc;
+
 use backtrace;
 use env as lambda_env;
 use error::HandlerError;
@@ -101,28 +103,8 @@ impl Context {
     /// Returns the remaining time in the execution in milliseconds. This is based on the
     /// deadline header passed by Lambda's Runtime APIs.
     pub fn get_time_remaining_millis(&self) -> u128 {
-        self.deadline - systime::get_time_ms()
-    }
-}
-
-/// Iternal implementation used to retriev the current `MONOTINIC_CLOCK` time from
-/// libc;
-
-mod systime {
-    use libc;
-
-    #[cfg(any(target_os = "macos", target_os = "ios"))]
-    pub(super) fn get_time_ms() -> u128 {
-        unsafe { u128::from(libc::mach_absolute_time()) / 1_000_000 }
-    }
-
-    #[cfg(not(any(windows, target_os = "macos", target_os = "ios")))]
-    pub(super) fn get_time_ms() -> u128 {
-        let mut ts = libc::timespec { tv_sec: 0, tv_nsec: 0 };
-        unsafe {
-            libc::clock_gettime(libc::CLOCK_REALTIME, &mut ts);
-        }
-        return ((ts.tv_sec as u128) * 1_000) + ((ts.tv_nsec as u128) / 1_000_000);
+        let millis = Utc::now().timestamp_millis();
+        self.deadline - millis as u128
     }
 }
 
@@ -133,7 +115,7 @@ pub(crate) mod tests {
     use std::{thread::sleep, time};
 
     fn get_deadline(secs: u8) -> u128 {
-        systime::get_time_ms() + (u128::from(secs) * 1_000)
+        Utc::now().timestamp_millis() as u128 + (u128::from(secs) * 1_000)
     }
 
     pub(crate) fn test_context(deadline: u8) -> Context {

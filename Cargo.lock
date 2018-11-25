@@ -445,10 +445,10 @@ name = "lambda_runtime"
 version = "0.1.0"
 dependencies = [
  "backtrace 0.3.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "chrono 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "hyper 0.12.12 (registry+https://github.com/rust-lang/crates.io-index)",
  "hyper-tls 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "lambda_runtime_client 0.1.0",
- "libc 0.2.43 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "rusoto_core 0.35.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rusoto_dynamodb 0.35.0 (registry+https://github.com/rust-lang/crates.io-index)",

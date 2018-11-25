@@ -42,8 +42,8 @@
 extern crate log;
 
 extern crate backtrace;
+extern crate chrono;
 extern crate lambda_runtime_client;
-extern crate libc;
 extern crate serde;
 extern crate serde_json;
 extern crate tokio;

@@ -17,7 +17,7 @@
 //! extern crate serde_derive;
 //! extern crate serde_json;
 //!
-//! use lambda_runtime_client::{RuntimeClient, HttpRuntimeClient, EventContext};
+//! use lambda_runtime_client::{RuntimeClient, EventContext};
 //!
 //! #[derive(Serialize, Deserialize, Debug)]
 //! struct CustomEvent {

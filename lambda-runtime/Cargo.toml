@@ -16,6 +16,7 @@ hyper = "^0.12"
 tokio = "^0.1"
 backtrace = "^0.3"
 lambda_runtime_client = { path = "../lambda-runtime-client"}
+failure = "^0.1"
 libc = "^0.2"
 simple_logger = "^1"
 

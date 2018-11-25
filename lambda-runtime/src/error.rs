@@ -2,6 +2,8 @@
 //! by custom handlers as well as the runtime itself.
 use std::{env, error::Error, fmt};
 
+use failure::Fail;
+
 use backtrace;
 use lambda_runtime_client::error;
 use serde_json;
@@ -11,10 +13,10 @@ use serde_json;
 /// is primarily used by other methods within this crate and should not be relevant
 /// to developers building Lambda functions. Handlers are expected to return
 /// the `HandlerError` defined in this module.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct RuntimeError {
-    msg: String,
-    stack_trace: Option<backtrace::Backtrace>,
+    msg: Box<dyn Fail>,
+    stack_trace: Option<failure::Backtrace>,
     /// Whether the error is recoverable or not.
     pub(crate) recoverable: bool,
 }
@@ -31,7 +33,7 @@ impl RuntimeError {
     ///
     /// # Returns
     /// A new `RuntimeError` instance with the `recoverable` property set to `false`.
-    pub(crate) fn unrecoverable(msg: &str) -> RuntimeError {
+    pub(crate) fn unrecoverable(msg: Box<dyn Fail>) -> RuntimeError {
         let mut new_error = RuntimeError::new(msg);
         new_error.recoverable = false;
         new_error
@@ -46,16 +48,16 @@ impl RuntimeError {
     ///
     /// # Returns
     /// A new `RuntimeError` instance.
-    pub(crate) fn new(msg: &str) -> RuntimeError {
-        let mut trace: Option<backtrace::Backtrace> = None;
+    pub(crate) fn new(msg: Box<dyn Fail>) -> RuntimeError {
+        let mut trace: Option<failure::Backtrace> = None;
         let is_backtrace = env::var("RUST_BACKTRACE");
         if is_backtrace.is_ok() && is_backtrace.unwrap() == "1" {
             trace!("Begin backtrace collection");
-            trace = Option::from(backtrace::Backtrace::new());
+            trace = Option::from(failure::Backtrace::new());
             trace!("Completed backtrace collection");
         }
         RuntimeError {
-            msg: String::from(msg),
+            msg: Box::new(msg),
             stack_trace: trace,
             recoverable: true,
         }
@@ -82,7 +84,7 @@ impl fmt::Display for RuntimeError {
 // This is important for other errors to wrap this one.
 impl Error for RuntimeError {
     fn description(&self) -> &str {
-        &self.msg
+        "blah"
     }
 
     fn cause(&self) -> Option<&Error> {
@@ -91,23 +93,23 @@ impl Error for RuntimeError {
     }
 }
 
-impl From<env::VarError> for RuntimeError {
-    fn from(e: env::VarError) -> Self {
-        RuntimeError::unrecoverable(e.description())
-    }
-}
+// impl From<env::VarError> for RuntimeError {
+//     fn from(e: env::VarError) -> Self {
+//         RuntimeError::unrecoverable(e)
+//     }
+// }
 
-impl From<serde_json::Error> for RuntimeError {
-    fn from(e: serde_json::Error) -> Self {
-        RuntimeError::unrecoverable(e.description())
-    }
-}
+// impl From<serde_json::Error> for RuntimeError {
+//     fn from(e: serde_json::Error) -> Self {
+//         RuntimeError::unrecoverable(e.description())
+//     }
+// }
 
 impl From<error::ApiError> for RuntimeError {
     fn from(e: error::ApiError) -> Self {
-        let mut err = RuntimeError::new(e.description());
-        err.recoverable = e.recoverable;
-        err.stack_trace = e.backtrace;
+        let mut err = RuntimeError::new(Box::new(e));
+        err.recoverable = e.is_recoverable();
+        err.stack_trace = e.backtrace().map(|b| *b);
         err
     }
 }

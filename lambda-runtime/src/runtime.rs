@@ -1,3 +1,4 @@
+use lambda_runtime_client::error::{ApiError, RuntimeApiError};
 use std::{error::Error, result};
 
 use lambda_runtime_client;
@@ -198,12 +199,12 @@ where
                                 // we let the Lambda Runtime API know that we have died
                                 Err(e) => {
                                     error!("Could not send response for {} to Runtime API: {}", request_id, e);
-                                    if !e.recoverable {
+                                    if !e.is_recoverable() {
                                         error!(
                                             "Error for {} is not recoverable, sending fail_init signal and panicking.",
                                             request_id
                                         );
-                                        self.runtime_client.fail_init(&e);
+                                        self.runtime_client.fail_init(e);
                                         panic!("Could not send response");
                                     }
                                 }
@@ -214,8 +215,7 @@ where
                                 "Could not marshal output object to Vec<u8> JSON represnetation for request {}: {}",
                                 request_id, e
                             );
-                            self.runtime_client
-                                .fail_init(&RuntimeError::unrecoverable(e.description()));
+                            self.runtime_client.fail_init(ApiError::Json(e));
                             panic!("Failed to marshal handler output, panic");
                         }
                     }
@@ -223,16 +223,16 @@ where
                 Err(e) => {
                     debug!("Handler returned an error for {}: {}", request_id, e);
                     debug!("Attempting to send error response to Runtime API for {}", request_id);
-                    match self.runtime_client.event_error(&request_id, &e) {
+                    match self.runtime_client.event_error(&request_id, e) {
                         Ok(_) => info!("Error response for {} accepted by Runtime API", request_id),
                         Err(e) => {
                             error!("Unable to send error response for {} to Runtime API: {}", request_id, e);
-                            if !e.recoverable {
+                            if !e.is_recoverable() {
                                 error!(
                                     "Error for {} is not recoverable, sending fail_init signal and panicking",
                                     request_id
                                 );
-                                self.runtime_client.fail_init(&e);
+                                self.runtime_client.fail_init(e);
                                 panic!("Could not send error response");
                             }
                         }
@@ -275,9 +275,9 @@ where
                 }
             }
             Err(e) => {
-                if !e.recoverable {
+                if !e.is_recoverable() {
                     error!("Unrecoverable error while fetching next event: {}", e);
-                    self.runtime_client.fail_init(&e);
+                    self.runtime_client.fail_init(e);
                     panic!("Could not retrieve next event");
                 }
 
@@ -287,7 +287,7 @@ where
                     self.get_next_event(retries + 1)
                 } else {
                     error!("Exceeded maximum number of retries: {}", e);
-                    self.runtime_client.fail_init(&e);
+                    self.runtime_client.fail_init(e);
                     panic!("Could not retrieve next event");
                 }
             }
@@ -310,7 +310,8 @@ pub(crate) mod tests {
                 .get_runtime_api_endpoint()
                 .expect("Could not get runtime endpoint"),
             None,
-        ).expect("Could not initialize client");
+        )
+        .expect("Could not initialize client");
         let handler = |_e: String, _c: context::Context| -> Result<String, HandlerError> { Ok("hello".to_string()) };
         let retries: i8 = 3;
         let runtime = Runtime::new(

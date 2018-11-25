@@ -62,6 +62,9 @@ extern crate log;
 #[macro_use]
 extern crate serde_derive;
 
+#[macro_use]
+extern crate failure;
+
 extern crate backtrace;
 extern crate http;
 extern crate hyper;

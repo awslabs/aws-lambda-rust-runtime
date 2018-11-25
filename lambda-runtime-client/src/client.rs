@@ -1,4 +1,5 @@
 use error::{ApiError, RuntimeApiError};
+use failure::Error;
 use hyper::{
     client::HttpConnector,
     header::{self, HeaderMap, HeaderValue},
@@ -13,6 +14,7 @@ const RUNTIME_API_VERSION: &str = "2018-06-01";
 const API_CONTENT_TYPE: &str = "application/json";
 
 /// Enum of the headers returned by Lambda's `/next` API call.
+#[derive(Debug)]
 pub enum LambdaHeaders {
     /// The AWS request ID
     RequestId,
@@ -80,7 +82,7 @@ pub trait RuntimeClient {
     fn event_error(&self, request_id: &str, e: &RuntimeApiError) -> Result<(), ApiError>;
     /// Should tell the Runtime APIs that the custom runtime has failed to initialize and the
     /// execution environment should be terminated.
-    fn fail_init(&self, e: &RuntimeApiError);
+    fn fail_init(&self, e: ApiError);
     /// Returns the endpoint this client is communicating with. Primarily used for debugging.
     fn get_endpoint(&self) -> String;
 }
@@ -167,7 +169,7 @@ impl HttpRuntimeClient {
     ///
     /// # Return
     /// An instance of the Runtime APIs client SDK.
-    pub fn new(endpoint: String, runtime: Option<Runtime>) -> Result<Self, ApiError> {
+    pub fn new(endpoint: String, runtime: Option<Runtime>) -> Result<Self, Error> {
         debug!("Starting new HttpRuntimeClient for {}", endpoint);
         // start a tokio core main event loop for hyper
         let runtime = match runtime {
@@ -194,7 +196,9 @@ impl RuntimeClient for HttpRuntimeClient {
         let uri = format!(
             "http://{}/{}/runtime/invocation/next",
             self.endpoint, RUNTIME_API_VERSION
-        ).parse()?;
+        )
+        .parse()
+        .map_err(ApiError::InvalidUri)?;
         trace!("Polling for next event");
 
         // We wait instead of processing the future asynchronously because AWS Lambda
@@ -204,26 +208,18 @@ impl RuntimeClient for HttpRuntimeClient {
         match out {
             Ok(resp) => {
                 if resp.status().is_client_error() {
-                    error!(
-                        "Runtime API returned client error when polling for new events: {}",
-                        resp.status()
-                    );
-                    return Err(ApiError::new(&format!(
-                        "Error {} when polling for events",
-                        resp.status()
-                    )));
+                    error!("Runtime API returned error when polling: {}", resp.status());
+                    return Err(ApiError::BadStatus(resp.status()));
                 }
                 if resp.status().is_server_error() {
                     error!(
                         "Runtime API returned server error when polling for new events: {}",
                         resp.status()
                     );
-                    return Err(ApiError::new("Server error when polling for new events")
-                        .unrecoverable()
-                        .clone());
+                    return Err(ApiError::Unrecoverable("Server error when polling for new events"));
                 }
                 let ctx = self.get_event_context(&resp.headers())?;
-                let out = resp.into_body().concat2().wait()?;
+                let out = resp.into_body().concat2().wait().map_err(ApiError::Hyper)?;
                 let buf: Vec<u8> = out.into_bytes().to_vec();
 
                 trace!(
@@ -235,7 +231,7 @@ impl RuntimeClient for HttpRuntimeClient {
             }
             Err(e) => {
                 error!("Error when fetching next event from Runtime API: {}", e);
-                Err(ApiError::from(e))
+                Err(ApiError::Hyper(e))
             }
         }
     }
@@ -256,7 +252,10 @@ impl RuntimeClient for HttpRuntimeClient {
         let uri: Uri = format!(
             "http://{}/{}/runtime/invocation/{}/response",
             self.endpoint, RUNTIME_API_VERSION, request_id
-        ).parse()?;
+        )
+        .parse()
+        .map_err(ApiError::InvalidUri)?;
+
         trace!(
             "Posting response for request {} to Runtime API. Response length {} bytes",
             request_id,
@@ -272,17 +271,14 @@ impl RuntimeClient for HttpRuntimeClient {
                         request_id,
                         resp.status()
                     );
-                    return Err(ApiError::new(&format!(
-                        "Error {} while sending response",
-                        resp.status()
-                    )));
+                    return Err(ApiError::BadStatus(resp.status()));
                 }
                 trace!("Posted response to Runtime API for request {}", request_id);
                 Ok(())
             }
             Err(e) => {
                 error!("Error when calling runtime API for request {}: {}", request_id, e);
-                Err(ApiError::from(e))
+                Err(ApiError::Hyper(e))
             }
         }
     }
@@ -303,7 +299,9 @@ impl RuntimeClient for HttpRuntimeClient {
         let uri: Uri = format!(
             "http://{}/{}/runtime/invocation/{}/error",
             self.endpoint, RUNTIME_API_VERSION, request_id
-        ).parse()?;
+        )
+        .parse()
+        .map_err(ApiError::InvalidUri)?;
         trace!(
             "Posting error to runtime API for request {}: {}",
             request_id,
@@ -320,17 +318,14 @@ impl RuntimeClient for HttpRuntimeClient {
                         request_id,
                         resp.status()
                     );
-                    return Err(ApiError::new(&format!(
-                        "Error {} while sending response",
-                        resp.status()
-                    )));
+                    return Err(ApiError::BadStatus(resp.status()));
                 }
                 trace!("Posted error response for request id {}", request_id);
                 Ok(())
             }
             Err(e) => {
                 error!("Error when calling runtime API for request {}: {}", request_id, e);
-                Err(ApiError::from(e))
+                Err(ApiError::Hyper(e))
             }
         }
     }
@@ -346,7 +341,7 @@ impl RuntimeClient for HttpRuntimeClient {
     /// # Panics
     /// If it cannot send the init error. In this case we panic to force the runtime
     /// to restart.
-    fn fail_init(&self, e: &RuntimeApiError) {
+    fn fail_init(&self, e: ApiError) {
         let uri: Uri = format!("http://{}/{}/runtime/init/error", self.endpoint, RUNTIME_API_VERSION)
             .parse()
             .expect("Could not generate Runtime API URI");
@@ -404,36 +399,38 @@ impl HttpRuntimeClient {
         // let headers = resp.headers();
 
         let aws_request_id = match headers.get(LambdaHeaders::RequestId.to_string()) {
-            Some(value) => value.to_str()?.to_owned(),
+            Some(value) => value.to_str().map_err(ApiError::ToStr)?.to_owned(),
             None => {
                 error!("Response headers do not contain request id header");
-                return Err(ApiError::new(&format!("Missing {} header", LambdaHeaders::RequestId)));
+                return Err(ApiError::MissingHeader(LambdaHeaders::RequestId));
             }
         };
 
         let invoked_function_arn = match headers.get(LambdaHeaders::FunctionArn.to_string()) {
-            Some(value) => value.to_str()?.to_owned(),
+            Some(value) => value.to_str().map_err(ApiError::ToStr)?.to_owned(),
             None => {
                 error!("Response headers do not contain function arn header");
-                return Err(ApiError::new(&format!("Missing {} header", LambdaHeaders::FunctionArn)));
+                return Err(ApiError::MissingHeader(LambdaHeaders::FunctionArn));
             }
         };
 
         let xray_trace_id = match headers.get(LambdaHeaders::FunctionArn.to_string()) {
-            Some(value) => value.to_str()?.to_owned(),
+            Some(value) => value.to_str().map_err(ApiError::ToStr)?.to_owned(),
             None => {
                 error!("Response headers do not contain trace id header");
-                return Err(ApiError::new(&format!("Missing {} header", LambdaHeaders::TraceId)));
+                return Err(ApiError::MissingHeader(LambdaHeaders::TraceId));
             }
         };
 
         let deadline: u128 = match headers.get(LambdaHeaders::Deadline.to_string()) {
-            Some(value) => value.to_str()?.to_owned(),
+            Some(value) => value.to_str().map_err(ApiError::ToStr)?.to_owned(),
             None => {
                 error!("Response headers do not contain deadline header");
-                return Err(ApiError::new(&format!("Missing {} header", LambdaHeaders::Deadline)));
+                return Err(ApiError::MissingHeader(LambdaHeaders::Deadline));
             }
-        }.parse::<u128>()?;
+        }
+        .parse::<u128>()
+        .map_err(ApiError::ParseIntError)?;
 
         let mut ctx = EventContext {
             aws_request_id,
@@ -445,16 +442,16 @@ impl HttpRuntimeClient {
         };
 
         if let Some(ctx_json) = headers.get(LambdaHeaders::ClientContext.to_string()) {
-            let ctx_json = ctx_json.to_str()?;
+            let ctx_json = ctx_json.to_str().map_err(ApiError::ToStr)?;
             trace!("Found Client Context in response headers: {}", ctx_json);
-            let ctx_value: ClientContext = serde_json::from_str(&ctx_json)?;
+            let ctx_value: ClientContext = serde_json::from_str(&ctx_json).map_err(ApiError::Json)?;
             ctx.client_context = Option::from(ctx_value);
         };
 
         if let Some(cognito_json) = headers.get(LambdaHeaders::CognitoIdentity.to_string()) {
-            let cognito_json = cognito_json.to_str()?;
+            let cognito_json = cognito_json.to_str().map_err(ApiError::ToStr)?;
             trace!("Found Cognito Identity in response headers: {}", cognito_json);
-            let identity_value: CognitoIdentity = serde_json::from_str(&cognito_json)?;
+            let identity_value: CognitoIdentity = serde_json::from_str(&cognito_json).map_err(ApiError::Json)?;
             ctx.identity = Option::from(identity_value);
         };
 

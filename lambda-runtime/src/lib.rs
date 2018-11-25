@@ -40,6 +40,8 @@
 //! ```
 #[macro_use]
 extern crate log;
+#[macro_use]
+extern crate failure;
 
 extern crate backtrace;
 extern crate lambda_runtime_client;

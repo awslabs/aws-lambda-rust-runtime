@@ -1,9 +1,7 @@
 #![warn(missing_docs)]
 //! Rust client SDK for the AWS Lambda Runtime APIs. This crate defines
-//! both a `RuntimeClient` trait and it's implementation: `HttpRuntimeClient`.
-//! The `HttpRuntimeClient` object exposes all of the methods available in
-//! AWS Lambda's Runtime APIs and it can be used to build any rust-related
-//! custom runtime in Lambda.
+//! a `RuntimeClient` that encapsulates interactions with AWS Lambda's Runtime
+//! APIs.
 //!
 //! To return errors to the Runtime APIs through the `event_error()` or
 //! `fail_init()` methods the `Error` objects must implement the `error::RuntimeApiError`
@@ -33,7 +31,7 @@
 //!
 //! fn main() {
 //!     let runtime_endpoint = String::from("http://localhost:8080");
-//!     let client: &RuntimeClient = &HttpRuntimeClient::new(runtime_endpoint, None)
+//!     let client = RuntimeClient::new(runtime_endpoint, None)
 //!         .expect("Could not initialize client");
 //!
 //!     let (event_data, event_context) = client.next_event()

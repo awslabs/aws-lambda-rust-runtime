@@ -107,8 +107,7 @@ pub struct EventContext {
     pub identity: Option<CognitoIdentity>,
 }
 
-/// The client SDK for Lambda's Runtime APIs that implements the `RuntimeClient` trait.
-/// This object is used by the `RustRuntime` to communicate with the internal endpoint.
+/// Used by the Runtime to communicate with the internal endpoint.
 pub struct RuntimeClient {
     _runtime: Runtime,
     http_client: Client<HttpConnector, Body>,
@@ -117,15 +116,7 @@ pub struct RuntimeClient {
 
 impl RuntimeClient {
     /// Creates a new instance of the Runtime APIclient SDK. The http client has timeouts disabled and
-    /// always send the `Connection: keep-alive` header.
-    ///
-    /// # Arguments
-    ///
-    /// * `http_endpoint` The http endpoint for the Runtime APIs. This value comes from the AWS_LAMBDA_RUNTIME_API
-    ///                   environment variable.
-    ///
-    /// # Return
-    /// An instance of the Runtime APIs client SDK.
+    /// will always send a `Connection: keep-alive` header.
     pub fn new(endpoint: String, runtime: Option<Runtime>) -> Result<Self, ApiError> {
         debug!("Starting new HttpRuntimeClient for {}", endpoint);
         // start a tokio core main event loop for hyper
@@ -145,10 +136,7 @@ impl RuntimeClient {
 }
 
 impl RuntimeClient {
-    /// Makes the HTTP call to poll for new events to the Runtime APIs.
-    ///
-    /// # Return
-    /// A `Result` containing a tuple of the new event of type `E` and its `EventContext`.
+    /// Polls for new events to the Runtime APIs.
     pub fn next_event(&self) -> Result<(Vec<u8>, EventContext), ApiError> {
         let uri = format!(
             "http://{}/{}/runtime/invocation/next",

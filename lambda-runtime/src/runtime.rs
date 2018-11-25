@@ -3,10 +3,10 @@ use std::{error::Error, result};
 use serde;
 use serde_json;
 
-use lambda_runtime_client::RuntimeClient;
 use context::Context;
 use env::{ConfigProvider, EnvConfigProvider, FunctionSettings};
 use error::{HandlerError, RuntimeError};
+use lambda_runtime_client::RuntimeClient;
 use tokio::runtime::Runtime as TokioRuntime;
 
 const MAX_RETRIES: i8 = 3;
@@ -53,11 +53,8 @@ macro_rules! lambda {
 /// The function panics if the `ConfigProvider` returns an error from the `get_runtime_api_endpoint()`
 /// or `get_function_settings()` methods. The panic forces AWS Lambda to terminate the environment
 /// and spin up a new one for the next invocation.
-pub(crate) fn start_with_config<E, O, C>(
-    f: Handler<E, O>,
-    config: C,
-    runtime: Option<TokioRuntime>,
-) where
+pub(crate) fn start_with_config<E, O, C>(f: Handler<E, O>, config: C, runtime: Option<TokioRuntime>)
+where
     for<'invocation> E: serde::Deserialize<'invocation>,
     O: serde::Serialize,
     C: ConfigProvider,
@@ -103,11 +100,8 @@ pub(crate) fn start_with_config<E, O, C>(
 ///
 /// # Panics
 /// The function panics if we cannot instantiate a new `RustRuntime` object.
-pub(crate) fn start_with_runtime_client<E, O>(
-    f: Handler<E, O>,
-    func_settings: FunctionSettings,
-    client: RuntimeClient,
-) where
+pub(crate) fn start_with_runtime_client<E, O>(f: Handler<E, O>, func_settings: FunctionSettings, client: RuntimeClient)
+where
     for<'invocation> E: serde::Deserialize<'invocation>,
     O: serde::Serialize,
 {

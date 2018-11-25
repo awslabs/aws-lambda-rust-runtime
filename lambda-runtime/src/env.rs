@@ -41,7 +41,7 @@ pub struct EnvConfigProvider;
 
 impl EnvConfigProvider {
     pub fn new() -> Self {
-        EnvConfigProvider { }
+        EnvConfigProvider {}
     }
 }
 

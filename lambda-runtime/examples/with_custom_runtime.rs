@@ -1,14 +1,14 @@
 extern crate lambda_runtime as lambda;
-extern crate serde_derive;
 extern crate log;
+extern crate serde_derive;
 extern crate simple_logger;
 extern crate tokio;
 
-use lambda::{lambda, error::HandlerError};
-use tokio::runtime::Runtime;
-use serde_derive::{Serialize, Deserialize};
+use lambda::{error::HandlerError, lambda};
 use log::error;
+use serde_derive::{Deserialize, Serialize};
 use std::error::Error;
+use tokio::runtime::Runtime;
 
 #[derive(Deserialize, Clone)]
 struct CustomEvent {

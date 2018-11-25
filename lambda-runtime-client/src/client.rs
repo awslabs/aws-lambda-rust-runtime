@@ -308,18 +308,21 @@ impl RuntimeClient {
     pub fn fail_init(&self, e: &RuntimeApiError) {
         let uri: Uri = format!("http://{}/{}/runtime/init/error", self.endpoint, RUNTIME_API_VERSION)
             .parse()
-            .expect("Could not generate Runtime API URI");
+            .expect("Could not generate Runtime URI");
         error!("Calling fail_init Runtime API: {}", e.to_response().error_message);
         let err_body = serde_json::to_vec(&e.to_response()).expect("Could not serialize error object");
         let req = self.get_runtime_post_request(&uri, err_body);
 
-        match self.http_client.request(req).wait() {
-            Ok(_) => {}
-            Err(e) => {
+        let resp = self
+            .http_client
+            .request(req)
+            .map_err(|e| {
                 error!("Error while sending init failed message: {}", e);
                 panic!("Error while sending init failed message: {}", e);
-            }
-        }
+            }).map(|resp| {
+                info!("Successfully sent error response to the runtime API: {:?}", resp);
+            });
+        tokio::spawn(resp);
     }
 
     /// Returns the endpoint configured for this HTTP Runtime client.

@@ -44,47 +44,6 @@ impl fmt::Display for LambdaHeaders {
     }
 }
 
-/// Trait that defines the methods that should be implemented by a Lambda Runtime API client.
-/// Events are returned as a `Vec<u8>` and output for the `event_response()` method should
-/// also be passed as a `Vec<u8>`. Serialization and deserialization are up to the runtime
-/// library. When returning an error to the `event_error()` or `fail_init()` methods the objects
-/// should implement the `error::RuntimeApiError` triat.
-pub trait RuntimeClient {
-    /// Should fetch the next event from the Runtime APIs.
-    ///
-    /// # Return
-    /// A tuple of the event raw bytes and the `EventContext` object extracted from the
-    /// Lambda Runtime API headers - see the `LambdaHeaders` enum.
-    fn next_event(&self) -> Result<(Vec<u8>, EventContext), ApiError>;
-    /// Should return the handler response to the Runtime APIs.
-    ///
-    /// # Arguments
-    ///
-    /// * `request_id` The original AWS request id received from the `poll_events()` method.
-    /// * `output` The object returned by the handler serialized to its raw bytes representation
-    ///            as a `Vec<u8>`.
-    ///
-    /// # Return
-    /// A `Result<(), RuntimeError>` signifying the API call's success or failure.
-    fn event_response(&self, request_id: &str, output: Vec<u8>) -> Result<(), ApiError>;
-    /// Should send an error response to the Runtime APIs.
-    ///
-    /// # Arguments
-    ///
-    /// * `request_id` The original AWS request id received from the `poll_events()` method.
-    /// * `e` The `errors::HandlerError` returned by the handler function.
-    ///
-    /// # Return
-    /// A `Result<(), RuntimeError>` signifying the API call's success or failure. A unit struct
-    /// signifies a lack of an error.
-    fn event_error(&self, request_id: &str, e: &RuntimeApiError) -> Result<(), ApiError>;
-    /// Should tell the Runtime APIs that the custom runtime has failed to initialize and the
-    /// execution environment should be terminated.
-    fn fail_init(&self, e: &RuntimeApiError);
-    /// Returns the endpoint this client is communicating with. Primarily used for debugging.
-    fn get_endpoint(&self) -> String;
-}
-
 /// AWS Moble SDK client properties
 #[derive(Deserialize, Clone)]
 pub struct ClientApplication {
@@ -148,25 +107,16 @@ pub struct EventContext {
     pub identity: Option<CognitoIdentity>,
 }
 
-/// The client SDK for Lambda's Runtime APIs that implements the `RuntimeClient` trait.
-/// This object is used by the `RustRuntime` to communicate with the internal endpoint.
-pub struct HttpRuntimeClient {
+/// Used by the Runtime to communicate with the internal endpoint.
+pub struct RuntimeClient {
     _runtime: Runtime,
     http_client: Client<HttpConnector, Body>,
     endpoint: String,
 }
 
-impl HttpRuntimeClient {
+impl RuntimeClient {
     /// Creates a new instance of the Runtime APIclient SDK. The http client has timeouts disabled and
-    /// always send the `Connection: keep-alive` header.
-    ///
-    /// # Arguments
-    ///
-    /// * `http_endpoint` The http endpoint for the Runtime APIs. This value comes from the AWS_LAMBDA_RUNTIME_API
-    ///                   environment variable.
-    ///
-    /// # Return
-    /// An instance of the Runtime APIs client SDK.
+    /// will always send a `Connection: keep-alive` header.
     pub fn new(endpoint: String, runtime: Option<Runtime>) -> Result<Self, ApiError> {
         debug!("Starting new HttpRuntimeClient for {}", endpoint);
         // start a tokio core main event loop for hyper
@@ -177,7 +127,7 @@ impl HttpRuntimeClient {
 
         let http_client = Client::builder().executor(runtime.executor()).build_http();
 
-        Ok(HttpRuntimeClient {
+        Ok(RuntimeClient {
             _runtime: runtime,
             http_client,
             endpoint,
@@ -185,12 +135,9 @@ impl HttpRuntimeClient {
     }
 }
 
-impl RuntimeClient for HttpRuntimeClient {
-    /// Makes the HTTP call to poll for new events to the Runtime APIs.
-    ///
-    /// # Return
-    /// A `Result` containing a tuple of the new event of type `E` and its `EventContext`.
-    fn next_event(&self) -> Result<(Vec<u8>, EventContext), ApiError> {
+impl RuntimeClient {
+    /// Polls for new events to the Runtime APIs.
+    pub fn next_event(&self) -> Result<(Vec<u8>, EventContext), ApiError> {
         let uri = format!(
             "http://{}/{}/runtime/invocation/next",
             self.endpoint, RUNTIME_API_VERSION
@@ -252,7 +199,7 @@ impl RuntimeClient for HttpRuntimeClient {
     ///
     /// # Returns
     /// A `Result` object containing a bool return value for the call or an `error::ApiError` instance.
-    fn event_response(&self, request_id: &str, output: Vec<u8>) -> Result<(), ApiError> {
+    pub fn event_response(&self, request_id: &str, output: Vec<u8>) -> Result<(), ApiError> {
         let uri: Uri = format!(
             "http://{}/{}/runtime/invocation/{}/response",
             self.endpoint, RUNTIME_API_VERSION, request_id
@@ -299,7 +246,7 @@ impl RuntimeClient for HttpRuntimeClient {
     ///
     /// # Returns
     /// A `Result` object containing a bool return value for the call or an `error::ApiError` instance.
-    fn event_error(&self, request_id: &str, e: &RuntimeApiError) -> Result<(), ApiError> {
+    pub fn event_error(&self, request_id: &str, e: &RuntimeApiError) -> Result<(), ApiError> {
         let uri: Uri = format!(
             "http://{}/{}/runtime/invocation/{}/error",
             self.endpoint, RUNTIME_API_VERSION, request_id
@@ -346,30 +293,33 @@ impl RuntimeClient for HttpRuntimeClient {
     /// # Panics
     /// If it cannot send the init error. In this case we panic to force the runtime
     /// to restart.
-    fn fail_init(&self, e: &RuntimeApiError) {
+    pub fn fail_init(&self, e: &RuntimeApiError) {
         let uri: Uri = format!("http://{}/{}/runtime/init/error", self.endpoint, RUNTIME_API_VERSION)
             .parse()
-            .expect("Could not generate Runtime API URI");
+            .expect("Could not generate Runtime URI");
         error!("Calling fail_init Runtime API: {}", e.to_response().error_message);
         let err_body = serde_json::to_vec(&e.to_response()).expect("Could not serialize error object");
         let req = self.get_runtime_post_request(&uri, err_body);
 
-        match self.http_client.request(req).wait() {
-            Ok(_) => {}
-            Err(e) => {
+        let resp = self
+            .http_client
+            .request(req)
+            .map_err(|e| {
                 error!("Error while sending init failed message: {}", e);
                 panic!("Error while sending init failed message: {}", e);
-            }
-        }
+            }).map(|resp| {
+                info!("Successfully sent error response to the runtime API: {:?}", resp);
+            });
+        tokio::spawn(resp);
     }
 
     /// Returns the endpoint configured for this HTTP Runtime client.
-    fn get_endpoint(&self) -> String {
+    pub fn get_endpoint(&self) -> String {
         self.endpoint.clone()
     }
 }
 
-impl HttpRuntimeClient {
+impl RuntimeClient {
     /// Creates a Hyper `Request` object for the given `Uri` and `Body`. Sets the
     /// HTTP method to `POST` and the `Content-Type` header value to `application/json`.
     ///

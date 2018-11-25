@@ -39,6 +39,12 @@ pub trait ConfigProvider {
 /// used by the `start()` method of this module.
 pub struct EnvConfigProvider;
 
+impl EnvConfigProvider {
+    pub fn new() -> Self {
+        EnvConfigProvider {}
+    }
+}
+
 impl ConfigProvider for EnvConfigProvider {
     /// Loads the function settings from the Lambda environment variables:
     /// https://docs.aws.amazon.com/lambda/latest/dg/current-supported-versions.html

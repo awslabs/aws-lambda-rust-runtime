@@ -15,6 +15,8 @@ use serde_json;
 pub struct RuntimeError {
     msg: String,
     stack_trace: Option<backtrace::Backtrace>,
+    /// The request id that generated this error
+    pub(crate) request_id: Option<String>,
     /// Whether the error is recoverable or not.
     pub(crate) recoverable: bool,
 }
@@ -58,6 +60,7 @@ impl RuntimeError {
             msg: String::from(msg),
             stack_trace: trace,
             recoverable: true,
+            request_id: None,
         }
     }
 }

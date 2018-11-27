@@ -174,7 +174,7 @@ where
     fn start(&self) {
         debug!("Beginning main event loop");
         loop {
-            let (event, ctx) = self.get_next_event(0);
+            let (event, ctx) = self.get_next_event(0, None);
             let request_id = ctx.aws_request_id.clone();
             info!("Received new event with AWS request id: {}", request_id);
             let function_outcome = self.invoke(event, ctx);
@@ -247,7 +247,27 @@ where
     ///
     /// # Return
     /// The next `Event` object to be processed.
-    pub(super) fn get_next_event(&self, retries: i8) -> (E, Context) {
+    pub(super) fn get_next_event(&self, retries: i8, e: Option<RuntimeError>) -> (E, Context) {
+        if let Some(err) = e {
+            if retries > self.max_retries {
+                error!("Unrecoverable error while fetching next event: {}", err);
+                match err.request_id.clone() {
+                    Some(req_id) => {
+                        self.runtime_client
+                            .event_error(&req_id, &err)
+                            .expect("Could not send event error response");
+                    }
+                    None => {
+                        self.runtime_client.fail_init(&err);
+                    }
+                }
+
+                // these errors are not recoverable. Either we can't communicate with the runtie APIs
+                // or we cannot parse the event. panic to restart the environment.
+                panic!("Could not retrieve next event");
+            }
+        }
+
         match self.runtime_client.next_event() {
             Ok((ev_data, invocation_ctx)) => {
                 let parse_result = serde_json::from_slice(&ev_data);
@@ -263,29 +283,15 @@ where
 
                         (ev, handler_ctx)
                     }
-                    Err(e) => {
+                    Err(mut e) => {
                         error!("Could not parse event to type: {}", e);
-                        self.get_next_event(retries + 1)
+                        let mut runtime_err = RuntimeError::from(e);
+                        runtime_err.request_id = Option::from(invocation_ctx.aws_request_id);
+                        self.get_next_event(retries + 1, Option::from(runtime_err))
                     }
                 }
             }
-            Err(e) => {
-                if !e.recoverable {
-                    error!("Unrecoverable error while fetching next event: {}", e);
-                    self.runtime_client.fail_init(&e);
-                    panic!("Could not retrieve next event");
-                }
-
-                // if the error is recoverable we retry up to max_retries time
-                if retries <= self.max_retries {
-                    //let next_retries = retries + 1;
-                    self.get_next_event(retries + 1)
-                } else {
-                    error!("Exceeded maximum number of retries: {}", e);
-                    self.runtime_client.fail_init(&e);
-                    panic!("Could not retrieve next event");
-                }
-            }
+            Err(e) => self.get_next_event(retries + 1, Option::from(RuntimeError::from(e))),
         }
     }
 }

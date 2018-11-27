@@ -1,4 +1,4 @@
-use error::{ApiError, RuntimeApiError};
+use error::{ApiError, ErrorResponse, RuntimeApiError};
 use hyper::{
     client::HttpConnector,
     header::{self, HeaderMap, HeaderValue},
@@ -11,6 +11,8 @@ use tokio::runtime::Runtime;
 
 const RUNTIME_API_VERSION: &str = "2018-06-01";
 const API_CONTENT_TYPE: &str = "application/json";
+const API_ERROR_CONTENT_TYPE: &str = "application/vnd.aws.lambda.error+json";
+const RUNTIME_ERROR_HEADER: &str = "Lambda-Runtime-Function-Error-Type";
 
 /// Enum of the headers returned by Lambda's `/next` API call.
 pub enum LambdaHeaders {
@@ -141,7 +143,8 @@ impl RuntimeClient {
         let uri = format!(
             "http://{}/{}/runtime/invocation/next",
             self.endpoint, RUNTIME_API_VERSION
-        ).parse()?;
+        )
+        .parse()?;
         trace!("Polling for next event");
 
         // We wait instead of processing the future asynchronously because AWS Lambda
@@ -203,7 +206,8 @@ impl RuntimeClient {
         let uri: Uri = format!(
             "http://{}/{}/runtime/invocation/{}/response",
             self.endpoint, RUNTIME_API_VERSION, request_id
-        ).parse()?;
+        )
+        .parse()?;
         trace!(
             "Posting response for request {} to Runtime API. Response length {} bytes",
             request_id,
@@ -250,14 +254,14 @@ impl RuntimeClient {
         let uri: Uri = format!(
             "http://{}/{}/runtime/invocation/{}/error",
             self.endpoint, RUNTIME_API_VERSION, request_id
-        ).parse()?;
+        )
+        .parse()?;
         trace!(
             "Posting error to runtime API for request {}: {}",
             request_id,
             e.to_response().error_message
         );
-        let err_body = serde_json::to_vec(&e.to_response()).expect("Could not serialize error object");
-        let req = self.get_runtime_post_request(&uri, err_body);
+        let req = self.get_runtime_error_request(&uri, &e.to_response());
 
         match self.http_client.request(req).wait() {
             Ok(resp) => {
@@ -298,19 +302,19 @@ impl RuntimeClient {
             .parse()
             .expect("Could not generate Runtime URI");
         error!("Calling fail_init Runtime API: {}", e.to_response().error_message);
-        let err_body = serde_json::to_vec(&e.to_response()).expect("Could not serialize error object");
-        let req = self.get_runtime_post_request(&uri, err_body);
+        let req = self.get_runtime_error_request(&uri, &e.to_response());
 
-        let resp = self
-            .http_client
+        self.http_client
             .request(req)
+            .wait()
             .map_err(|e| {
                 error!("Error while sending init failed message: {}", e);
                 panic!("Error while sending init failed message: {}", e);
-            }).map(|resp| {
+            })
+            .map(|resp| {
                 info!("Successfully sent error response to the runtime API: {:?}", resp);
-            });
-        tokio::spawn(resp);
+            })
+            .expect("Could not complete init_fail request");
     }
 
     /// Returns the endpoint configured for this HTTP Runtime client.
@@ -335,6 +339,20 @@ impl RuntimeClient {
             .method(Method::POST)
             .uri(uri.clone())
             .header(header::CONTENT_TYPE, header::HeaderValue::from_static(API_CONTENT_TYPE))
+            .body(Body::from(body))
+            .unwrap()
+    }
+
+    fn get_runtime_error_request(&self, uri: &Uri, e: &ErrorResponse) -> Request<Body> {
+        let body = serde_json::to_vec(e).expect("Could not turn error object into response JSON");
+        Request::builder()
+            .method(Method::POST)
+            .uri(uri.clone())
+            .header(
+                header::CONTENT_TYPE,
+                header::HeaderValue::from_static(API_ERROR_CONTENT_TYPE),
+            )
+            .header(RUNTIME_ERROR_HEADER, HeaderValue::from_static("RuntimeError")) // TODO: We should add this code to the error object.
             .body(Body::from(body))
             .unwrap()
     }
@@ -383,7 +401,8 @@ impl RuntimeClient {
                 error!("Response headers do not contain deadline header");
                 return Err(ApiError::new(&format!("Missing {} header", LambdaHeaders::Deadline)));
             }
-        }.parse::<u128>()?;
+        }
+        .parse::<u128>()?;
 
         let mut ctx = EventContext {
             aws_request_id,

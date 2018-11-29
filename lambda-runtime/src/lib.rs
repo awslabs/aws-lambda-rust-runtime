@@ -1,4 +1,5 @@
 #![warn(missing_docs)]
+#![deny(warnings)]
 //! Lambda runtime makes it easy to run Rust code inside AWS Lambda. To create
 //! Lambda function with this library simply include it as a dependency, make
 //! sure that you declare a function that respects the `Handler` type, and call

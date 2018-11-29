@@ -27,7 +27,7 @@ where
     for<'invocation> E: serde::Deserialize<'invocation>,
     O: serde::Serialize,
 {
-    start_with_config(f, EnvConfigProvider::new(), runtime)
+    start_with_config(f, &EnvConfigProvider::new(), runtime)
 }
 
 #[macro_export]
@@ -53,7 +53,7 @@ macro_rules! lambda {
 /// The function panics if the `ConfigProvider` returns an error from the `get_runtime_api_endpoint()`
 /// or `get_function_settings()` methods. The panic forces AWS Lambda to terminate the environment
 /// and spin up a new one for the next invocation.
-pub(crate) fn start_with_config<E, O, C>(f: Handler<E, O>, config: C, runtime: Option<TokioRuntime>)
+pub(crate) fn start_with_config<E, O, C>(f: Handler<E, O>, config: &C, runtime: Option<TokioRuntime>)
 where
     for<'invocation> E: serde::Deserialize<'invocation>,
     O: serde::Serialize,

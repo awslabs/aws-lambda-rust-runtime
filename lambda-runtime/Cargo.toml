@@ -18,7 +18,7 @@ log = "^0.4"
 hyper = "^0.12"
 tokio = "^0.1"
 backtrace = "^0.3"
-lambda_runtime_client = { path = "../lambda-runtime-client"}
+lambda_runtime_client = { path = "../lambda-runtime-client", version = "^0.1" }
 chrono = "^0.4"
 simple_logger = "^1"
 

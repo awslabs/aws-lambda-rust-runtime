@@ -8,7 +8,6 @@ license = "Apache-2.0"
 homepage = "https://github.com/awslabs/aws-lambda-rust-runtime"
 repository = "https://github.com/awslabs/aws-lambda-rust-runtime"
 documentation = "https://docs.rs/lambda_runtime"
-build = "build.rs"
 
 [dependencies]
 serde = "^1"
@@ -26,7 +25,3 @@ simple_logger = "^1"
 hyper-tls = "^0.3"
 rusoto_core = "^0.35"
 rusoto_dynamodb = "^0.35"
-skeptic = "^0.13"
-
-[build-dependencies]
-skeptic = "^0.13"

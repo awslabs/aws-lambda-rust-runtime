@@ -5,6 +5,9 @@ authors = ["Stefano Buliani", "David Barsky"]
 description = "Rust runtime for AWS Lambda"
 keywords = ["AWS", "Lambda", "Runtime", "Rust"]
 license = "Apache-2.0"
+homepage = "https://github.com/awslabs/aws-lambda-rust-runtime"
+repository = "https://github.com/awslabs/aws-lambda-rust-runtime"
+documentation = "https://docs.rs/lambda_runtime"
 build = "build.rs"
 
 [dependencies]

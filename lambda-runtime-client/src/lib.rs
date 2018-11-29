@@ -1,4 +1,5 @@
 #![warn(missing_docs)]
+#![deny(warnings)]
 //! Rust client SDK for the AWS Lambda Runtime APIs. This crate defines
 //! a `RuntimeClient` that encapsulates interactions with AWS Lambda's Runtime
 //! APIs.

@@ -5,6 +5,9 @@ authors = ["Stefano Buliani", "David Barsky"]
 description = "Client SDK for AWS Lambda's runtime APIs"
 keywords = ["AWS", "Lambda", "Runtime", "API", "Client", "SDK"]
 license = "Apache-2.0"
+homepage = "https://github.com/awslabs/aws-lambda-rust-runtime"
+repository = "https://github.com/awslabs/aws-lambda-rust-runtime"
+documentation = "https://docs.rs/lambda_runtime_client"
 
 [dependencies]
 hyper = "0.12"

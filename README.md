@@ -56,7 +56,7 @@ The code above is the same as the [basic example](https://github.com/awslabs/aws
 $ cargo build -p lambda_runtime --example basic --release
 ```
 
-For a custom runtime, AWS Lambda looks for an executable called `boostrap` in the deployment package zip. Rename the generated `basic` executable to `bootstrap` and add it to a zip archive.
+For a custom runtime, AWS Lambda looks for an executable called `bootstrap` in the deployment package zip. Rename the generated `basic` executable to `bootstrap` and add it to a zip archive.
 
 ```bash
 $ cp ./target/release/examples/basic ./bootstrap && zip lambda.zip bootstrap && rm bootstrap

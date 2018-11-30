@@ -1,0 +1,100 @@
+//! Response types
+
+// Std
+use std::ops::Not;
+
+use http::header::{HeaderMap, HeaderValue};
+use http::Response as HttpResponse;
+use serde::{ser::Error as SerError, ser::SerializeMap, Serializer};
+
+use body::Body;
+
+/// Representation of API Gateway response
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct GatewayResponse {
+    pub status_code: u16,
+    #[serde(
+        skip_serializing_if = "HeaderMap::is_empty",
+        serialize_with = "serialize_headers"
+    )]
+    pub headers: HeaderMap<HeaderValue>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub body: Option<Body>,
+    #[serde(skip_serializing_if = "Not::not")]
+    pub is_base64_encoded: bool,
+}
+
+impl Default for GatewayResponse {
+    fn default() -> Self {
+        Self {
+            status_code: 200,
+            headers: Default::default(),
+            body: Default::default(),
+            is_base64_encoded: Default::default(),
+        }
+    }
+}
+
+fn serialize_headers<S>(headers: &HeaderMap<HeaderValue>, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    let mut map = serializer.serialize_map(Some(headers.keys_len()))?;
+    for key in headers.keys() {
+        let map_value = headers[key].to_str().map_err(S::Error::custom)?;
+        map.serialize_entry(key.as_str(), map_value)?;
+    }
+    map.end()
+}
+
+impl<T> From<HttpResponse<T>> for GatewayResponse
+where
+    T: Into<Body>,
+{
+    fn from(value: HttpResponse<T>) -> Self {
+        let (parts, bod) = value.into_parts();
+        let (is_base64_encoded, body) = match bod.into() {
+            Body::Empty => (false, None),
+            b @ Body::Text(_) => (false, Some(b)),
+            b @ Body::Binary(_) => (true, Some(b)),
+        };
+        GatewayResponse {
+            status_code: parts.status.as_u16(),
+            body,
+            headers: parts.headers,
+            is_base64_encoded,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::GatewayResponse;
+    use serde_json;
+
+    #[test]
+    fn default_response() {
+        assert_eq!(GatewayResponse::default().status_code, 200)
+    }
+
+    #[test]
+    fn serialize_default() {
+        assert_eq!(
+            serde_json::to_string(&GatewayResponse::default())
+                .expect("failed to serialize response"),
+            r#"{"statusCode":200}"#
+        );
+    }
+
+    #[test]
+    fn serialize_body() {
+        let mut resp = GatewayResponse::default();
+        resp.body = Some("foo".into());
+        assert_eq!(
+            serde_json::to_string(&resp).expect("failed to serialize response"),
+            r#"{"statusCode":200,"body":"foo"}"#
+        );
+    }
+}

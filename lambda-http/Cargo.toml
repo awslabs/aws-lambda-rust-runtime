@@ -1,0 +1,22 @@
+[package]
+name = "lambda_http"
+version = "0.1.0"
+authors = ["Doug Tangren"]
+description = "Rust API Gateway interfaces for AWS Lambda"
+keywords = ["AWS", "Lambda", "Runtime", "Rust"]
+license = "Apache-2.0"
+homepage = "https://github.com/awslabs/aws-lambda-rust-runtime"
+repository = "https://github.com/awslabs/aws-lambda-rust-runtime"
+documentation = "https://docs.rs/lambda_runtime"
+
+[dependencies]
+http = "0.1"
+serde = "^1"
+serde_json = "^1"
+serde_derive = "^1"
+lambda_runtime = { path = "../lambda-runtime", version = "^0.1" }
+tokio = "^0.1"
+base64 = "0.10"
+failure = "0.1"
+failure_derive = "0.1"
+serde_urlencoded = "0.5"

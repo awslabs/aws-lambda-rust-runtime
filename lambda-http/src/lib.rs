@@ -70,14 +70,6 @@ pub type Response = HttpResponse<Body>;
 /// Functions acting as API Gateway handlers must conform to this type.
 pub type Handler = fn(Request, Context) -> Result<Response, HandlerError>;
 
-/// lifts private internal (de)serializable API Gateway proxy event types into `http` types
-struct Lift(Handler);
-
-impl <'a> lambda::Handler<GatewayRequest<'a>, GatewayResponse> for Lift {
-    fn handle(&self, req: GatewayRequest, ctx: Context) -> Result<GatewayResponse, HandlerError> {
-        (self.0)(req.into(), ctx).map(GatewayResponse::from)
-    }
-}
 
 /// Creates a new `lambda_runtime::Runtime` and begins polling for API Gateway events
 ///
@@ -88,7 +80,9 @@ impl <'a> lambda::Handler<GatewayRequest<'a>, GatewayResponse> for Lift {
 /// # Panics
 /// The function panics if the Lambda environment variables are not set.
 pub fn start(f: Handler, runtime: Option<TokioRuntime>) {
-    lambda::start(Lift(f), runtime)
+    lambda::start(|req: GatewayRequest, ctx: Context| {
+        f(req.into(), ctx).map(GatewayResponse::from)
+    }, runtime)
 }
 
 /// A macro for starting new handler's poll for API Gateway events

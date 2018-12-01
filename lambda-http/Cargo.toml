@@ -20,3 +20,7 @@ base64 = "0.10"
 failure = "0.1"
 failure_derive = "0.1"
 serde_urlencoded = "0.5"
+
+[dev-dependencies]
+log = "^0.4"
+simple_logger = "^1"

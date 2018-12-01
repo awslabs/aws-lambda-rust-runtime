@@ -67,7 +67,19 @@ pub type Request = HttpRequest<Body>;
 pub type Response = HttpResponse<Body>;
 
 /// Functions acting as API Gateway handlers must conform to this type.
-pub type Handler = fn(Request, Context) -> Result<Response, HandlerError>;
+pub trait Handler {
+    /// Run the handler.
+    fn run(&mut self, event: Request, ctx: Context) -> Result<Response, HandlerError>;
+}
+
+impl<F> Handler for F
+where
+    F: FnMut(Request, Context) -> Result<Response, HandlerError>,
+{
+    fn run(&mut self, event: Request, ctx: Context) -> Result<Response, HandlerError> {
+        (*self)(event, ctx)
+    }
+}
 
 /// Creates a new `lambda_runtime::Runtime` and begins polling for API Gateway events
 ///
@@ -77,9 +89,11 @@ pub type Handler = fn(Request, Context) -> Result<Response, HandlerError>;
 ///
 /// # Panics
 /// The function panics if the Lambda environment variables are not set.
-pub fn start(f: Handler, runtime: Option<TokioRuntime>) {
+pub fn start(f: impl Handler, runtime: Option<TokioRuntime>) {
+    // handler requires a mutable handled
+    let mut func = f;
     lambda::start(
-        |req: GatewayRequest, ctx: Context| f(req.into(), ctx).map(GatewayResponse::from),
+        |req: GatewayRequest, ctx: Context| func.run(req.into(), ctx).map(GatewayResponse::from),
         runtime,
     )
 }

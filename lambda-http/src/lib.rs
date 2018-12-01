@@ -90,7 +90,7 @@ where
 /// # Panics
 /// The function panics if the Lambda environment variables are not set.
 pub fn start(f: impl Handler, runtime: Option<TokioRuntime>) {
-    // handler requires a mutable handled
+    // handler requires a mutable ref
     let mut func = f;
     lambda::start(
         |req: GatewayRequest, ctx: Context| func.run(req.into(), ctx).map(GatewayResponse::from),

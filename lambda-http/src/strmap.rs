@@ -1,8 +1,13 @@
-use std::collections::{hash_map::Keys, HashMap};
-use std::fmt;
-use std::sync::Arc;
+use std::{
+    collections::{hash_map::Keys, HashMap},
+    fmt,
+    sync::Arc,
+};
 
-use serde::{de::MapAccess, de::Visitor, Deserialize, Deserializer};
+use serde::{
+    de::{MapAccess, Visitor},
+    Deserialize, Deserializer,
+};
 
 /// A read-only view into a map of string data
 #[derive(Default, Debug, PartialEq)]
@@ -51,9 +56,7 @@ impl<'a> Iterator for StrMapIter<'a> {
 
     #[inline]
     fn next(&mut self) -> Option<(&'a str, &'a str)> {
-        self.keys
-            .next()
-            .and_then(|k| self.data.get(k).map(|v| (k.as_str(), v)))
+        self.keys.next().and_then(|k| self.data.get(k).map(|v| (k.as_str(), v)))
     }
 }
 

@@ -1,7 +1,6 @@
 //! Provides an API Gateway oriented request and response body entity interface
 
-use std::borrow::Cow;
-use std::ops::Deref;
+use std::{borrow::Cow, ops::Deref};
 
 use base64::display::Base64Display;
 use serde::ser::{Error as SerError, Serialize, Serializer};
@@ -154,9 +153,7 @@ impl<'a> Serialize for Body {
             Body::Text(data) => {
                 serializer.serialize_str(::std::str::from_utf8(data.as_ref()).map_err(S::Error::custom)?)
             }
-            Body::Binary(data) => {
-                serializer.collect_str(&Base64Display::with_config(data, base64::STANDARD))
-            }
+            Body::Binary(data) => serializer.collect_str(&Base64Display::with_config(data, base64::STANDARD)),
             Body::Empty => serializer.serialize_unit(),
         }
     }

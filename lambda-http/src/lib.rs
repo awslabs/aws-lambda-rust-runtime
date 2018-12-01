@@ -44,22 +44,21 @@ extern crate serde_json;
 extern crate serde_urlencoded;
 extern crate tokio;
 
-use lambda_runtime::{self as lambda, Context};
-use lambda_runtime::error::HandlerError;
 use http::{Request as HttpRequest, Response as HttpResponse};
+use lambda_runtime::{self as lambda, error::HandlerError, Context};
 use tokio::runtime::Runtime as TokioRuntime;
 
+mod body;
 mod ext;
 pub mod request;
 mod response;
-mod body;
 mod strmap;
 
+pub use body::Body;
+pub use ext::RequestExt;
 use request::GatewayRequest;
 use response::GatewayResponse;
-pub use ext::RequestExt;
 pub use strmap::StrMap;
-pub use body::Body;
 
 /// Type alias for `http::Request`s with a fixed `lambda_http::Body` body
 pub type Request = HttpRequest<Body>;
@@ -70,7 +69,6 @@ pub type Response = HttpResponse<Body>;
 /// Functions acting as API Gateway handlers must conform to this type.
 pub type Handler = fn(Request, Context) -> Result<Response, HandlerError>;
 
-
 /// Creates a new `lambda_runtime::Runtime` and begins polling for API Gateway events
 ///
 /// # Arguments
@@ -80,9 +78,10 @@ pub type Handler = fn(Request, Context) -> Result<Response, HandlerError>;
 /// # Panics
 /// The function panics if the Lambda environment variables are not set.
 pub fn start(f: Handler, runtime: Option<TokioRuntime>) {
-    lambda::start(|req: GatewayRequest, ctx: Context| {
-        f(req.into(), ctx).map(GatewayResponse::from)
-    }, runtime)
+    lambda::start(
+        |req: GatewayRequest, ctx: Context| f(req.into(), ctx).map(GatewayResponse::from),
+        runtime,
+    )
 }
 
 /// A macro for starting new handler's poll for API Gateway events

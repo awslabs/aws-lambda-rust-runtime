@@ -1,16 +1,17 @@
-
 //! API Gateway request types. Typically these are exposed via the `request_context`
 //! request extension method provided by [lambda_http::RequestExt](trait.RequestExt.html)
 
-use std::borrow::Cow;
-use std::collections::HashMap;
-use std::fmt;
-use std::mem;
+use std::{borrow::Cow, collections::HashMap, fmt, mem};
 
-use http::header::{HeaderValue, HOST};
-use http::Request as HttpRequest;
-use http::{self, HeaderMap, Method};
-use serde::{de::Error as DeError, de::MapAccess, de::Visitor, Deserialize, Deserializer};
+use http::{
+    self,
+    header::{HeaderValue, HOST},
+    HeaderMap, Method, Request as HttpRequest,
+};
+use serde::{
+    de::{Error as DeError, MapAccess, Visitor},
+    Deserialize, Deserializer,
+};
 use serde_json::Value;
 
 use body::Body;
@@ -116,12 +117,9 @@ where
         {
             let mut headers = http::HeaderMap::new();
             while let Some((key, value)) = map.next_entry::<Cow<str>, Cow<str>>()? {
-                let header_name = key
-                    .parse::<http::header::HeaderName>()
-                    .map_err(A::Error::custom)?;
+                let header_name = key.parse::<http::header::HeaderName>().map_err(A::Error::custom)?;
                 let header_value =
-                    http::header::HeaderValue::from_shared(value.into_owned().into())
-                        .map_err(A::Error::custom)?;
+                    http::header::HeaderValue::from_shared(value.into_owned().into()).map_err(A::Error::custom)?;
                 headers.append(header_name, header_value);
             }
             Ok(headers)
@@ -211,9 +209,7 @@ mod tests {
             headers,
             ..GatewayRequest::default()
         };
-        let expected = HttpRequest::get("https://www.rust-lang.org/foo")
-            .body(())
-            .unwrap();
+        let expected = HttpRequest::get("https://www.rust-lang.org/foo").body(()).unwrap();
         let actual = HttpRequest::from(gwr);
         assert_eq!(expected.method(), actual.method());
         assert_eq!(expected.uri(), actual.uri());
@@ -250,9 +246,7 @@ mod tests {
 
         assert_eq!(
             serde_json::from_str::<Test>(r#"{"foo":null}"#).expect("failed to deserialize"),
-            Test {
-                foo: HashMap::new(),
-            }
+            Test { foo: HashMap::new() }
         )
     }
 

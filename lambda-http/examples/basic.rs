@@ -1,12 +1,12 @@
-extern crate lambda_runtime as lambda;
+extern crate http;
 extern crate lambda_http;
+extern crate lambda_runtime as lambda;
 extern crate log;
 extern crate simple_logger;
-extern crate http;
 
-use lambda_http::{lambda, Body, Response, Request, RequestExt};
-use lambda::{error::HandlerError, Context};
 use http::Response as HttpResponse;
+use lambda::{error::HandlerError, Context};
+use lambda_http::{lambda, Body, Request, RequestExt, Response};
 
 use log::error;
 use std::error::Error;
@@ -20,15 +20,13 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 fn my_handler(e: Request, c: Context) -> Result<Response, HandlerError> {
     Ok(match e.query_string_parameters().get("first_name") {
-      Some(first_name) => {
-        Response::new(format!("Hello, {}!", first_name).into())
-      },
-      _ => {
-        error!("Empty first name in request {}", c.aws_request_id);
-        HttpResponse::builder()
-          .status(400)
-          .body::<Body>("Empty first name".into())
-          .expect("failed to render response")
-      }
+        Some(first_name) => Response::new(format!("Hello, {}!", first_name).into()),
+        _ => {
+            error!("Empty first name in request {}", c.aws_request_id);
+            HttpResponse::builder()
+                .status(400)
+                .body::<Body>("Empty first name".into())
+                .expect("failed to render response")
+        }
     })
 }

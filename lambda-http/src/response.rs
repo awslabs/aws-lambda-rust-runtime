@@ -3,9 +3,14 @@
 // Std
 use std::ops::Not;
 
-use http::header::{HeaderMap, HeaderValue};
-use http::Response as HttpResponse;
-use serde::{ser::Error as SerError, ser::SerializeMap, Serializer};
+use http::{
+    header::{HeaderMap, HeaderValue},
+    Response as HttpResponse,
+};
+use serde::{
+    ser::{Error as SerError, SerializeMap},
+    Serializer,
+};
 
 use body::Body;
 
@@ -14,10 +19,7 @@ use body::Body;
 #[serde(rename_all = "camelCase")]
 pub(crate) struct GatewayResponse {
     pub status_code: u16,
-    #[serde(
-        skip_serializing_if = "HeaderMap::is_empty",
-        serialize_with = "serialize_headers"
-    )]
+    #[serde(skip_serializing_if = "HeaderMap::is_empty", serialize_with = "serialize_headers")]
     pub headers: HeaderMap<HeaderValue>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub body: Option<Body>,
@@ -82,8 +84,7 @@ mod tests {
     #[test]
     fn serialize_default() {
         assert_eq!(
-            serde_json::to_string(&GatewayResponse::default())
-                .expect("failed to serialize response"),
+            serde_json::to_string(&GatewayResponse::default()).expect("failed to serialize response"),
             r#"{"statusCode":200}"#
         );
     }

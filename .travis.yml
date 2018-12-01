@@ -2,6 +2,7 @@ language: rust
 
 before_script:
   - rustup component add clippy-preview
+  - rustup component add rustfmt-preview
 matrix:
   include:
   - rust: 1.30.0

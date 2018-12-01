@@ -143,8 +143,7 @@ impl RuntimeClient {
         let uri = format!(
             "http://{}/{}/runtime/invocation/next",
             self.endpoint, RUNTIME_API_VERSION
-        )
-        .parse()?;
+        ).parse()?;
         trace!("Polling for next event");
 
         // We wait instead of processing the future asynchronously because AWS Lambda
@@ -206,8 +205,7 @@ impl RuntimeClient {
         let uri: Uri = format!(
             "http://{}/{}/runtime/invocation/{}/response",
             self.endpoint, RUNTIME_API_VERSION, request_id
-        )
-        .parse()?;
+        ).parse()?;
         trace!(
             "Posting response for request {} to Runtime API. Response length {} bytes",
             request_id,
@@ -254,8 +252,7 @@ impl RuntimeClient {
         let uri: Uri = format!(
             "http://{}/{}/runtime/invocation/{}/error",
             self.endpoint, RUNTIME_API_VERSION, request_id
-        )
-        .parse()?;
+        ).parse()?;
         trace!(
             "Posting error to runtime API for request {}: {}",
             request_id,
@@ -310,11 +307,9 @@ impl RuntimeClient {
             .map_err(|e| {
                 error!("Error while sending init failed message: {}", e);
                 panic!("Error while sending init failed message: {}", e);
-            })
-            .map(|resp| {
+            }).map(|resp| {
                 info!("Successfully sent error response to the runtime API: {:?}", resp);
-            })
-            .expect("Could not complete init_fail request");
+            }).expect("Could not complete init_fail request");
     }
 
     /// Returns the endpoint configured for this HTTP Runtime client.
@@ -351,8 +346,7 @@ impl RuntimeClient {
             .header(
                 header::CONTENT_TYPE,
                 header::HeaderValue::from_static(API_ERROR_CONTENT_TYPE),
-            )
-            .header(RUNTIME_ERROR_HEADER, HeaderValue::from_static("RuntimeError")) // TODO: We should add this code to the error object.
+            ).header(RUNTIME_ERROR_HEADER, HeaderValue::from_static("RuntimeError")) // TODO: We should add this code to the error object.
             .body(Body::from(body))
             .unwrap()
     }
@@ -401,8 +395,7 @@ impl RuntimeClient {
                 error!("Response headers do not contain deadline header");
                 return Err(ApiError::new(&format!("Missing {} header", LambdaHeaders::Deadline)));
             }
-        }
-        .parse::<u128>()?;
+        }.parse::<u128>()?;
 
         let mut ctx = EventContext {
             aws_request_id,

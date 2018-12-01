@@ -329,8 +329,7 @@ pub(crate) mod tests {
                 .get_runtime_api_endpoint()
                 .expect("Could not get runtime endpoint"),
             None,
-        )
-        .expect("Could not initialize client");
+        ).expect("Could not initialize client");
         let handler = |_e: String, _c: context::Context| -> Result<String, HandlerError> { Ok("hello".to_string()) };
         let retries: i8 = 3;
         let runtime = Runtime::new(

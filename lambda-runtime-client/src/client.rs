@@ -387,7 +387,7 @@ impl RuntimeClient {
             }
         };
 
-        let xray_trace_id = match headers.get(LambdaHeaders::FunctionArn.to_string()) {
+        let xray_trace_id = match headers.get(LambdaHeaders::TraceId.to_string()) {
             Some(value) => value.to_str()?.to_owned(),
             None => {
                 error!("Response headers do not contain trace id header");

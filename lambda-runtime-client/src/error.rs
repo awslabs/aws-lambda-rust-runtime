@@ -13,7 +13,7 @@ use serde_json;
 pub const ERROR_TYPE_HANDLED: &str = "Handled";
 /// Error type description for the `ErrorResponse` event. This type is used for unhandled,
 /// unexpcted errors.
-pub const ERROR_TYPE_UNHANDLED: &str = "Handled";
+pub const ERROR_TYPE_UNHANDLED: &str = "Unhandled";
 
 /// This object is used to generate requests to the Lambda Runtime APIs.
 /// It is used for both the error response APIs and fail init calls.

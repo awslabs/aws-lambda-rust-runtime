@@ -1,12 +1,12 @@
 extern crate http;
 extern crate lambda_http;
-extern crate lambda_runtime as lambda;
+extern crate lambda_runtime as runtime;
 extern crate log;
 extern crate simple_logger;
 
 use http::Response as HttpResponse;
-use lambda::{error::HandlerError, Context};
 use lambda_http::{lambda, Body, Request, RequestExt, Response};
+use runtime::{error::HandlerError, Context};
 
 use log::error;
 use std::error::Error;

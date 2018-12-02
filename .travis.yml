@@ -1,5 +1,12 @@
 language: rust
 
+cache:
+  directories:
+    - /home/travis/.cargo
+
+before_cache:
+  - rm -rf /home/travis/.cargo/registry
+
 matrix:
   include:
   - rust: 1.30.0

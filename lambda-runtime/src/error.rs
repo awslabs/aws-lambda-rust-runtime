@@ -3,8 +3,11 @@
 use std::{env, error::Error, fmt};
 
 use backtrace;
-use lambda_runtime_client::error;
+use lambda_runtime_client::error::{ApiError, ErrorResponse};
 use serde_json;
+
+/// Abstration for the handler error 
+pub type HandlerError = Box<dyn Error + Send + Sync>;
 
 /// The `RuntimeError` object is returned by the custom runtime as it polls
 /// for new events and tries to execute the handler function. The error
@@ -14,7 +17,7 @@ use serde_json;
 #[derive(Debug, Clone)]
 pub struct RuntimeError {
     msg: String,
-    stack_trace: Option<backtrace::Backtrace>,
+    backtrace: Option<backtrace::Backtrace>,
     /// The request id that generated this error
     pub(crate) request_id: Option<String>,
     /// Whether the error is recoverable or not.
@@ -58,21 +61,22 @@ impl RuntimeError {
         }
         RuntimeError {
             msg: String::from(msg),
-            stack_trace: trace,
+            backtrace: trace,
             recoverable: true,
             request_id: None,
         }
     }
 }
 
-impl error::RuntimeApiError for RuntimeError {
-    fn to_response(&self) -> error::ErrorResponse {
-        let backtrace = format!("{:?}", self.stack_trace);
-        error::ErrorResponse {
-            error_message: String::from(self.description()),
-            error_type: String::from(error::ERROR_TYPE_HANDLED),
-            stack_trace: Option::from(backtrace.lines().map(|s| s.to_string()).collect::<Vec<String>>()),
+impl Into<ErrorResponse> for RuntimeError {
+    fn into(self) -> ErrorResponse {
+        let mut err = ErrorResponse::unhandled(self.description().to_owned());
+        if self.backtrace.is_some() {
+            let backtrace = format!("{:?}", self.backtrace);
+            let trace_vec = backtrace.lines().map(|s| s.to_string()).collect::<Vec<String>>();
+            err.stack_trace = Option::from(trace_vec);
         }
+        err
     }
 }
 
@@ -106,66 +110,11 @@ impl From<serde_json::Error> for RuntimeError {
     }
 }
 
-impl From<error::ApiError> for RuntimeError {
-    fn from(e: error::ApiError) -> Self {
+impl From<ApiError> for RuntimeError {
+    fn from(e: ApiError) -> Self {
         let mut err = RuntimeError::new(e.description());
         err.recoverable = e.recoverable;
-        err.stack_trace = e.backtrace;
+        err.backtrace = e.backtrace;
         err
-    }
-}
-
-/// The error type for functions that are used as the `Handler` type. New errors
-/// should be instantiated using the `new_error()` method  of the `runtime::Context`
-/// object passed to the handler function.
-#[derive(Debug, Clone)]
-pub struct HandlerError {
-    msg: String,
-    backtrace: Option<backtrace::Backtrace>,
-}
-
-impl fmt::Display for HandlerError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.msg)
-    }
-}
-
-// This is important for other errors to wrap this one.
-impl Error for HandlerError {
-    fn description(&self) -> &str {
-        &self.msg
-    }
-
-    fn cause(&self) -> Option<&Error> {
-        // Generic error, underlying cause isn't tracked.
-        None
-    }
-}
-
-impl HandlerError {
-    /// Creates a new handler error. This method is used by the `new_error()` method
-    /// of the `runtime::Context` object.
-    ///
-    /// # Arguments
-    ///
-    /// * `msg` The error message for the new error
-    /// * `trace` A `Backtrace` object to generate the stack trace for the error
-    ///           response. This is provided by the `Context` object.
-    pub(crate) fn new(msg: &str, trace: Option<backtrace::Backtrace>) -> HandlerError {
-        HandlerError {
-            msg: msg.to_string(),
-            backtrace: trace,
-        }
-    }
-}
-
-impl error::RuntimeApiError for HandlerError {
-    fn to_response(&self) -> error::ErrorResponse {
-        let backtrace = format!("{:?}", self.backtrace);
-        error::ErrorResponse {
-            error_message: String::from(self.description()),
-            error_type: String::from(error::ERROR_TYPE_HANDLED),
-            stack_trace: Option::from(backtrace.lines().map(|s| s.to_string()).collect::<Vec<String>>()),
-        }
     }
 }

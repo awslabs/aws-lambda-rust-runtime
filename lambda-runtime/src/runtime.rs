@@ -1,4 +1,4 @@
-use std::{error::Error, marker::PhantomData, result};
+use std::{marker::PhantomData, result};
 
 use serde;
 use serde_json;
@@ -6,7 +6,7 @@ use serde_json;
 use context::Context;
 use env::{ConfigProvider, EnvConfigProvider, FunctionSettings};
 use error::{HandlerError, RuntimeError};
-use lambda_runtime_client::RuntimeClient;
+use lambda_runtime_client::{error::ErrorResponse, RuntimeClient};
 use tokio::runtime::Runtime as TokioRuntime;
 
 const MAX_RETRIES: i8 = 3;
@@ -215,7 +215,7 @@ where
                                             "Error for {} is not recoverable, sending fail_init signal and panicking.",
                                             request_id
                                         );
-                                        self.runtime_client.fail_init(&e);
+                                        self.runtime_client.fail_init(ErrorResponse::from(Box::from(e)));
                                         panic!("Could not send response");
                                     }
                                 }
@@ -226,8 +226,7 @@ where
                                 "Could not marshal output object to Vec<u8> JSON represnetation for request {}: {}",
                                 request_id, e
                             );
-                            self.runtime_client
-                                .fail_init(&RuntimeError::unrecoverable(e.description()));
+                            self.runtime_client.fail_init(ErrorResponse::from(Box::from(e)));
                             panic!("Failed to marshal handler output, panic");
                         }
                     }
@@ -235,7 +234,7 @@ where
                 Err(e) => {
                     debug!("Handler returned an error for {}: {}", request_id, e);
                     debug!("Attempting to send error response to Runtime API for {}", request_id);
-                    match self.runtime_client.event_error(&request_id, &e) {
+                    match self.runtime_client.event_error(&request_id, ErrorResponse::from(e)) {
                         Ok(_) => info!("Error response for {} accepted by Runtime API", request_id),
                         Err(e) => {
                             error!("Unable to send error response for {} to Runtime API: {}", request_id, e);
@@ -244,7 +243,7 @@ where
                                     "Error for {} is not recoverable, sending fail_init signal and panicking",
                                     request_id
                                 );
-                                self.runtime_client.fail_init(&e);
+                                self.runtime_client.fail_init(ErrorResponse::from(Box::from(e)));
                                 panic!("Could not send error response");
                             }
                         }
@@ -272,11 +271,11 @@ where
                 match err.request_id.clone() {
                     Some(req_id) => {
                         self.runtime_client
-                            .event_error(&req_id, &err)
+                            .event_error(&req_id, ErrorResponse::from(Box::from(err)))
                             .expect("Could not send event error response");
                     }
                     None => {
-                        self.runtime_client.fail_init(&err);
+                        self.runtime_client.fail_init(ErrorResponse::from(Box::from(err)));
                     }
                 }
 

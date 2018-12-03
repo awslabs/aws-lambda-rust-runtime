@@ -1,6 +1,8 @@
 extern crate lambda_runtime as lambda;
 extern crate log;
 extern crate serde_derive;
+#[macro_use]
+extern crate simple_error;
 extern crate simple_logger;
 
 use lambda::{error::HandlerError, lambda};
@@ -29,7 +31,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 fn my_handler(e: CustomEvent, c: lambda::Context) -> Result<CustomOutput, HandlerError> {
     if e.first_name == "" {
         error!("Empty first name in request {}", c.aws_request_id);
-        return Err(c.new_error("Empty first name"));
+        bail!("Empty first name");
     }
 
     Ok(CustomOutput {

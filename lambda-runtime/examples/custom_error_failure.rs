@@ -3,40 +3,43 @@ extern crate log;
 extern crate serde_derive;
 extern crate simple_logger;
 #[macro_use]
-extern crate simple_error;
-extern crate tokio;
+extern crate failure;
 
 use lambda::{error::HandlerError, lambda};
 use log::error;
 use serde_derive::{Deserialize, Serialize};
-use std::error::Error;
-use tokio::runtime::Runtime;
+use failure::Error;
 
-#[derive(Deserialize, Clone)]
+#[derive(Fail, Debug)]
+#[fail(display = "Custom Error")]
+struct CustomError;
+
+#[derive(Deserialize)]
 struct CustomEvent {
     #[serde(rename = "firstName")]
     first_name: String,
+    age: String,
 }
 
-#[derive(Serialize, Clone)]
+#[derive(Serialize)]
 struct CustomOutput {
     message: String,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let rt = Runtime::new()?;
-
     simple_logger::init_with_level(log::Level::Debug).unwrap();
-    lambda!(my_handler, rt);
+    lambda!(my_handler);
 
     Ok(())
 }
 
-fn my_handler(e: CustomEvent, c: lambda::Context) -> Result<CustomOutput, HandlerError> {
+fn my_handler(e: CustomEvent, c: lambda::Context) -> Result<CustomOutput, Error> {
     if e.first_name == "" {
         error!("Empty first name in request {}", c.aws_request_id);
-        bail!("Empty first name");
+        return Err(CustomError{});
     }
+
+    let _age_num: u8 = e.age.parse()?;
 
     Ok(CustomOutput {
         message: format!("Hello, {}!", e.first_name),

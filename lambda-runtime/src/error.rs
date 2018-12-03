@@ -6,7 +6,10 @@ use backtrace;
 use lambda_runtime_client::error::{ApiError, ErrorResponse};
 use serde_json;
 
-/// Abstration for the handler error 
+/// The `HandlerError` type can be use to abstract any error in the handler method.
+/// This allows handler functions to return any error using the `?` syntax. For example
+/// `let _age_num: u8 = e.age.parse()?;` will return the `<F as FromStr>::Err` from the
+/// handler function.
 pub type HandlerError = Box<dyn Error + Send + Sync>;
 
 /// The `RuntimeError` object is returned by the custom runtime as it polls

@@ -9,7 +9,7 @@
 //! extern crate lambda_runtime as lambda;
 //!
 //! use lambda::{Context, HandlerError};
-//! use lambda_http::{Request, Response, RequestExt};
+//! use lambda_http::{Body, Request, Response, RequestExt};
 //!
 //! fn main() {
 //!   lambda!(handler)
@@ -18,7 +18,7 @@
 //! fn handler(
 //!   request: Request,
 //!   ctx: Context
-//! ) -> Result<Response, HandlerError> {
+//! ) -> Result<Response<Body>, HandlerError> {
 //!   Ok(
 //!     Response::new(
 //!       format!(
@@ -35,7 +35,8 @@ extern crate base64;
 extern crate failure;
 #[macro_use]
 extern crate failure_derive;
-extern crate http;
+/// re-export for convenient access in consumer crates
+pub extern crate http;
 extern crate lambda_runtime;
 extern crate serde;
 #[macro_use]
@@ -44,7 +45,8 @@ extern crate serde_json;
 extern crate serde_urlencoded;
 extern crate tokio;
 
-use http::{Request as HttpRequest, Response as HttpResponse};
+use http::Request as HttpRequest;
+pub use http::Response;
 use lambda_runtime::{self as lambda, error::HandlerError, Context};
 use tokio::runtime::Runtime as TokioRuntime;
 
@@ -63,20 +65,17 @@ pub use strmap::StrMap;
 /// Type alias for `http::Request`s with a fixed `lambda_http::Body` body
 pub type Request = HttpRequest<Body>;
 
-/// Type alias for `http::Response`s with a fixed `lambda_http::Body` body
-pub type Response = HttpResponse<Body>;
-
 /// Functions acting as API Gateway handlers must conform to this type.
 pub trait Handler {
     /// Run the handler.
-    fn run(&mut self, event: Request, ctx: Context) -> Result<Response, HandlerError>;
+    fn run(&mut self, event: Request, ctx: Context) -> Result<Response<Body>, HandlerError>;
 }
 
 impl<F> Handler for F
 where
-    F: FnMut(Request, Context) -> Result<Response, HandlerError>,
+    F: FnMut(Request, Context) -> Result<Response<Body>, HandlerError>,
 {
-    fn run(&mut self, event: Request, ctx: Context) -> Result<Response, HandlerError> {
+    fn run(&mut self, event: Request, ctx: Context) -> Result<Response<Body>, HandlerError> {
         (*self)(event, ctx)
     }
 }

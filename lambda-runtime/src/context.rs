@@ -59,9 +59,9 @@ pub struct Context {
     /// identity service.
     pub identity: Option<lambda_runtime_client::CognitoIdentity>,
 
-    /// The deadline for the current handler execution in nanoseconds based
+    /// The deadline for the current handler execution in milliseconds, based
     /// on a unix `MONOTONIC` clock.
-    pub(super) deadline: u128,
+    pub(super) deadline: i64,
 }
 
 impl Context {
@@ -102,9 +102,8 @@ impl Context {
 
     /// Returns the remaining time in the execution in milliseconds. This is based on the
     /// deadline header passed by Lambda's Runtime APIs.
-    pub fn get_time_remaining_millis(&self) -> u128 {
-        let millis = Utc::now().timestamp_millis();
-        self.deadline - millis as u128
+    pub fn get_time_remaining_millis(&self) -> i64 {
+        self.deadline - Utc::now().timestamp_millis()
     }
 }
 
@@ -114,11 +113,12 @@ pub(crate) mod tests {
     use env::{self, ConfigProvider};
     use std::{thread::sleep, time};
 
-    fn get_deadline(secs: u8) -> u128 {
-        Utc::now().timestamp_millis() as u128 + (u128::from(secs) * 1_000)
+    fn get_deadline(timeout_secs: i64) -> i64 {
+        let deadline = Utc::now() + chrono::Duration::seconds(timeout_secs);
+        deadline.timestamp_millis()
     }
 
-    pub(crate) fn test_context(deadline: u8) -> Context {
+    pub(crate) fn test_context(timeout_secs: i64) -> Context {
         Context {
             memory_limit_in_mb: 128,
             function_name: "test_func".to_string(),
@@ -130,7 +130,7 @@ pub(crate) mod tests {
             log_group_name: "logGroup".to_string(),
             client_context: Option::default(),
             identity: Option::default(),
-            deadline: get_deadline(deadline),
+            deadline: get_deadline(timeout_secs),
         }
     }
 

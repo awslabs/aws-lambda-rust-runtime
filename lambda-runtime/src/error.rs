@@ -2,8 +2,7 @@
 //! by custom handlers as well as the runtime itself.
 use std::{env, error::Error, fmt};
 
-use backtrace;
-use lambda_runtime_client::error::{ApiError, ErrorResponse};
+use lambda_runtime_client::error::ApiError;
 use serde_json;
 
 /// The `HandlerError` type can be use to abstract any error in the handler method.
@@ -20,7 +19,6 @@ pub type HandlerError = Box<dyn Error + Send + Sync>;
 #[derive(Debug, Clone)]
 pub struct RuntimeError {
     msg: String,
-    backtrace: Option<backtrace::Backtrace>,
     /// The request id that generated this error
     pub(crate) request_id: Option<String>,
     /// Whether the error is recoverable or not.
@@ -55,31 +53,11 @@ impl RuntimeError {
     /// # Returns
     /// A new `RuntimeError` instance.
     pub(crate) fn new(msg: &str) -> RuntimeError {
-        let mut trace: Option<backtrace::Backtrace> = None;
-        let is_backtrace = env::var("RUST_BACKTRACE");
-        if is_backtrace.is_ok() && is_backtrace.unwrap() == "1" {
-            trace!("Begin backtrace collection");
-            trace = Option::from(backtrace::Backtrace::new());
-            trace!("Completed backtrace collection");
-        }
         RuntimeError {
             msg: String::from(msg),
-            backtrace: trace,
             recoverable: true,
             request_id: None,
         }
-    }
-}
-
-impl Into<ErrorResponse> for RuntimeError {
-    fn into(self) -> ErrorResponse {
-        let mut err = ErrorResponse::unhandled(self.description().to_owned());
-        if self.backtrace.is_some() {
-            let backtrace = format!("{:?}", self.backtrace);
-            let trace_vec = backtrace.lines().map(|s| s.to_string()).collect::<Vec<String>>();
-            err.stack_trace = Option::from(trace_vec);
-        }
-        err
     }
 }
 
@@ -117,7 +95,6 @@ impl From<ApiError> for RuntimeError {
     fn from(e: ApiError) -> Self {
         let mut err = RuntimeError::new(e.description());
         err.recoverable = e.recoverable;
-        err.backtrace = e.backtrace;
         err
     }
 }

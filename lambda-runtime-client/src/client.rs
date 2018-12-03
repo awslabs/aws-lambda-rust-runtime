@@ -352,7 +352,7 @@ impl RuntimeClient {
                 header::CONTENT_TYPE,
                 header::HeaderValue::from_static(API_ERROR_CONTENT_TYPE),
             )
-            .header(RUNTIME_ERROR_HEADER, HeaderValue::from_static("RuntimeError")) // TODO: We should add this code to the error object.
+            .header(RUNTIME_ERROR_HEADER, e.error_code)
             .body(Body::from(body))
             .unwrap()
     }

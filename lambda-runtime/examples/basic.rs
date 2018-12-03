@@ -5,7 +5,7 @@ extern crate serde_derive;
 extern crate simple_error;
 extern crate simple_logger;
 
-use lambda::{error::HandlerError, lambda};
+use lambda::{lambda, HandlerError};
 use log::error;
 use serde_derive::{Deserialize, Serialize};
 use std::error::Error;

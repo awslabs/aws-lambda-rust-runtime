@@ -51,8 +51,9 @@ extern crate tokio;
 
 mod context;
 mod env;
-pub mod error;
+mod error;
 mod runtime;
 
 pub use context::*;
+pub use error::HandlerError;
 pub use runtime::*;

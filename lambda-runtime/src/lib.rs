@@ -11,8 +11,10 @@
 //! extern crate serde_derive;
 //! #[macro_use]
 //! extern crate lambda_runtime;
+//! #[macro_use]
+//! extern crate simple_error;
 //!
-//! use lambda_runtime::error::HandlerError;
+//! use lambda_runtime::HandlerError;
 //!
 //!
 //! #[derive(Deserialize, Clone)]
@@ -32,7 +34,7 @@
 //!
 //! fn my_handler(e: CustomEvent, ctx: lambda_runtime::Context) -> Result<CustomOutput, HandlerError> {
 //!     if e.first_name == "" {
-//!         return Err(ctx.new_error("Missing first name!"));
+//!         bail!("Empty first name");
 //!     }
 //!     Ok(CustomOutput{
 //!         message: format!("Hello, {}!", e.first_name),

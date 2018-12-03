@@ -5,9 +5,10 @@ extern crate simple_logger;
 #[macro_use]
 extern crate failure;
 
-use lambda::{error::HandlerError, lambda};
+use lambda::lambda;
 use log::error;
 use serde_derive::{Deserialize, Serialize};
+use std::error::Error as StdError;
 use failure::Error;
 
 #[derive(Fail, Debug)]
@@ -26,7 +27,7 @@ struct CustomOutput {
     message: String,
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> Result<(), Box<dyn StdError>> {
     simple_logger::init_with_level(log::Level::Debug).unwrap();
     lambda!(my_handler);
 

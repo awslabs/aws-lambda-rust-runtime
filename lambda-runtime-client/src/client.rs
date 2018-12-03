@@ -1,4 +1,4 @@
-use error::{ApiError, ErrorResponse, RuntimeApiError};
+use error::{ApiError, ErrorResponse};
 use hyper::{
     client::HttpConnector,
     header::{self, HeaderMap, HeaderValue},
@@ -250,7 +250,7 @@ impl RuntimeClient {
     ///
     /// # Returns
     /// A `Result` object containing a bool return value for the call or an `error::ApiError` instance.
-    pub fn event_error(&self, request_id: &str, e: &RuntimeApiError) -> Result<(), ApiError> {
+    pub fn event_error(&self, request_id: &str, e: ErrorResponse) -> Result<(), ApiError> {
         let uri: Uri = format!(
             "http://{}/{}/runtime/invocation/{}/error",
             self.endpoint, RUNTIME_API_VERSION, request_id
@@ -259,9 +259,9 @@ impl RuntimeClient {
         trace!(
             "Posting error to runtime API for request {}: {}",
             request_id,
-            e.to_response().error_message
+            e.error_message
         );
-        let req = self.get_runtime_error_request(&uri, &e.to_response());
+        let req = self.get_runtime_error_request(&uri, e);
 
         match self.http_client.request(req).wait() {
             Ok(resp) => {
@@ -297,12 +297,12 @@ impl RuntimeClient {
     /// # Panics
     /// If it cannot send the init error. In this case we panic to force the runtime
     /// to restart.
-    pub fn fail_init(&self, e: &RuntimeApiError) {
+    pub fn fail_init(&self, e: ErrorResponse) {
         let uri: Uri = format!("http://{}/{}/runtime/init/error", self.endpoint, RUNTIME_API_VERSION)
             .parse()
             .expect("Could not generate Runtime URI");
-        error!("Calling fail_init Runtime API: {}", e.to_response().error_message);
-        let req = self.get_runtime_error_request(&uri, &e.to_response());
+        error!("Calling fail_init Runtime API: {}", e.error_message);
+        let req = self.get_runtime_error_request(&uri, e);
 
         self.http_client
             .request(req)
@@ -343,8 +343,8 @@ impl RuntimeClient {
             .unwrap()
     }
 
-    fn get_runtime_error_request(&self, uri: &Uri, e: &ErrorResponse) -> Request<Body> {
-        let body = serde_json::to_vec(e).expect("Could not turn error object into response JSON");
+    fn get_runtime_error_request(&self, uri: &Uri, e: ErrorResponse) -> Request<Body> {
+        let body = serde_json::to_vec(&e).expect("Could not turn error object into response JSON");
         Request::builder()
             .method(Method::POST)
             .uri(uri.clone())

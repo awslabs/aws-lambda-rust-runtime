@@ -19,9 +19,6 @@ tokio = "^0.1"
 backtrace = "^0.3"
 lambda_runtime_client = { path = "../lambda-runtime-client", version = "^0.1" }
 chrono = "^0.4"
-simple_logger = "^1"
 
 [dev-dependencies]
-hyper-tls = "^0.3"
-rusoto_core = "^0.35"
-rusoto_dynamodb = "^0.35"
+simple_logger = "^1"

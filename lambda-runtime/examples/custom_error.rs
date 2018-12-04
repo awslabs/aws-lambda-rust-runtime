@@ -27,10 +27,6 @@ impl CustomError {
             msg: message.to_owned(),
         }
     }
-
-    fn boxed(self) -> Box<CustomError> {
-        Box::from(self)
-    }
 }
 
 #[derive(Deserialize)]
@@ -57,7 +53,7 @@ fn my_handler(e: CustomEvent, c: lambda::Context) -> Result<CustomOutput, Handle
         error!("Empty first name in request {}", c.aws_request_id);
         // in this case, we explicitly initialize and box our custom error type.
         // the HandlerError type is an alias to Box<dyn Error>/
-        return Err(CustomError::new("Empty first name").boxed());
+        return Err(CustomError::new("Empty first name").into());
     }
 
     // For errors simply want to return, because the HandlerError is an alias to any

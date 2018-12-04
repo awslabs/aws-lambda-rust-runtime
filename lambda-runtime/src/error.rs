@@ -1,15 +1,34 @@
 //! The error module defines the error types that can be returned
 //! by custom handlers as well as the runtime itself.
-use std::{env, error::Error, fmt};
+use std::{
+    env,
+    error::Error,
+    fmt::{self, Debug, Display},
+};
 
 use lambda_runtime_client::error::ApiError;
 use serde_json;
 
-/// The `HandlerError` type can be use to abstract any error in the handler method.
-/// This allows handler functions to return any error using the `?` syntax. For example
-/// `let _age_num: u8 = e.age.parse()?;` will return the `<F as FromStr>::Err` from the
-/// handler function.
-pub type HandlerError = Box<dyn Error + Send + Sync>;
+/// The `HandlerError` struct can be use to abstract any `Err` of the handler method `Result`.
+/// The `HandlerError` object can be generated `From` any object that supports `Display`,
+/// `Send, `Sync`, and `Debug`. This allows handler functions to return any error using
+/// the `?` syntax. For example `let _age_num: u8 = e.age.parse()?;` will return the
+/// `<F as FromStr>::Err` from the handler function.
+pub struct HandlerError {
+    msg: String,
+}
+
+impl<E: Display + Send + Sync + Debug> From<E> for HandlerError {
+    fn from(e: E) -> HandlerError {
+        HandlerError { msg: format!("{}", e) }
+    }
+}
+
+impl Display for HandlerError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.msg)
+    }
+}
 
 /// The `RuntimeError` object is returned by the custom runtime as it polls
 /// for new events and tries to execute the handler function. The error

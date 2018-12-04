@@ -1,7 +1,14 @@
 //! This module defines the `RuntimeApiError` trait that developers should implement
 //! to send their custom errors to the AWS Lambda Runtime Client SDK. The module also
 //! defines the `ApiError` type returned by the `RuntimeClient` implementations.
-use std::{env, error::Error, fmt, io, num::ParseIntError, option::Option};
+use std::{
+    env,
+    error::Error,
+    fmt::{self, Display},
+    io,
+    num::ParseIntError,
+    option::Option,
+};
 
 use backtrace;
 use http::{header::ToStrError, uri::InvalidUri};
@@ -98,9 +105,9 @@ impl ErrorResponse {
     }
 }
 
-impl From<Box<dyn Error + Send + Sync>> for ErrorResponse {
-    fn from(e: Box<dyn Error + Send + Sync>) -> Self {
-        Self::handled(e.description().to_owned())
+impl<T: Display + Send + Sync> From<Box<T>> for ErrorResponse {
+    fn from(e: Box<T>) -> Self {
+        Self::handled(format!("{}", e))
     }
 }
 
@@ -146,6 +153,8 @@ impl Error for ApiError {
         None
     }
 }
+unsafe impl Send for ApiError {}
+unsafe impl Sync for ApiError {}
 
 impl From<serde_json::Error> for ApiError {
     fn from(e: serde_json::Error) -> Self {

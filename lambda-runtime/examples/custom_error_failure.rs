@@ -5,7 +5,6 @@ extern crate simple_logger;
 #[macro_use]
 extern crate failure;
 
-use failure::Error;
 use lambda::{lambda, HandlerError};
 use log::error;
 use serde_derive::{Deserialize, Serialize};
@@ -37,7 +36,7 @@ fn main() -> Result<(), Box<dyn StdError>> {
 fn my_handler(e: CustomEvent, c: lambda::Context) -> Result<CustomOutput, HandlerError> {
     if e.first_name == "" {
         error!("Empty first name in request {}", c.aws_request_id);
-        return Err(Box::from(Error::from(CustomError {}).compat()));
+        return Err((CustomError {}).into());
     }
 
     let _age_num: u8 = e.age.parse()?;

@@ -215,7 +215,7 @@ where
                                             "Error for {} is not recoverable, sending fail_init signal and panicking.",
                                             request_id
                                         );
-                                        self.runtime_client.fail_init(ErrorResponse::from(Box::from(e)));
+                                        self.runtime_client.fail_init(ErrorResponse::from(Box::new(e)));
                                         panic!("Could not send response");
                                     }
                                 }
@@ -226,7 +226,7 @@ where
                                 "Could not marshal output object to Vec<u8> JSON represnetation for request {}: {}",
                                 request_id, e
                             );
-                            self.runtime_client.fail_init(ErrorResponse::from(Box::from(e)));
+                            self.runtime_client.fail_init(ErrorResponse::from(Box::new(e)));
                             panic!("Failed to marshal handler output, panic");
                         }
                     }
@@ -234,7 +234,10 @@ where
                 Err(e) => {
                     debug!("Handler returned an error for {}: {}", request_id, e);
                     debug!("Attempting to send error response to Runtime API for {}", request_id);
-                    match self.runtime_client.event_error(&request_id, ErrorResponse::from(e)) {
+                    match self
+                        .runtime_client
+                        .event_error(&request_id, ErrorResponse::from(Box::new(e)))
+                    {
                         Ok(_) => info!("Error response for {} accepted by Runtime API", request_id),
                         Err(e) => {
                             error!("Unable to send error response for {} to Runtime API: {}", request_id, e);
@@ -243,7 +246,7 @@ where
                                     "Error for {} is not recoverable, sending fail_init signal and panicking",
                                     request_id
                                 );
-                                self.runtime_client.fail_init(ErrorResponse::from(Box::from(e)));
+                                self.runtime_client.fail_init(ErrorResponse::from(Box::new(e)));
                                 panic!("Could not send error response");
                             }
                         }
@@ -271,11 +274,11 @@ where
                 match err.request_id.clone() {
                     Some(req_id) => {
                         self.runtime_client
-                            .event_error(&req_id, ErrorResponse::from(Box::from(err)))
+                            .event_error(&req_id, ErrorResponse::from(Box::new(err)))
                             .expect("Could not send event error response");
                     }
                     None => {
-                        self.runtime_client.fail_init(ErrorResponse::from(Box::from(err)));
+                        self.runtime_client.fail_init(ErrorResponse::from(Box::new(err)));
                     }
                 }
 
@@ -355,7 +358,7 @@ pub(crate) mod tests {
             "Handler threw an unexpected error: {}",
             output.err().unwrap()
         );
-        let output_string = output.unwrap();
+        let output_string = output.ok().unwrap();
         assert_eq!(output_string, "hello", "Unexpected output message: {}", output_string);
     }
 }

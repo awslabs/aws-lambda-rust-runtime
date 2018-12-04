@@ -1,10 +1,11 @@
+#![feature(custom_attribute)]
+extern crate failure;
 extern crate lambda_runtime as lambda;
 extern crate log;
 extern crate serde_derive;
 extern crate simple_logger;
-#[macro_use]
-extern crate failure;
 
+use failure::Fail;
 use lambda::{lambda, HandlerError};
 use log::error;
 use serde_derive::{Deserialize, Serialize};

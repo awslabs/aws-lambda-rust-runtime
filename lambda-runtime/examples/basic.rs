@@ -1,13 +1,13 @@
 extern crate lambda_runtime as lambda;
 extern crate log;
 extern crate serde_derive;
-#[macro_use]
 extern crate simple_error;
 extern crate simple_logger;
 
 use lambda::{lambda, HandlerError};
 use log::error;
 use serde_derive::{Deserialize, Serialize};
+use simple_error::bail;
 use std::error::Error;
 
 #[derive(Deserialize)]

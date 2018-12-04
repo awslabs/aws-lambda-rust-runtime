@@ -7,15 +7,13 @@
 //! package must be called `bootstrap`.
 //!
 //! ```rust,no_run
-//! #[macro_use]
 //! extern crate serde_derive;
-//! #[macro_use]
 //! extern crate lambda_runtime;
-//! #[macro_use]
 //! extern crate simple_error;
 //!
-//! use lambda_runtime::HandlerError;
-//!
+//! use lambda_runtime::{HandlerError, lambda};
+//! use simple_error::bail;
+//! use serde_derive::{Serialize, Deserialize};
 //!
 //! #[derive(Deserialize, Clone)]
 //! struct CustomEvent {

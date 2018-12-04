@@ -22,7 +22,7 @@ pub enum LambdaHeaders {
     FunctionArn,
     /// The X-Ray trace ID generated for this invocation
     TraceId,
-    /// The deadline for the function execution in nanoseconds
+    /// The deadline for the function execution in milliseconds
     Deadline,
     /// The client context header. This field is populated when the function
     /// is invoked from a mobile client.
@@ -105,8 +105,8 @@ pub struct EventContext {
     pub aws_request_id: String,
     /// The X-Ray trace ID for the current invocation.
     pub xray_trace_id: String,
-    /// The execution deadline for the current invocation in nanoseconds.
-    pub deadline: u128,
+    /// The execution deadline for the current invocation in milliseconds.
+    pub deadline: i64,
     /// The client context object sent by the AWS mobile SDK. This field is
     /// empty unless the function is invoked using an AWS mobile SDK.
     pub client_context: Option<ClientContext>,
@@ -402,14 +402,13 @@ impl RuntimeClient {
             }
         };
 
-        let deadline: u128 = match headers.get(LambdaHeaders::Deadline.as_str()) {
-            Some(value) => value.to_str()?.to_owned(),
+        let deadline = match headers.get(LambdaHeaders::Deadline.as_str()) {
+            Some(value) => value.to_str()?.parse()?,
             None => {
                 error!("Response headers do not contain deadline header");
                 return Err(ApiError::new(&format!("Missing {} header", LambdaHeaders::Deadline)));
             }
-        }
-        .parse::<u128>()?;
+        };
 
         let mut ctx = EventContext {
             aws_request_id,

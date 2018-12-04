@@ -1,4 +1,3 @@
-#![feature(custom_attribute)]
 extern crate failure;
 extern crate lambda_runtime as lambda;
 extern crate log;

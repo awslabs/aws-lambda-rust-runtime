@@ -33,16 +33,23 @@ pub enum LambdaHeaders {
     CognitoIdentity,
 }
 
+impl LambdaHeaders {
+    /// Returns the `str` representation of the header.
+    fn as_str(&self) -> &'static str {
+        match self {
+            LambdaHeaders::RequestId => "Lambda-Runtime-Aws-Request-Id",
+            LambdaHeaders::FunctionArn => "Lambda-Runtime-Invoked-Function-Arn",
+            LambdaHeaders::TraceId => "Lambda-Runtime-Trace-Id",
+            LambdaHeaders::Deadline => "Lambda-Runtime-Deadline-Ms",
+            LambdaHeaders::ClientContext => "Lambda-Runtime-Client-Context",
+            LambdaHeaders::CognitoIdentity => "Lambda-Runtime-Cognito-Identity",
+        }
+    }
+}
+
 impl fmt::Display for LambdaHeaders {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            LambdaHeaders::RequestId => write!(f, "Lambda-Runtime-Aws-Request-Id"),
-            LambdaHeaders::FunctionArn => write!(f, "Lambda-Runtime-Invoked-Function-Arn"),
-            LambdaHeaders::TraceId => write!(f, "Lambda-Runtime-Trace-Id"),
-            LambdaHeaders::Deadline => write!(f, "Lambda-Runtime-Deadline-Ms"),
-            LambdaHeaders::ClientContext => write!(f, "Lambda-Runtime-Client-Context"),
-            LambdaHeaders::CognitoIdentity => write!(f, "Lambda-Runtime-Cognito-Identity"),
-        }
+        f.write_str(self.as_str())
     }
 }
 
@@ -371,7 +378,7 @@ impl RuntimeClient {
     fn get_event_context(&self, headers: &HeaderMap<HeaderValue>) -> Result<EventContext, ApiError> {
         // let headers = resp.headers();
 
-        let aws_request_id = match headers.get(LambdaHeaders::RequestId.to_string()) {
+        let aws_request_id = match headers.get(LambdaHeaders::RequestId.as_str()) {
             Some(value) => value.to_str()?.to_owned(),
             None => {
                 error!("Response headers do not contain request id header");
@@ -379,7 +386,7 @@ impl RuntimeClient {
             }
         };
 
-        let invoked_function_arn = match headers.get(LambdaHeaders::FunctionArn.to_string()) {
+        let invoked_function_arn = match headers.get(LambdaHeaders::FunctionArn.as_str()) {
             Some(value) => value.to_str()?.to_owned(),
             None => {
                 error!("Response headers do not contain function arn header");
@@ -387,7 +394,7 @@ impl RuntimeClient {
             }
         };
 
-        let xray_trace_id = match headers.get(LambdaHeaders::TraceId.to_string()) {
+        let xray_trace_id = match headers.get(LambdaHeaders::TraceId.as_str()) {
             Some(value) => value.to_str()?.to_owned(),
             None => {
                 error!("Response headers do not contain trace id header");
@@ -395,7 +402,7 @@ impl RuntimeClient {
             }
         };
 
-        let deadline: u128 = match headers.get(LambdaHeaders::Deadline.to_string()) {
+        let deadline: u128 = match headers.get(LambdaHeaders::Deadline.as_str()) {
             Some(value) => value.to_str()?.to_owned(),
             None => {
                 error!("Response headers do not contain deadline header");
@@ -413,14 +420,14 @@ impl RuntimeClient {
             identity: Option::default(),
         };
 
-        if let Some(ctx_json) = headers.get(LambdaHeaders::ClientContext.to_string()) {
+        if let Some(ctx_json) = headers.get(LambdaHeaders::ClientContext.as_str()) {
             let ctx_json = ctx_json.to_str()?;
             trace!("Found Client Context in response headers: {}", ctx_json);
             let ctx_value: ClientContext = serde_json::from_str(&ctx_json)?;
             ctx.client_context = Option::from(ctx_value);
         };
 
-        if let Some(cognito_json) = headers.get(LambdaHeaders::CognitoIdentity.to_string()) {
+        if let Some(cognito_json) = headers.get(LambdaHeaders::CognitoIdentity.as_str()) {
             let cognito_json = cognito_json.to_str()?;
             trace!("Found Cognito Identity in response headers: {}", cognito_json);
             let identity_value: CognitoIdentity = serde_json::from_str(&cognito_json)?;

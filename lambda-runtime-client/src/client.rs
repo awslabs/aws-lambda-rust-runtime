@@ -1,4 +1,4 @@
-use error::{ApiError, ErrorResponse};
+use error::{ApiError, ErrorResponse, ERROR_TYPE_UNHANDLED};
 use hyper::{
     client::HttpConnector,
     header::{self, HeaderMap, HeaderValue},
@@ -352,7 +352,7 @@ impl RuntimeClient {
                 header::CONTENT_TYPE,
                 header::HeaderValue::from_static(API_ERROR_CONTENT_TYPE),
             )
-            .header(RUNTIME_ERROR_HEADER, e.error_code)
+            .header(RUNTIME_ERROR_HEADER, HeaderValue::from_static(ERROR_TYPE_UNHANDLED))
             .body(Body::from(body))
             .unwrap()
     }

@@ -2,10 +2,11 @@
 
 [![Build Status](https://travis-ci.org/awslabs/aws-lambda-rust-runtime.svg?branch=master)](https://travis-ci.org/awslabs/aws-lambda-rust-runtime)
 
-This package makes it easy to run AWS Lambda Functions written in Rust. This workspace includes two crates:
+This package makes it easy to run AWS Lambda Functions written in Rust. This workspace includes multiple crates:
 
 * **`lambda-runtime-client`** is a client SDK for the Lambda Runtime APIs. You probably don't need to use this crate directly!
 * **`lambda-runtime`** is a library that makes it easy to write Lambda functions in Rust.
+* **`lambda-http`** is a library that makes it easy to write API Gateway proxy event focused Lambda functions in Rust.
 
 ## Example function
 
@@ -87,7 +88,7 @@ $ cat output.json  # Prints: {"message":"Hello, world!"}
 
 ## lambda-runtime-client
 
-Defines the `RuntimeClient` trait and provides its `HttpRuntimeClient` implementation. The client fetches events and returns output as `Vec<u8>`. 
+Defines the `RuntimeClient` trait and provides its `HttpRuntimeClient` implementation. The client fetches events and returns output as `Vec<u8>`.
 
 For error reporting to the runtime APIs the library defines the `RuntimeApiError` trait and the `ErrorResponse` object. Custom errors for the APIs should implement the `to_response() -> ErrorResponse` method of the `RuntimeApiError` trait.
 

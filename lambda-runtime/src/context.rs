@@ -61,7 +61,7 @@ pub struct Context {
 
     /// The deadline for the current handler execution in milliseconds, based
     /// on a unix `MONOTONIC` clock.
-    pub(super) deadline: i64,
+    pub deadline: i64,
 }
 
 impl Context {

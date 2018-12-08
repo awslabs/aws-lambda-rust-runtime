@@ -6,6 +6,7 @@ use std::{env, error::Error, fmt, io, num::ParseIntError, option::Option};
 use backtrace;
 use http::{header::ToStrError, uri::InvalidUri};
 use hyper;
+use serde_derive::Serialize;
 use serde_json;
 
 /// Error type description for the `ErrorResponse` event. This type should be returned
@@ -118,7 +119,7 @@ impl ApiError {
 }
 
 impl fmt::Display for ApiError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.msg)
     }
 }
@@ -129,7 +130,7 @@ impl Error for ApiError {
         &self.msg
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         // Generic error, underlying cause isn't tracked.
         None
     }

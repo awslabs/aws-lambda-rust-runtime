@@ -3,7 +3,7 @@ use std::env;
 use error::RuntimeError;
 
 /// The name of the environment variable in the Lambda execution
-/// environment for the Runtime APIs endpoint. The valie of this
+/// environment for the Runtime APIs endpoint. The value of this
 /// variable is read once as the runtime starts.
 pub const RUNTIME_ENDPOINT_VAR: &str = "AWS_LAMBDA_RUNTIME_API";
 

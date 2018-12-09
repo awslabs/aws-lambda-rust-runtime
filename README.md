@@ -10,7 +10,7 @@ This package makes it easy to run AWS Lambda Functions written in Rust. This wor
 
 ## Example function
 
-The code below creates a simple function that receives an event with a `greeting` and `name` field and returns a `GreetingResponse` message for the given name and greeting. Notice: to run these examples, we require a minimum Rust version of 1.30.
+The code below creates a simple function that receives an event with a `greeting` and `name` field and returns a `GreetingResponse` message for the given name and greeting. Notice: to run these examples, we require a minimum Rust version of 1.31.
 
 ```rust,no_run
 extern crate lambda_runtime as lambda;

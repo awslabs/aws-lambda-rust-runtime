@@ -1,13 +1,16 @@
-use error::{ApiError, ErrorResponse, RuntimeApiError};
+use std::{collections::HashMap, fmt};
+
 use hyper::{
     client::HttpConnector,
     header::{self, HeaderMap, HeaderValue},
     rt::{Future, Stream},
     Body, Client, Method, Request, Uri,
 };
+use serde_derive::Deserialize;
 use serde_json;
-use std::{collections::HashMap, fmt};
 use tokio::runtime::Runtime;
+
+use crate::error::{ApiError, ErrorResponse, RuntimeApiError};
 
 const RUNTIME_API_VERSION: &str = "2018-06-01";
 const API_CONTENT_TYPE: &str = "application/json";
@@ -48,7 +51,7 @@ impl LambdaHeaders {
 }
 
 impl fmt::Display for LambdaHeaders {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.as_str())
     }
 }
@@ -257,7 +260,7 @@ impl RuntimeClient {
     ///
     /// # Returns
     /// A `Result` object containing a bool return value for the call or an `error::ApiError` instance.
-    pub fn event_error(&self, request_id: &str, e: &RuntimeApiError) -> Result<(), ApiError> {
+    pub fn event_error(&self, request_id: &str, e: &dyn RuntimeApiError) -> Result<(), ApiError> {
         let uri: Uri = format!(
             "http://{}/{}/runtime/invocation/{}/error",
             self.endpoint, RUNTIME_API_VERSION, request_id
@@ -304,7 +307,7 @@ impl RuntimeClient {
     /// # Panics
     /// If it cannot send the init error. In this case we panic to force the runtime
     /// to restart.
-    pub fn fail_init(&self, e: &RuntimeApiError) {
+    pub fn fail_init(&self, e: &dyn RuntimeApiError) {
         let uri: Uri = format!("http://{}/{}/runtime/init/error", self.endpoint, RUNTIME_API_VERSION)
             .parse()
             .expect("Could not generate Runtime URI");

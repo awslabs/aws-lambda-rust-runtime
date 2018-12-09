@@ -2,6 +2,7 @@
 name = "lambda_runtime_client"
 version = "0.1.0"
 authors = ["Stefano Buliani", "David Barsky"]
+edition = "2018"
 description = "Client SDK for AWS Lambda's runtime APIs"
 keywords = ["AWS", "Lambda", "Runtime", "API", "Client"]
 license = "Apache-2.0"

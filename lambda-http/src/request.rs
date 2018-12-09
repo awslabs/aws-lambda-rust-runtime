@@ -69,6 +69,7 @@ pub struct Identity {
     pub account_id: Option<String>,
     pub caller: Option<String>,
     pub api_key: Option<String>,
+    pub access_key: Option<String>,
     pub user: Option<String>,
     pub user_agent: Option<String>,
     pub user_arn: Option<String>,

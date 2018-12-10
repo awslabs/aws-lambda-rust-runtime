@@ -11,8 +11,9 @@ use serde::{
     ser::{Error as SerError, SerializeMap},
     Serializer,
 };
+use serde_derive::Serialize;
 
-use body::Body;
+use crate::body::Body;
 
 /// Representation of API Gateway response
 #[derive(Serialize, Debug)]
@@ -125,7 +126,6 @@ impl IntoResponse for serde_json::Value {
 
 #[cfg(test)]
 mod tests {
-
     use super::{Body, GatewayResponse, IntoResponse};
     use serde_json::{self, json};
 

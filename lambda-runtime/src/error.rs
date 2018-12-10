@@ -1,6 +1,6 @@
 //! The error module defines the error types that can be returned
 //! by custom handlers as well as the runtime itself.
-use std::{env, error::Error, fmt};
+use std::{cmp, env, error::Error, fmt};
 
 use backtrace;
 use lambda_runtime_client::error;
@@ -124,6 +124,12 @@ pub struct HandlerError {
     backtrace: Option<backtrace::Backtrace>,
 }
 
+impl cmp::PartialEq for HandlerError {
+    fn eq(&self, other: &HandlerError) -> bool {
+        self.msg == other.msg
+    }
+}
+
 impl fmt::Display for HandlerError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.msg)
@@ -167,5 +173,24 @@ impl error::RuntimeApiError for HandlerError {
             error_type: String::from(error::ERROR_TYPE_HANDLED),
             stack_trace: Option::from(backtrace.lines().map(|s| s.to_string()).collect::<Vec<String>>()),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::HandlerError;
+
+    #[test]
+    fn handler_error_impls_partialeq() {
+        assert_eq!(
+            HandlerError {
+                msg: "test".into(),
+                backtrace: Default::default()
+            },
+            HandlerError {
+                msg: "test".into(),
+                backtrace: Some(Default::default())
+            }
+        )
     }
 }

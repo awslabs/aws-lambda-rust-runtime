@@ -60,19 +60,14 @@ impl fmt::Display for LambdaHeaders {
 #[derive(Deserialize, Clone)]
 pub struct ClientApplication {
     /// The mobile app installation id
-    #[serde(rename = "installationId")]
     pub installation_id: String,
     /// The app title for the mobile app as registered with AWS' mobile services.
-    #[serde(rename = "appTitle")]
     pub app_title: String,
     /// The version name of the application as registered with AWS' mobile services.
-    #[serde(rename = "appVersionName")]
     pub app_version_name: String,
     /// The app version code.
-    #[serde(rename = "appVersionCode")]
     pub app_version_code: String,
     /// The package name for the mobile application invoking the function
-    #[serde(rename = "appPackageName")]
     pub app_package_name: String,
 }
 

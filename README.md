@@ -104,7 +104,7 @@ Optionally, you can pass your own instance of Tokio runtime to the `lambda!()` m
 
 ## AWS event objects
 
-This project does not currently include Lambda event struct defintions though we [intend to do so in the future](https://github.com/awslabs/aws-lambda-rust-runtime/issues/12). Instead, the community-maintained [aws_lambda_events](https://crates.io/crates/aws_lambda_events) crate can be leveraged to provide strongly-typed Lambda event structs. You can create your own custom event objects and their corresponding structs as well.
+This project does not currently include Lambda event struct defintions though we [intend to do so in the future](https://github.com/awslabs/aws-lambda-rust-runtime/issues/12). Instead, the community-maintained [`aws_lambda_events`](https://crates.io/crates/aws_lambda_events) crate can be leveraged to provide strongly-typed Lambda event structs. You can create your own custom event objects and their corresponding structs as well.
 
 ## Custom event objects
 

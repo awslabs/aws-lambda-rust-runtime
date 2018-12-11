@@ -9,6 +9,11 @@ license = "Apache-2.0"
 homepage = "https://github.com/awslabs/aws-lambda-rust-runtime"
 repository = "https://github.com/awslabs/aws-lambda-rust-runtime"
 documentation = "https://docs.rs/lambda_runtime_client"
+readme = "../README.md"
+
+[badges]
+travis-ci = { repository = "awslabs/aws-lambda-rust-runtime" }
+maintenance = { status = "actively-developed" }
 
 [dependencies]
 hyper = "0.12"

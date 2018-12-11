@@ -1,6 +1,6 @@
 //! The error module defines the error types that can be returned
 //! by custom handlers as well as the runtime itself.
-use std::{env, error::Error, fmt};
+use std::{cmp, env, error::Error, fmt};
 
 use backtrace;
 use lambda_runtime_client::error;
@@ -118,10 +118,19 @@ impl From<error::ApiError> for RuntimeError {
 /// The error type for functions that are used as the `Handler` type. New errors
 /// should be instantiated using the `new_error()` method  of the `runtime::Context`
 /// object passed to the handler function.
+///
+/// An implementation of `PartialEq` is provided and based it's comparison on the `msg`
+/// field.
 #[derive(Debug, Clone)]
 pub struct HandlerError {
     msg: String,
     backtrace: Option<backtrace::Backtrace>,
+}
+
+impl cmp::PartialEq for HandlerError {
+    fn eq(&self, other: &HandlerError) -> bool {
+        self.msg == other.msg
+    }
 }
 
 impl fmt::Display for HandlerError {
@@ -167,5 +176,24 @@ impl error::RuntimeApiError for HandlerError {
             error_type: String::from(error::ERROR_TYPE_HANDLED),
             stack_trace: Option::from(backtrace.lines().map(|s| s.to_string()).collect::<Vec<String>>()),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::HandlerError;
+
+    #[test]
+    fn handler_error_impls_partialeq() {
+        assert_eq!(
+            HandlerError {
+                msg: "test".into(),
+                backtrace: Default::default()
+            },
+            HandlerError {
+                msg: "test".into(),
+                backtrace: Some(Default::default())
+            }
+        )
     }
 }

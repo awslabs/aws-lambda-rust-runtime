@@ -102,19 +102,23 @@ To get started just run the following to create a new lambda Rust application
 ```bash
 $ serverless install \
   --url https://github.com/softprops/serverless-aws-rust \
-  --name my-new-app
+  --name my-new-app \
+  && cd my-new-app
 ```
 
-Deploy it using either make-based workflow or `npx serverless` commands directly
+Deploy it using the standard serverless workflow
 
 ```bash
-$ AWS_PROFILE=prod make dependencies deploy
+# install npm dependencies (only needs ran once)
+$ npm install --silent
+# deploy service
+$ npx serverless deploy
 ```
 
 Invoke it using serverless framework or a configured AWS integrated trigger source
 
 ```bash
-$ AWS_PROFILE=prod npx serverless invoke --stage prod -f hello -d '{"foo":"bar"}'
+$ npx serverless invoke -f hello -d '{"foo":"bar"}'
 ```
 
 

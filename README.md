@@ -111,7 +111,7 @@ Deploy it using the standard serverless workflow
 ```bash
 # install npm dependencies (only needs ran once)
 $ npm install --silent
-# deploy service
+# build, package, and deploy service to aws lambda
 $ npx serverless deploy
 ```
 

@@ -118,6 +118,9 @@ impl From<error::ApiError> for RuntimeError {
 /// The error type for functions that are used as the `Handler` type. New errors
 /// should be instantiated using the `new_error()` method  of the `runtime::Context`
 /// object passed to the handler function.
+///
+/// An implementation of `PartialEq` is provided and based it's comparison on the `msg`
+/// field.
 #[derive(Debug, Clone)]
 pub struct HandlerError {
     msg: String,

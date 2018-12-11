@@ -12,11 +12,12 @@ use serde::{
     de::{Error as DeError, MapAccess, Visitor},
     Deserialize, Deserializer,
 };
+use serde_derive::Deserialize;
 use serde_json::Value;
 
-use body::Body;
-use ext::{PathParameters, QueryStringParameters, StageVariables};
-use strmap::StrMap;
+use crate::body::Body;
+use crate::ext::{PathParameters, QueryStringParameters, StageVariables};
+use crate::strmap::StrMap;
 
 /// Representation of an API Gateway proxy event data
 #[doc(hidden)]
@@ -84,7 +85,7 @@ where
     impl<'de> Visitor<'de> for MethodVisitor {
         type Value = Method;
 
-        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
             write!(formatter, "a Method")
         }
 
@@ -108,7 +109,7 @@ where
     impl<'de> Visitor<'de> for HeaderVisitor {
         type Value = HeaderMap<HeaderValue>;
 
-        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
             write!(formatter, "a HeaderMap<HeaderValue>")
         }
 
@@ -117,7 +118,7 @@ where
             A: MapAccess<'de>,
         {
             let mut headers = http::HeaderMap::new();
-            while let Some((key, value)) = map.next_entry::<Cow<str>, Cow<str>>()? {
+            while let Some((key, value)) = map.next_entry::<Cow<'_, str>, Cow<'_, str>>()? {
                 let header_name = key.parse::<http::header::HeaderName>().map_err(A::Error::custom)?;
                 let header_value =
                     http::header::HeaderValue::from_shared(value.into_owned().into()).map_err(A::Error::custom)?;
@@ -142,7 +143,7 @@ where
 }
 
 impl<'a> From<GatewayRequest<'a>> for HttpRequest<Body> {
-    fn from(value: GatewayRequest) -> Self {
+    fn from(value: GatewayRequest<'_>) -> Self {
         let GatewayRequest {
             path,
             http_method,
@@ -205,7 +206,7 @@ mod tests {
     fn requests_convert() {
         let mut headers = HeaderMap::new();
         headers.insert("Host", "www.rust-lang.org".parse().unwrap());
-        let gwr: GatewayRequest = GatewayRequest {
+        let gwr: GatewayRequest<'_> = GatewayRequest {
             path: "/foo".into(),
             headers,
             ..GatewayRequest::default()
@@ -222,7 +223,7 @@ mod tests {
         // from the docs
         // https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request
         let input = include_str!("../tests/data/proxy_request.json");
-        assert!(serde_json::from_str::<GatewayRequest>(&input).is_ok())
+        assert!(serde_json::from_str::<GatewayRequest<'_>>(&input).is_ok())
     }
 
     #[test]

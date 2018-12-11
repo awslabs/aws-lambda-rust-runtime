@@ -1,11 +1,11 @@
 use std::env;
 
-use chrono::Utc;
-
 use backtrace;
-use env as lambda_env;
-use error::HandlerError;
+use chrono::Utc;
 use lambda_runtime_client;
+
+use crate::env as lambda_env;
+use crate::error::HandlerError;
 
 /// The Lambda function execution context. The values in this struct
 /// are populated using the [Lambda environment variables](https://docs.aws.amazon.com/lambda/latest/dg/current-supported-versions.html)
@@ -110,7 +110,7 @@ impl Context {
 #[cfg(test)]
 pub(crate) mod tests {
     use super::*;
-    use env::{self, ConfigProvider};
+    use crate::env::{self, ConfigProvider};
     use std::{thread::sleep, time};
 
     fn get_deadline(timeout_secs: i64) -> i64 {

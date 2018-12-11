@@ -1,6 +1,6 @@
 //! The error module defines the error types that can be returned
 //! by custom handlers as well as the runtime itself.
-use std::{env, error::Error, fmt};
+use std::{cmp, env, error::Error, fmt};
 
 use backtrace;
 use lambda_runtime_client::error;
@@ -77,7 +77,7 @@ impl error::RuntimeApiError for RuntimeError {
 }
 
 impl fmt::Display for RuntimeError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.msg)
     }
 }
@@ -88,7 +88,7 @@ impl Error for RuntimeError {
         &self.msg
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         // Generic error, underlying cause isn't tracked.
         None
     }
@@ -118,14 +118,23 @@ impl From<error::ApiError> for RuntimeError {
 /// The error type for functions that are used as the `Handler` type. New errors
 /// should be instantiated using the `new_error()` method  of the `runtime::Context`
 /// object passed to the handler function.
+///
+/// An implementation of `PartialEq` is provided and based it's comparison on the `msg`
+/// field.
 #[derive(Debug, Clone)]
 pub struct HandlerError {
     msg: String,
     backtrace: Option<backtrace::Backtrace>,
 }
 
+impl cmp::PartialEq for HandlerError {
+    fn eq(&self, other: &HandlerError) -> bool {
+        self.msg == other.msg
+    }
+}
+
 impl fmt::Display for HandlerError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.msg)
     }
 }
@@ -136,7 +145,7 @@ impl Error for HandlerError {
         &self.msg
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         // Generic error, underlying cause isn't tracked.
         None
     }
@@ -167,5 +176,24 @@ impl error::RuntimeApiError for HandlerError {
             error_type: String::from(error::ERROR_TYPE_HANDLED),
             stack_trace: Option::from(backtrace.lines().map(|s| s.to_string()).collect::<Vec<String>>()),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::HandlerError;
+
+    #[test]
+    fn handler_error_impls_partialeq() {
+        assert_eq!(
+            HandlerError {
+                msg: "test".into(),
+                backtrace: Default::default()
+            },
+            HandlerError {
+                msg: "test".into(),
+                backtrace: Some(Default::default())
+            }
+        )
     }
 }

@@ -99,7 +99,7 @@ getting started template application [here](https://github.com/softprops/serverl
 
 To get started just run the following to create a new lambda Rust application
 
-```sh
+```bash
 $ serverless install \
   --url https://github.com/softprops/serverless-aws-rust \
   --name my-new-app
@@ -107,13 +107,13 @@ $ serverless install \
 
 Deploy it using either make-based workflow or `npx serverless` commands directly
 
-```sh
-AWS_PROFILE=prod make dependencies deploy
+```bash
+$ AWS_PROFILE=prod make dependencies deploy
 ```
 
 Invoke it using serverless framework or a configured AWS integrated trigger source
 
-```sh
+```bash
 $ AWS_PROFILE=prod npx serverless invoke --stage prod -f hello -d '{"foo":"bar"}'
 ```
 

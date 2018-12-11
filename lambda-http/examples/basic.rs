@@ -1,13 +1,9 @@
-extern crate lambda_http as http;
-extern crate lambda_runtime as runtime;
-extern crate log;
-extern crate simple_logger;
-
-use http::{lambda, Body, IntoResponse, Request, RequestExt, Response};
-use runtime::{error::HandlerError, Context};
-
-use log::error;
 use std::error::Error;
+
+use lambda_http::{lambda, IntoResponse, Request, RequestExt, Response};
+use lambda_runtime::{error::HandlerError, Context};
+use log::{self, error};
+use simple_logger;
 
 fn main() -> Result<(), Box<dyn Error>> {
     simple_logger::init_with_level(log::Level::Debug).unwrap();

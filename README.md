@@ -98,19 +98,19 @@ You can optionally skip all of the manual building, renaming, and deploying step
 getting started template application [here](https://github.com/softprops/serverless-aws-rust).
 
 To get started just run the following to create a new lambda Rust application
+and install project level dependencies.
 
 ```bash
 $ serverless install \
   --url https://github.com/softprops/serverless-aws-rust \
   --name my-new-app \
-  && cd my-new-app
+  && cd my-new-app \
+  && npm install --silent
 ```
 
 Deploy it using the standard serverless workflow
 
 ```bash
-# install npm dependencies (only needs ran once)
-$ npm install --silent
 # build, package, and deploy service to aws lambda
 $ npx serverless deploy
 ```

@@ -25,6 +25,25 @@
 //!     ))
 //! }
 //! ```
+//!
+//! You can also provide a closure directly to the `lambda!` macro
+//!
+//! ```rust,no_run
+//! use lambda_http::{lambda, Request, RequestExt};
+//!
+//! fn main() {
+//!   lambda!(
+//!     |request: Request, context| Ok(
+//!       format!(
+//!         "hello {}",
+//!         request.query_string_parameters()
+//!           .get("name")
+//!           .unwrap_or_else(|| "stranger")
+//!       )
+//!     )
+//!   )
+//! }
+//! ```
 
 pub use http::{self, Response};
 use lambda_runtime::{self as lambda, error::HandlerError, Context};
@@ -87,6 +106,12 @@ where
 /// A macro for starting new handler's poll for API Gateway events
 #[macro_export]
 macro_rules! lambda {
+    ($handler:expr) => {
+        $crate::start($handler, None)
+    };
+    ($handler:expr, $runtime:expr) => {
+        $crate::start($handler, Some($runtime))
+    };
     ($handler:ident) => {
         $crate::start($handler, None)
     };

@@ -3,7 +3,7 @@ extern crate lambda_runtime as runtime;
 extern crate log;
 extern crate simple_logger;
 
-use http::{lambda, Body, IntoResponse, Request, RequestExt, Response};
+use http::{lambda, IntoResponse, Request, RequestExt, Response};
 use runtime::{error::HandlerError, Context};
 
 use log::error;

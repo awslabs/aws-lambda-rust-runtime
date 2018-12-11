@@ -42,18 +42,11 @@
 #[macro_use]
 extern crate log;
 
-extern crate backtrace;
-extern crate chrono;
-extern crate lambda_runtime_client;
-extern crate serde;
-extern crate serde_json;
-extern crate tokio;
-
 mod context;
 mod env;
 pub mod error;
-pub use error::HandlerError;
 mod runtime;
 
-pub use context::*;
-pub use runtime::*;
+pub use crate::context::*;
+pub use crate::error::HandlerError;
+pub use crate::runtime::*;

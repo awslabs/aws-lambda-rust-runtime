@@ -1,6 +1,6 @@
 use std::env;
 
-use error::RuntimeError;
+use crate::error::RuntimeError;
 
 /// The name of the environment variable in the Lambda execution
 /// environment for the Runtime APIs endpoint. The value of this
@@ -88,8 +88,8 @@ impl ConfigProvider for EnvConfigProvider {
 
 #[cfg(test)]
 pub(crate) mod tests {
-    use env::*;
-    use error;
+    use crate::env::*;
+    use crate::error;
     use std::{env, error::Error};
 
     pub(crate) struct MockConfigProvider {
@@ -146,7 +146,7 @@ pub(crate) mod tests {
         unset_env_vars();
         set_endpoint_env_var();
         set_lambda_env_vars();
-        let config_provider: &ConfigProvider = &EnvConfigProvider {};
+        let config_provider: &dyn ConfigProvider = &EnvConfigProvider {};
         let env_settings = config_provider.get_function_settings();
         assert_eq!(
             env_settings.is_err(),

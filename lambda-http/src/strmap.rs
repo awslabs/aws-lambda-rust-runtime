@@ -25,7 +25,7 @@ impl StrMap {
     }
 
     /// Return an iterator over keys and values
-    pub fn iter(&self) -> StrMapIter {
+    pub fn iter(&self) -> StrMapIter<'_> {
         StrMapIter {
             data: self,
             keys: self.0.keys(),
@@ -70,7 +70,7 @@ impl<'de> Deserialize<'de> for StrMap {
         impl<'de> Visitor<'de> for StrMapVisitor {
             type Value = StrMap;
 
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
                 write!(formatter, "a StrMap")
             }
 

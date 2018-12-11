@@ -2,6 +2,7 @@
 name = "lambda_runtime"
 version = "0.1.0"
 authors = ["Stefano Buliani", "David Barsky"]
+edition = "2018"
 description = "Rust runtime for AWS Lambda"
 keywords = ["AWS", "Lambda", "Runtime", "Rust"]
 license = "Apache-2.0"

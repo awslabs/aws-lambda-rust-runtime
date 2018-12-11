@@ -2,6 +2,7 @@
 name = "lambda_http"
 version = "0.1.0"
 authors = ["Doug Tangren"]
+edition = "2018"
 description = "Rust API Gateway proxy event interfaces for AWS Lambda"
 keywords = ["AWS", "Lambda", "APIGateway", "Rust", "API"]
 license = "Apache-2.0"

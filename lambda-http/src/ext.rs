@@ -1,12 +1,13 @@
 //! API Gateway extension methods for `http::Request` types
 
+use failure::Fail;
 use http::{header::CONTENT_TYPE, Request as HttpRequest};
 use serde::{de::value::Error as SerdeError, Deserialize};
 use serde_json;
 use serde_urlencoded;
 
-use request::RequestContext;
-use strmap::StrMap;
+use crate::request::RequestContext;
+use crate::strmap::StrMap;
 
 /// API gateway pre-parsed http query string parameters
 pub(crate) struct QueryStringParameters(pub(crate) StrMap);
@@ -153,10 +154,12 @@ impl RequestExt for HttpRequest<super::Body> {
 #[cfg(test)]
 mod tests {
     use http::{HeaderMap, Request as HttpRequest};
+    use serde_derive::Deserialize;
     use std::collections::HashMap;
-    use GatewayRequest;
-    use RequestExt;
-    use StrMap;
+
+    use crate::GatewayRequest;
+    use crate::RequestExt;
+    use crate::StrMap;
 
     #[test]
     fn requests_have_query_string_ext() {
@@ -164,7 +167,7 @@ mod tests {
         headers.insert("Host", "www.rust-lang.org".parse().unwrap());
         let mut query = HashMap::new();
         query.insert("foo".to_owned(), "bar".to_owned());
-        let gwr: GatewayRequest = GatewayRequest {
+        let gwr: GatewayRequest<'_> = GatewayRequest {
             path: "/foo".into(),
             headers,
             query_string_parameters: StrMap(query.clone().into()),
@@ -184,7 +187,7 @@ mod tests {
             foo: String,
             baz: usize,
         }
-        let gwr: GatewayRequest = GatewayRequest {
+        let gwr: GatewayRequest<'_> = GatewayRequest {
             path: "/foo".into(),
             headers,
             body: Some("foo=bar&baz=2".into()),
@@ -206,7 +209,7 @@ mod tests {
         let mut headers = HeaderMap::new();
         headers.insert("Host", "www.rust-lang.org".parse().unwrap());
         headers.insert("Content-Type", "application/x-www-form-urlencoded".parse().unwrap());
-        let gwr: GatewayRequest = GatewayRequest {
+        let gwr: GatewayRequest<'_> = GatewayRequest {
             path: "/foo".into(),
             headers,
             body: Some("foo=bar&baz=2".into()),
@@ -230,7 +233,7 @@ mod tests {
             foo: String,
             baz: usize,
         }
-        let gwr: GatewayRequest = GatewayRequest {
+        let gwr: GatewayRequest<'_> = GatewayRequest {
             path: "/foo".into(),
             headers,
             body: Some(r#"{"foo":"bar", "baz": 2}"#.into()),

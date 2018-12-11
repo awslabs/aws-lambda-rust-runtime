@@ -1,12 +1,9 @@
-extern crate lambda_runtime as lambda;
-extern crate log;
-extern crate serde_derive;
-extern crate simple_logger;
-
-use lambda::{error::HandlerError, lambda};
-use log::error;
-use serde_derive::{Deserialize, Serialize};
 use std::error::Error;
+
+use lambda_runtime::{error::HandlerError, lambda, Context};
+use log::{self, error};
+use serde_derive::{Deserialize, Serialize};
+use simple_logger;
 
 #[derive(Deserialize)]
 struct CustomEvent {
@@ -26,7 +23,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn my_handler(e: CustomEvent, c: lambda::Context) -> Result<CustomOutput, HandlerError> {
+fn my_handler(e: CustomEvent, c: Context) -> Result<CustomOutput, HandlerError> {
     if e.first_name == "" {
         error!("Empty first name in request {}", c.aws_request_id);
         return Err(c.new_error("Empty first name"));

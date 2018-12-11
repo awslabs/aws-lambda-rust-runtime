@@ -1,13 +1,13 @@
 use std::{error::Error, marker::PhantomData, result};
 
+use lambda_runtime_client::RuntimeClient;
 use serde;
 use serde_json;
-
-use context::Context;
-use env::{ConfigProvider, EnvConfigProvider, FunctionSettings};
-use error::{HandlerError, RuntimeError};
-use lambda_runtime_client::RuntimeClient;
 use tokio::runtime::Runtime as TokioRuntime;
+
+use crate::context::Context;
+use crate::env::{ConfigProvider, EnvConfigProvider, FunctionSettings};
+use crate::error::{HandlerError, RuntimeError};
 
 const MAX_RETRIES: i8 = 3;
 
@@ -48,6 +48,12 @@ macro_rules! lambda {
         $crate::start($handler, None)
     };
     ($handler:ident, $runtime:expr) => {
+        $crate::start($handler, Some($runtime))
+    };
+    ($handler:expr) => {
+        $crate::start($handler, None)
+    };
+    ($handler:expr, $runtime:expr) => {
         $crate::start($handler, Some($runtime))
     };
 }
@@ -301,7 +307,7 @@ where
 
                         (ev, handler_ctx)
                     }
-                    Err(mut e) => {
+                    Err(e) => {
                         error!("Could not parse event to type: {}", e);
                         let mut runtime_err = RuntimeError::from(e);
                         runtime_err.request_id = Option::from(invocation_ctx.aws_request_id);
@@ -317,13 +323,13 @@ where
 #[cfg(test)]
 pub(crate) mod tests {
     use super::*;
-    use context;
-    use env;
+    use crate::context;
+    use crate::env;
     use lambda_runtime_client::RuntimeClient;
 
     #[test]
     fn runtime_invokes_handler() {
-        let config: &env::ConfigProvider = &env::tests::MockConfigProvider { error: false };
+        let config: &dyn env::ConfigProvider = &env::tests::MockConfigProvider { error: false };
         let client = RuntimeClient::new(
             config
                 .get_runtime_api_endpoint()

@@ -53,7 +53,13 @@ fn my_handler(event: GreetingEvent, ctx: Context) -> Result<GreetingResponse, Ha
 }
 ```
 
-The code above is the same as the [basic example](https://github.com/awslabs/aws-lambda-rust-runtime/tree/master/lambda-runtime/examples/basic.rs) in the `lambda-runtime` crate. To deploy the basic sample as a Lambda function, we first build it with `cargo`. Since Lambda uses Amazon Linux, you'll need to target your executable for an `x86_64-linux` platform.
+The code above is the same as the [basic example](https://github.com/awslabs/aws-lambda-rust-runtime/tree/master/lambda-runtime/examples/basic.rs) in the `lambda-runtime` crate.
+
+### deployment
+
+#### aws cli
+
+To deploy the basic sample as a Lambda function using the aws cli, we first need to build it with `cargo`. Since Lambda uses Amazon Linux, you'll need to target your executable for an `x86_64-linux` platform.
 
 ```bash
 $ cargo build -p lambda_runtime --example basic --release
@@ -85,6 +91,32 @@ $ aws lambda invoke --function-name rustTest \
   output.json
 $ cat output.json  # Prints: {"message":"Hello, world!"}
 ```
+
+#### serverless framework
+
+You can optionally skip all of the manual building, renaming, and deploying steps above and use the [Serverless framework Rust plugin](https://github.com/softprops/serverless-rust). You can find an example
+getting started template application [here](https://github.com/softprops/serverless-aws-rust).
+
+To get started just run the following to create a new lambda Rust application
+
+```sh
+$ serverless install \
+  --url https://github.com/softprops/serverless-aws-rust \
+  --name my-new-app
+```
+
+Deploy it using either make-based workflow or `npx serverless` commands directly
+
+```sh
+AWS_PROFILE=prod make dependencies deploy
+```
+
+Invoke it using serverless framework or a configured AWS integrated trigger source
+
+```sh
+$ AWS_PROFILE=prod npx serverless invoke --stage prod -f hello -d '{"foo":"bar"}'
+```
+
 
 ## lambda-runtime-client
 

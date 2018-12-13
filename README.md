@@ -97,7 +97,9 @@ $ cat output.json  # Prints: {"message":"Hello, world!"}
 You can optionally skip all of the manual building, renaming, and deploying steps above and use the [Serverless framework Rust plugin](https://github.com/softprops/serverless-rust). You can find an example
 getting started template application [here](https://github.com/softprops/serverless-aws-rust).
 
-To get started just run the following to create a new lambda Rust application
+Serverless application templates exist for a minimal [echo function](https://github.com/softprops/serverless-aws-rust), [http function](https://github.com/softprops/serverless-aws-rust-http), and [multi function service](https://github.com/softprops/serverless-aws-multi).
+
+To get started, just run the following commands to create a new lambda Rust application
 and install project level dependencies.
 
 ```bash

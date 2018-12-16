@@ -53,7 +53,15 @@ fn my_handler(event: GreetingEvent, ctx: Context) -> Result<GreetingResponse, Ha
 }
 ```
 
-The code above is the same as the [basic example](https://github.com/awslabs/aws-lambda-rust-runtime/tree/master/lambda-runtime/examples/basic.rs) in the `lambda-runtime` crate. To deploy the basic sample as a Lambda function, we first build it with `cargo`. Since Lambda uses Amazon Linux, you'll need to target your executable for an `x86_64-linux` platform.
+The code above is the same as the [basic example](https://github.com/awslabs/aws-lambda-rust-runtime/tree/master/lambda-runtime/examples/basic.rs) in the `lambda-runtime` crate.
+
+### Deployment
+
+There are currently multiple ways of building this package: manually, and the [Serverless framework](https://serverless.com/framework/).
+
+#### AWS CLI
+
+To deploy the basic sample as a Lambda function using the [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html), we first need to manually build it with [`cargo`](https://doc.rust-lang.org/cargo/). Since Lambda uses Amazon Linux, you'll need to target your executable for an `x86_64-linux` platform.
 
 ```bash
 $ cargo build -p lambda_runtime --example basic --release
@@ -85,6 +93,41 @@ $ aws lambda invoke --function-name rustTest \
   output.json
 $ cat output.json  # Prints: {"message":"Hello, world!"}
 ```
+
+#### Serverless Framework
+
+Alternatively, you can build a Rust-based Lambda function declaratively using the [Serverless framework Rust plugin](https://github.com/softprops/serverless-rust).
+
+A number of getting started Serverless application templates exist to get you up and running quickly
+
+* a minimal [echo function](https://github.com/softprops/serverless-aws-rust) to demonstrate what the smallest Rust function setup looks like
+* a minimal [http function](https://github.com/softprops/serverless-aws-rust-http) to demonstrate how to interface with API Gateway using Rust's native [http](https://crates.io/crates/http) crate (note this will a git dependency until 0.2 is published)
+* a combination [multi function service](https://github.com/softprops/serverless-aws-rust-multi) to demonstrate how to set up a services with multiple independent functions
+
+Assuming your host machine has a relatively recent version of node, you [won't need to install any host-wide serverless dependencies](https://blog.npmjs.org/post/162869356040/introducing-npx-an-npm-package-runner). To get started, run the following commands to create a new lambda Rust application
+and install project level dependencies.
+
+```bash
+$ npx serverless install \
+  --url https://github.com/softprops/serverless-aws-rust \
+  --name my-new-app \
+  && cd my-new-app \
+  && npm install --silent
+```
+
+Deploy it using the standard serverless workflow
+
+```bash
+# build, package, and deploy service to aws lambda
+$ npx serverless deploy
+```
+
+Invoke it using serverless framework or a configured AWS integrated trigger source:
+
+```bash
+$ npx serverless invoke -f hello -d '{"foo":"bar"}'
+```
+
 
 ## lambda-runtime-client
 

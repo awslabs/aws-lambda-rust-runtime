@@ -122,7 +122,7 @@ Deploy it using the standard serverless workflow
 $ npx serverless deploy
 ```
 
-Invoke it using serverless framework or a configured AWS integrated trigger source
+Invoke it using serverless framework or a configured AWS integrated trigger source:
 
 ```bash
 $ npx serverless invoke -f hello -d '{"foo":"bar"}'

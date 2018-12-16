@@ -94,7 +94,7 @@ For error reporting to the runtime APIs the library defines the `RuntimeApiError
 
 ## lambda-runtime
 
-This library makes it easy to create Rust executables for AWS lambda. The library defines a `lambda!()` macro. Call the `lambda!()` macro from your main method with a implementation the `Handler` type:
+This library makes it easy to create Rust executables for AWS lambda. The library defines a `lambda!()` macro. Call the `lambda!()` macro from your main method with an  implementation the `Handler` type:
 
 ```rust
 pub trait Handler<E, O> {
@@ -107,7 +107,7 @@ pub trait Handler<E, O> {
 }
 ```
 
-`Handler` is provides a default implementation that enables you to provide a Rust closure or function pointer.
+`Handler` provides a default implementation that enables you to provide a Rust closure or function pointer to the `lambda!()` macro.
 
 Optionally, you can pass your own instance of Tokio runtime to the `lambda!()` macro. See our [`with_custom_runtime.rs` example](https://github.com/awslabs/aws-lambda-rust-runtime/tree/master/lambda-runtime/examples/with_custom_runtime.rs)
 

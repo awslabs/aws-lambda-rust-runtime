@@ -70,7 +70,7 @@ impl error::RuntimeApiError for RuntimeError {
         let backtrace = format!("{:?}", self.stack_trace);
         error::ErrorResponse {
             error_message: String::from(self.description()),
-            error_type: String::from(error::ERROR_TYPE_HANDLED),
+            error_type: error::ErrorType::Handled,
             stack_trace: Option::from(backtrace.lines().map(|s| s.to_string()).collect::<Vec<String>>()),
         }
     }
@@ -173,7 +173,7 @@ impl error::RuntimeApiError for HandlerError {
         let backtrace = format!("{:?}", self.backtrace);
         error::ErrorResponse {
             error_message: String::from(self.description()),
-            error_type: String::from(error::ERROR_TYPE_HANDLED),
+            error_type: error::ErrorType::Handled,
             stack_trace: Option::from(backtrace.lines().map(|s| s.to_string()).collect::<Vec<String>>()),
         }
     }

@@ -198,8 +198,8 @@ mod tests {
     #[test]
     fn unhandled_error_response_serializes() {
         assert_eq!(
-            serde_json::to_string(&ErrorResponse::handled("💀")).expect("failed to serialize ErrorResponse"),
-            r#"{"errorMessage":"💀","errorType":"Handled","stackTrace":null}"#
+            serde_json::to_string(&ErrorResponse::unhandled("💀")).expect("failed to serialize ErrorResponse"),
+            r#"{"errorMessage":"💀","errorType":"Unhandled","stackTrace":null}"#
         )
     }
 }

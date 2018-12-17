@@ -15,9 +15,11 @@ use serde::{
 use serde_derive::Deserialize;
 use serde_json::Value;
 
-use crate::body::Body;
-use crate::ext::{PathParameters, QueryStringParameters, StageVariables};
-use crate::strmap::StrMap;
+use crate::{
+    body::Body,
+    ext::{PathParameters, QueryStringParameters, StageVariables},
+    strmap::StrMap,
+};
 
 /// Representation of an API Gateway proxy event data
 #[doc(hidden)]

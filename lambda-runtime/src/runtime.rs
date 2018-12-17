@@ -5,9 +5,11 @@ use serde;
 use serde_json;
 use tokio::runtime::Runtime as TokioRuntime;
 
-use crate::context::Context;
-use crate::env::{ConfigProvider, EnvConfigProvider, FunctionSettings};
-use crate::error::{HandlerError, RuntimeError};
+use crate::{
+    context::Context,
+    env::{ConfigProvider, EnvConfigProvider, FunctionSettings},
+    error::{HandlerError, RuntimeError},
+};
 
 const MAX_RETRIES: i8 = 3;
 
@@ -323,8 +325,7 @@ where
 #[cfg(test)]
 pub(crate) mod tests {
     use super::*;
-    use crate::context;
-    use crate::env;
+    use crate::{context, env};
     use lambda_runtime_client::RuntimeClient;
 
     #[test]

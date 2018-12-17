@@ -4,8 +4,7 @@ use backtrace;
 use chrono::Utc;
 use lambda_runtime_client;
 
-use crate::env as lambda_env;
-use crate::error::HandlerError;
+use crate::{env as lambda_env, error::HandlerError};
 
 /// The Lambda function execution context. The values in this struct
 /// are populated using the [Lambda environment variables](https://docs.aws.amazon.com/lambda/latest/dg/current-supported-versions.html)

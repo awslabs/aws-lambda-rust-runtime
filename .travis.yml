@@ -26,7 +26,7 @@ matrix:
 script:
   - |
     if [[ "$TRAVIS_RUST_VERSION" == nightly ]]; then
-      cargo +nightly fmt --all -- --check
+      cargo fmt --all -- --check
     fi
   - cargo build --verbose --all
   - cargo test --verbose --all

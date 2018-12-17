@@ -55,12 +55,8 @@ pub mod request;
 mod response;
 mod strmap;
 
-pub use crate::body::Body;
-pub use crate::ext::RequestExt;
-use crate::request::GatewayRequest;
-use crate::response::GatewayResponse;
-pub use crate::response::IntoResponse;
-pub use crate::strmap::StrMap;
+pub use crate::{body::Body, ext::RequestExt, response::IntoResponse, strmap::StrMap};
+use crate::{request::GatewayRequest, response::GatewayResponse};
 
 /// Type alias for `http::Request`s with a fixed `lambda_http::Body` body
 pub type Request = http::Request<Body>;

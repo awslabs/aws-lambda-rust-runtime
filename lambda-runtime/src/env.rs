@@ -88,8 +88,7 @@ impl ConfigProvider for EnvConfigProvider {
 
 #[cfg(test)]
 pub(crate) mod tests {
-    use crate::env::*;
-    use crate::error;
+    use crate::{env::*, error};
     use std::{env, error::Error};
 
     pub(crate) struct MockConfigProvider {

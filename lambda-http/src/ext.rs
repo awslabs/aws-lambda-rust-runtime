@@ -6,8 +6,7 @@ use serde::{de::value::Error as SerdeError, Deserialize};
 use serde_json;
 use serde_urlencoded;
 
-use crate::request::RequestContext;
-use crate::strmap::StrMap;
+use crate::{request::RequestContext, strmap::StrMap};
 
 /// API gateway pre-parsed http query string parameters
 pub(crate) struct QueryStringParameters(pub(crate) StrMap);
@@ -157,9 +156,7 @@ mod tests {
     use serde_derive::Deserialize;
     use std::collections::HashMap;
 
-    use crate::GatewayRequest;
-    use crate::RequestExt;
-    use crate::StrMap;
+    use crate::{GatewayRequest, RequestExt, StrMap};
 
     #[test]
     fn requests_have_query_string_ext() {

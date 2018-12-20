@@ -4,7 +4,7 @@
 use std::ops::Not;
 
 use http::{
-    header::{HeaderMap, HeaderValue},
+    header::{HeaderMap, HeaderValue, CONTENT_TYPE},
     Response,
 };
 use serde::{
@@ -209,8 +209,12 @@ mod tests {
             .header("multi", "a")
             .header("multi", "b")
             .body(Body::from(()))
-            .expect("failed to create request").into();
+            .expect("failed to create request")
+            .into();
         let json = serde_json::to_string(&res).expect("failed to serialize to json");
-        assert_eq!(json, r#"{"statusCode":200,"headers":{"multi":"a"},"multiValueHeaders":{"multi":["a","b"]}}"#)
+        assert_eq!(
+            json,
+            r#"{"statusCode":200,"headers":{"multi":"a"},"multiValueHeaders":{"multi":["a","b"]}}"#
+        )
     }
 }

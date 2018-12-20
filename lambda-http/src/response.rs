@@ -139,7 +139,7 @@ where
 impl IntoResponse for serde_json::Value {
     fn into_response(self) -> Response<Body> {
         Response::builder()
-            .header(http::header::CONTENT_TYPE, "application/json")
+            .header(CONTENT_TYPE, "application/json")
             .body(
                 serde_json::to_string(&self)
                     .expect("unable to serialize serde_json::Value")
@@ -165,7 +165,7 @@ mod tests {
         assert_eq!(
             response
                 .headers()
-                .get(http::header::CONTENT_TYPE)
+                .get(CONTENT_TYPE)
                 .map(|h| h.to_str().expect("invalid header")),
             Some("application/json")
         )

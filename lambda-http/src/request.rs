@@ -5,7 +5,7 @@ use std::{borrow::Cow, collections::HashMap, fmt, mem};
 
 use http::{
     self,
-    header::{HeaderValue, HOST},
+    header::{HeaderName, HeaderValue, HOST},
     HeaderMap, Method, Request as HttpRequest,
 };
 use serde::{
@@ -31,6 +31,8 @@ pub(crate) struct GatewayRequest<'a> {
     pub(crate) http_method: Method,
     #[serde(deserialize_with = "deserialize_headers")]
     pub(crate) headers: HeaderMap<HeaderValue>,
+    #[serde(default, deserialize_with = "deserialize_multi_value_headers")]
+    pub(crate) multi_value_headers: HeaderMap<HeaderValue>,
     #[serde(deserialize_with = "nullable_default")]
     pub(crate) query_string_parameters: StrMap,
     #[serde(deserialize_with = "nullable_default")]
@@ -78,6 +80,7 @@ pub struct Identity {
     pub user_arn: Option<String>,
 }
 
+/// Deserialize a str into an http::Method
 fn deserialize_method<'de, D>(deserializer: D) -> Result<Method, D::Error>
 where
     D: Deserializer<'de>,
@@ -102,6 +105,49 @@ where
     deserializer.deserialize_str(MethodVisitor)
 }
 
+/// Deserialize a map of Cow<'_, str> => Vec<Cow<'_, str>> into an http::HeaderMap
+fn deserialize_multi_value_headers<'de, D>(deserializer: D) -> Result<HeaderMap<HeaderValue>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    struct HeaderVisitor;
+
+    impl<'de> Visitor<'de> for HeaderVisitor {
+        type Value = HeaderMap<HeaderValue>;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+            write!(formatter, "a multi valued HeaderMap<HeaderValue>")
+        }
+
+        fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+        where
+            A: MapAccess<'de>,
+        {
+            let mut headers = map
+                .size_hint()
+                .map(HeaderMap::with_capacity)
+                .unwrap_or_else(|| HeaderMap::new());
+            while let Some((key, values)) = map.next_entry::<Cow<'_, str>, Vec<Cow<'_, str>>>()? {
+                // note the aws docs for multi value headers include an empty key. I'm not sure if this is a doc bug
+                // or not by the http crate doesn't handle it
+                // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
+                if !key.is_empty() {
+                    for value in values {
+                        let header_name = key.parse::<HeaderName>().map_err(A::Error::custom)?;
+                        let header_value =
+                            HeaderValue::from_shared(value.into_owned().into()).map_err(A::Error::custom)?;
+                        headers.append(header_name, header_value);
+                    }
+                }
+            }
+            Ok(headers)
+        }
+    }
+
+    deserializer.deserialize_map(HeaderVisitor)
+}
+
+/// Deserialize a map of Cow<'_, str> => Cow<'_, str> into an http::HeaderMap
 fn deserialize_headers<'de, D>(deserializer: D) -> Result<HeaderMap<HeaderValue>, D::Error>
 where
     D: Deserializer<'de>,
@@ -119,11 +165,13 @@ where
         where
             A: MapAccess<'de>,
         {
-            let mut headers = http::HeaderMap::new();
+            let mut headers = map
+                .size_hint()
+                .map(HeaderMap::with_capacity)
+                .unwrap_or_else(|| HeaderMap::new());
             while let Some((key, value)) = map.next_entry::<Cow<'_, str>, Cow<'_, str>>()? {
-                let header_name = key.parse::<http::header::HeaderName>().map_err(A::Error::custom)?;
-                let header_value =
-                    http::header::HeaderValue::from_shared(value.into_owned().into()).map_err(A::Error::custom)?;
+                let header_name = key.parse::<HeaderName>().map_err(A::Error::custom)?;
+                let header_value = HeaderValue::from_shared(value.into_owned().into()).map_err(A::Error::custom)?;
                 headers.append(header_name, header_value);
             }
             Ok(headers)
@@ -150,6 +198,7 @@ impl<'a> From<GatewayRequest<'a>> for HttpRequest<Body> {
             path,
             http_method,
             headers,
+            mut multi_value_headers,
             query_string_parameters,
             path_parameters,
             stage_variables,
@@ -191,8 +240,20 @@ impl<'a> From<GatewayRequest<'a>> for HttpRequest<Body> {
             })
             .expect("failed to build request");
 
+        // merge headers into multi_value_headers and make
+        // multi_value_headers our cannoncial source of request headers
+        for (key, value) in headers {
+            // see HeaderMap#into_iter() docs for cases when key element may be None
+            if let Some(first_key) = key {
+                // if it contains the key, avoid appending a duplicate value
+                if !multi_value_headers.contains_key(&first_key) {
+                    multi_value_headers.append(first_key, value);
+                }
+            }
+        }
+
         // no builder method that sets headers in batch
-        mem::replace(req.headers_mut(), headers);
+        mem::replace(req.headers_mut(), multi_value_headers);
 
         req
     }
@@ -224,8 +285,24 @@ mod tests {
     fn deserializes_request_events() {
         // from the docs
         // https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request
-        let input = include_str!("../tests/data/proxy_request.json");
-        assert!(serde_json::from_str::<GatewayRequest<'_>>(&input).is_ok())
+        let input = include_str!("../tests/data/apigw_proxy_request.json");
+        let result = serde_json::from_str::<GatewayRequest<'_>>(&input);
+        assert!(
+            result.is_ok(),
+            format!("event is was not parsed as expected {:?}", result)
+        );
+    }
+
+    #[test]
+    fn deserialize_multi_value_events() {
+        // from docs
+        // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
+        let input = include_str!("../tests/data/apigw_multi_value_proxy_request.json");
+        let result = serde_json::from_str::<GatewayRequest<'_>>(&input);
+        assert!(
+            result.is_ok(),
+            format!("event is was not parsed as expected {:?}", result)
+        );
     }
 
     #[test]

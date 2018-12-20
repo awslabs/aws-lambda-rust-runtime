@@ -152,9 +152,8 @@ impl IntoResponse for serde_json::Value {
 #[cfg(test)]
 mod tests {
     use super::{Body, GatewayResponse, IntoResponse};
-    use http::Response;
+    use http::{header::CONTENT_TYPE, Response};
     use serde_json::{self, json};
-    use http::header::CONTENT_TYPE;
 
     #[test]
     fn json_into_response() {

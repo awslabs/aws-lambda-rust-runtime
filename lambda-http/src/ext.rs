@@ -78,7 +78,13 @@ pub enum PayloadError {
 pub trait RequestExt {
     /// Return pre-parsed http query string parameters, parameters
     /// provided after the `?` portion of a url,
-    /// associated with the API gateway request. No query parameters
+    /// associated with the API gateway request.
+    ///
+    /// The yielded value represents both single and multi-valued
+    /// parameters alike. When multiple query string parameters with the same
+    /// name are expected, `query_string_parameters().get_all("many")` to retrieve them all.
+    ///
+    /// No query parameters
     /// will yield an empty `StrMap`.
     fn query_string_parameters(&self) -> StrMap;
     /// Return pre-extracted path parameters, parameter provided in url placeholders
@@ -163,7 +169,7 @@ mod tests {
         let mut headers = HeaderMap::new();
         headers.insert("Host", "www.rust-lang.org".parse().unwrap());
         let mut query = HashMap::new();
-        query.insert("foo".to_owned(), "bar".to_owned());
+        query.insert("foo".to_owned(), vec!["bar".to_owned()]);
         let gwr: GatewayRequest<'_> = GatewayRequest {
             path: "/foo".into(),
             headers,

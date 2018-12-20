@@ -154,6 +154,7 @@ mod tests {
     use super::{Body, GatewayResponse, IntoResponse};
     use http::Response;
     use serde_json::{self, json};
+    use http::header::CONTENT_TYPE;
 
     #[test]
     fn json_into_response() {

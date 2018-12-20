@@ -289,7 +289,7 @@ mod tests {
         let result = serde_json::from_str::<GatewayRequest<'_>>(&input);
         assert!(
             result.is_ok(),
-            format!("event is was not parsed as expected {:?}", result)
+            format!("event was not parsed as expected {:?}", result)
         );
     }
 
@@ -301,7 +301,7 @@ mod tests {
         let result = serde_json::from_str::<GatewayRequest<'_>>(&input);
         assert!(
             result.is_ok(),
-            format!("event is was not parsed as expected {:?}", result)
+            format!("event was not parsed as expected {:?}", result)
         );
     }
 

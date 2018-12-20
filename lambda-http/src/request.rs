@@ -126,7 +126,7 @@ where
             let mut headers = map
                 .size_hint()
                 .map(HeaderMap::with_capacity)
-                .unwrap_or_else(|| HeaderMap::new());
+                .unwrap_or_else(HeaderMap::new);
             while let Some((key, values)) = map.next_entry::<Cow<'_, str>, Vec<Cow<'_, str>>>()? {
                 // note the aws docs for multi value headers include an empty key. I'm not sure if this is a doc bug
                 // or not by the http crate doesn't handle it
@@ -168,7 +168,7 @@ where
             let mut headers = map
                 .size_hint()
                 .map(HeaderMap::with_capacity)
-                .unwrap_or_else(|| HeaderMap::new());
+                .unwrap_or_else(HeaderMap::new);
             while let Some((key, value)) = map.next_entry::<Cow<'_, str>, Cow<'_, str>>()? {
                 let header_name = key.parse::<HeaderName>().map_err(A::Error::custom)?;
                 let header_value = HeaderValue::from_shared(value.into_owned().into()).map_err(A::Error::custom)?;

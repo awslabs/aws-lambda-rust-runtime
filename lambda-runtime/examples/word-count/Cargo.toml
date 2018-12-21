@@ -1,0 +1,18 @@
+[package]
+name = "my_lambda_function"
+version = "0.1.0"
+authors = ["joydeep bhattacharjee"]
+autobins = false
+
+[dependencies]
+lambda_runtime = "0.1"
+serde = "^1"
+serde_derive = "^1"
+serde_json = "^1"
+log = "0.4"
+simple_logger = "^1"
+regex = "1"
+
+[[bin]]
+name = "bootstrap"
+path = "src/main.rs"

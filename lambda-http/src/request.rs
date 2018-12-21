@@ -287,10 +287,7 @@ mod tests {
         // https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request
         let input = include_str!("../tests/data/apigw_proxy_request.json");
         let result = serde_json::from_str::<GatewayRequest<'_>>(&input);
-        assert!(
-            result.is_ok(),
-            format!("event was not parsed as expected {:?}", result)
-        );
+        assert!(result.is_ok(), format!("event was not parsed as expected {:?}", result));
     }
 
     #[test]
@@ -299,10 +296,7 @@ mod tests {
         // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
         let input = include_str!("../tests/data/apigw_multi_value_proxy_request.json");
         let result = serde_json::from_str::<GatewayRequest<'_>>(&input);
-        assert!(
-            result.is_ok(),
-            format!("event was not parsed as expected {:?}", result)
-        );
+        assert!(result.is_ok(), format!("event was not parsed as expected {:?}", result));
     }
 
     #[test]

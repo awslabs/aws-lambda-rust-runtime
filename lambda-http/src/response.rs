@@ -209,7 +209,7 @@ mod tests {
             .header("multi", "a")
             .header("multi", "b")
             .body(Body::from(()))
-            .expect("failed to create request")
+            .expect("failed to create response")
             .into();
         let json = serde_json::to_string(&res).expect("failed to serialize to json");
         assert_eq!(

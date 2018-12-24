@@ -132,7 +132,7 @@ $ npx serverless invoke -f hello -d '{"foo":"bar"}'
 
 Alternatively, you can build a Rust-based Lambda function in a [docker mirror of the AWS Lambda provided runtime with the Rust toolchain preinstalled](https://github.com/softprops/lambda-rust).
 
-Running the following command will start a emphemeral docker container which will build your Rust application and produce a zip file containing its binary auto-renamed to `bootstrap` to meet the AWS Lamdbda's expectations for binaries under `target/lambda/release/{your-binary-name}.zip`, typically this is just the name of your crate if you are using the cargo default binary (i.e. `main.rs`)
+Running the following command will start a emphemeral docker container which will build your Rust application and produce a zip file containing its binary auto-renamed to `bootstrap` to meet the AWS Lambda's expectations for binaries under `target/lambda/release/{your-binary-name}.zip`, typically this is just the name of your crate if you are using the cargo default binary (i.e. `main.rs`)
 
 ```bash
 # build and package deploy-ready artifact

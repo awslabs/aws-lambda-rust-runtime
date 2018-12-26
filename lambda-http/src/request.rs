@@ -321,7 +321,7 @@ mod tests {
         assert_eq!(
             actual.query_string_parameters().get_all("multivalueName"),
             Some(vec!["you", "me"])
-        )
+        );
     }
 
     #[test]

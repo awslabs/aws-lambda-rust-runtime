@@ -128,6 +128,40 @@ Invoke it using serverless framework or a configured AWS integrated trigger sour
 $ npx serverless invoke -f hello -d '{"foo":"bar"}'
 ```
 
+#### Docker
+
+Alternatively, you can build a Rust-based Lambda function in a [docker mirror of the AWS Lambda provided runtime with the Rust toolchain preinstalled](https://github.com/softprops/lambda-rust).
+
+Running the following command will start a emphemeral docker container which will build your Rust application and produce a zip file containing its binary auto-renamed to `bootstrap` to meet the AWS Lambda's expectations for binaries under `target/lambda/release/{your-binary-name}.zip`, typically this is just the name of your crate if you are using the cargo default binary (i.e. `main.rs`)
+
+```bash
+# build and package deploy-ready artifact
+$ docker run --rm \
+    -v ${PWD}:/code \
+    -v ${HOME}/.cargo/registry:/root/.cargo/registry \
+    -v ${HOME}/.cargo/git:/root/.cargo/git \
+    softprops/lambda-rust
+```
+
+With your application build and packaged, it's ready to ship to production. You can also invoke it locally to verify is behavior using the [lambdaci :provided docker container](https://hub.docker.com/r/lambci/lambda/) which is also a mirror of the AWS Lambda provided runtime with build dependencies omitted.
+
+```bash
+# start a docker container replicating the "provided" lambda runtime
+# awaiting an event to be provided via stdin
+$ unzip -o \
+    target/lambda/release/{your-binary-name}.zip \
+    -d /tmp/lambda && \
+  docker run \
+    -i -e DOCKER_LAMBDA_USE_STDIN=1 \
+    --rm \
+    -v /tmp/lambda:/var/task \
+    lambci/lambda:provided
+
+# provide an event payload via stdin (typically a json blob)
+
+# Ctrl-D to yield control back to your function
+```
+
 
 ## lambda-runtime-client
 
@@ -137,11 +171,20 @@ For error reporting to the runtime APIs the library defines the `RuntimeApiError
 
 ## lambda-runtime
 
-This library makes it easy to create Rust executables for AWS lambda. The library defines a `lambda!()` macro. Call the `lambda!()` macro from your main method with a function that matches the `Handler` type:
+This library makes it easy to create Rust executables for AWS lambda. The library defines a `lambda!()` macro. Call the `lambda!()` macro from your main method with an  implementation the `Handler` type:
 
-```rust,ignore
-pub type Handler<E, O> = fn(E, Context) -> Result<O, error::HandlerError>;
+```rust
+pub trait Handler<E, O> {
+    /// Run the handler.
+    fn run(
+        &mut self,
+        event: E,
+        ctx: Context
+    ) -> Result<O, HandlerError>;
+}
 ```
+
+`Handler` provides a default implementation that enables you to provide a Rust closure or function pointer to the `lambda!()` macro.
 
 Optionally, you can pass your own instance of Tokio runtime to the `lambda!()` macro. See our [`with_custom_runtime.rs` example](https://github.com/awslabs/aws-lambda-rust-runtime/tree/master/lambda-runtime/examples/with_custom_runtime.rs)
 

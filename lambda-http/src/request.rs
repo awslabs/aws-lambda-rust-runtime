@@ -35,6 +35,8 @@ pub(crate) struct GatewayRequest<'a> {
     pub(crate) multi_value_headers: HeaderMap<HeaderValue>,
     #[serde(deserialize_with = "nullable_default")]
     pub(crate) query_string_parameters: StrMap,
+    #[serde(default, deserialize_with = "nullable_default")]
+    pub(crate) multi_value_query_string_parameters: StrMap,
     #[serde(deserialize_with = "nullable_default")]
     pub(crate) path_parameters: StrMap,
     #[serde(deserialize_with = "nullable_default")]
@@ -200,6 +202,7 @@ impl<'a> From<GatewayRequest<'a>> for HttpRequest<Body> {
             headers,
             mut multi_value_headers,
             query_string_parameters,
+            multi_value_query_string_parameters,
             path_parameters,
             stage_variables,
             body,
@@ -220,8 +223,16 @@ impl<'a> From<GatewayRequest<'a>> for HttpRequest<Body> {
                 path
             )
         });
-
-        builder.extension(QueryStringParameters(query_string_parameters));
+        // multi valued query string parameters are always a super
+        // set of singly valued query string parameters,
+        // when present, multi-valued query string parameters are preferred
+        builder.extension(QueryStringParameters(
+            if multi_value_query_string_parameters.is_empty() {
+                query_string_parameters
+            } else {
+                multi_value_query_string_parameters
+            },
+        ));
         builder.extension(PathParameters(path_parameters));
         builder.extension(StageVariables(stage_variables));
         builder.extension(request_context);
@@ -262,6 +273,7 @@ impl<'a> From<GatewayRequest<'a>> for HttpRequest<Body> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::RequestExt;
     use serde_json;
     use std::collections::HashMap;
 
@@ -296,7 +308,20 @@ mod tests {
         // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
         let input = include_str!("../tests/data/apigw_multi_value_proxy_request.json");
         let result = serde_json::from_str::<GatewayRequest<'_>>(&input);
-        assert!(result.is_ok(), format!("event was not parsed as expected {:?}", result));
+        assert!(
+            result.is_ok(),
+            format!("event is was not parsed as expected {:?}", result)
+        );
+        let apigw = result.unwrap();
+        assert!(!apigw.query_string_parameters.is_empty());
+        assert!(!apigw.multi_value_query_string_parameters.is_empty());
+        let actual = HttpRequest::from(apigw);
+
+        // test RequestExt#query_string_parameters does the right thing
+        assert_eq!(
+            actual.query_string_parameters().get_all("multivalueName"),
+            Some(vec!["you", "me"])
+        );
     }
 
     #[test]

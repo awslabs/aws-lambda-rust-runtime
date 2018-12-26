@@ -9,9 +9,8 @@ use http::{
 };
 use serde::{
     ser::{Error as SerError, SerializeMap},
-    Serializer,
+    Serializer, Serialize, Deserialize
 };
-use serde_derive::Serialize;
 
 use crate::body::Body;
 

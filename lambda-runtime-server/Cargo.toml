@@ -1,0 +1,19 @@
+[package]
+name = "lambda-runtime-server"
+version = "0.1.0"
+authors = ["David Barsky <dbarsky@amazon.com>"]
+edition = "2018"
+
+[dependencies]
+bytes = "^0.4"
+failure = "^0.1"
+http = "^0.1"
+serde = { version = "^1", features = ["derive"] }
+serde_json = "^1"
+warp = "^0.1"
+
+[patch.crates-io]
+http = { path = "../../http" }
+
+[dev-dependencies]
+uuid = { version = "0.7.1", features = ["v4"] }

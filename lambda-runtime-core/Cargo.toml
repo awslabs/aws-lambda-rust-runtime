@@ -1,0 +1,23 @@
+[package]
+name = "lambda_runtime_core"
+version = "0.1.0"
+authors = ["Stefano Buliani", "David Barsky"]
+description = "Rust runtime for AWS Lambda"
+keywords = ["AWS", "Lambda", "Runtime", "Rust"]
+license = "Apache-2.0"
+homepage = "https://github.com/awslabs/aws-lambda-rust-runtime"
+repository = "https://github.com/awslabs/aws-lambda-rust-runtime"
+documentation = "https://docs.rs/lambda_runtime"
+edition = "2018"
+
+[dependencies]
+log = "^0.4"
+hyper = "^0.12"
+tokio = "^0.1"
+backtrace = "^0.3"
+lambda_runtime_client = { path = "../lambda-runtime-client", version = "^0.1" }
+chrono = "^0.4"
+
+[dev-dependencies]
+failure = "^0.1"
+simple_logger = "^1"

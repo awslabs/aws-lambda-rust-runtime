@@ -26,7 +26,7 @@ pub enum LambdaHeaders {
     FunctionArn,
     /// The X-Ray trace ID generated for this invocation
     TraceId,
-    /// The deadline for the function execution in nanoseconds
+    /// The deadline for the function execution in milliseconds
     Deadline,
     /// The client context header. This field is populated when the function
     /// is invoked from a mobile client.
@@ -37,16 +37,23 @@ pub enum LambdaHeaders {
     CognitoIdentity,
 }
 
-impl fmt::Display for LambdaHeaders {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl LambdaHeaders {
+    /// Returns the `str` representation of the header.
+    fn as_str(&self) -> &'static str {
         match self {
-            LambdaHeaders::RequestId => write!(f, "Lambda-Runtime-Aws-Request-Id"),
-            LambdaHeaders::FunctionArn => write!(f, "Lambda-Runtime-Invoked-Function-Arn"),
-            LambdaHeaders::TraceId => write!(f, "Lambda-Runtime-Trace-Id"),
-            LambdaHeaders::Deadline => write!(f, "Lambda-Runtime-Deadline-Ms"),
-            LambdaHeaders::ClientContext => write!(f, "Lambda-Runtime-Client-Context"),
-            LambdaHeaders::CognitoIdentity => write!(f, "Lambda-Runtime-Cognito-Identity"),
+            LambdaHeaders::RequestId => "Lambda-Runtime-Aws-Request-Id",
+            LambdaHeaders::FunctionArn => "Lambda-Runtime-Invoked-Function-Arn",
+            LambdaHeaders::TraceId => "Lambda-Runtime-Trace-Id",
+            LambdaHeaders::Deadline => "Lambda-Runtime-Deadline-Ms",
+            LambdaHeaders::ClientContext => "Lambda-Runtime-Client-Context",
+            LambdaHeaders::CognitoIdentity => "Lambda-Runtime-Cognito-Identity",
         }
+    }
+}
+
+impl fmt::Display for LambdaHeaders {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
     }
 }
 
@@ -102,8 +109,8 @@ pub struct EventContext {
     pub aws_request_id: String,
     /// The X-Ray trace ID for the current invocation.
     pub xray_trace_id: String,
-    /// The execution deadline for the current invocation in nanoseconds.
-    pub deadline: u128,
+    /// The execution deadline for the current invocation in milliseconds.
+    pub deadline: i64,
     /// The client context object sent by the AWS mobile SDK. This field is
     /// empty unless the function is invoked using an AWS mobile SDK.
     pub client_context: Option<ClientContext>,
@@ -375,7 +382,7 @@ impl<'ev> RuntimeClient {
     fn get_event_context(&self, headers: &HeaderMap<HeaderValue>) -> Result<EventContext, ApiError> {
         // let headers = resp.headers();
 
-        let aws_request_id = match headers.get(LambdaHeaders::RequestId.to_string()) {
+        let aws_request_id = match headers.get(LambdaHeaders::RequestId.as_str()) {
             Some(value) => value.to_str()?.to_owned(),
             None => {
                 error!("Response headers do not contain request id header");
@@ -383,7 +390,7 @@ impl<'ev> RuntimeClient {
             }
         };
 
-        let invoked_function_arn = match headers.get(LambdaHeaders::FunctionArn.to_string()) {
+        let invoked_function_arn = match headers.get(LambdaHeaders::FunctionArn.as_str()) {
             Some(value) => value.to_str()?.to_owned(),
             None => {
                 error!("Response headers do not contain function arn header");
@@ -391,7 +398,7 @@ impl<'ev> RuntimeClient {
             }
         };
 
-        let xray_trace_id = match headers.get(LambdaHeaders::TraceId.to_string()) {
+        let xray_trace_id = match headers.get(LambdaHeaders::TraceId.as_str()) {
             Some(value) => value.to_str()?.to_owned(),
             None => {
                 error!("Response headers do not contain trace id header");
@@ -399,14 +406,13 @@ impl<'ev> RuntimeClient {
             }
         };
 
-        let deadline: u128 = match headers.get(LambdaHeaders::Deadline.to_string()) {
-            Some(value) => value.to_str()?.to_owned(),
+        let deadline = match headers.get(LambdaHeaders::Deadline.as_str()) {
+            Some(value) => value.to_str()?.parse()?,
             None => {
                 error!("Response headers do not contain deadline header");
                 return Err(ApiError::new(&format!("Missing {} header", LambdaHeaders::Deadline)));
             }
-        }
-        .parse::<u128>()?;
+        };
 
         let mut ctx = EventContext {
             aws_request_id,
@@ -417,14 +423,14 @@ impl<'ev> RuntimeClient {
             identity: Option::default(),
         };
 
-        if let Some(ctx_json) = headers.get(LambdaHeaders::ClientContext.to_string()) {
+        if let Some(ctx_json) = headers.get(LambdaHeaders::ClientContext.as_str()) {
             let ctx_json = ctx_json.to_str()?;
             trace!("Found Client Context in response headers: {}", ctx_json);
             let ctx_value: ClientContext = serde_json::from_str(&ctx_json)?;
             ctx.client_context = Option::from(ctx_value);
         };
 
-        if let Some(cognito_json) = headers.get(LambdaHeaders::CognitoIdentity.to_string()) {
+        if let Some(cognito_json) = headers.get(LambdaHeaders::CognitoIdentity.as_str()) {
             let cognito_json = cognito_json.to_str()?;
             trace!("Found Cognito Identity in response headers: {}", cognito_json);
             let identity_value: CognitoIdentity = serde_json::from_str(&cognito_json)?;

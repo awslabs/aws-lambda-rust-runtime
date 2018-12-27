@@ -28,6 +28,12 @@ macro_rules! lambda {
     ($handler:ident, $runtime:expr) => {
         $crate::start($handler, Some($runtime))
     };
+    ($handler:expr) => {
+        $crate::start($handler, None)
+    };
+    ($handler:expr, $runtime:expr) => {
+        $crate::start($handler, Some($runtime))
+    };
 }
 
 /// Internal implementation of the start method that receives a config provider. This method
@@ -256,7 +262,7 @@ pub(crate) mod tests {
 
     #[test]
     fn runtime_invokes_handler() {
-        let config: &env::ConfigProvider = &env::tests::MockConfigProvider { error: false };
+        let config: &dyn env::ConfigProvider = &env::tests::MockConfigProvider { error: false };
         let client = RuntimeClient::new(
             config
                 .get_runtime_api_endpoint()

@@ -6,7 +6,7 @@ use std::{
 
 use serde::{
     de::{MapAccess, Visitor},
-    Deserialize, Deserializer,
+    Deserialize, Deserializer
 };
 
 /// A read-only view into a map of string data which may contain multiple values
@@ -76,7 +76,7 @@ impl<'a> Iterator for StrMapIter<'a> {
 
 /// internal type used when deserializing StrMaps from
 /// potentially one or many valued maps
-#[derive(serde_derive::Deserialize)]
+#[derive(Deserialize)]
 #[serde(untagged)]
 enum OneOrMany {
     One(String),

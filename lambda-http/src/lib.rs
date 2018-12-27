@@ -45,6 +45,9 @@
 //! }
 //! ```
 
+#[macro_use]
+extern crate serde_derive;
+
 pub use http::{self, Response};
 use lambda_runtime::{self as lambda, error::HandlerError, Context};
 use tokio::runtime::Runtime as TokioRuntime;

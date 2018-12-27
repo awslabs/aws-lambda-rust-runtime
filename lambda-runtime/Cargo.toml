@@ -17,8 +17,8 @@ maintenance = { status = "actively-developed" }
 
 [dependencies]
 serde = "^1"
-serde_json = "^1"
 serde_derive = "^1"
+serde_json = "^1"
 log = "^0.4"
 hyper = "^0.12"
 tokio = "^0.1"

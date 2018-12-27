@@ -44,21 +44,26 @@ use serde;
 use serde_json;
 use tokio::runtime::Runtime as TokioRuntime;
 
-pub use lambda_runtime_core::{Context, HandlerError};
+pub use lambda_runtime_core::Context;
+
+/// The error module exposes the HandlerError type.
+pub mod error {
+    pub use lambda_runtime_core::HandlerError;
+}
 
 /// Functions acting as a handler must conform to this type.
 pub trait Handler<E, O> {
     /// Method to execute the handler function
-    fn run(&mut self, event: E, ctx: Context) -> Result<O, HandlerError>;
+    fn run(&mut self, event: E, ctx: Context) -> Result<O, error::HandlerError>;
 }
 
 /// Implementation of the `Handler` trait for both function pointers
 /// and closures.
 impl<F, E, O> Handler<E, O> for F
 where
-    F: FnMut(E, Context) -> Result<O, HandlerError>,
+    F: FnMut(E, Context) -> Result<O, error::HandlerError>,
 {
-    fn run(&mut self, event: E, ctx: Context) -> Result<O, HandlerError> {
+    fn run(&mut self, event: E, ctx: Context) -> Result<O, error::HandlerError> {
         (*self)(event, ctx)
     }
 }
@@ -67,7 +72,7 @@ where
 /// defined in the `lambda_runtime_core` crate. The closure simply uses `serde_json`
 /// to serialize and deserialize the incoming event from a `Vec<u8>` and the output
 /// to a `Vec<u8>`.
-fn wrap<E, O>(mut h: impl Handler<E, O>) -> impl FnMut(Vec<u8>, Context) -> Result<Vec<u8>, HandlerError>
+fn wrap<E, O>(mut h: impl Handler<E, O>) -> impl FnMut(Vec<u8>, Context) -> Result<Vec<u8>, error::HandlerError>
 where
     E: serde::de::DeserializeOwned,
     O: serde::Serialize,

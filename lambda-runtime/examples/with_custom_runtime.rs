@@ -1,4 +1,4 @@
-use lambda_runtime::{lambda, Context, HandlerError};
+use lambda_runtime::{error::HandlerError, lambda, Context};
 use log::{self, error};
 use serde_derive::{Deserialize, Serialize};
 use simple_error::bail;

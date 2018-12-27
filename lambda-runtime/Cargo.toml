@@ -8,22 +8,19 @@ license = "Apache-2.0"
 homepage = "https://github.com/awslabs/aws-lambda-rust-runtime"
 repository = "https://github.com/awslabs/aws-lambda-rust-runtime"
 documentation = "https://docs.rs/lambda_runtime"
+edition = "2018"
 
 [dependencies]
 serde = "^1"
 serde_json = "^1"
 serde_derive = "^1"
+tokio = "0.1"
 log = "^0.4"
-hyper = "^0.12"
-tokio = "^0.1"
-backtrace = "^0.3"
-lambda_runtime_client = { path = "../lambda-runtime-client", version = "^0.1" }
-chrono = "^0.4"
-simple_logger = "^1"
+lambda_runtime_core = { path = "../lambda-runtime-core", version = "^0.1" }
 
 [dev-dependencies]
-hyper-tls = "^0.3"
+simple_logger = "^1"
 simple-error = "^0.1"
 failure = "^0.1"
-rusoto_core = "^0.35"
-rusoto_dynamodb = "^0.35"
+#rusoto_core = "^0.35"
+#rusoto_dynamodb = "^0.35"

@@ -1,10 +1,12 @@
-use error::{ApiError, ErrorResponse, ERROR_TYPE_UNHANDLED};
+use crate::error::{ApiError, ErrorResponse, ERROR_TYPE_UNHANDLED};
 use hyper::{
     client::HttpConnector,
     header::{self, HeaderMap, HeaderValue},
     rt::{Future, Stream},
     Body, Client, Method, Request, Uri,
 };
+use log::*;
+use serde_derive::*;
 use serde_json;
 use std::{collections::HashMap, fmt};
 use tokio::runtime::Runtime;
@@ -13,6 +15,8 @@ const RUNTIME_API_VERSION: &str = "2018-06-01";
 const API_CONTENT_TYPE: &str = "application/json";
 const API_ERROR_CONTENT_TYPE: &str = "application/vnd.aws.lambda.error+json";
 const RUNTIME_ERROR_HEADER: &str = "Lambda-Runtime-Function-Error-Type";
+// TODO: Perhaps use a macro to generate this
+const CLIENT_USER_AGENT: &str = "AWS_Lambda_Rust/0.1.0";
 
 /// Enum of the headers returned by Lambda's `/next` API call.
 pub enum LambdaHeaders {
@@ -116,7 +120,7 @@ pub struct RuntimeClient {
     endpoint: String,
 }
 
-impl RuntimeClient {
+impl<'ev> RuntimeClient {
     /// Creates a new instance of the Runtime APIclient SDK. The http client has timeouts disabled and
     /// will always send a `Connection: keep-alive` header.
     pub fn new(endpoint: String, runtime: Option<Runtime>) -> Result<Self, ApiError> {
@@ -137,7 +141,7 @@ impl RuntimeClient {
     }
 }
 
-impl RuntimeClient {
+impl<'ev> RuntimeClient {
     /// Polls for new events to the Runtime APIs.
     pub fn next_event(&self) -> Result<(Vec<u8>, EventContext), ApiError> {
         let uri = format!(
@@ -174,7 +178,7 @@ impl RuntimeClient {
                 }
                 let ctx = self.get_event_context(&resp.headers())?;
                 let out = resp.into_body().concat2().wait()?;
-                let buf: Vec<u8> = out.into_bytes().to_vec();
+                let buf = out.into_bytes().to_vec();
 
                 trace!(
                     "Received new event for request id {}. Event length {} bytes",
@@ -202,7 +206,7 @@ impl RuntimeClient {
     ///
     /// # Returns
     /// A `Result` object containing a bool return value for the call or an `error::ApiError` instance.
-    pub fn event_response(&self, request_id: &str, output: Vec<u8>) -> Result<(), ApiError> {
+    pub fn event_response(&self, request_id: &str, output: &[u8]) -> Result<(), ApiError> {
         let uri: Uri = format!(
             "http://{}/{}/runtime/invocation/{}/response",
             self.endpoint, RUNTIME_API_VERSION, request_id
@@ -250,7 +254,7 @@ impl RuntimeClient {
     ///
     /// # Returns
     /// A `Result` object containing a bool return value for the call or an `error::ApiError` instance.
-    pub fn event_error(&self, request_id: &str, e: ErrorResponse) -> Result<(), ApiError> {
+    pub fn event_error(&self, request_id: &str, e: &ErrorResponse) -> Result<(), ApiError> {
         let uri: Uri = format!(
             "http://{}/{}/runtime/invocation/{}/error",
             self.endpoint, RUNTIME_API_VERSION, request_id
@@ -261,7 +265,7 @@ impl RuntimeClient {
             request_id,
             e.error_message
         );
-        let req = self.get_runtime_error_request(&uri, e);
+        let req = self.get_runtime_error_request(&uri, &e);
 
         match self.http_client.request(req).wait() {
             Ok(resp) => {
@@ -297,12 +301,12 @@ impl RuntimeClient {
     /// # Panics
     /// If it cannot send the init error. In this case we panic to force the runtime
     /// to restart.
-    pub fn fail_init(&self, e: ErrorResponse) {
+    pub fn fail_init(&self, e: &ErrorResponse) {
         let uri: Uri = format!("http://{}/{}/runtime/init/error", self.endpoint, RUNTIME_API_VERSION)
             .parse()
             .expect("Could not generate Runtime URI");
         error!("Calling fail_init Runtime API: {}", e.error_message);
-        let req = self.get_runtime_error_request(&uri, e);
+        let req = self.get_runtime_error_request(&uri, &e);
 
         self.http_client
             .request(req)
@@ -321,9 +325,7 @@ impl RuntimeClient {
     pub fn get_endpoint(&self) -> String {
         self.endpoint.clone()
     }
-}
 
-impl RuntimeClient {
     /// Creates a Hyper `Request` object for the given `Uri` and `Body`. Sets the
     /// HTTP method to `POST` and the `Content-Type` header value to `application/json`.
     ///
@@ -334,16 +336,17 @@ impl RuntimeClient {
     ///
     /// # Returns
     /// A Populated Hyper `Request` object.
-    fn get_runtime_post_request(&self, uri: &Uri, body: Vec<u8>) -> Request<Body> {
+    fn get_runtime_post_request(&self, uri: &Uri, body: &[u8]) -> Request<Body> {
         Request::builder()
             .method(Method::POST)
             .uri(uri.clone())
             .header(header::CONTENT_TYPE, header::HeaderValue::from_static(API_CONTENT_TYPE))
-            .body(Body::from(body))
+            .header(header::USER_AGENT, header::HeaderValue::from_static(CLIENT_USER_AGENT))
+            .body(Body::from(body.to_owned()))
             .unwrap()
     }
 
-    fn get_runtime_error_request(&self, uri: &Uri, e: ErrorResponse) -> Request<Body> {
+    fn get_runtime_error_request(&self, uri: &Uri, e: &ErrorResponse) -> Request<Body> {
         let body = serde_json::to_vec(&e).expect("Could not turn error object into response JSON");
         Request::builder()
             .method(Method::POST)
@@ -352,6 +355,7 @@ impl RuntimeClient {
                 header::CONTENT_TYPE,
                 header::HeaderValue::from_static(API_ERROR_CONTENT_TYPE),
             )
+            .header(header::USER_AGENT, header::HeaderValue::from_static(CLIENT_USER_AGENT))
             .header(RUNTIME_ERROR_HEADER, HeaderValue::from_static(ERROR_TYPE_UNHANDLED))
             .body(Body::from(body))
             .unwrap()

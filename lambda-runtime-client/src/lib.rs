@@ -1,5 +1,6 @@
 #![warn(missing_docs)]
 #![deny(warnings)]
+#![allow(clippy::new_ret_no_self)]
 //! Rust client SDK for the AWS Lambda Runtime APIs. This crate defines
 //! a `RuntimeClient` that encapsulates interactions with AWS Lambda's Runtime
 //! APIs.
@@ -56,19 +57,7 @@
 //! }
 //! ```
 
-#[macro_use]
-extern crate log;
-#[macro_use]
-extern crate serde_derive;
-
-extern crate backtrace;
-extern crate http;
-extern crate hyper;
-extern crate serde;
-extern crate serde_json;
-extern crate tokio;
-
 mod client;
 pub mod error;
 
-pub use client::*;
+pub use crate::client::*;

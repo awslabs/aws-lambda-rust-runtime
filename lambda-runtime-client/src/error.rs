@@ -1,6 +1,12 @@
 //! This module defines the `RuntimeApiError` trait that developers should implement
 //! to send their custom errors to the AWS Lambda Runtime Client SDK. The module also
 //! defines the `ApiError` type returned by the `RuntimeClient` implementations.
+use backtrace;
+use http::{header::ToStrError, uri::InvalidUri};
+use hyper;
+use log::*;
+use serde_derive::*;
+use serde_json;
 use std::{
     env,
     error::Error,
@@ -9,11 +15,6 @@ use std::{
     num::ParseIntError,
     option::Option,
 };
-
-use backtrace;
-use http::{header::ToStrError, uri::InvalidUri};
-use hyper;
-use serde_json;
 
 /// Error type description for the `ErrorResponse` event. This type should be returned
 /// for errors that were handled by the function code or framework.

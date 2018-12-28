@@ -1,0 +1,15 @@
+[package]
+name = "lambda_runtime_errors"
+version = "0.1.0"
+authors = ["Stefano Buliani", "David Barsky"]
+edition = "2018"
+description = "Rust runtime errors for AWS Lambda"
+keywords = ["AWS", "Lambda", "Runtime", "Rust"]
+license = "Apache-2.0"
+homepage = "https://github.com/awslabs/aws-lambda-rust-runtime"
+repository = "https://github.com/awslabs/aws-lambda-rust-runtime"
+documentation = "https://docs.rs/lambda_runtime"
+
+[dependencies]
+log = "^0.4"
+failure = "^0.1"

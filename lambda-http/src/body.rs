@@ -1,4 +1,4 @@
-//! Provides an API Gateway oriented request and response body entity interface
+//! Provides an ALB / API Gateway oriented request and response body entity interface
 
 use std::{borrow::Cow, ops::Deref};
 
@@ -6,14 +6,14 @@ use base64::display::Base64Display;
 use serde::ser::{Error as SerError, Serialize, Serializer};
 
 /// Representation of http request and response bodies as supported
-/// by API Gateway.
+/// by API Gateway and ALBs.
 ///
 /// These come in three flavors
 /// * `Empty` ( no body )
 /// * `Text` ( text data )
 /// * `Binary` ( binary data )
 ///
-/// Body types can be `Deref` and `AsRef`'d into `[u8]` types much like the `hyper` crate
+/// Body types can be `Deref` and `AsRef`'d into `[u8]` types much like the [hyper crate](https://crates.io/crates/hyper)
 ///
 /// # Examples
 ///

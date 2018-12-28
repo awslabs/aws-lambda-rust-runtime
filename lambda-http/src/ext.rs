@@ -1,4 +1,4 @@
-//! API Gateway extension methods for `http::Request` types
+//! ALB and API Gateway extension methods for `http::Request` types
 
 use failure::Fail;
 use http::{header::CONTENT_TYPE, Request as HttpRequest};
@@ -8,14 +8,18 @@ use serde_urlencoded;
 
 use crate::{request::RequestContext, strmap::StrMap};
 
-/// API gateway pre-parsed http query string parameters
+/// ALB/API gateway pre-parsed http query string parameters
 pub(crate) struct QueryStringParameters(pub(crate) StrMap);
 
 /// API gateway pre-extracted url path parameters
+///
+/// These will always be empty for ALB requests
 pub(crate) struct PathParameters(pub(crate) StrMap);
 
 /// API gateway configured
 /// [stage variables](https://docs.aws.amazon.com/apigateway/latest/developerguide/stage-variables.html)
+///
+/// These will always be empty for ALB requests
 pub(crate) struct StageVariables(pub(crate) StrMap);
 
 /// Payload deserialization errors
@@ -30,9 +34,13 @@ pub enum PayloadError {
 }
 
 /// Extentions for `lambda_http::Request` structs that
-/// provide access to [API gateway features](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format)
+/// provide access to [API gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format)
+/// and [ALB](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html)
+/// features.
 ///
-/// In addition, you can also access a request's body in deserialized format
+/// # Examples
+///
+/// You can also access a request's body in deserialized format
 /// for payloads sent in `application/x-www-form-urlencoded` or
 /// `application/x-www-form-urlencoded` format
 ///
@@ -87,16 +95,23 @@ pub trait RequestExt {
     /// No query parameters
     /// will yield an empty `StrMap`.
     fn query_string_parameters(&self) -> StrMap;
+
     /// Return pre-extracted path parameters, parameter provided in url placeholders
     /// `/foo/{bar}/baz/{boom}`,
     /// associated with the API gateway request. No path parameters
     /// will yield an empty `StrMap`
+    ///
+    /// These will always be empty for ALB triggered requests
     fn path_parameters(&self) -> StrMap;
+
     /// Return [stage variables](https://docs.aws.amazon.com/apigateway/latest/developerguide/stage-variables.html)
     /// associated with the API gateway request. No stage parameters
     /// will yield an empty `StrMap`
+    ///
+    /// These will always be empty for ALB triggered requests
     fn stage_variables(&self) -> StrMap;
-    /// Return request context data assocaited with the API gateway request
+
+    /// Return request context data assocaited with the ALB or API gateway request
     fn request_context(&self) -> RequestContext;
 
     /// Return the Result of a payload parsed into a serde Deserializeable
@@ -162,7 +177,7 @@ mod tests {
     use serde_derive::Deserialize;
     use std::collections::HashMap;
 
-    use crate::{GatewayRequest, RequestExt, StrMap};
+    use crate::{LambdaRequest, RequestExt, StrMap};
 
     #[test]
     fn requests_have_query_string_ext() {
@@ -170,13 +185,13 @@ mod tests {
         headers.insert("Host", "www.rust-lang.org".parse().unwrap());
         let mut query = HashMap::new();
         query.insert("foo".to_owned(), vec!["bar".to_owned()]);
-        let gwr: GatewayRequest<'_> = GatewayRequest {
+        let lambda_request = LambdaRequest {
             path: "/foo".into(),
             headers,
             query_string_parameters: StrMap(query.clone().into()),
-            ..GatewayRequest::default()
+            ..LambdaRequest::default()
         };
-        let actual = HttpRequest::from(gwr);
+        let actual = HttpRequest::from(lambda_request);
         assert_eq!(actual.query_string_parameters(), StrMap(query.clone().into()));
     }
 
@@ -190,13 +205,13 @@ mod tests {
             foo: String,
             baz: usize,
         }
-        let gwr: GatewayRequest<'_> = GatewayRequest {
+        let lambda_request = LambdaRequest {
             path: "/foo".into(),
             headers,
             body: Some("foo=bar&baz=2".into()),
-            ..GatewayRequest::default()
+            ..LambdaRequest::default()
         };
-        let actual = HttpRequest::from(gwr);
+        let actual = HttpRequest::from(lambda_request);
         let payload: Option<Payload> = actual.payload().unwrap_or_default();
         assert_eq!(
             payload,
@@ -212,13 +227,13 @@ mod tests {
         let mut headers = HeaderMap::new();
         headers.insert("Host", "www.rust-lang.org".parse().unwrap());
         headers.insert("Content-Type", "application/x-www-form-urlencoded".parse().unwrap());
-        let gwr: GatewayRequest<'_> = GatewayRequest {
+        let lambda_request = LambdaRequest {
             path: "/foo".into(),
             headers,
             body: Some("foo=bar&baz=2".into()),
-            ..GatewayRequest::default()
+            ..LambdaRequest::default()
         };
-        let actual = HttpRequest::from(gwr);
+        let actual = HttpRequest::from(lambda_request);
         let mut expected = HashMap::new();
         expected.insert("foo".to_string(), "bar".to_string());
         expected.insert("baz".to_string(), "2".to_string());
@@ -236,11 +251,11 @@ mod tests {
             foo: String,
             baz: usize,
         }
-        let gwr: GatewayRequest<'_> = GatewayRequest {
+        let gwr: LambdaRequest<'_> = LambdaRequest {
             path: "/foo".into(),
             headers,
             body: Some(r#"{"foo":"bar", "baz": 2}"#.into()),
-            ..GatewayRequest::default()
+            ..LambdaRequest::default()
         };
         let actual = HttpRequest::from(gwr);
         let payload: Option<Payload> = actual.payload().unwrap_or_default();

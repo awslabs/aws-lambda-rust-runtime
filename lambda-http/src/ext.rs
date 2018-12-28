@@ -41,7 +41,7 @@ pub enum PayloadError {
 /// extern crate lambda_runtime as lambda;
 /// #[macro_use] extern crate serde_derive;
 ///
-/// use lambda::{Context, HandlerError};
+/// use lambda::{Context, error::HandlerError};
 /// use lambda_http::{Body, Request, Response, RequestExt};
 ///
 /// #[derive(Debug,Deserialize,Default)]
@@ -59,7 +59,7 @@ pub enum PayloadError {
 /// fn handler(
 ///   request: Request,
 ///   ctx: lambda::Context
-/// ) -> Result<Response<Body>, lambda::HandlerError> {
+/// ) -> Result<Response<Body>, HandlerError> {
 ///   let args: Args = request.payload()
 ///     .unwrap_or_else(|_parse_err| None)
 ///     .unwrap_or_default();

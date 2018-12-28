@@ -6,7 +6,7 @@
 //!
 //! ```rust,no_run
 //! use lambda_http::{lambda, IntoResponse, Request, RequestExt};
-//! use lambda_runtime::{Context, HandlerError};
+//! use lambda_runtime::{Context, error::HandlerError};
 //!
 //! fn main() {
 //!     lambda!(handler)

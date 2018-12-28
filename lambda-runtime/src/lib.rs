@@ -7,11 +7,7 @@
 //! package must be called `bootstrap`.
 //!
 //! ```rust,no_run
-//! extern crate serde_derive;
-//! extern crate lambda_runtime;
-//! extern crate simple_error;
-//!
-//! use lambda_runtime::{HandlerError, lambda};
+//! use lambda_runtime::{error::HandlerError, lambda, Context};
 //! use simple_error::bail;
 //! use serde_derive::{Serialize, Deserialize};
 //!
@@ -30,7 +26,7 @@
 //!     lambda!(my_handler);
 //! }
 //!
-//! fn my_handler(e: CustomEvent, ctx: lambda_runtime::Context) -> Result<CustomOutput, HandlerError> {
+//! fn my_handler(e: CustomEvent, ctx: Context) -> Result<CustomOutput, HandlerError> {
 //!     if e.first_name == "" {
 //!         bail!("Empty first name");
 //!     }

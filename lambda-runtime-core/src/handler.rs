@@ -1,5 +1,5 @@
 use crate::context::Context;
-use std::{fmt::Display, fmt::Debug, fmt};
+use std::fmt::{self, Debug, Display};
 
 /// Functions acting as a handler must conform to this type.
 pub trait Handler {

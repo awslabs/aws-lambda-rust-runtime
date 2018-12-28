@@ -1,7 +1,9 @@
-use crate::context::Context;
-use crate::env::{ConfigProvider, EnvConfigProvider, FunctionSettings};
-use crate::error::RuntimeError;
-use crate::handler::{Handler, HandlerError};
+use crate::{
+    context::Context,
+    env::{ConfigProvider, EnvConfigProvider, FunctionSettings},
+    error::RuntimeError,
+    handler::{Handler, HandlerError},
+};
 use lambda_runtime_client::{error::ErrorResponse, RuntimeClient};
 use log::*;
 use tokio::runtime::Runtime as TokioRuntime;
@@ -256,8 +258,7 @@ where
 #[cfg(test)]
 pub(crate) mod tests {
     use super::*;
-    use crate::context;
-    use crate::env;
+    use crate::{context, env};
     use lambda_runtime_client::RuntimeClient;
 
     #[test]

@@ -15,7 +15,9 @@ mod error;
 mod handler;
 mod runtime;
 
-pub use crate::context::Context;
-pub use crate::env::{ConfigProvider, EnvConfigProvider};
-pub use crate::handler::{Handler, HandlerError};
-pub use crate::runtime::*;
+pub use crate::{
+    context::Context,
+    env::{ConfigProvider, EnvConfigProvider},
+    handler::{Handler, HandlerError},
+    runtime::*,
+};

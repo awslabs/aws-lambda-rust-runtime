@@ -19,6 +19,7 @@ pub(crate) struct LambdaResponse {
     pub status_code: u16,
     // ALB requires a statusDescription i.e. "200 OK" field but API Gateway returns an error
     // when one is provided. only populate this for ALB responses
+    #[cfg(feature = "alb")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status_description: Option<String>,
     #[serde(serialize_with = "serialize_headers")]
@@ -36,6 +37,7 @@ impl Default for LambdaResponse {
     fn default() -> Self {
         Self {
             status_code: 200,
+            #[cfg(feature = "alb")]
             status_description: Default::default(),
             headers: Default::default(),
             multi_value_headers: Default::default(),
@@ -88,6 +90,7 @@ impl LambdaResponse {
         };
         Self {
             status_code: parts.status.as_u16(),
+            #[cfg(feature = "alb")]
             status_description: if is_alb {
                 Some(format!(
                     "{} {}",
@@ -160,7 +163,7 @@ impl IntoResponse for serde_json::Value {
 
 #[cfg(test)]
 mod tests {
-    use super::{Body, LambdaResponse, IntoResponse};
+    use super::{Body, IntoResponse, LambdaResponse};
     use http::{header::CONTENT_TYPE, Response};
     use serde_json::{self, json};
 

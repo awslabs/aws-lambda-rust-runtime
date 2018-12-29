@@ -44,10 +44,10 @@ pub(crate) struct LambdaRequest<'a> {
     /// the `lambda.multi_value_headers.enabled` target group setting turned on
     #[serde(default, deserialize_with = "nullable_default")]
     pub(crate) multi_value_query_string_parameters: StrMap,
-    /// alb events do not have path parameters
+    #[cfg(feature = "apigw")]
     #[serde(default, deserialize_with = "nullable_default")]
     pub(crate) path_parameters: StrMap,
-    /// alb events do not have stage variables
+    #[cfg(feature = "apigw")]
     #[serde(default, deserialize_with = "nullable_default")]
     pub(crate) stage_variables: StrMap,
     pub(crate) body: Option<Cow<'a, str>>,
@@ -58,6 +58,7 @@ pub(crate) struct LambdaRequest<'a> {
 
 /// Event request context as an enumeration of request contexts
 /// for both ALB and API Gateway http events
+#[cfg(all(feature = "apigw", feature = "alb"))]
 #[derive(Deserialize, Debug, Clone)]
 #[serde(untagged)]
 pub enum RequestContext {
@@ -81,6 +82,33 @@ pub enum RequestContext {
     Alb { elb: Elb },
 }
 
+/// ALB request context
+#[cfg(all(feature = "alb", not(all(feature = "apigw", feature = "alb"))))]
+#[derive(Default, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct RequestContext {
+    elb: Elb,
+}
+
+/// Api Gateway request context
+#[cfg(all(feature = "apigw", not(all(feature = "apigw", feature = "alb"))))]
+#[derive(Default, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct RequestContext {
+    //pub path: String,
+    account_id: String,
+    resource_id: String,
+    stage: String,
+    request_id: String,
+    resource_path: String,
+    http_method: String,
+    #[serde(default)]
+    authorizer: HashMap<String, Value>,
+    api_id: String,
+    identity: Identity,
+}
+
+#[cfg(all(feature = "apigw", feature = "alb"))]
 impl Default for RequestContext {
     fn default() -> Self {
         RequestContext::ApiGateway {
@@ -97,12 +125,20 @@ impl Default for RequestContext {
     }
 }
 
+#[cfg(feature = "alb")]
 impl RequestContext {
     /// Return true if this request context represents an ALB request
     pub fn is_alb(&self) -> bool {
-        match self {
-            RequestContext::Alb { .. } => true,
-            _ => false,
+        #[cfg(all(feature = "apigw", feature = "alb"))]
+        {
+            match self {
+                RequestContext::Alb { .. } => true,
+                _ => false,
+            }
+        }
+        #[cfg(all(feature = "alb", not(all(feature = "apigw", feature = "alb"))))]
+        {
+            true
         }
     }
 }
@@ -348,6 +384,7 @@ mod tests {
         assert_eq!(expected.method(), actual.method());
     }
 
+    #[cfg(feature = "apigw")]
     #[test]
     fn deserializes_apigw_request_events() {
         // from the docs
@@ -357,6 +394,7 @@ mod tests {
         assert!(result.is_ok(), format!("event was not parsed as expected {:?}", result));
     }
 
+    #[cfg(feature = "alb")]
     #[test]
     fn deserialize_alb_request_events() {
         // from the docs
@@ -366,6 +404,7 @@ mod tests {
         assert!(result.is_ok(), format!("event was not parsed as expected {:?}", result));
     }
 
+    #[cfg(feature = "apigw")]
     #[test]
     fn deserializes_apigw_multi_value_request_events() {
         // from docs
@@ -388,6 +427,7 @@ mod tests {
         );
     }
 
+    #[cfg(feature = "alb")]
     #[test]
     fn deserializes_alb_multi_value_request_events() {
         // from docs

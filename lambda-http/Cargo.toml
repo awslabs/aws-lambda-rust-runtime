@@ -31,3 +31,7 @@ serde_urlencoded = "0.5"
 log = "^0.4"
 simple_logger = "^1"
 
+[features]
+default = ['apigw', 'alb']
+apigw = []
+alb = []

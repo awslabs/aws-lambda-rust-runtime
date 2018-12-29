@@ -100,9 +100,17 @@ where
     let mut func = f;
     lambda::start(
         |req: LambdaRequest<'_>, ctx: Context| {
-            let is_alb = req.request_context.is_alb();
-            func.run(req.into(), ctx)
-                .map(|resp| LambdaResponse::from_response(is_alb, resp.into_response()))
+            #[cfg(feature = "alb")]
+            {
+                let is_alb = req.request_context.is_alb();
+                func.run(req.into(), ctx)
+                    .map(|resp| LambdaResponse::from_response(is_alb, resp.into_response()))
+            }
+            #[cfg(not(feature = "alb"))]
+            {
+                func.run(req.into(), ctx)
+                    .map(|resp| LambdaResponse::from_response(false, resp.into_response()))
+            }
         },
         runtime,
     )

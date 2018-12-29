@@ -87,7 +87,7 @@ pub enum RequestContext {
 #[derive(Default, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct RequestContext {
-    elb: Elb,
+    pub elb: Elb,
 }
 
 /// Api Gateway request context
@@ -96,16 +96,16 @@ pub struct RequestContext {
 #[serde(rename_all = "camelCase")]
 pub struct RequestContext {
     //pub path: String,
-    account_id: String,
-    resource_id: String,
-    stage: String,
-    request_id: String,
-    resource_path: String,
-    http_method: String,
+    pub account_id: String,
+    pub resource_id: String,
+    pub stage: String,
+    pub request_id: String,
+    pub resource_path: String,
+    pub http_method: String,
     #[serde(default)]
-    authorizer: HashMap<String, Value>,
-    api_id: String,
-    identity: Identity,
+    pub authorizer: HashMap<String, Value>,
+    pub api_id: String,
+    pub identity: Identity,
 }
 
 #[cfg(all(feature = "apigw", feature = "alb"))]

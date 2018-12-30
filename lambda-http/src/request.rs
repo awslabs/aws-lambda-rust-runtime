@@ -44,10 +44,10 @@ pub(crate) struct LambdaRequest<'a> {
     /// the `lambda.multi_value_headers.enabled` target group setting turned on
     #[serde(default, deserialize_with = "nullable_default")]
     pub(crate) multi_value_query_string_parameters: StrMap,
-    /// alb events do not have path parameters
+    /// ALB events do not have path parameters.
     #[serde(default, deserialize_with = "nullable_default")]
     pub(crate) path_parameters: StrMap,
-    /// alb events do not have stage variables
+    /// ALB events do not have stage variables.
     #[serde(default, deserialize_with = "nullable_default")]
     pub(crate) stage_variables: StrMap,
     pub(crate) body: Option<Cow<'a, str>>,

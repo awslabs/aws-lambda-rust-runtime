@@ -251,13 +251,13 @@ mod tests {
             foo: String,
             baz: usize,
         }
-        let gwr: LambdaRequest<'_> = LambdaRequest {
+        let lambda_request: LambdaRequest<'_> = LambdaRequest {
             path: "/foo".into(),
             headers,
             body: Some(r#"{"foo":"bar", "baz": 2}"#.into()),
             ..LambdaRequest::default()
         };
-        let actual = HttpRequest::from(gwr);
+        let actual = HttpRequest::from(lambda_request);
         let payload: Option<Payload> = actual.payload().unwrap_or_default();
         assert_eq!(
             payload,

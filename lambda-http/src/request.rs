@@ -336,13 +336,13 @@ mod tests {
     fn requests_convert() {
         let mut headers = HeaderMap::new();
         headers.insert("Host", "www.rust-lang.org".parse().unwrap());
-        let gwr: LambdaRequest<'_> = LambdaRequest {
+        let lambda_request: LambdaRequest<'_> = LambdaRequest {
             path: "/foo".into(),
             headers,
             ..LambdaRequest::default()
         };
         let expected = HttpRequest::get("https://www.rust-lang.org/foo").body(()).unwrap();
-        let actual = HttpRequest::from(gwr);
+        let actual = HttpRequest::from(lambda_request);
         assert_eq!(expected.method(), actual.method());
         assert_eq!(expected.uri(), actual.uri());
         assert_eq!(expected.method(), actual.method());

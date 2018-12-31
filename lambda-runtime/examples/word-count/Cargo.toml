@@ -3,6 +3,7 @@ name = "my_lambda_function"
 version = "0.1.0"
 authors = ["author"]
 autobins = false
+edition = "2018"
 
 [dependencies]
 lambda_runtime = "0.1"
@@ -16,3 +17,4 @@ regex = "1"
 [[bin]]
 name = "bootstrap"
 path = "src/main.rs"
+

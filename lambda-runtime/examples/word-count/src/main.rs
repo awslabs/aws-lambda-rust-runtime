@@ -1,18 +1,13 @@
-#[macro_use]
-extern crate serde_derive;
-#[macro_use]
-extern crate serde_json;
-extern crate lambda_runtime;
-extern crate regex;
-extern crate log;
-extern crate simple_logger;
-
+use serde_derive;
 use serde_derive::{Serialize, Deserialize};
+use lambda_runtime;
 use lambda_runtime::{lambda, Context, error::HandlerError};
+use log;
 use log::error;
 use std::error::Error;
 use std::collections;
 use std::collections::hash_map::Entry::{Occupied, Vacant};
+use regex;
 use regex::Regex;
 
 #[derive(Serialize, Deserialize)]

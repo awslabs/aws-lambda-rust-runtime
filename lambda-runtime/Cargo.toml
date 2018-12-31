@@ -28,3 +28,8 @@ chrono = "^0.4"
 
 [dev-dependencies]
 simple_logger = "^1"
+regex = "^1"
+
+[[example]]
+name = "wordcount"
+path = "examples/word-count/src/main.rs"

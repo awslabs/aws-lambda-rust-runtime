@@ -24,8 +24,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 fn my_handler(event: CustomEvent, ctx: Context) -> Result<String, HandlerError> {
     if event.string == "" {
-        error!("Empty name in request {}", ctx.aws_request_id);
-        return Err(ctx.new_error("Empty name"));
+        error!("Empty sentence in request {}. Please pass a document with some words in the document",
+            ctx.aws_request_id);
+        return Err(ctx.new_error("Empty sentence"));
     }
     let mut map = collections::HashMap::<String, u32>::new();
     let re = Regex::new(r"\w+").unwrap();

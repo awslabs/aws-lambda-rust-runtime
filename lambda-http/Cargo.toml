@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Doug Tangren"]
 edition = "2018"
 description = "Rust API Gateway proxy event interfaces for AWS Lambda"
-keywords = ["AWS", "Lambda", "APIGateway", "Rust", "API"]
+keywords = ["AWS", "Lambda", "APIGateway", "ALB", "API"]
 license = "Apache-2.0"
 homepage = "https://github.com/awslabs/aws-lambda-rust-runtime"
 repository = "https://github.com/awslabs/aws-lambda-rust-runtime"
@@ -30,3 +30,4 @@ serde_urlencoded = "0.5"
 [dev-dependencies]
 log = "^0.4"
 simple_logger = "^1"
+

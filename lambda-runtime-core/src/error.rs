@@ -3,6 +3,7 @@
 use std::{env, error::Error, fmt};
 
 use lambda_runtime_client::error::ApiError;
+use lambda_runtime_errors::LambdaErrorExt;
 
 /// The `RuntimeError` object is returned by the custom runtime as it polls
 /// for new events and tries to execute the handler function. The error
@@ -54,6 +55,16 @@ impl RuntimeError {
     }
 }
 
+impl LambdaErrorExt for RuntimeError {
+    fn error_type(&self) -> &str {
+        if self.recoverable {
+            "RecoverableRuntimeError"
+        } else {
+            "UnrecoverableRuntimeError"
+        }
+    }
+}
+
 impl fmt::Display for RuntimeError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.msg)
@@ -80,8 +91,8 @@ impl From<env::VarError> for RuntimeError {
 
 impl From<ApiError> for RuntimeError {
     fn from(e: ApiError) -> Self {
-        let mut err = RuntimeError::new(e.description());
-        err.recoverable = e.recoverable;
+        let mut err = RuntimeError::new(&format!("{}", e));
+        err.recoverable = e.is_recoverable();
         err
     }
 }

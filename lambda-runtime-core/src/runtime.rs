@@ -2,10 +2,13 @@ use crate::{
     context::Context,
     env::{ConfigProvider, EnvConfigProvider, FunctionSettings},
     error::RuntimeError,
-    handler::{Handler, HandlerError},
+    handler::Handler,
 };
+use failure::Fail;
 use lambda_runtime_client::{error::ErrorResponse, RuntimeClient};
+use lambda_runtime_errors::LambdaErrorExt;
 use log::*;
+use std::{fmt::Display, marker::PhantomData};
 use tokio::runtime::Runtime as TokioRuntime;
 
 const MAX_RETRIES: i8 = 3;
@@ -18,7 +21,10 @@ const MAX_RETRIES: i8 = 3;
 ///
 /// # Panics
 /// The function panics if the Lambda environment variables are not set.
-pub fn start(f: impl Handler, runtime: Option<TokioRuntime>) {
+pub fn start<E>(f: impl Handler<E>, runtime: Option<TokioRuntime>)
+where
+    E: Fail + LambdaErrorExt + Display + Send + Sync,
+{
     start_with_config(f, &EnvConfigProvider::default(), runtime)
 }
 
@@ -51,9 +57,10 @@ macro_rules! lambda {
 /// The function panics if the `ConfigProvider` returns an error from the `get_runtime_api_endpoint()`
 /// or `get_function_settings()` methods. The panic forces AWS Lambda to terminate the environment
 /// and spin up a new one for the next invocation.
-pub fn start_with_config<C>(f: impl Handler, config: &C, runtime: Option<TokioRuntime>)
+pub fn start_with_config<C, E>(f: impl Handler<E>, config: &C, runtime: Option<TokioRuntime>)
 where
     C: ConfigProvider,
+    E: Fail + LambdaErrorExt + Display + Send + Sync,
 {
     // if we cannot find the endpoint we panic, nothing else we can do.
     let endpoint: String;
@@ -75,7 +82,7 @@ where
         }
     }
 
-    match RuntimeClient::new(endpoint, runtime) {
+    match RuntimeClient::new(&endpoint, runtime) {
         Ok(client) => {
             start_with_runtime_client(f, function_config, client);
         }
@@ -96,8 +103,11 @@ where
 ///
 /// # Panics
 /// The function panics if we cannot instantiate a new `RustRuntime` object.
-pub(crate) fn start_with_runtime_client(f: impl Handler, func_settings: FunctionSettings, client: RuntimeClient) {
-    let mut lambda_runtime: Runtime<_> = Runtime::new(f, func_settings, MAX_RETRIES, client);
+pub(crate) fn start_with_runtime_client<E>(f: impl Handler<E>, func_settings: FunctionSettings, client: RuntimeClient)
+where
+    E: Fail + LambdaErrorExt + Display + Send + Sync,
+{
+    let mut lambda_runtime: Runtime<_, E> = Runtime::new(f, func_settings, MAX_RETRIES, client);
 
     // start the infinite loop
     lambda_runtime.start();
@@ -105,15 +115,20 @@ pub(crate) fn start_with_runtime_client(f: impl Handler, func_settings: Function
 
 /// Internal representation of the runtime object that polls for events and communicates
 /// with the Runtime APIs
-pub(super) struct Runtime<F> {
+pub(super) struct Runtime<F, E> {
     runtime_client: RuntimeClient,
     handler: F,
     max_retries: i8,
     settings: FunctionSettings,
+    _phantom: PhantomData<E>,
 }
 
 // generic methods implementation
-impl<F> Runtime<F> {
+impl<F, E> Runtime<F, E>
+where
+    F: Handler<E>,
+    E: Fail + LambdaErrorExt + Display + Send + Sync,
+{
     /// Creates a new instance of the `Runtime` object populated with the environment
     /// settings.
     ///
@@ -133,20 +148,23 @@ impl<F> Runtime<F> {
             retries,
             client.get_endpoint()
         );
+
         Runtime {
             runtime_client: client,
             settings: config,
             handler: f,
             max_retries: retries,
+            _phantom: PhantomData,
         }
     }
 }
 
 // implementation of methods that require the Event and Output types
 // to be compatible with `serde`'s Deserialize/Serialize.
-impl<F> Runtime<F>
+impl<F, E> Runtime<F, E>
 where
-    F: Handler,
+    F: Handler<E>,
+    E: Fail + LambdaErrorExt + Display + Send + Sync,
 {
     /// Starts the main event loop and begin polling or new events. If one of the
     /// Runtime APIs returns an unrecoverable error this method calls the init failed
@@ -170,12 +188,12 @@ where
                         // we let the Lambda Runtime API know that we have died
                         Err(e) => {
                             error!("Could not send response for {} to Runtime API: {}", request_id, e);
-                            if !e.recoverable {
+                            if !e.is_recoverable() {
                                 error!(
                                     "Error for {} is not recoverable, sending fail_init signal and panicking.",
                                     request_id
                                 );
-                                self.runtime_client.fail_init(&ErrorResponse::from(Box::new(e)));
+                                self.runtime_client.fail_init(&ErrorResponse::from(e));
                                 panic!("Could not send response");
                             }
                         }
@@ -184,19 +202,16 @@ where
                 Err(e) => {
                     debug!("Handler returned an error for {}: {}", request_id, e);
                     debug!("Attempting to send error response to Runtime API for {}", request_id);
-                    match self
-                        .runtime_client
-                        .event_error(&request_id, &ErrorResponse::from(Box::new(e)))
-                    {
+                    match self.runtime_client.event_error(&request_id, &ErrorResponse::from(e)) {
                         Ok(_) => info!("Error response for {} accepted by Runtime API", request_id),
                         Err(e) => {
                             error!("Unable to send error response for {} to Runtime API: {}", request_id, e);
-                            if !e.recoverable {
+                            if !e.is_recoverable() {
                                 error!(
                                     "Error for {} is not recoverable, sending fail_init signal and panicking",
                                     request_id
                                 );
-                                self.runtime_client.fail_init(&ErrorResponse::from(Box::new(e)));
+                                self.runtime_client.fail_init(&ErrorResponse::from(e));
                                 panic!("Could not send error response");
                             }
                         }
@@ -208,7 +223,7 @@ where
 
     /// Invoke the handler function. This method is split out of the main loop to
     /// make it testable.
-    pub(super) fn invoke(&mut self, e: Vec<u8>, ctx: Context) -> Result<Vec<u8>, HandlerError> {
+    pub(super) fn invoke(&mut self, e: Vec<u8>, ctx: Context) -> Result<Vec<u8>, E> {
         (self.handler).run(e, ctx)
     }
 
@@ -224,11 +239,11 @@ where
                 match err.request_id.clone() {
                     Some(req_id) => {
                         self.runtime_client
-                            .event_error(&req_id, &ErrorResponse::from(Box::new(err)))
+                            .event_error(&req_id, &ErrorResponse::from(err))
                             .expect("Could not send event error response");
                     }
                     None => {
-                        self.runtime_client.fail_init(&ErrorResponse::from(Box::new(err)));
+                        self.runtime_client.fail_init(&ErrorResponse::from(err));
                     }
                 }
 
@@ -260,12 +275,13 @@ pub(crate) mod tests {
     use super::*;
     use crate::{context, env};
     use lambda_runtime_client::RuntimeClient;
+    use lambda_runtime_errors::HandlerError;
 
     #[test]
     fn runtime_invokes_handler() {
         let config: &dyn env::ConfigProvider = &env::tests::MockConfigProvider { error: false };
         let client = RuntimeClient::new(
-            config
+            &config
                 .get_runtime_api_endpoint()
                 .expect("Could not get runtime endpoint"),
             None,

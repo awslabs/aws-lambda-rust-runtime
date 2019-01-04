@@ -16,8 +16,9 @@ hyper = "^0.12"
 tokio = "^0.1"
 backtrace = "^0.3"
 lambda_runtime_client = { path = "../lambda-runtime-client", version = "^0.1" }
+lambda_runtime_errors = { path = "../lambda-runtime-errors", version = "^0.1" }
 chrono = "^0.4"
+failure = "^0.1"
 
 [dev-dependencies]
-failure = "^0.1"
 simple_logger = "^1"

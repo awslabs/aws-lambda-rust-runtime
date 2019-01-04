@@ -18,6 +18,8 @@ mod runtime;
 pub use crate::{
     context::Context,
     env::{ConfigProvider, EnvConfigProvider},
-    handler::{Handler, HandlerError},
+    handler::Handler,
     runtime::*,
 };
+
+pub use lambda_runtime_errors::{HandlerError, LambdaErrorExt};

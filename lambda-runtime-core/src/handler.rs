@@ -1,38 +1,20 @@
 use crate::context::Context;
-use std::fmt::{self, Debug, Display};
+use failure::Fail;
+use lambda_runtime_errors::LambdaErrorExt;
+use std::fmt::Display;
 
 /// Functions acting as a handler must conform to this type.
-pub trait Handler {
+pub trait Handler<E> {
     /// Run the handler.
-    fn run(&mut self, event: Vec<u8>, ctx: Context) -> Result<Vec<u8>, HandlerError>;
+    fn run(&mut self, event: Vec<u8>, ctx: Context) -> Result<Vec<u8>, E>;
 }
 
-impl<'ev, F> Handler for F
+impl<'ev, F, E> Handler<E> for F
 where
-    F: FnMut(Vec<u8>, Context) -> Result<Vec<u8>, HandlerError>,
+    F: FnMut(Vec<u8>, Context) -> Result<Vec<u8>, E>,
+    E: Fail + LambdaErrorExt + Display + Send + Sync,
 {
-    fn run(&mut self, event: Vec<u8>, ctx: Context) -> Result<Vec<u8>, HandlerError> {
+    fn run(&mut self, event: Vec<u8>, ctx: Context) -> Result<Vec<u8>, E> {
         (*self)(event, ctx)
-    }
-}
-
-/// The `HandlerError` struct can be use to abstract any `Err` of the handler method `Result`.
-/// The `HandlerError` object can be generated `From` any object that supports `Display`,
-/// `Send, `Sync`, and `Debug`. This allows handler functions to return any error using
-/// the `?` syntax. For example `let _age_num: u8 = e.age.parse()?;` will return the
-/// `<F as FromStr>::Err` from the handler function.
-pub struct HandlerError {
-    msg: String,
-}
-
-impl<E: Display + Send + Sync + Debug> From<E> for HandlerError {
-    fn from(e: E) -> HandlerError {
-        HandlerError { msg: format!("{}", e) }
-    }
-}
-
-impl Display for HandlerError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.msg)
     }
 }

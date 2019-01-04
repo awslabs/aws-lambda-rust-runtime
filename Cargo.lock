@@ -331,6 +331,7 @@ dependencies = [
  "lambda_runtime_client 0.1.0",
  "lambda_runtime_errors 0.1.0",
  "log 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustc_version 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "simple_logger 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "tokio 0.1.13 (registry+https://github.com/rust-lang/crates.io-index)",
 ]

@@ -21,9 +21,9 @@ const MAX_RETRIES: i8 = 3;
 ///
 /// # Panics
 /// The function panics if the Lambda environment variables are not set.
-pub fn start<E>(f: impl Handler<E>, runtime: Option<TokioRuntime>)
+pub fn start<EventError>(f: impl Handler<EventError>, runtime: Option<TokioRuntime>)
 where
-    E: Fail + LambdaErrorExt + Display + Send + Sync,
+    EventError: Fail + LambdaErrorExt + Display + Send + Sync,
 {
     start_with_config(f, &EnvConfigProvider::default(), runtime)
 }
@@ -57,10 +57,13 @@ macro_rules! lambda {
 /// The function panics if the `ConfigProvider` returns an error from the `get_runtime_api_endpoint()`
 /// or `get_function_settings()` methods. The panic forces AWS Lambda to terminate the environment
 /// and spin up a new one for the next invocation.
-pub fn start_with_config<C, E>(f: impl Handler<E>, config: &C, runtime: Option<TokioRuntime>)
-where
-    C: ConfigProvider,
-    E: Fail + LambdaErrorExt + Display + Send + Sync,
+pub fn start_with_config<Config, EventError>(
+    f: impl Handler<EventError>,
+    config: &Config,
+    runtime: Option<TokioRuntime>,
+) where
+    Config: ConfigProvider,
+    EventError: Fail + LambdaErrorExt + Display + Send + Sync,
 {
     // if we cannot find the endpoint we panic, nothing else we can do.
     let endpoint: String;
@@ -103,11 +106,14 @@ where
 ///
 /// # Panics
 /// The function panics if we cannot instantiate a new `RustRuntime` object.
-pub(crate) fn start_with_runtime_client<E>(f: impl Handler<E>, func_settings: FunctionSettings, client: RuntimeClient)
-where
-    E: Fail + LambdaErrorExt + Display + Send + Sync,
+pub(crate) fn start_with_runtime_client<EventError>(
+    f: impl Handler<EventError>,
+    func_settings: FunctionSettings,
+    client: RuntimeClient,
+) where
+    EventError: Fail + LambdaErrorExt + Display + Send + Sync,
 {
-    let mut lambda_runtime: Runtime<_, E> = Runtime::new(f, func_settings, MAX_RETRIES, client);
+    let mut lambda_runtime: Runtime<_, EventError> = Runtime::new(f, func_settings, MAX_RETRIES, client);
 
     // start the infinite loop
     lambda_runtime.start();
@@ -115,19 +121,19 @@ where
 
 /// Internal representation of the runtime object that polls for events and communicates
 /// with the Runtime APIs
-pub(super) struct Runtime<F, E> {
+pub(super) struct Runtime<Function, EventError> {
     runtime_client: RuntimeClient,
-    handler: F,
+    handler: Function,
     max_retries: i8,
     settings: FunctionSettings,
-    _phantom: PhantomData<E>,
+    _phantom: PhantomData<EventError>,
 }
 
 // generic methods implementation
-impl<F, E> Runtime<F, E>
+impl<Function, EventError> Runtime<Function, EventError>
 where
-    F: Handler<E>,
-    E: Fail + LambdaErrorExt + Display + Send + Sync,
+    Function: Handler<EventError>,
+    EventError: Fail + LambdaErrorExt + Display + Send + Sync,
 {
     /// Creates a new instance of the `Runtime` object populated with the environment
     /// settings.
@@ -142,7 +148,7 @@ where
     /// A `Result` for the `Runtime` object or a `errors::RuntimeSerror`. The runtime
     /// fails the init if this function returns an error. If we cannot find the
     /// `AWS_LAMBDA_RUNTIME_API` variable in the environment the function panics.
-    pub(super) fn new(f: F, config: FunctionSettings, retries: i8, client: RuntimeClient) -> Self {
+    pub(super) fn new(f: Function, config: FunctionSettings, retries: i8, client: RuntimeClient) -> Self {
         debug!(
             "Creating new runtime with {} max retries for endpoint {}",
             retries,
@@ -161,10 +167,10 @@ where
 
 // implementation of methods that require the Event and Output types
 // to be compatible with `serde`'s Deserialize/Serialize.
-impl<F, E> Runtime<F, E>
+impl<Function, EventError> Runtime<Function, EventError>
 where
-    F: Handler<E>,
-    E: Fail + LambdaErrorExt + Display + Send + Sync,
+    Function: Handler<EventError>,
+    EventError: Fail + LambdaErrorExt + Display + Send + Sync,
 {
     /// Starts the main event loop and begin polling or new events. If one of the
     /// Runtime APIs returns an unrecoverable error this method calls the init failed
@@ -223,7 +229,7 @@ where
 
     /// Invoke the handler function. This method is split out of the main loop to
     /// make it testable.
-    pub(super) fn invoke(&mut self, e: Vec<u8>, ctx: Context) -> Result<Vec<u8>, E> {
+    pub(super) fn invoke(&mut self, e: Vec<u8>, ctx: Context) -> Result<Vec<u8>, EventError> {
         (self.handler).run(e, ctx)
     }
 

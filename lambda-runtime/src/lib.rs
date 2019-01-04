@@ -50,19 +50,19 @@ pub mod error {
 }
 
 /// Functions acting as a handler must conform to this type.
-pub trait Handler<EV, O, ER> {
+pub trait Handler<Event, Output, EventError> {
     /// Method to execute the handler function
-    fn run(&mut self, event: EV, ctx: Context) -> Result<O, ER>;
+    fn run(&mut self, event: Event, ctx: Context) -> Result<Output, EventError>;
 }
 
 /// Implementation of the `Handler` trait for both function pointers
 /// and closures.
-impl<F, EV, O, ER> Handler<EV, O, ER> for F
+impl<Function, Event, Output, EventError> Handler<Event, Output, EventError> for Function
 where
-    F: FnMut(EV, Context) -> Result<O, ER>,
-    ER: Fail + LambdaErrorExt + Display + Send + Sync,
+    Function: FnMut(Event, Context) -> Result<Output, EventError>,
+    EventError: Fail + LambdaErrorExt + Display + Send + Sync,
 {
-    fn run(&mut self, event: EV, ctx: Context) -> Result<O, ER> {
+    fn run(&mut self, event: Event, ctx: Context) -> Result<Output, EventError> {
         (*self)(event, ctx)
     }
 }
@@ -71,14 +71,16 @@ where
 /// defined in the `lambda_runtime_core` crate. The closure simply uses `serde_json`
 /// to serialize and deserialize the incoming event from a `Vec<u8>` and the output
 /// to a `Vec<u8>`.
-fn wrap<EV, O, ER>(mut h: impl Handler<EV, O, ER>) -> impl FnMut(Vec<u8>, Context) -> Result<Vec<u8>, HandlerError>
+fn wrap<Event, Output, EventError>(
+    mut h: impl Handler<Event, Output, EventError>,
+) -> impl FnMut(Vec<u8>, Context) -> Result<Vec<u8>, HandlerError>
 where
-    EV: serde::de::DeserializeOwned,
-    O: serde::Serialize,
-    ER: Fail + LambdaErrorExt + Display + Send + Sync,
+    Event: serde::de::DeserializeOwned,
+    Output: serde::Serialize,
+    EventError: Fail + LambdaErrorExt + Display + Send + Sync,
 {
     move |ev, ctx| {
-        let event: EV = serde_json::from_slice(&ev)?;
+        let event: Event = serde_json::from_slice(&ev)?;
         match h.run(event, ctx) {
             Ok(out) => {
                 let out_bytes = serde_json::to_vec(&out)?;
@@ -97,11 +99,11 @@ where
 ///
 /// # Panics
 /// The function panics if the Lambda environment variables are not set.
-pub fn start<EV, O, ER>(f: impl Handler<EV, O, ER>, runtime: Option<TokioRuntime>)
+pub fn start<Event, Output, EventError>(f: impl Handler<Event, Output, EventError>, runtime: Option<TokioRuntime>)
 where
-    EV: serde::de::DeserializeOwned,
-    O: serde::Serialize,
-    ER: Fail + LambdaErrorExt + Display + Send + Sync,
+    Event: serde::de::DeserializeOwned,
+    Output: serde::Serialize,
+    EventError: Fail + LambdaErrorExt + Display + Send + Sync,
 {
     let wrapped = wrap(f);
     start_with_config(wrapped, &EnvConfigProvider::default(), runtime)

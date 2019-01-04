@@ -32,8 +32,7 @@
 //! }
 //!
 //! fn main() {
-//!     let runtime_endpoint = String::from("http://localhost:8080");
-//!     let client = RuntimeClient::new(runtime_endpoint, None)
+//!     let client = RuntimeClient::new("http://localhost:8080", None)
 //!         .expect("Could not initialize client");
 //!
 //!     let (event_data, event_context) = client.next_event()

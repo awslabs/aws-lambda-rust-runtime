@@ -1,5 +1,5 @@
 use crate::error::{ApiError, ApiErrorKind, ErrorResponse, ERROR_TYPE_UNHANDLED};
-use failure::{Error, ResultExt};
+use failure::ResultExt;
 use hyper::{
     client::HttpConnector,
     header::{self, HeaderMap, HeaderValue},
@@ -154,7 +154,7 @@ impl<'ev> RuntimeClient {
 
 impl<'ev> RuntimeClient {
     /// Polls for new events to the Runtime APIs.
-    pub fn next_event(&self) -> Result<(Vec<u8>, EventContext), Error> {
+    pub fn next_event(&self) -> Result<(Vec<u8>, EventContext), ApiError> {
         trace!("Polling for next event");
 
         // We wait instead of processing the future asynchronously because AWS Lambda
@@ -186,7 +186,11 @@ impl<'ev> RuntimeClient {
             ))?;
         }
         let ctx = self.get_event_context(&resp.headers())?;
-        let out = resp.into_body().concat2().wait()?;
+        let out = resp
+            .into_body()
+            .concat2()
+            .wait()
+            .context(ApiErrorKind::Recoverable("Could not read event boxy".to_string()))?;
         let buf = out.into_bytes().to_vec();
 
         trace!(

@@ -2,12 +2,13 @@
 //! to send their custom errors to the AWS Lambda Runtime Client SDK. The module also
 //! defines the `ApiError` type returned by the `RuntimeClient` implementations.
 use failure::{AsFail, Backtrace, Context, Fail};
-use hyper;
 use lambda_runtime_errors::LambdaErrorExt;
 use log::*;
 use serde_derive::*;
-use serde_json;
-use std::{fmt, fmt::Display, option::Option};
+use std::{
+    fmt::{self, Display},
+    option::Option,
+};
 
 /// Error type description for the `ErrorResponse` event. This type should be returned
 /// for errors that were handled by the function code or framework.
@@ -87,6 +88,15 @@ pub struct ApiError {
     inner: Context<ApiErrorKind>,
 }
 
+impl ApiError {
+    /// Returns `true` if the API error is recoverable and should be retried
+    pub fn is_recoverable(&self) -> bool {
+        match *self.inner.get_context() {
+            ApiErrorKind::Recoverable(_) => true,
+            _ => false,
+        }
+    }
+}
 /// Failure context for the `ApiError` type. The kind is used to indicate whether the
 /// error is recoverable and should be retried or not.
 #[derive(Clone, Eq, PartialEq, Debug, Fail)]
@@ -133,6 +143,6 @@ impl From<ApiErrorKind> for ApiError {
 
 impl From<Context<ApiErrorKind>> for ApiError {
     fn from(inner: Context<ApiErrorKind>) -> Self {
-        Self { inner: inner }
+        Self { inner }
     }
 }

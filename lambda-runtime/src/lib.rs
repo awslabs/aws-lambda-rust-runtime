@@ -46,7 +46,7 @@ pub use lambda_runtime_core::Context;
 
 /// The error module exposes the HandlerError type.
 pub mod error {
-    pub use lambda_runtime_core::{HandlerError, LambdaErrorExt};
+    pub use lambda_runtime_core::{HandlerError, LambdaErrorExt, LambdaResultExt};
 }
 
 /// Functions acting as a handler must conform to this type.

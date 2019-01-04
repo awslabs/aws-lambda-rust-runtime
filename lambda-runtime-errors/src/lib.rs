@@ -5,7 +5,7 @@ mod error_ext_impl;
 
 pub use crate::error_ext_impl::*;
 
-use failure::{format_err, Compat, Error};
+use failure::{format_err, Compat, Error, Fail};
 use std::fmt;
 
 /// The `LambdaErrorExt` trait defines the `error_type()` method used
@@ -37,6 +37,75 @@ impl LambdaErrorExt for Error {
 impl LambdaErrorExt for Compat<Error> {
     fn error_type(&self) -> &str {
         "CompatFailureError"
+    }
+}
+
+/// `Result` type extension for AWS that makes it easy to generate a `HandlerError`
+/// object or a `Compat<Error>` from the failure crate using an existing result.
+/// This trait should be imported from the `lambda_runtime_core` or `lambda_runtime`
+/// crates.
+pub trait LambdaResultExt<OK, ERR> {
+    /// Takes the incoming `Result` and maps it to a Result that returns an `HandlerError` object.
+    /// The `HandlerError` type already includes implementations of the `From` trait for most
+    /// standard library errors. This method is intended to be used when a the `From` trait is not
+    /// implemented.
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// use lambda_runtime_core::{Context, LambdaResultExt, HandlerError, lambda};
+    /// use std::error::Error as StdError;
+    ///
+    /// fn main() -> Result<(), Box<dyn StdError>> {
+    ///     lambda!(my_handler);
+    ///     Ok(())
+    /// }
+    ///
+    /// fn my_handler(_event: Vec<u8>, _ctx: Context) -> Result<Vec<u8>, HandlerError> {
+    ///     let age = "hello"; // this will throw an error when we try to parse it into an int
+    ///     age.parse::<u8>().handler_error()?;
+    ///
+    ///     Ok(vec!())
+    /// }
+    /// ```
+    fn handler_error(self) -> Result<OK, HandlerError>;
+
+    /// Takes the incoming result and converts it into an `Error` type from the `failure` crate
+    /// wrapped in a `Compat` object to make it implement the `Error` trait from the standard
+    /// library. This method makes it easy to write handler functions that return `Compat<Error>`
+    /// directly.
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// use lambda_runtime_core::{Context, LambdaResultExt, lambda};
+    /// use failure::{Error, Compat};
+    /// use std::error::Error as StdError;
+    ///
+    /// fn main() -> Result<(), Box<dyn StdError>> {
+    ///     lambda!(my_handler);
+    ///     Ok(())
+    /// }
+    ///
+    /// fn my_handler(_event: Vec<u8>, _ctx: Context) -> Result<Vec<u8>, Compat<Error>> {
+    ///     let age = "hello"; // this will throw an error when we try to parse it into an int
+    ///     age.parse::<u8>().failure_compat()?;
+    ///     Ok(vec!())
+    /// }
+    /// ```
+    fn failure_compat(self) -> Result<OK, Compat<Error>>;
+}
+
+impl<OK, ERR> LambdaResultExt<OK, ERR> for Result<OK, ERR>
+where
+    ERR: Fail + LambdaErrorExt,
+{
+    fn handler_error(self) -> Result<OK, HandlerError> {
+        self.map_err(HandlerError::new)
+    }
+
+    fn failure_compat(self) -> Result<OK, Compat<Error>> {
+        self.map_err(|err| Error::from(err).compat())
     }
 }
 

@@ -22,4 +22,4 @@ pub use crate::{
     runtime::*,
 };
 
-pub use lambda_runtime_errors::{HandlerError, LambdaErrorExt};
+pub use lambda_runtime_errors::{HandlerError, LambdaErrorExt, LambdaResultExt};

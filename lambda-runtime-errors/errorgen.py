@@ -1,10 +1,13 @@
+#!/usr/bin/env python3
+
 # Generates the LambdaErrorExt implementation for all of the Errors
 # in the standard library, excluding unstable APIs and errors that
 # require generics.
 #
 # !! Please note this script is a hacky, short term solution !!
+import os
+from urllib.request import urlopen
 from html.parser import HTMLParser
-import urllib2
 
 RUST_ERROR_DOCS = "https://doc.rust-lang.org/std/error/trait.Error.html"
 GENERATED_FILE_NAME = "./src/error_ext_impl.rs"
@@ -21,6 +24,7 @@ GENERIC_ERRORS = ["std::sync::TryLockError",
 
 class ErrorHtmlParser(HTMLParser):
     def __init__(self):
+        super().__init__()
         self.reset()
         self.errors = []
         self.parsing = False
@@ -90,28 +94,44 @@ class ErrorHtmlParser(HTMLParser):
                 print("Starting new error with empty existing error")
 
 
-res = urllib2.urlopen(RUST_ERROR_DOCS)
+res = urlopen(RUST_ERROR_DOCS)
 assert res.getcode() == 200, "Could not retrieve Rust error docs"
 
 error_docs_html = res.read()
 assert error_docs_html != "", "Empty Error docs"
 
 parser = ErrorHtmlParser()
-parser.feed(error_docs_html)
+parser.feed(error_docs_html.decode())
 
 print("found {} valid errors. Beginning code generation to {}".format(
     len(parser.errors), GENERATED_FILE_NAME))
 
+if os.path.isfile(GENERATED_FILE_NAME):
+    os.remove(GENERATED_FILE_NAME)
+
 # code gen
 with open(GENERATED_FILE_NAME, "a") as f:
     f.write("// Generated code, DO NOT MODIFY!\n\n")
+
+    # use statements
     for err in parser.errors:
         f.write("use {}::{};\n".format(err["package"], err["name"]))
-    f.write("use error::LambdaErrorExt;\n\n")
+    f.write(
+        "use crate::{LambdaErrorExt, HandlerError};\n\n")
+
+    # impl for LambdaErrorExt for the standard library errors
     for err in parser.errors:
         f.write("""impl LambdaErrorExt for {} {{
     fn error_type(&self) -> &str {{
-        "{}"
+        "{}::{}"
+    }}
+}}\n""".format(err["name"], err["package"], err["name"]))
+
+    # impl From trait for standard library errors to HandlerError
+    for err in parser.errors:
+        f.write("""impl From<{}> for HandlerError {{
+    fn from(e: {}) -> Self {{
+        HandlerError::new(e)
     }}
 }}\n""".format(err["name"], err["name"]))
 

@@ -3,6 +3,7 @@ use std::{error::Error, marker::PhantomData, result};
 use lambda_runtime_client::RuntimeClient;
 use serde;
 use serde_json;
+use tokio::prelude::future::Future;
 use tokio::runtime::Runtime as TokioRuntime;
 
 use crate::{
@@ -294,7 +295,7 @@ where
             }
         }
 
-        match self.runtime_client.next_event() {
+        match self.runtime_client.next_event().wait() {
             Ok((ev_data, invocation_ctx)) => {
                 let parse_result = serde_json::from_slice(&ev_data);
                 match parse_result {

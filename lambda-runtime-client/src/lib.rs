@@ -14,11 +14,13 @@
 //!
 //! ```rust,no_run
 //! extern crate lambda_runtime_client;
+//! extern crate tokio;
 //! #[macro_use]
 //! extern crate serde_derive;
 //! extern crate serde_json;
 //!
 //! use lambda_runtime_client::{RuntimeClient, EventContext};
+//! use tokio::prelude::future::Future;
 //!
 //! #[derive(Serialize, Deserialize, Debug)]
 //! struct CustomEvent {
@@ -35,7 +37,7 @@
 //!     let client = RuntimeClient::new(runtime_endpoint, None)
 //!         .expect("Could not initialize client");
 //!
-//!     let (event_data, event_context) = client.next_event()
+//!     let (event_data, event_context) = client.next_event().wait()
 //!         .expect("Could not retrieve next event");
 //!     let custom_event: CustomEvent = serde_json::from_slice(&event_data)
 //!         .expect("Could not turn Vec<u8> into CustomEvent object");

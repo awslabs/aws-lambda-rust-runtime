@@ -47,7 +47,7 @@
 //!         let resp_object = CustomResponse{ surname: String::from("Doe")};
 //!         let resp_vec = serde_json::to_vec(&resp_object)
 //!             .expect("Could not serialize CustomResponse to Vec<u8>");
-//!         client.event_response(&event_context.aws_request_id, resp_vec)
+//!         client.event_response(event_context.aws_request_id.clone(), resp_vec).wait()
 //!             .expect("Response sent successfully");
 //!     } else {
 //!         // return a custom error by implementing the RuntimeApiError trait.

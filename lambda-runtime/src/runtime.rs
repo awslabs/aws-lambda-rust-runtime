@@ -213,7 +213,7 @@ where
                     );
                     match serde_json::to_vec(&response) {
                         Ok(response_bytes) => {
-                            match self.runtime_client.event_response(&request_id, response_bytes) {
+                            match self.runtime_client.event_response(request_id.clone(), response_bytes).wait() {
                                 Ok(_) => info!("Response for {} accepted by Runtime API", request_id),
                                 // unrecoverable error while trying to communicate with the endpoint.
                                 // we let the Lambda Runtime API know that we have died

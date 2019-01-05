@@ -3,6 +3,7 @@ use std::env;
 use std::fs;
 use std::path::Path;
 use std::process::Command;
+use std::io::Write;
 
 const RUNTIME_METADATA_FILE: &str = "runtime_release";
 
@@ -37,5 +38,16 @@ fn main() {
         .join(RUNTIME_METADATA_FILE);
     println!("Writing runtime metadata to: {}", metadata_path.to_str().unwrap());
     println!("Runtime metadata: {}", agent);
-    fs::write(metadata_path, agent).expect("Could not write runtime metdata file");
+    fs::write(metadata_path, agent.clone()).expect("Could not write runtime metdata file");
+
+    // next generate the metadata function for the runtime
+    let dest_path = Path::new(&out_dir).join("metadata.rs");
+    let mut f = fs::File::create(&dest_path).unwrap();
+
+    f.write_all(format!("
+/// returns metdata information about the Lambda runtime
+pub fn runtime_release() -> &'static str {{
+    \"{}\"
+}}
+", agent).as_bytes()).unwrap();
 }

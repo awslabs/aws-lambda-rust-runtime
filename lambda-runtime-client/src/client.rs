@@ -17,7 +17,7 @@ const API_CONTENT_TYPE: &str = "application/json";
 const API_ERROR_CONTENT_TYPE: &str = "application/vnd.aws.lambda.error+json";
 const RUNTIME_ERROR_HEADER: &str = "Lambda-Runtime-Function-Error-Type";
 // TODO: Perhaps use a macro to generate this
-const CLIENT_USER_AGENT: &str = "AWS_Lambda_Rust/0.1.0";
+const DEFAULT_AGENT: &str = "AWS_Lambda_Rust";
 
 /// Enum of the headers returned by Lambda's `/next` API call.
 pub enum LambdaHeaders {
@@ -126,13 +126,23 @@ pub struct RuntimeClient {
     _runtime: Runtime,
     http_client: Client<HttpConnector, Body>,
     endpoint: Uri,
+    runtime_agent: String,
 }
 
 impl<'ev> RuntimeClient {
     /// Creates a new instance of the Runtime APIclient SDK. The http client has timeouts disabled and
-    /// will always send a `Connection: keep-alive` header.
-    pub fn new(host: &str, runtime: Option<Runtime>) -> Result<Self, ApiError> {
+    /// will always send a `Connection: keep-alive` header. Optionally, the runtime client can receive
+    /// a user agent string. This string is used to make requests to the runtime APIs and is used to
+    /// identify the runtime being used by the function. For example, the `lambda_runtime_core` crate
+    /// uses `AWS_Lambda_Rust/0.1.0 (rustc/1.31.1-stable)`. The runtime client can also receive an
+    /// instance of Tokio Runtime to use.
+    pub fn new(host: &str, agent: Option<String>, runtime: Option<Runtime>) -> Result<Self, ApiError> {
         debug!("Starting new HttpRuntimeClient for {}", host);
+        let runtime_agent = match agent {
+            Some(a) => a,
+            None => DEFAULT_AGENT.to_owned(),
+        };
+
         // start a tokio core main event loop for hyper
         let runtime = match runtime {
             Some(r) => r,
@@ -148,6 +158,7 @@ impl<'ev> RuntimeClient {
             _runtime: runtime,
             http_client,
             endpoint,
+            runtime_agent,
         })
     }
 }
@@ -327,7 +338,7 @@ impl<'ev> RuntimeClient {
             .method(Method::POST)
             .uri(uri.clone())
             .header(header::CONTENT_TYPE, header::HeaderValue::from_static(API_CONTENT_TYPE))
-            .header(header::USER_AGENT, header::HeaderValue::from_static(CLIENT_USER_AGENT))
+            .header(header::USER_AGENT, self.runtime_agent.clone())
             .body(Body::from(body.to_owned()))
             .unwrap()
     }
@@ -341,7 +352,7 @@ impl<'ev> RuntimeClient {
                 header::CONTENT_TYPE,
                 header::HeaderValue::from_static(API_ERROR_CONTENT_TYPE),
             )
-            .header(header::USER_AGENT, header::HeaderValue::from_static(CLIENT_USER_AGENT))
+            .header(header::USER_AGENT, self.runtime_agent.clone())
             .header(RUNTIME_ERROR_HEADER, HeaderValue::from_static(ERROR_TYPE_UNHANDLED))
             .body(Body::from(body))
             .unwrap()

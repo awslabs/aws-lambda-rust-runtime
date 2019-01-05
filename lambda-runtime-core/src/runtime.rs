@@ -11,6 +11,9 @@ use log::*;
 use std::{fmt::Display, marker::PhantomData};
 use tokio::runtime::Runtime as TokioRuntime;
 
+// include file generated during the build process
+include!(concat!(env!("OUT_DIR"), "/metadata.rs"));
+
 const MAX_RETRIES: i8 = 3;
 
 /// Creates a new runtime and begins polling for events using Lambda's Runtime APIs.
@@ -85,7 +88,9 @@ pub fn start_with_config<Config, EventError>(
         }
     }
 
-    match RuntimeClient::new(&endpoint, runtime) {
+    let info = Option::from(runtime_release().to_owned());
+
+    match RuntimeClient::new(&endpoint, info, runtime) {
         Ok(client) => {
             start_with_runtime_client(f, function_config, client);
         }
@@ -290,6 +295,7 @@ pub(crate) mod tests {
             &config
                 .get_runtime_api_endpoint()
                 .expect("Could not get runtime endpoint"),
+            None,
             None,
         )
         .expect("Could not initialize client");

@@ -121,6 +121,7 @@ pub struct EventContext {
 }
 
 /// Used by the Runtime to communicate with the internal endpoint.
+#[derive(Clone)]
 pub struct RuntimeClient {
     http_client: Client<HttpConnector, Body>,
     endpoint: String,

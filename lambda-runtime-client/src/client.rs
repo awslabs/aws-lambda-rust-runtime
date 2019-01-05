@@ -258,26 +258,32 @@ impl RuntimeClient {
     ///       object.
     ///
     /// # Returns
-    /// A `Result` object containing a bool return value for the call or an `error::ApiError` instance.
-    pub fn event_error(&self, request_id: &str, e: &dyn RuntimeApiError) -> Result<(), ApiError> {
-        let uri: Uri = format!(
+    /// A `Future` object containing a either resolving () for success or an `error::ApiError` instance.
+    pub fn event_error(&self, request_id: String, e: &dyn RuntimeApiError) -> impl Future<Item=(), Error=ApiError> {
+        let uri = format!(
             "http://{}/{}/runtime/invocation/{}/error",
             self.endpoint, RUNTIME_API_VERSION, request_id
         )
-        .parse()?;
-        trace!(
-            "Posting error to runtime API for request {}: {}",
-            request_id,
-            e.to_response().error_message
-        );
-        let req = self.get_runtime_error_request(&uri, &e.to_response());
-
-        match self.http_client.request(req).wait() {
+        .parse();
+        let http_client = self.http_client.clone();
+        let response = e.to_response();
+        let request_id2 = request_id.clone();
+        uri.into_future()
+            .map_err(ApiError::from)
+            .map(move |uri| (Self::get_runtime_error_request(&uri, &response), response))
+            .and_then(move |(req, error_response)| {
+            trace!(
+                "Posting error to runtime API for request {}: {}",
+                request_id,
+                error_response.error_message
+            );
+            http_client.request(req).map_err(ApiError::from)
+        }).then(move |result| match result {
             Ok(resp) => {
                 if !resp.status().is_success() {
                     error!(
                         "Error from Runtime API when posting error response for request {}: {}",
-                        request_id,
+                        request_id2,
                         resp.status()
                     );
                     return Err(ApiError::new(&format!(
@@ -285,14 +291,14 @@ impl RuntimeClient {
                         resp.status()
                     )));
                 }
-                trace!("Posted error response for request id {}", request_id);
+                trace!("Posted error response for request id {}", request_id2);
                 Ok(())
             }
             Err(e) => {
-                error!("Error when calling runtime API for request {}: {}", request_id, e);
+                error!("Error when calling runtime API for request {}: {}", request_id2, e);
                 Err(ApiError::from(e))
             }
-        }
+        })
     }
 
     /// Calls the Runtime APIs to report a failure during the init process.
@@ -311,7 +317,7 @@ impl RuntimeClient {
             .parse()
             .expect("Could not generate Runtime URI");
         error!("Calling fail_init Runtime API: {}", e.to_response().error_message);
-        let req = self.get_runtime_error_request(&uri, &e.to_response());
+        let req = Self::get_runtime_error_request(&uri, &e.to_response());
 
         self.http_client
             .request(req)
@@ -352,7 +358,7 @@ impl RuntimeClient {
             .unwrap()
     }
 
-    fn get_runtime_error_request(&self, uri: &Uri, e: &ErrorResponse) -> Request<Body> {
+    fn get_runtime_error_request(uri: &Uri, e: &ErrorResponse) -> Request<Body> {
         let body = serde_json::to_vec(e).expect("Could not turn error object into response JSON");
         Request::builder()
             .method(Method::POST)

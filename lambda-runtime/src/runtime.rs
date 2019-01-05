@@ -3,7 +3,7 @@ use std::{error::Error, marker::PhantomData, result};
 use lambda_runtime_client::RuntimeClient;
 use serde;
 use serde_json;
-use tokio::prelude::future::Future;
+use tokio::prelude::future::{Future, IntoFuture};
 use tokio::runtime::Runtime as TokioRuntime;
 
 use crate::{
@@ -11,6 +11,7 @@ use crate::{
     env::{ConfigProvider, EnvConfigProvider, FunctionSettings},
     error::{HandlerError, RuntimeError},
 };
+use tokio::runtime::TaskExecutor;
 
 const MAX_RETRIES: i8 = 3;
 
@@ -37,12 +38,14 @@ where
 ///
 /// # Panics
 /// The function panics if the Lambda environment variables are not set.
-pub fn start<E, O>(f: impl Handler<E, O>, runtime: Option<TokioRuntime>)
+pub fn start<E, O>(f: impl Handler<E, O> + 'static, runtime: Option<TokioRuntime>)
 where
-    E: serde::de::DeserializeOwned,
-    O: serde::Serialize,
+    E: serde::de::DeserializeOwned + 'static,
+    O: serde::Serialize + 'static,
 {
-    start_with_config(f, &EnvConfigProvider::new(), runtime)
+    let mut runtime = runtime.unwrap_or_else(|| TokioRuntime::new().expect("Failed to start tokio runtime"));
+    let task_executor = runtime.executor();
+    runtime.block_on(start_with_config(f, &EnvConfigProvider::new(), task_executor)).unwrap();
 }
 
 #[macro_export]
@@ -74,7 +77,7 @@ macro_rules! lambda {
 /// The function panics if the `ConfigProvider` returns an error from the `get_runtime_api_endpoint()`
 /// or `get_function_settings()` methods. The panic forces AWS Lambda to terminate the environment
 /// and spin up a new one for the next invocation.
-pub(crate) fn start_with_config<E, O, C>(f: impl Handler<E, O>, config: &C, runtime: Option<TokioRuntime>)
+pub(crate) fn start_with_config<E, O, C>(f: impl Handler<E, O>, config: &C, task_executor: TaskExecutor) -> impl Future<Item=(), Error=String>
 where
     E: serde::de::DeserializeOwned,
     O: serde::Serialize,
@@ -100,9 +103,9 @@ where
         }
     }
 
-    match RuntimeClient::new(endpoint, runtime) {
+    match RuntimeClient::new(endpoint, task_executor) {
         Ok(client) => {
-            start_with_runtime_client(f, function_config, client);
+            start_with_runtime_client(f, function_config, client)
         }
         Err(e) => {
             panic!("Could not create runtime client SDK: {}", e);
@@ -125,7 +128,7 @@ pub(crate) fn start_with_runtime_client<E, O>(
     f: impl Handler<E, O>,
     func_settings: FunctionSettings,
     client: RuntimeClient,
-) where
+) -> impl Future<Item=(), Error=String> where
     E: serde::de::DeserializeOwned,
     O: serde::Serialize,
 {
@@ -138,7 +141,7 @@ pub(crate) fn start_with_runtime_client<E, O>(
     }
 
     // start the infinite loop
-    lambda_runtime.start();
+    lambda_runtime.start()
 }
 
 /// Internal representation of the runtime object that polls for events and communicates
@@ -198,7 +201,7 @@ where
     /// Starts the main event loop and begin polling or new events. If one of the
     /// Runtime APIs returns an unrecoverable error this method calls the init failed
     /// API and then panics.
-    fn start(&mut self) {
+    fn start(&mut self) -> impl Future<Item=(), Error=String> {
         debug!("Beginning main event loop");
         loop {
             let (event, ctx) = self.get_next_event(0, None);
@@ -261,6 +264,9 @@ where
                 }
             }
         }
+
+        #[allow(unreachable_code)]
+        Ok(()).into_future()
     }
 
     /// Invoke the handler function. This method is split out of the main loop to
@@ -332,11 +338,12 @@ pub(crate) mod tests {
     #[test]
     fn runtime_invokes_handler() {
         let config: &dyn env::ConfigProvider = &env::tests::MockConfigProvider { error: false };
+        let runtime = TokioRuntime::new().expect("Could not create tokio runtime");
         let client = RuntimeClient::new(
             config
                 .get_runtime_api_endpoint()
                 .expect("Could not get runtime endpoint"),
-            None,
+            runtime.executor(),
         )
         .expect("Could not initialize client");
         let handler = |_e: String, _c: context::Context| -> Result<String, HandlerError> { Ok("hello".to_string()) };

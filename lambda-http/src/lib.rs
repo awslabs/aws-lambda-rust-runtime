@@ -92,14 +92,14 @@ where
 ///
 /// # Panics
 /// The function panics if the Lambda environment variables are not set.
-pub fn start<R>(f: impl Handler<R>, runtime: Option<TokioRuntime>)
+pub fn start<R>(f: impl Handler<R> + 'static, runtime: Option<TokioRuntime>)
 where
     R: IntoResponse,
 {
     // handler requires a mutable ref
     let mut func = f;
     lambda::start(
-        |req: LambdaRequest<'_>, ctx: Context| {
+        move |req: LambdaRequest<'_>, ctx: Context| {
             let is_alb = req.request_context.is_alb();
             func.run(req.into(), ctx)
                 .map(|resp| LambdaResponse::from_response(is_alb, resp.into_response()))

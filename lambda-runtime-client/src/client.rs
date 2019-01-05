@@ -9,7 +9,7 @@ use hyper::{
 use serde_derive::Deserialize;
 use serde_json;
 use tokio::prelude::future::IntoFuture;
-use tokio::runtime::Runtime;
+use tokio::runtime::TaskExecutor;
 
 use crate::error::{ApiError, ErrorResponse, RuntimeApiError};
 
@@ -122,7 +122,6 @@ pub struct EventContext {
 
 /// Used by the Runtime to communicate with the internal endpoint.
 pub struct RuntimeClient {
-    _runtime: Runtime,
     http_client: Client<HttpConnector, Body>,
     endpoint: String,
 }
@@ -130,18 +129,13 @@ pub struct RuntimeClient {
 impl RuntimeClient {
     /// Creates a new instance of the Runtime APIclient SDK. The http client has timeouts disabled and
     /// will always send a `Connection: keep-alive` header.
-    pub fn new(endpoint: String, runtime: Option<Runtime>) -> Result<Self, ApiError> {
+    pub fn new(endpoint: String, task_executor: TaskExecutor) -> Result<Self, ApiError> {
         debug!("Starting new HttpRuntimeClient for {}", endpoint);
         // start a tokio core main event loop for hyper
-        let runtime = match runtime {
-            Some(r) => r,
-            None => Runtime::new()?,
-        };
 
-        let http_client = Client::builder().executor(runtime.executor()).build_http();
+        let http_client = Client::builder().executor(task_executor).build_http();
 
         Ok(RuntimeClient {
-            _runtime: runtime,
             http_client,
             endpoint,
         })

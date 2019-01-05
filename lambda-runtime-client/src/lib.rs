@@ -21,6 +21,7 @@
 //!
 //! use lambda_runtime_client::{RuntimeClient, EventContext};
 //! use tokio::prelude::future::Future;
+//! use tokio::runtime::Runtime as TokioRuntime;
 //!
 //! #[derive(Serialize, Deserialize, Debug)]
 //! struct CustomEvent {
@@ -33,8 +34,9 @@
 //! }
 //!
 //! fn main() {
+//!     let tokio_runtime = TokioRuntime::new().expect("Could not make tokio runtime");
 //!     let runtime_endpoint = String::from("http://localhost:8080");
-//!     let client = RuntimeClient::new(runtime_endpoint, None)
+//!     let client = RuntimeClient::new(runtime_endpoint, tokio_runtime.executor())
 //!         .expect("Could not initialize client");
 //!
 //!     let (event_data, event_context) = client.next_event().wait()

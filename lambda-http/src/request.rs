@@ -93,19 +93,28 @@ pub struct RequestContext {
 /// Api Gateway request context
 #[cfg(all(feature = "apigw", not(all(feature = "apigw", feature = "alb"))))]
 #[derive(Default, Deserialize, Debug, Clone)]
+impl Default for RequestContext {
+    fn default() -> Self {
+        RequestContext::ApiGateway {
+            account_id: Default::default(),
+            resource_id: Default::default(),
+            stage: Default::default(),
+            request_id: Default::default(),
+            resource_path: Default::default(),
+            http_method: Default::default(),
+            authorizer: Default::default(),
+            api_id: Default::default(),
+            identity: Default::default(),
+        }
+    }
+}
+
+/// Elastic load balancer context information
+#[derive(Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct RequestContext {
-    //pub path: String,
-    pub account_id: String,
-    pub resource_id: String,
-    pub stage: String,
-    pub request_id: String,
-    pub resource_path: String,
-    pub http_method: String,
-    #[serde(default)]
-    pub authorizer: HashMap<String, Value>,
-    pub api_id: String,
-    pub identity: Identity,
+pub struct Elb {
+    /// AWS ARN identifier for the ELB Target Group this lambda was triggered by
+    pub target_group_arn: String,
 }
 
 #[cfg(all(feature = "apigw", feature = "alb"))]
@@ -141,14 +150,6 @@ impl RequestContext {
             true
         }
     }
-}
-
-/// Elastic load balancer context information
-#[derive(Deserialize, Debug, Default, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct Elb {
-    /// AWS ARN identifier for the ELB Target Group this lambda was triggered by
-    pub target_group_arn: String,
 }
 
 /// Identity assoicated with API Gateway request
@@ -372,13 +373,14 @@ mod tests {
     fn requests_convert() {
         let mut headers = HeaderMap::new();
         headers.insert("Host", "www.rust-lang.org".parse().unwrap());
-        let gwr: LambdaRequest<'_> = LambdaRequest {
+
+        let lambda_request: LambdaRequest<'_> = LambdaRequest {
             path: "/foo".into(),
             headers,
             ..LambdaRequest::default()
         };
         let expected = HttpRequest::get("https://www.rust-lang.org/foo").body(()).unwrap();
-        let actual = HttpRequest::from(gwr);
+        let actual = HttpRequest::from(lambda_request);
         assert_eq!(expected.method(), actual.method());
         assert_eq!(expected.uri(), actual.uri());
         assert_eq!(expected.method(), actual.method());

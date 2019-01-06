@@ -3,7 +3,7 @@ use std::{error::Error, marker::PhantomData, result};
 use lambda_runtime_client::RuntimeClient;
 use serde;
 use serde_json;
-use tokio::prelude::future::{Future, IntoFuture, loop_fn, Loop};
+use tokio::prelude::future::{loop_fn, Future, IntoFuture, Loop};
 use tokio::runtime::Runtime as TokioRuntime;
 
 use crate::{
@@ -11,24 +11,30 @@ use crate::{
     env::{ConfigProvider, EnvConfigProvider, FunctionSettings},
     error::{HandlerError, RuntimeError},
 };
-use tokio::runtime::TaskExecutor;
 use std::sync::Arc;
 use std::sync::Mutex;
+use tokio::runtime::TaskExecutor;
 
 const MAX_RETRIES: i8 = 3;
 
 /// Functions acting as a handler must conform to this type.
 pub trait Handler<E, O>: Send {
     /// Future of return value returned by handler.
-    type Future: Future<Item=O, Error=HandlerError> + Send;
+    type Future: Future<Item = O, Error = HandlerError> + Send;
     /// IntoFuture of return value returned by handler.
-    type IntoFuture: IntoFuture<Future=Self::Future, Item=O, Error=HandlerError> + Send;
+    type IntoFuture: IntoFuture<Future = Self::Future, Item = O, Error = HandlerError> + Send;
 
     /// Run the handler.
     fn run(&mut self, event: E, ctx: Context) -> Self::IntoFuture;
 }
 
-impl<F, E, O: Send, Fut: Future<Item=O, Error=HandlerError> + Send, IntoFut: IntoFuture<Future=Fut, Item=O, Error=HandlerError> + Send> Handler<E, O> for F
+impl<
+        F,
+        E,
+        O: Send,
+        Fut: Future<Item = O, Error = HandlerError> + Send,
+        IntoFut: IntoFuture<Future = Fut, Item = O, Error = HandlerError> + Send,
+    > Handler<E, O> for F
 where
     F: FnMut(E, Context) -> IntoFut + Send,
 {
@@ -55,7 +61,9 @@ where
 {
     let mut runtime = runtime.unwrap_or_else(|| TokioRuntime::new().expect("Failed to start tokio runtime"));
     let task_executor = runtime.executor();
-    runtime.block_on(start_with_config(f, &EnvConfigProvider::new(), task_executor)).unwrap();
+    runtime
+        .block_on(start_with_config(f, &EnvConfigProvider::new(), task_executor))
+        .unwrap();
 }
 
 #[macro_export]
@@ -87,7 +95,11 @@ macro_rules! lambda {
 /// The function panics if the `ConfigProvider` returns an error from the `get_runtime_api_endpoint()`
 /// or `get_function_settings()` methods. The panic forces AWS Lambda to terminate the environment
 /// and spin up a new one for the next invocation.
-pub(crate) fn start_with_config<E, O, C>(f: impl Handler<E, O>, config: &C, task_executor: TaskExecutor) -> impl Future<Item=(), Error=String> + Send
+pub(crate) fn start_with_config<E, O, C>(
+    f: impl Handler<E, O>,
+    config: &C,
+    task_executor: TaskExecutor,
+) -> impl Future<Item = (), Error = String> + Send
 where
     E: serde::de::DeserializeOwned + Send + 'static,
     O: serde::Serialize + Send,
@@ -114,9 +126,7 @@ where
     }
 
     match RuntimeClient::new(endpoint, task_executor) {
-        Ok(client) => {
-            start_with_runtime_client(f, function_config, client)
-        }
+        Ok(client) => start_with_runtime_client(f, function_config, client),
         Err(e) => {
             panic!("Could not create runtime client SDK: {}", e);
         }
@@ -138,7 +148,8 @@ pub(crate) fn start_with_runtime_client<E, O>(
     f: impl Handler<E, O>,
     func_settings: FunctionSettings,
     client: RuntimeClient,
-) -> impl Future<Item=(), Error=String> + Send where
+) -> impl Future<Item = (), Error = String> + Send
+where
     E: serde::de::DeserializeOwned + Send + 'static,
     O: serde::Serialize + Send,
 {
@@ -211,7 +222,7 @@ where
     /// Starts the main event loop and begin polling or new events. If one of the
     /// Runtime APIs returns an unrecoverable error this method calls the init failed
     /// API and then panics.
-    fn start(&self) -> impl Future<Item=(), Error=String> + Send {
+    fn start(&self) -> impl Future<Item = (), Error = String> + Send {
         debug!("Beginning main event loop");
 
         let max_retries = self.max_retries;
@@ -310,31 +321,38 @@ where
     ///
     /// # Return
     /// A `Future` resolving to the next `Event` object to be processed.
-    pub(super) fn get_next_event(max_retries: i8, runtime_client: RuntimeClient, settings: FunctionSettings) -> impl Future<Item=(E, Context), Error=String> {
-        loop_fn((0, None), move |(iteration, maybe_error): (i8, Option<RuntimeError>)| {
-            if let Some(err) = maybe_error {
-                if iteration > max_retries {
-                    error!("Unrecoverable error while fetching next event: {}", err);
-                    match err.request_id.clone() {
-                        Some(req_id) => {
-                            return Box::new(runtime_client
-                                .event_error(req_id, &err)
-                                .map_err(|e| format!("Could not send event error response: {}", e))
-                                // these errors are not recoverable. Either we can't communicate with the runtime APIs
-                                // or we cannot parse the event. panic to restart the environment.
-                                .then(|_| Err("Could not retrieve next event".to_owned()))) as Box<dyn Future<Item=_, Error=_> + Send>
-                        }
-                        None => {
-                            runtime_client.fail_init(&err);
-                            unreachable!();
+    pub(super) fn get_next_event(
+        max_retries: i8,
+        runtime_client: RuntimeClient,
+        settings: FunctionSettings,
+    ) -> impl Future<Item = (E, Context), Error = String> {
+        loop_fn(
+            (0, None),
+            move |(iteration, maybe_error): (i8, Option<RuntimeError>)| {
+                if let Some(err) = maybe_error {
+                    if iteration > max_retries {
+                        error!("Unrecoverable error while fetching next event: {}", err);
+                        match err.request_id.clone() {
+                            Some(req_id) => {
+                                return Box::new(
+                                    runtime_client
+                                        .event_error(req_id, &err)
+                                        .map_err(|e| format!("Could not send event error response: {}", e))
+                                        // these errors are not recoverable. Either we can't communicate with the runtime APIs
+                                        // or we cannot parse the event. panic to restart the environment.
+                                        .then(|_| Err("Could not retrieve next event".to_owned())),
+                                ) as Box<dyn Future<Item = _, Error = _> + Send>;
+                            }
+                            None => {
+                                runtime_client.fail_init(&err);
+                                unreachable!();
+                            }
                         }
                     }
                 }
-            }
 
-            let settings = settings.clone();
-            Box::new(runtime_client.next_event().then(move |result| {
-                match result {
+                let settings = settings.clone();
+                Box::new(runtime_client.next_event().then(move |result| match result {
                     Ok((ev_data, invocation_ctx)) => {
                         let parse_result = serde_json::from_slice(&ev_data);
                         match parse_result {
@@ -358,9 +376,9 @@ where
                         }
                     }
                     Err(e) => Ok(Loop::Continue((iteration + 1, Some(RuntimeError::from(e))))),
-                }
-            })) as Box<dyn Future<Item=_, Error=_> + Send>
-        })
+                })) as Box<dyn Future<Item = _, Error = _> + Send>
+            },
+        )
     }
 }
 

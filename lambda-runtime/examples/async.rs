@@ -3,7 +3,7 @@ use std::error::Error;
 use lambda_runtime::{error::HandlerError, lambda, Context};
 use serde_derive::{Deserialize, Serialize};
 use simple_logger;
-use tokio::prelude::future::{Future, ok};
+use tokio::prelude::future::{ok, Future};
 
 #[derive(Deserialize)]
 struct CustomEvent {
@@ -23,7 +23,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn my_handler(e: CustomEvent, _c: Context) -> impl Future<Item=CustomOutput, Error=HandlerError> {
+fn my_handler(e: CustomEvent, _c: Context) -> impl Future<Item = CustomOutput, Error = HandlerError> {
     ok(format!("Hello, {}!", e.first_name))
         .map(|message| format!("{} (modified in a Future)", message))
         .map(|message| CustomOutput { message })

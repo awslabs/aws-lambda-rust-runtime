@@ -19,15 +19,23 @@ const MAX_RETRIES: i8 = 3;
 
 /// Functions acting as a handler must conform to this type.
 pub trait Handler<E, O>: Send {
+    /// Future of return value returned by handler.
+    type Future: Future<Item=O, Error=HandlerError> + Send;
+    /// IntoFuture of return value returned by handler.
+    type IntoFuture: IntoFuture<Future=Self::Future, Item=O, Error=HandlerError> + Send;
+
     /// Run the handler.
-    fn run(&mut self, event: E, ctx: Context) -> Result<O, HandlerError>;
+    fn run(&mut self, event: E, ctx: Context) -> Self::IntoFuture;
 }
 
-impl<F, E, O> Handler<E, O> for F
+impl<F, E, O: Send, Fut: Future<Item=O, Error=HandlerError> + Send, IntoFut: IntoFuture<Future=Fut, Item=O, Error=HandlerError> + Send> Handler<E, O> for F
 where
-    F: FnMut(E, Context) -> Result<O, HandlerError> + Send,
+    F: FnMut(E, Context) -> IntoFut + Send,
 {
-    fn run(&mut self, event: E, ctx: Context) -> Result<O, HandlerError> {
+    type Future = Fut;
+    type IntoFuture = IntoFut;
+
+    fn run(&mut self, event: E, ctx: Context) -> IntoFut {
         (*self)(event, ctx)
     }
 }
@@ -220,70 +228,71 @@ where
                 info!("Received new event with AWS request id: {}", request_id);
                 let handler = handler.clone();
                 let mut handler_function = handler.lock().unwrap();
-                let function_outcome = handler_function.run(event, ctx);
-                match function_outcome {
-                    Ok(response) => {
-                        debug!(
-                            "Function executed succesfully for {}, pushing response to Runtime API",
-                            request_id
-                        );
-                        match serde_json::to_vec(&response) {
-                            Ok(response_bytes) => {
-                                Box::new(runtime_client.event_response(request_id.clone(), response_bytes).then(move |result| match result {
-                                    Ok(_) => {
-                                        info!("Response for {} accepted by Runtime API", request_id);
-                                        Ok(())
-                                    },
-                                    // unrecoverable error while trying to communicate with the endpoint.
-                                    // we let the Lambda Runtime API know that we have died
-                                    Err(e) => {
-                                        error!("Could not send response for {} to Runtime API: {}", request_id, e);
-                                        if !e.recoverable {
-                                            error!(
-                                                "Error for {} is not recoverable, sending fail_init signal and panicking.",
-                                                request_id
-                                            );
-                                            runtime_client.fail_init(&e);
-                                            panic!("Could not send response");
+                handler_function.run(event, ctx).into_future().then(|function_outcome| {
+                    match function_outcome {
+                        Ok(response) => {
+                            debug!(
+                                "Function executed succesfully for {}, pushing response to Runtime API",
+                                request_id
+                            );
+                            match serde_json::to_vec(&response) {
+                                Ok(response_bytes) => {
+                                    Box::new(runtime_client.event_response(request_id.clone(), response_bytes).then(move |result| match result {
+                                        Ok(_) => {
+                                            info!("Response for {} accepted by Runtime API", request_id);
+                                            Ok(())
+                                        },
+                                        // unrecoverable error while trying to communicate with the endpoint.
+                                        // we let the Lambda Runtime API know that we have died
+                                        Err(e) => {
+                                            error!("Could not send response for {} to Runtime API: {}", request_id, e);
+                                            if !e.recoverable {
+                                                error!(
+                                                    "Error for {} is not recoverable, sending fail_init signal and panicking.",
+                                                    request_id
+                                                );
+                                                runtime_client.fail_init(&e);
+                                                panic!("Could not send response");
+                                            }
+                                            Ok(())
                                         }
-                                        Ok(())
-                                    }
-                                }).map(|()| Loop::Continue(()))) as Box<dyn Future<Item=_, Error=_> + Send>
-                            }
-                            Err(e) => {
-                                error!(
-                                    "Could not marshal output object to Vec<u8> JSON represnetation for request {}: {}",
-                                    request_id, e
-                                );
-                                runtime_client
-                                    .fail_init(&RuntimeError::unrecoverable(e.description()));
-                                Box::new(Err("Failed to marshal handler output, panic".to_owned()).into_future()) as Box<dyn Future<Item=_, Error=_> + Send>
+                                    }).map(|()| Loop::Continue(()))) as Box<dyn Future<Item=_, Error=_> + Send>
+                                }
+                                Err(e) => {
+                                    error!(
+                                        "Could not marshal output object to Vec<u8> JSON represnetation for request {}: {}",
+                                        request_id, e
+                                    );
+                                    runtime_client
+                                        .fail_init(&RuntimeError::unrecoverable(e.description()));
+                                    Box::new(Err("Failed to marshal handler output, panic".to_owned()).into_future()) as Box<dyn Future<Item=_, Error=_> + Send>
+                                }
                             }
                         }
-                    }
-                    Err(e) => {
-                        debug!("Handler returned an error for {}: {}", request_id, e);
-                        debug!("Attempting to send error response to Runtime API for {}", request_id);
-                        Box::new(runtime_client.event_error(request_id.clone(), &e).then(move |result| match result {
-                            Ok(_) => {
-                                info!("Error response for {} accepted by Runtime API", request_id);
-                                Ok(())
-                            },
-                            Err(e) => {
-                                error!("Unable to send error response for {} to Runtime API: {}", request_id, e);
-                                if !e.recoverable {
-                                    error!(
-                                        "Error for {} is not recoverable, sending fail_init signal and panicking",
-                                        request_id
-                                    );
-                                    runtime_client.fail_init(&e);
-                                    panic!("Could not send error response");
+                        Err(e) => {
+                            debug!("Handler returned an error for {}: {}", request_id, e);
+                            debug!("Attempting to send error response to Runtime API for {}", request_id);
+                            Box::new(runtime_client.event_error(request_id.clone(), &e).then(move |result| match result {
+                                Ok(_) => {
+                                    info!("Error response for {} accepted by Runtime API", request_id);
+                                    Ok(())
+                                },
+                                Err(e) => {
+                                    error!("Unable to send error response for {} to Runtime API: {}", request_id, e);
+                                    if !e.recoverable {
+                                        error!(
+                                            "Error for {} is not recoverable, sending fail_init signal and panicking",
+                                            request_id
+                                        );
+                                        runtime_client.fail_init(&e);
+                                        panic!("Could not send error response");
+                                    }
+                                    Ok(())
                                 }
-                                Ok(())
-                            }
-                        }).map(|()| Loop::Continue(()))) as Box<dyn Future<Item=_, Error=_> + Send>
+                            }).map(|()| Loop::Continue(()))) as Box<dyn Future<Item=_, Error=_> + Send>
+                        }
                     }
-                }
+                })
             })
         })
     }
@@ -291,7 +300,7 @@ where
     /// Invoke the handler function. This method is split out of the main loop to
     /// make it testable.
     #[cfg(test)]
-    pub(super) fn invoke(&mut self, e: E, ctx: Context) -> Result<O, HandlerError> {
+    pub(super) fn invoke(&mut self, e: E, ctx: Context) -> F::IntoFuture {
         let mut handler = self.handler.lock().unwrap();
         (&mut handler).run(e, ctx)
     }

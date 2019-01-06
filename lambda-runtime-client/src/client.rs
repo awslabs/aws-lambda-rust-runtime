@@ -8,8 +8,7 @@ use hyper::{
 };
 use serde_derive::Deserialize;
 use serde_json;
-use tokio::prelude::future::IntoFuture;
-use tokio::runtime::TaskExecutor;
+use tokio::{prelude::future::IntoFuture, runtime::TaskExecutor};
 
 use crate::error::{ApiError, ErrorResponse, RuntimeApiError};
 

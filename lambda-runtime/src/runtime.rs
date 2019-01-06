@@ -3,16 +3,17 @@ use std::{error::Error, marker::PhantomData, result};
 use lambda_runtime_client::RuntimeClient;
 use serde;
 use serde_json;
-use tokio::prelude::future::{loop_fn, Future, IntoFuture, Loop};
-use tokio::runtime::Runtime as TokioRuntime;
+use tokio::{
+    prelude::future::{loop_fn, Future, IntoFuture, Loop},
+    runtime::Runtime as TokioRuntime,
+};
 
 use crate::{
     context::Context,
     env::{ConfigProvider, EnvConfigProvider, FunctionSettings},
     error::{HandlerError, RuntimeError},
 };
-use std::sync::Arc;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use tokio::runtime::TaskExecutor;
 
 const MAX_RETRIES: i8 = 3;

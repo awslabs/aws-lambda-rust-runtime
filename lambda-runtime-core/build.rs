@@ -1,9 +1,5 @@
 use rustc_version::{Channel, VersionMeta};
-use std::env;
-use std::fs;
-use std::path::Path;
-use std::process::Command;
-use std::io::Write;
+use std::{env, fs, io::Write, path::Path, process::Command};
 
 const RUNTIME_METADATA_FILE: &str = "runtime_release";
 
@@ -44,10 +40,17 @@ fn main() {
     let dest_path = Path::new(&out_dir).join("metadata.rs");
     let mut f = fs::File::create(&dest_path).unwrap();
 
-    f.write_all(format!("
+    f.write_all(
+        format!(
+            "
 /// returns metdata information about the Lambda runtime
 pub fn runtime_release() -> &'static str {{
     \"{}\"
 }}
-", agent).as_bytes()).unwrap();
+",
+            agent
+        )
+        .as_bytes(),
+    )
+    .unwrap();
 }

@@ -11,12 +11,9 @@ pub mod types;
 use crate::types::{AWSRequestId, FunctionArn, TraceId};
 
 lazy_static! {
-    pub static ref AWS_REQUEST_ID: HeaderName =
-        HeaderName::from_static("lambda-runtime-aws-request-id");
-    pub static ref FUNCTION_ARN: HeaderName =
-        HeaderName::from_static("lambda-runtime-invoked-function-arn");
-    pub static ref TRACE_ID: HeaderName =
-        HeaderName::from_static("lambda-runtime-trace-id");
+    pub static ref AWS_REQUEST_ID: HeaderName = HeaderName::from_static("lambda-runtime-aws-request-id");
+    pub static ref FUNCTION_ARN: HeaderName = HeaderName::from_static("lambda-runtime-invoked-function-arn");
+    pub static ref TRACE_ID: HeaderName = HeaderName::from_static("lambda-runtime-trace-id");
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]

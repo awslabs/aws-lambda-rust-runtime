@@ -21,8 +21,7 @@ macro_rules! impl_string_header {
 
             fn encode<E: Extend<HeaderValue>>(&self, values: &mut E) {
                 let s = &self.0;
-                let value = HeaderValue::from_str(&s)
-                    .unwrap_or_else(|_| panic!("{} is not a valid HeaderValue", s));
+                let value = HeaderValue::from_str(&s).unwrap_or_else(|_| panic!("{} is not a valid HeaderValue", s));
                 values.extend(std::iter::once(value))
             }
         }

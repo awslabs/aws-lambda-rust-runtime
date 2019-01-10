@@ -125,8 +125,9 @@ pub struct EventContext {
 pub struct RuntimeClient {
     _runtime: Runtime,
     http_client: Client<HttpConnector, Body>,
-    endpoint: Uri,
+    next_endpoint: Uri,
     runtime_agent: String,
+    host: String,
 }
 
 impl<'ev> RuntimeClient {
@@ -150,15 +151,17 @@ impl<'ev> RuntimeClient {
         };
 
         let http_client = Client::builder().executor(runtime.executor()).build_http();
-        let endpoint = format!("http://{}/{}/runtime/invocation/next", host, RUNTIME_API_VERSION)
+        // we cached the parsed Uri since this never changes.
+        let next_endpoint = format!("http://{}/{}/runtime/invocation/next", host, RUNTIME_API_VERSION)
             .parse::<Uri>()
             .context(ApiErrorKind::Unrecoverable("Could not parse API uri".to_string()))?;
 
         Ok(RuntimeClient {
             _runtime: runtime,
             http_client,
-            endpoint,
+            next_endpoint,
             runtime_agent,
+            host: host.to_owned(),
         })
     }
 }
@@ -173,7 +176,7 @@ impl<'ev> RuntimeClient {
         // the additional complexity.
         let resp = self
             .http_client
-            .get(self.endpoint.clone())
+            .get(self.next_endpoint.clone())
             .wait()
             .context(ApiErrorKind::Unrecoverable("Could not fetch next event".to_string()))?;
 
@@ -230,7 +233,15 @@ impl<'ev> RuntimeClient {
             request_id,
             output.len()
         );
-        let req = self.get_runtime_post_request(&self.endpoint, output);
+        let uri = format!(
+            "http://{}/{}/runtime/invocation/{}/response",
+            self.host, RUNTIME_API_VERSION, request_id
+        )
+        .parse::<Uri>()
+        .context(ApiErrorKind::Unrecoverable(
+            "Could not generate response uri".to_owned(),
+        ))?;
+        let req = self.get_runtime_post_request(&uri, output);
 
         let resp = self
             .http_client
@@ -270,7 +281,15 @@ impl<'ev> RuntimeClient {
             request_id,
             e.error_message
         );
-        let req = self.get_runtime_error_request(&self.endpoint, &e);
+        let uri = format!(
+            "http://{}/{}/runtime/invocation/{}/error",
+            self.host, RUNTIME_API_VERSION, request_id
+        )
+        .parse::<Uri>()
+        .context(ApiErrorKind::Unrecoverable(
+            "Could not generate response uri".to_owned(),
+        ))?;
+        let req = self.get_runtime_error_request(&uri, &e);
 
         let resp = self.http_client.request(req).wait().context(ApiErrorKind::Recoverable(
             "Could not post event error response".to_string(),

@@ -322,7 +322,13 @@ impl<'ev> RuntimeClient {
     /// to restart.
     pub fn fail_init(&self, e: &ErrorResponse) {
         error!("Calling fail_init Runtime API: {}", e.error_message);
-        let req = self.get_runtime_error_request(&self.endpoint, &e);
+        let uri = format!("http://{}/{}/runtime/init/error", self.host, RUNTIME_API_VERSION)
+            .parse::<Uri>()
+            .map_err(|e| {
+                error!("Could not parse fail init URI: {}", e);
+                panic!("Killing runtime");
+            });
+        let req = self.get_runtime_error_request(&uri.unwrap(), &e);
 
         self.http_client
             .request(req)
@@ -338,8 +344,8 @@ impl<'ev> RuntimeClient {
     }
 
     /// Returns the endpoint configured for this HTTP Runtime client.
-    pub fn get_endpoint(&self) -> String {
-        format!("{}", self.endpoint)
+    pub fn get_endpoint(&self) -> &str {
+        &self.host
     }
 
     /// Creates a Hyper `Request` object for the given `Uri` and `Body`. Sets the

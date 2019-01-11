@@ -1,7 +1,10 @@
 use bytes::Bytes;
 use futures::{future, stream::Stream, Async, Future, Poll};
 use http::{Request, Response};
-use hyper::{client::HttpConnector, Body, Client};
+use hyper::{
+    client::{HttpConnector, ResponseFuture},
+    Body, Client,
+};
 use tower_retry::{Policy, Retry};
 use tower_service::Service;
 
@@ -18,12 +21,10 @@ impl ClientWrapper {
     }
 }
 
-pub type HttpFuture<T, E> = Box<Future<Item = T, Error = E> + Send>;
-
 impl Service<Request<Bytes>> for ClientWrapper {
     type Response = Response<Body>;
     type Error = hyper::Error;
-    type Future = HttpFuture<Self::Response, Self::Error>;
+    type Future = ResponseFuture;
 
     fn poll_ready(&mut self) -> Poll<(), Self::Error> {
         Ok(Async::Ready(()))
@@ -32,9 +33,7 @@ impl Service<Request<Bytes>> for ClientWrapper {
     fn call(&mut self, req: Request<Bytes>) -> Self::Future {
         let (parts, body) = req.into_parts();
         let req = Request::from_parts(parts, Body::from(body));
-        let f = self.inner.request(req);
-
-        Box::new(f)
+        self.inner.request(req)
     }
 }
 

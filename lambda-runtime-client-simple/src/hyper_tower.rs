@@ -93,7 +93,6 @@ pub(crate) fn hyper(req: Request<Bytes>) -> impl Future<Item = Response<Bytes>, 
     let mut svc = Retry::new(policy, svc);
 
     svc.call(req)
-        .map_err(|e| e)
         .and_then(|res| {
             let status = res.status().clone();
             res.into_body().concat2().join(Ok(status))

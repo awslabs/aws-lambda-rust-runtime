@@ -129,13 +129,13 @@ pub struct RuntimeClient {
 impl RuntimeClient {
     /// Creates a new instance of the Runtime APIclient SDK. The http client has timeouts disabled and
     /// will always send a `Connection: keep-alive` header.
-    pub fn new(endpoint: String, task_executor: TaskExecutor) -> Result<Self, ApiError> {
+    pub fn new(endpoint: String, task_executor: TaskExecutor) -> Self {
         debug!("Starting new HttpRuntimeClient for {}", endpoint);
         // start a tokio core main event loop for hyper
 
         let http_client = Client::builder().executor(task_executor).build_http();
 
-        Ok(RuntimeClient { http_client, endpoint })
+        RuntimeClient { http_client, endpoint }
     }
 }
 

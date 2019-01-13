@@ -126,12 +126,7 @@ where
         }
     }
 
-    match RuntimeClient::new(endpoint, task_executor) {
-        Ok(client) => start_with_runtime_client(f, function_config, client),
-        Err(e) => {
-            panic!("Could not create runtime client SDK: {}", e);
-        }
-    }
+    start_with_runtime_client(f, function_config, RuntimeClient::new(endpoint, task_executor))
 }
 
 /// Starts the rust runtime with the given Runtime API client.
@@ -398,8 +393,7 @@ pub(crate) mod tests {
                 .get_runtime_api_endpoint()
                 .expect("Could not get runtime endpoint"),
             runtime.executor(),
-        )
-        .expect("Could not initialize client");
+        );
         let handler = |_e: String, _c: context::Context| -> Result<String, HandlerError> { Ok("hello".to_string()) };
         let retries: i8 = 3;
         let runtime = Runtime::new(

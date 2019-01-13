@@ -187,7 +187,7 @@ pub trait Handler<E, O>: Send {
 
 `Handler` provides a default implementation that enables you to provide a Rust closure or function pointer to the `lambda!()` macro.
 
-If your handler is synchronous, you can just return a `Result` from it; if your handler is asynchronous, you can return a `Future` from it.
+Your `Handler` needs to return something which implements `IntoFuture`; `Result` implements `IntoIterator`, so most synchronous `Handler`s will return a `Result`.
 
 Optionally, you can pass your own instance of Tokio runtime to the `lambda!()` macro. See our [`with_custom_runtime.rs` example](https://github.com/awslabs/aws-lambda-rust-runtime/tree/master/lambda-runtime/examples/with_custom_runtime.rs)
 

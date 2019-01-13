@@ -36,8 +36,7 @@
 //! fn main() {
 //!     let tokio_runtime = TokioRuntime::new().expect("Could not make tokio runtime");
 //!     let runtime_endpoint = String::from("http://localhost:8080");
-//!     let client = RuntimeClient::new(runtime_endpoint, tokio_runtime.executor())
-//!         .expect("Could not initialize client");
+//!     let client = RuntimeClient::new(runtime_endpoint, tokio_runtime.executor());
 //!
 //!     let (event_data, event_context) = client.next_event().wait()
 //!         .expect("Could not retrieve next event");

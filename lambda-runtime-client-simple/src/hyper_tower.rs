@@ -48,10 +48,13 @@ impl RetryPolicy {
     }
 }
 
-impl Policy<Request<Bytes>, Response<Body>, hyper::Error> for RetryPolicy {
+impl<T> Policy<Request<T>, Response<Body>, hyper::Error> for RetryPolicy
+where
+    T: Into<Body> + Clone,
+{
     type Future = future::FutureResult<Self, ()>;
 
-    fn retry(&self, _: &Request<Bytes>, result: Result<&Response<Body>, &hyper::Error>) -> Option<Self::Future> {
+    fn retry(&self, _: &Request<T>, result: Result<&Response<Body>, &hyper::Error>) -> Option<Self::Future> {
         if self.attempts == 0 {
             // We ran out of retries, hence us returning none.
             return None;
@@ -73,7 +76,7 @@ impl Policy<Request<Bytes>, Response<Body>, hyper::Error> for RetryPolicy {
         }
     }
 
-    fn clone_request(&self, req: &Request<Bytes>) -> Option<Request<Bytes>> {
+    fn clone_request(&self, req: &Request<T>) -> Option<Request<T>> {
         // there is no .parts(&self) method on request.
         let body = req.body().clone();
         let mut clone = http::Request::new(body);

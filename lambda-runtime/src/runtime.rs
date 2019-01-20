@@ -234,7 +234,7 @@ where
                         }
                         Err(e) => {
                             error!(
-                                "Could not marshal output object to Vec<u8> JSON represnetation for request {}: {}",
+                                "Could not marshal output object to Vec<u8> JSON representation for request {}: {}",
                                 request_id, e
                             );
                             self.runtime_client

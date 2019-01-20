@@ -45,6 +45,9 @@ where
 }
 
 #[macro_export]
+/// Starts an event listener which will parse incoming event into the even type requested by
+/// `handler` and will invoke `handler` on each incoming event. Can optionally by passed a Tokio
+/// `runtime` to build the listener on. If none is provided, it creates its own.
 macro_rules! lambda {
     ($handler:ident) => {
         $crate::start($handler, None)

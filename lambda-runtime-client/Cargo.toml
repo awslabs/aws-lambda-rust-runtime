@@ -24,4 +24,4 @@ serde_json = "^1"
 serde_derive = "^1" 
 log = "0.4"
 lambda_runtime_errors = { path = "../lambda-runtime-errors", version = "^0.1" }
-failure = { version = "^0.1", features = ["std", "backtrace", "derive"] }
+failure = "^0.1"

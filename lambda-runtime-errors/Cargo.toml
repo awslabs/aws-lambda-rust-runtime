@@ -12,7 +12,7 @@ documentation = "https://docs.rs/lambda_runtime"
 
 [dependencies]
 log = "^0.4"
-failure = { version = "^0.1", features = ["std", "backtrace", "derive"] }
+failure = "^0.1"
 serde_json = "^1"
 
 [dev-dependencies]

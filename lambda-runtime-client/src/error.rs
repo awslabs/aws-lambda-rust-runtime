@@ -160,23 +160,4 @@ pub(crate) mod tests {
         let resp_err = ErrorResponse::from(err);
         assert_eq!(resp_err.stack_trace, None);
     }
-
-    /*#[test] skip this tests as it's broken right now
-    fn does_produce_stack_trace() {
-        env::set_var("RUST_FAILURE_BACKTRACE", "yes");
-        env::set_var("RUST_BACKTRACE", "yes");
-        let gen_err: fn() -> Result<u8, failure::Error> = || {
-            env::set_var("RUST_FAILURE_BACKTRACE", "yes");
-            env::set_var("RUST_BACKTRACE", "yes");
-            let _int = "hello".parse::<u8>()?;
-            Ok(_int)
-        };
-        let err = gen_err();
-        assert_eq!(true, err.is_err());
-        let resp_err = ErrorResponse::from(err.err().unwrap());
-        assert_eq!(false, resp_err.stack_trace.is_none());
-        assert_eq!(true, resp_err.stack_trace.unwrap().len() > 1);
-        env::remove_var("RUST_BACKTRACE");
-        env::remove_var("RUST_FAILURE_BACKTRACE");
-    }*/
 }

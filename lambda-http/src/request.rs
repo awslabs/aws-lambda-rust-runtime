@@ -1,6 +1,8 @@
-//! API Gateway request types. Typically these are exposed via the `request_context`
-//! request extension method provided by [lambda_http::RequestExt](trait.RequestExt.html)
-
+//! ALB andAPI Gateway request types.
+//!
+//! Typically these are exposed via the `request_context`
+//! request extension method provided by [lambda_http::RequestExt](../trait.RequestExt.html)
+//!
 use std::{borrow::Cow, collections::HashMap, fmt, mem};
 
 use http::{
@@ -21,25 +23,32 @@ use crate::{
     strmap::StrMap,
 };
 
-/// Representation of an API Gateway proxy event data
+/// Internal representation of an Lambda http event from both
+/// both ALB and API Gateway proxy event perspectives
 #[doc(hidden)]
 #[derive(Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct GatewayRequest<'a> {
+pub(crate) struct LambdaRequest<'a> {
     pub(crate) path: Cow<'a, str>,
     #[serde(deserialize_with = "deserialize_method")]
     pub(crate) http_method: Method,
     #[serde(deserialize_with = "deserialize_headers")]
     pub(crate) headers: HeaderMap<HeaderValue>,
+    /// For alb events these are only present when
+    /// the `lambda.multi_value_headers.enabled` target group setting turned on
     #[serde(default, deserialize_with = "deserialize_multi_value_headers")]
     pub(crate) multi_value_headers: HeaderMap<HeaderValue>,
     #[serde(deserialize_with = "nullable_default")]
     pub(crate) query_string_parameters: StrMap,
+    /// For alb events these are only present when
+    /// the `lambda.multi_value_headers.enabled` target group setting turned on
     #[serde(default, deserialize_with = "nullable_default")]
     pub(crate) multi_value_query_string_parameters: StrMap,
-    #[serde(deserialize_with = "nullable_default")]
+    /// ALB events do not have path parameters.
+    #[serde(default, deserialize_with = "nullable_default")]
     pub(crate) path_parameters: StrMap,
-    #[serde(deserialize_with = "nullable_default")]
+    /// ALB events do not have stage variables.
+    #[serde(default, deserialize_with = "nullable_default")]
     pub(crate) stage_variables: StrMap,
     pub(crate) body: Option<Cow<'a, str>>,
     #[serde(default)]
@@ -47,24 +56,66 @@ pub(crate) struct GatewayRequest<'a> {
     pub(crate) request_context: RequestContext,
 }
 
-/// API Gateway request context
-#[derive(Deserialize, Debug, Default, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct RequestContext {
-    //pub path: String,
-    pub account_id: String,
-    pub resource_id: String,
-    pub stage: String,
-    pub request_id: String,
-    pub resource_path: String,
-    pub http_method: String,
-    #[serde(default)]
-    pub authorizer: HashMap<String, Value>,
-    pub api_id: String,
-    pub identity: Identity,
+/// Event request context as an enumeration of request contexts
+/// for both ALB and API Gateway http events
+#[derive(Deserialize, Debug, Clone)]
+#[serde(untagged)]
+pub enum RequestContext {
+    /// Api Gateway request context
+    #[serde(rename_all = "camelCase")]
+    ApiGateway {
+        //pub path: String,
+        account_id: String,
+        resource_id: String,
+        stage: String,
+        request_id: String,
+        resource_path: String,
+        http_method: String,
+        #[serde(default)]
+        authorizer: HashMap<String, Value>,
+        api_id: String,
+        identity: Identity,
+    },
+    /// ALB request context
+    #[serde(rename_all = "camelCase")]
+    Alb { elb: Elb },
 }
 
-/// Identity assoicated with request
+impl Default for RequestContext {
+    fn default() -> Self {
+        RequestContext::ApiGateway {
+            account_id: Default::default(),
+            resource_id: Default::default(),
+            stage: Default::default(),
+            request_id: Default::default(),
+            resource_path: Default::default(),
+            http_method: Default::default(),
+            authorizer: Default::default(),
+            api_id: Default::default(),
+            identity: Default::default(),
+        }
+    }
+}
+
+impl RequestContext {
+    /// Return true if this request context represents an ALB request
+    pub fn is_alb(&self) -> bool {
+        match self {
+            RequestContext::Alb { .. } => true,
+            _ => false,
+        }
+    }
+}
+
+/// Elastic load balancer context information
+#[derive(Deserialize, Debug, Default, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct Elb {
+    /// AWS ARN identifier for the ELB Target Group this lambda was triggered by
+    pub target_group_arn: String,
+}
+
+/// Identity assoicated with API Gateway request
 #[derive(Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Identity {
@@ -194,9 +245,9 @@ where
     Ok(opt.unwrap_or_else(T::default))
 }
 
-impl<'a> From<GatewayRequest<'a>> for HttpRequest<Body> {
-    fn from(value: GatewayRequest<'_>) -> Self {
-        let GatewayRequest {
+impl<'a> From<LambdaRequest<'a>> for HttpRequest<Body> {
+    fn from(value: LambdaRequest<'_>) -> Self {
+        let LambdaRequest {
             path,
             http_method,
             headers,
@@ -210,12 +261,16 @@ impl<'a> From<GatewayRequest<'a>> for HttpRequest<Body> {
             request_context,
         } = value;
 
-        // build an http::Request<lambda_http::Body> from a lambda_http::GatewayRequest
+        // build an http::Request<lambda_http::Body> from a lambda_http::LambdaRequest
         let mut builder = HttpRequest::builder();
         builder.method(http_method);
         builder.uri({
             format!(
-                "https://{}{}",
+                "{}://{}{}",
+                headers
+                    .get("X-Forwarded-Proto")
+                    .map(|val| val.to_str().unwrap_or_else(|_| "https"))
+                    .unwrap_or_else(|| "https"),
                 headers
                     .get(HOST)
                     .map(|val| val.to_str().unwrap_or_default())
@@ -281,33 +336,42 @@ mod tests {
     fn requests_convert() {
         let mut headers = HeaderMap::new();
         headers.insert("Host", "www.rust-lang.org".parse().unwrap());
-        let gwr: GatewayRequest<'_> = GatewayRequest {
+        let lambda_request: LambdaRequest<'_> = LambdaRequest {
             path: "/foo".into(),
             headers,
-            ..GatewayRequest::default()
+            ..LambdaRequest::default()
         };
         let expected = HttpRequest::get("https://www.rust-lang.org/foo").body(()).unwrap();
-        let actual = HttpRequest::from(gwr);
+        let actual = HttpRequest::from(lambda_request);
         assert_eq!(expected.method(), actual.method());
         assert_eq!(expected.uri(), actual.uri());
         assert_eq!(expected.method(), actual.method());
     }
 
     #[test]
-    fn deserializes_request_events() {
+    fn deserializes_apigw_request_events() {
         // from the docs
         // https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request
         let input = include_str!("../tests/data/apigw_proxy_request.json");
-        let result = serde_json::from_str::<GatewayRequest<'_>>(&input);
+        let result = serde_json::from_str::<LambdaRequest<'_>>(&input);
         assert!(result.is_ok(), format!("event was not parsed as expected {:?}", result));
     }
 
     #[test]
-    fn deserialize_multi_value_events() {
+    fn deserialize_alb_request_events() {
+        // from the docs
+        // https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html#multi-value-headers
+        let input = include_str!("../tests/data/alb_request.json");
+        let result = serde_json::from_str::<LambdaRequest<'_>>(&input);
+        assert!(result.is_ok(), format!("event was not parsed as expected {:?}", result));
+    }
+
+    #[test]
+    fn deserializes_apigw_multi_value_request_events() {
         // from docs
         // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
         let input = include_str!("../tests/data/apigw_multi_value_proxy_request.json");
-        let result = serde_json::from_str::<GatewayRequest<'_>>(&input);
+        let result = serde_json::from_str::<LambdaRequest<'_>>(&input);
         assert!(
             result.is_ok(),
             format!("event is was not parsed as expected {:?}", result)
@@ -325,15 +389,25 @@ mod tests {
     }
 
     #[test]
-    fn implements_default() {
+    fn deserializes_alb_multi_value_request_events() {
+        // from docs
+        // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
+        let input = include_str!("../tests/data/alb_multi_value_request.json");
+        let result = serde_json::from_str::<LambdaRequest<'_>>(&input);
+        assert!(
+            result.is_ok(),
+            format!("event is was not parsed as expected {:?}", result)
+        );
+        let apigw = result.unwrap();
+        assert!(!apigw.query_string_parameters.is_empty());
+        assert!(!apigw.multi_value_query_string_parameters.is_empty());
+        let actual = HttpRequest::from(apigw);
+
+        // test RequestExt#query_string_parameters does the right thing
         assert_eq!(
-            GatewayRequest {
-                path: "/foo".into(),
-                ..GatewayRequest::default()
-            }
-            .path,
-            "/foo"
-        )
+            actual.query_string_parameters().get_all("myKey"),
+            Some(vec!["val1", "val2"])
+        );
     }
 
     #[test]

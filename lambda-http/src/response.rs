@@ -1,8 +1,5 @@
 //! Response types
 
-// Std
-use std::ops::Not;
-
 use http::{
     header::{HeaderMap, HeaderValue, CONTENT_TYPE},
     Response,
@@ -18,26 +15,28 @@ use crate::body::Body;
 /// Representation of API Gateway response
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct GatewayResponse {
+pub(crate) struct LambdaResponse {
     pub status_code: u16,
-    #[serde(skip_serializing_if = "HeaderMap::is_empty", serialize_with = "serialize_headers")]
+    // ALB requires a statusDescription i.e. "200 OK" field but API Gateway returns an error
+    // when one is provided. only populate this for ALB responses
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status_description: Option<String>,
+    #[serde(serialize_with = "serialize_headers")]
     pub headers: HeaderMap<HeaderValue>,
-    #[serde(
-        skip_serializing_if = "HeaderMap::is_empty",
-        serialize_with = "serialize_multi_value_headers"
-    )]
+    #[serde(serialize_with = "serialize_multi_value_headers")]
     pub multi_value_headers: HeaderMap<HeaderValue>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub body: Option<Body>,
-    #[serde(skip_serializing_if = "Not::not")]
+    // This field is optional for API Gateway but required for ALB
     pub is_base64_encoded: bool,
 }
 
 #[cfg(test)]
-impl Default for GatewayResponse {
+impl Default for LambdaResponse {
     fn default() -> Self {
         Self {
             status_code: 200,
+            status_description: Default::default(),
             headers: Default::default(),
             multi_value_headers: Default::default(),
             body: Default::default(),
@@ -75,19 +74,29 @@ where
     map.end()
 }
 
-impl<T> From<Response<T>> for GatewayResponse
-where
-    T: Into<Body>,
-{
-    fn from(value: Response<T>) -> Self {
+/// tranformation from http type to internal type
+impl LambdaResponse {
+    pub(crate) fn from_response<T>(is_alb: bool, value: Response<T>) -> Self
+    where
+        T: Into<Body>,
+    {
         let (parts, bod) = value.into_parts();
         let (is_base64_encoded, body) = match bod.into() {
             Body::Empty => (false, None),
             b @ Body::Text(_) => (false, Some(b)),
             b @ Body::Binary(_) => (true, Some(b)),
         };
-        GatewayResponse {
+        Self {
             status_code: parts.status.as_u16(),
+            status_description: if is_alb {
+                Some(format!(
+                    "{} {}",
+                    parts.status.as_u16(),
+                    parts.status.canonical_reason().unwrap_or_default()
+                ))
+            } else {
+                None
+            },
             body,
             headers: parts.headers.clone(),
             multi_value_headers: parts.headers,
@@ -151,7 +160,7 @@ impl IntoResponse for serde_json::Value {
 
 #[cfg(test)]
 mod tests {
-    use super::{Body, GatewayResponse, IntoResponse};
+    use super::{Body, IntoResponse, LambdaResponse};
     use http::{header::CONTENT_TYPE, Response};
     use serde_json::{self, json};
 
@@ -182,39 +191,41 @@ mod tests {
 
     #[test]
     fn default_response() {
-        assert_eq!(GatewayResponse::default().status_code, 200)
+        assert_eq!(LambdaResponse::default().status_code, 200)
     }
 
     #[test]
     fn serialize_default() {
         assert_eq!(
-            serde_json::to_string(&GatewayResponse::default()).expect("failed to serialize response"),
-            r#"{"statusCode":200}"#
+            serde_json::to_string(&LambdaResponse::default()).expect("failed to serialize response"),
+            r#"{"statusCode":200,"headers":{},"multiValueHeaders":{},"isBase64Encoded":false}"#
         );
     }
 
     #[test]
     fn serialize_body() {
-        let mut resp = GatewayResponse::default();
+        let mut resp = LambdaResponse::default();
         resp.body = Some("foo".into());
         assert_eq!(
             serde_json::to_string(&resp).expect("failed to serialize response"),
-            r#"{"statusCode":200,"body":"foo"}"#
+            r#"{"statusCode":200,"headers":{},"multiValueHeaders":{},"body":"foo","isBase64Encoded":false}"#
         );
     }
 
     #[test]
     fn serialize_multi_value_headers() {
-        let res: GatewayResponse = Response::builder()
-            .header("multi", "a")
-            .header("multi", "b")
-            .body(Body::from(()))
-            .expect("failed to create response")
-            .into();
+        let res = LambdaResponse::from_response(
+            false,
+            Response::builder()
+                .header("multi", "a")
+                .header("multi", "b")
+                .body(Body::from(()))
+                .expect("failed to create response"),
+        );
         let json = serde_json::to_string(&res).expect("failed to serialize to json");
         assert_eq!(
             json,
-            r#"{"statusCode":200,"headers":{"multi":"a"},"multiValueHeaders":{"multi":["a","b"]}}"#
+            r#"{"statusCode":200,"headers":{"multi":"a"},"multiValueHeaders":{"multi":["a","b"]},"isBase64Encoded":false}"#
         )
     }
 }

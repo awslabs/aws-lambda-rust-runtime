@@ -25,10 +25,7 @@ pub trait LambdaErrorExt {
 
 impl LambdaErrorExt for Error {
     fn error_type(&self) -> &str {
-        if let Some(name) = self.find_root_cause().name() {
-            return name;
-        }
-        "FailureError"
+        self.find_root_cause().name().unwrap_or_else(|| "FailureError")
     }
 }
 

@@ -1,4 +1,4 @@
-use crate::error::{ApiError, ApiErrorKind, ErrorResponse, ERROR_TYPE_UNHANDLED};
+use crate::error::{ApiError, ApiErrorKind, ErrorResponse};
 use failure::ResultExt;
 use hyper::{
     client::HttpConnector,
@@ -378,7 +378,7 @@ impl<'ev> RuntimeClient {
                 header::HeaderValue::from_static(API_ERROR_CONTENT_TYPE),
             )
             .header(header::USER_AGENT, self.runtime_agent.clone())
-            .header(RUNTIME_ERROR_HEADER, HeaderValue::from_static(ERROR_TYPE_UNHANDLED))
+            .header(RUNTIME_ERROR_HEADER, HeaderValue::from_static("Unhandled"))
             .body(Body::from(body))
             .unwrap()
     }

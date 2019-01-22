@@ -111,7 +111,11 @@ if os.path.isfile(GENERATED_FILE_NAME):
 
 # code gen
 with open(GENERATED_FILE_NAME, "a") as f:
-    f.write("// Generated code, DO NOT MODIFY!\n\n")
+    f.write("""// Generated code, DO NOT MODIFY!
+// This file contains the implementation of the LambdaErrorExt
+// trait for most of the standard library errors as well as the
+// implementation of the From trait for the HandlerError struct
+// to support the same standard library errors.\n\n""")
 
     # use statements
     for err in parser.errors:

@@ -42,7 +42,7 @@ pub struct EnvConfigProvider;
 
 impl std::default::Default for EnvConfigProvider {
     fn default() -> Self {
-        EnvConfigProvider {}
+        EnvConfigProvider
     }
 }
 

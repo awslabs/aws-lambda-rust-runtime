@@ -1,4 +1,8 @@
 // Generated code, DO NOT MODIFY!
+// This file contains the implementation of the LambdaErrorExt
+// trait for most of the standard library errors as well as the
+// implementation of the From trait for the HandlerError struct
+// to support the same standard library errors.
 
 use crate::{HandlerError, LambdaErrorExt};
 use std::{

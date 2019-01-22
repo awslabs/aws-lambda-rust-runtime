@@ -11,7 +11,6 @@ repository = "https://github.com/awslabs/aws-lambda-rust-runtime"
 documentation = "https://docs.rs/lambda_runtime"
 
 [dependencies]
-log = "^0.4"
 syn = "^0.15"
 synstructure = "^0.10"
 proc-macro2 = "^0.4" 

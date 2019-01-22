@@ -110,8 +110,8 @@ where
 }
 
 /// Initializes the Lambda runtime with the given handler. Optionally this macro can
-/// also receive an instance of Tokio runtime for the Hyper HTTP client. If the Tokio
-/// runtime is not passed the the Lambda Rust Runtime initializes a new one.
+/// also receive a customized instance of Tokio runtime to drive internal lambda operations
+/// to completion
 #[macro_export]
 macro_rules! lambda {
     ($handler:ident) => {

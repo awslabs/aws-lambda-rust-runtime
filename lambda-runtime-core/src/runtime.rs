@@ -31,9 +31,6 @@ where
     start_with_config(f, &EnvConfigProvider::default(), runtime)
 }
 
-/// Initializes the Lambda runtime with the given handler. Optionally this macro can
-/// also receive an instance of Tokio runtime for the Hyper HTTP client. If the Tokio
-/// runtime is not passed the the Lambda Rust Runtime initializes a new one.
 #[macro_export]
 /// Starts an event listener which will parse incoming events into the even type requested by
 /// `handler` and will invoke `handler` on each incoming event. Can optionally be passed a Tokio

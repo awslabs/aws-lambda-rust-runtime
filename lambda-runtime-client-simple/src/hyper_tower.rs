@@ -99,7 +99,9 @@ pub(crate) fn hyper(req: Request<Bytes>) -> impl Future<Item = Response<Bytes>, 
             let status = res.status().clone();
             res.into_body().concat2().join(Ok(status))
         })
-        .and_then(|(body, status)| Ok(Response::builder().status(status).body(Bytes::from(body)).unwrap()))
+        .and_then(|(body, status)| {
+            Ok(Response::builder().status(status).body(Bytes::from(body)).unwrap())
+        })
         .map_err(RuntimeError::Http)
 }
 

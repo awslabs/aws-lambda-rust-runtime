@@ -19,6 +19,3 @@ tower-util = { version = "0.1", git = "https://github.com/tower-rs/tower.git" }
 serde = { version = "^1" }
 serde_derive = "^1"
 serde_json = "^1"
-
-[patch.crates-io]
-http = { git = "https://github.com/hyperium/http" }

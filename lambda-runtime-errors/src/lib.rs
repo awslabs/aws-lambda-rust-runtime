@@ -3,15 +3,14 @@
 //! AWS Lambda Rust runtime.
 //!
 //! This crate also exports the `lambda_runtime_errors_derive` crate to
-//! make it easy to automatically generate implementations of the `LambdaErrorExt`
-//! trait.
+//! derive the `LambdaErrorExt` trait.
 //!
 //! ```rust,no-run
 //! use lambda_runtime_errors::*;
 //!
-//! // the error_type() method will return "your::mod::BasicCustomError".
+//! // the generated error_type() method returns "crate::LambdaError"
 //! #[derive(LambdaErrorExt)]
-//! struct BasicCustomError;
+//! struct LambdaError;
 //! ```
 mod error_ext_impl;
 

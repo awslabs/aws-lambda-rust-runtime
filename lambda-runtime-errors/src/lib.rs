@@ -1,9 +1,22 @@
 //! The Lambda runtime errors crate defines the `LambdaErrorExt` trait
 //! that can be used by libriaries to return errors compatible with the
 //! AWS Lambda Rust runtime.
+//!
+//! This crate also exports the `lambda_runtime_errors_derive` crate to
+//! make it easy to automatically generate implementations of the `LambdaErrorExt`
+//! trait.
+//!
+//! ```rust,no-run
+//! use lambda_runtime_errors::*;
+//!
+//! // the error_type() method will return "your::mod::BasicCustomError".
+//! #[derive(LambdaErrorExt)]
+//! struct BasicCustomError;
+//! ```
 mod error_ext_impl;
 
 pub use crate::error_ext_impl::*;
+pub use lambda_runtime_errors_derive::*;
 
 use failure::{format_err, Compat, Error, Fail};
 use std::fmt;

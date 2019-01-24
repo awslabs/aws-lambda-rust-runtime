@@ -1,6 +1,7 @@
 use std::env;
 
 use crate::error::RuntimeError;
+use log::*;
 
 /// The name of the environment variable in the Lambda execution
 /// environment for the Runtime APIs endpoint. The value of this
@@ -39,9 +40,9 @@ pub trait ConfigProvider {
 /// used by the `start()` method of this module.
 pub struct EnvConfigProvider;
 
-impl EnvConfigProvider {
-    pub fn new() -> Self {
-        EnvConfigProvider {}
+impl std::default::Default for EnvConfigProvider {
+    fn default() -> Self {
+        EnvConfigProvider
     }
 }
 

@@ -1,5 +1,6 @@
 #![warn(missing_docs)]
 #![deny(warnings)]
+#![allow(clippy::new_ret_no_self)]
 //! Rust client SDK for the AWS Lambda Runtime APIs. This crate defines
 //! a `RuntimeClient` that encapsulates interactions with AWS Lambda's Runtime
 //! APIs.
@@ -31,8 +32,7 @@
 //! }
 //!
 //! fn main() {
-//!     let runtime_endpoint = String::from("http://localhost:8080");
-//!     let client = RuntimeClient::new(runtime_endpoint, None)
+//!     let client = RuntimeClient::new("http://localhost:8080", None, None)
 //!         .expect("Could not initialize client");
 //!
 //!     let (event_data, event_context) = client.next_event()
@@ -45,7 +45,7 @@
 //!         let resp_object = CustomResponse{ surname: String::from("Doe")};
 //!         let resp_vec = serde_json::to_vec(&resp_object)
 //!             .expect("Could not serialize CustomResponse to Vec<u8>");
-//!         client.event_response(&event_context.aws_request_id, resp_vec)
+//!         client.event_response(&event_context.aws_request_id, &resp_vec)
 //!             .expect("Response sent successfully");
 //!     } else {
 //!         // return a custom error by implementing the RuntimeApiError trait.
@@ -56,9 +56,7 @@
 //! }
 //! ```
 
-#[macro_use]
-extern crate log;
-
 mod client;
 pub mod error;
+
 pub use crate::client::*;

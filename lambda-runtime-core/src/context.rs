@@ -1,10 +1,7 @@
-use std::env;
-
-use backtrace;
 use chrono::Utc;
-use lambda_runtime_client;
 
-use crate::{env as lambda_env, error::HandlerError};
+use crate::env as lambda_env;
+use lambda_runtime_client;
 
 /// The Lambda function execution context. The values in this struct
 /// are populated using the [Lambda environment variables](https://docs.aws.amazon.com/lambda/latest/dg/current-supported-versions.html)
@@ -83,20 +80,6 @@ impl Context {
             log_group_name: local_settings.log_group,
             ..Default::default()
         }
-    }
-
-    /// We use the context for each event to store the stack trace. This is the methods
-    /// clients should use to retrieve an initialized `RuntimeError` with the populated
-    /// stack trace.
-    pub fn new_error(&self, msg: &str) -> HandlerError {
-        let mut trace: Option<backtrace::Backtrace> = None;
-        let is_backtrace = env::var("RUST_BACKTRACE");
-        if is_backtrace.is_ok() && is_backtrace.unwrap() == "1" {
-            trace!("Begin backtrace collection");
-            trace = Option::from(backtrace::Backtrace::new());
-            trace!("Completed backtrace collection");
-        }
-        HandlerError::new(msg, trace)
     }
 
     /// Returns the remaining time in the execution in milliseconds. This is based on the

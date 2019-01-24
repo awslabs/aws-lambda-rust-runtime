@@ -8,7 +8,7 @@ use hyper::{
 use tower_retry::{Policy, Retry};
 use tower_service::Service;
 
-use crate::RuntimeError;
+use crate::Error;
 
 #[derive(Clone)]
 pub(crate) struct ClientWrapper {
@@ -89,7 +89,7 @@ where
     }
 }
 
-pub(crate) fn hyper(req: Request<Bytes>) -> impl Future<Item = Response<Bytes>, Error = RuntimeError> {
+pub(crate) fn hyper(req: Request<Bytes>) -> impl Future<Item = Response<Bytes>, Error = Error> {
     let svc = ClientWrapper::new();
     let policy = RetryPolicy::new(3);
     let mut svc = Retry::new(policy, svc);
@@ -99,10 +99,8 @@ pub(crate) fn hyper(req: Request<Bytes>) -> impl Future<Item = Response<Bytes>, 
             let status = res.status().clone();
             res.into_body().concat2().join(Ok(status))
         })
-        .and_then(|(body, status)| {
-            Ok(Response::builder().status(status).body(Bytes::from(body)).unwrap())
-        })
-        .map_err(RuntimeError::Http)
+        .and_then(|(body, status)| Ok(Response::builder().status(status).body(Bytes::from(body)).unwrap()))
+        .map_err(|e| e.into())
 }
 
 #[test]

@@ -1,18 +1,15 @@
 #[macro_use]
 extern crate serde_derive;
 
+use crate::{hyper_tower::*, settings::Config};
 use bytes::{buf::FromBuf, Bytes, IntoBuf};
-use failure::Fail;
 use futures::{
     future::{result, FutureResult},
     Async, Future, Poll,
 };
 use http::{Method, Request, Response, Uri};
-use serde_json::Value;
-use std::fmt::{Debug, Display};
 use tower_service::Service;
 use tower_util::ServiceFn;
-use crate::{hyper_tower::*, settings::Config};
 
 pub mod hyper_tower;
 pub mod settings;
@@ -26,34 +23,20 @@ macro_rules! lambda {
     };
 }
 
-#[derive(Fail, Debug)]
-pub enum RuntimeError {
-    #[fail(display = "{}", _0)]
-    Http(#[fail(cause)] hyper::error::Error),
-    #[fail(display = "{}", _0)]
-    Json(#[fail(cause)] serde_json::error::Error),
-    #[fail(display = "{}", _0)]
-    Utf8Error(#[fail(cause)] std::string::FromUtf8Error),
-    #[fail(display = "{}", _0)]
-    EnvError(#[fail(cause)] envy::Error),
-    #[fail(display = "{}", _0)]
-    InvalidUri(#[fail(cause)] http::uri::InvalidUri),
-}
+pub type Error = Box<std::error::Error + Sync + Send + 'static>;
 
-pub trait Handler<Event, Response, Error>: Send
+pub trait Handler<Event, Response>: Send
 where
     Event: FromBuf,
     Response: IntoBuf,
-    Error: Fail + Display + Debug + Sync + 'static,
 {
     fn run(&mut self, event: Event) -> Result<Response, Error>;
 }
 
-impl<Event, Response, Error, F> Handler<Event, Response, Error> for F
+impl<Event, Response, F> Handler<Event, Response> for F
 where
     Event: FromBuf,
     Response: IntoBuf,
-    Error: Fail + Display + Debug + Sync + Send + 'static,
     F: FnMut(Event) -> Result<Response, Error> + Send,
 {
     fn run(&mut self, event: Event) -> Result<Response, Error> {
@@ -61,11 +44,10 @@ where
     }
 }
 
-impl<Event, Response, Error> Service<Event> for Handler<Event, Response, Error>
+impl<Event, Response> Service<Event> for Handler<Event, Response>
 where
     Event: FromBuf,
     Response: IntoBuf,
-    Error: Fail + Display + Debug + Sync + Send + 'static,
 {
     type Response = Response;
     type Error = Error;
@@ -80,16 +62,12 @@ where
     }
 }
 
-fn run<F>(
-    mut f: impl Handler<Bytes, Bytes, RuntimeError> + 'static,
-    catch: F,
-    config: Config,
-) -> Result<(), RuntimeError>
+fn run<F>(mut f: impl Handler<Bytes, Bytes> + 'static, catch: F, config: Config) -> Result<(), Error>
 where
-    F: FnOnce(RuntimeError) -> String,
+    F: FnOnce(Error) -> String,
     F: Send + 'static,
 {
-    let uri = config.endpoint.parse::<Uri>().map_err(RuntimeError::InvalidUri)?;
+    let uri = config.endpoint.parse::<Uri>()?;
 
     let mut runtime = Runtime::new(ServiceFn::new(hyper), uri);
     let f = runtime
@@ -105,19 +83,17 @@ where
         .map(|_| ())
         .map_err(|e| panic!("{}", e));
 
-    tokio::run(f);
+    let rt = tokio::runtime::Runtime::new()?;
+    let _ = rt.block_on_all(f);
     Ok(())
 }
 
-pub fn start<F>(
-    f: impl Handler<Bytes, Bytes, RuntimeError> + 'static,
-    catch: F,
-) -> Result<(), RuntimeError>
+pub fn start<F>(f: impl Handler<Bytes, Bytes> + 'static, catch: F) -> Result<(), Error>
 where
-    F: FnOnce(RuntimeError) -> String,
+    F: FnOnce(Error) -> String,
     F: Send + 'static,
 {
-    let config = Config::from_env().map_err(RuntimeError::EnvError)?;
+    let config = Config::from_env()?;
     run(f, catch, config)
 }
 

@@ -378,6 +378,7 @@ impl<'ev> RuntimeClient {
                 header::HeaderValue::from_static(API_ERROR_CONTENT_TYPE),
             )
             .header(header::USER_AGENT, self.runtime_agent.clone())
+            // this header is static for the runtime APIs and it's likely to go away in the future.
             .header(RUNTIME_ERROR_HEADER, HeaderValue::from_static("Unhandled"))
             .body(Body::from(body))
             .unwrap()

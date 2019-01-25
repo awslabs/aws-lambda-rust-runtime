@@ -8,12 +8,13 @@ keywords = ["AWS", "Lambda", "Runtime", "Rust"]
 license = "Apache-2.0"
 homepage = "https://github.com/awslabs/aws-lambda-rust-runtime"
 repository = "https://github.com/awslabs/aws-lambda-rust-runtime"
-documentation = "https://docs.rs/lambda_runtime"
+documentation = "https://docs.rs/lambda_runtime_errors"
 
 [dependencies]
 log = "^0.4"
 failure = "^0.1"
 serde_json = "^1"
+lambda_runtime_errors_derive = { path = "../lambda-runtime-errors-derive", version = "^0.1" }
 
 [dev-dependencies]
 lambda_runtime_core = { path = "../lambda-runtime-core", version = "^0.1"}

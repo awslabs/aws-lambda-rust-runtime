@@ -4,9 +4,9 @@
 
 This package makes it easy to run AWS Lambda Functions written in Rust. This workspace includes multiple crates:
 
-* **`lambda-runtime-client`** is a client SDK for the Lambda Runtime APIs. You probably don't need to use this crate directly!
-* **`lambda-runtime`** is a library that makes it easy to write Lambda functions in Rust.
-* **`lambda-http`** is a library that makes it easy to write API Gateway proxy event focused Lambda functions in Rust.
+- [![Docs](https://docs.rs/lambda_runtime_client/badge.svg)](https://docs.rs/lambda_runtime_client) **`lambda-runtime-client`** is a client SDK for the Lambda Runtime APIs. You probably don't need to use this crate directly!
+- [![Docs](https://docs.rs/lambda_runtime/badge.svg)](https://docs.rs/lambda_runtime) **`lambda-runtime`** is a library that makes it easy to write Lambda functions in Rust.
+- [![Docs](https://docs.rs/lambda_http/badge.svg)](https://docs.rs/lambda_http) **`lambda-http`** is a library that makes it easy to write API Gateway proxy event focused Lambda functions in Rust.
 
 ## Example function
 
@@ -100,9 +100,9 @@ Alternatively, you can build a Rust-based Lambda function declaratively using th
 
 A number of getting started Serverless application templates exist to get you up and running quickly
 
-* a minimal [echo function](https://github.com/softprops/serverless-aws-rust) to demonstrate what the smallest Rust function setup looks like
-* a minimal [http function](https://github.com/softprops/serverless-aws-rust-http) to demonstrate how to interface with API Gateway using Rust's native [http](https://crates.io/crates/http) crate (note this will be a git dependency until 0.2 is published)
-* a combination [multi function service](https://github.com/softprops/serverless-aws-rust-multi) to demonstrate how to set up a services with multiple independent functions
+- a minimal [echo function](https://github.com/softprops/serverless-aws-rust) to demonstrate what the smallest Rust function setup looks like
+- a minimal [http function](https://github.com/softprops/serverless-aws-rust-http) to demonstrate how to interface with API Gateway using Rust's native [http](https://crates.io/crates/http) crate (note this will be a git dependency until 0.2 is published)
+- a combination [multi function service](https://github.com/softprops/serverless-aws-rust-multi) to demonstrate how to set up a services with multiple independent functions
 
 Assuming your host machine has a relatively recent version of node, you [won't need to install any host-wide serverless dependencies](https://blog.npmjs.org/post/162869356040/introducing-npx-an-npm-package-runner). To get started, run the following commands to create a new lambda Rust application
 and install project level dependencies.
@@ -162,7 +162,6 @@ $ unzip -o \
 # Ctrl-D to yield control back to your function
 ```
 
-
 ## lambda-runtime-client
 
 Defines the `RuntimeClient` trait and provides its `HttpRuntimeClient` implementation. The client fetches events and returns output as `Vec<u8>`.
@@ -171,7 +170,7 @@ For error reporting to the runtime APIs the library defines the `RuntimeApiError
 
 ## lambda-runtime
 
-This library makes it easy to create Rust executables for AWS lambda. The library defines a `lambda!()` macro. Call the `lambda!()` macro from your main method with an  implementation the `Handler` type:
+This library makes it easy to create Rust executables for AWS lambda. The library defines a `lambda!()` macro. Call the `lambda!()` macro from your main method with an implementation the `Handler` type:
 
 ```rust
 pub trait Handler<E, O> {

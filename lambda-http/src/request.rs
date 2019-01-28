@@ -10,10 +10,7 @@ use http::{
     header::{HeaderName, HeaderValue, HOST},
     HeaderMap, Method, Request as HttpRequest,
 };
-use serde::{
-    de::{Error as DeError, MapAccess, Visitor},
-    Deserialize, Deserializer,
-};
+use serde::de::{Deserialize, Deserializer, Error as DeError, MapAccess, Visitor};
 use serde_derive::Deserialize;
 use serde_json::Value;
 

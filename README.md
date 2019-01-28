@@ -13,42 +13,40 @@ This package makes it easy to run AWS Lambda Functions written in Rust. This wor
 The code below creates a simple function that receives an event with a `greeting` and `name` field and returns a `GreetingResponse` message for the given name and greeting. Notice: to run these examples, we require a minimum Rust version of 1.31.
 
 ```rust,no_run
-extern crate lambda_runtime as lambda;
-extern crate serde_derive;
-extern crate log;
-extern crate simple_logger;
-
-use serde_derive::{Serialize, Deserialize};
-use lambda::{lambda, Context, error::HandlerError};
-use log::error;
 use std::error::Error;
 
-#[derive(Serialize, Deserialize)]
-struct GreetingEvent {
-    greeting: String,
-    name: String,
+use lambda_runtime::{error::HandlerError, lambda, Context};
+use log::{self, error};
+use serde_derive::{Deserialize, Serialize};
+use simple_error::bail;
+use simple_logger;
+
+#[derive(Deserialize)]
+struct CustomEvent {
+    #[serde(rename = "firstName")]
+    first_name: String,
 }
 
-#[derive(Serialize, Deserialize)]
-struct GreetingResponse {
+#[derive(Serialize)]
+struct CustomOutput {
     message: String,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    simple_logger::init_with_level(log::Level::Debug).unwrap();
+    simple_logger::init_with_level(log::Level::Debug)?;
     lambda!(my_handler);
 
     Ok(())
 }
 
-fn my_handler(event: GreetingEvent, ctx: Context) -> Result<GreetingResponse, HandlerError> {
-    if event.name == "" {
-        error!("Empty name in request {}", ctx.aws_request_id);
-        return Err(ctx.new_error("Empty name"));
+fn my_handler(e: CustomEvent, c: Context) -> Result<CustomOutput, HandlerError> {
+    if e.first_name == "" {
+        error!("Empty first name in request {}", c.aws_request_id);
+        bail!("Empty first name");
     }
 
-    Ok(GreetingResponse {
-        message: format!("{}, {}!", event.greeting, event.name),
+    Ok(CustomOutput {
+        message: format!("Hello, {}!", e.first_name),
     })
 }
 ```

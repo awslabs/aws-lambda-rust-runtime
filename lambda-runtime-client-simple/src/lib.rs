@@ -4,10 +4,11 @@ extern crate serde_derive;
 use crate::{hyper_tower::*, settings::Config};
 use bytes::{buf::FromBuf, Bytes, IntoBuf};
 use futures::{
-    future::{result, FutureResult},
+    future::{poll_fn, result, FutureResult},
     Async, Future, Poll,
 };
 use http::{Method, Request, Response, Uri};
+use tokio_threadpool::blocking;
 use tower_service::Service;
 use tower_util::ServiceFn;
 
@@ -74,9 +75,11 @@ where
         .next_event()
         .and_then(move |event| {
             let body = event.into_body();
-            f.run(body)
+            poll_fn(move || {
+                blocking(|| f.run(body.clone()))
+            }).map_err(|_| panic!("the threadpool shut down"))
         })
-        .then(move |res| match res {
+        .and_then(move |res| match res {
             Ok(bytes) => runtime.ok_response(bytes),
             Err(e) => runtime.err_response(Bytes::from(catch(e))),
         })

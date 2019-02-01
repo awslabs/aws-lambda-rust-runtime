@@ -6,7 +6,7 @@ use std::{
 
 use serde::{
     de::{MapAccess, Visitor},
-    Deserialize, Deserializer
+    Deserialize, Deserializer,
 };
 
 /// A read-only view into a map of string data which may contain multiple values

@@ -1,5 +1,5 @@
 use bytes::Bytes;
-use simple_lambda_runtime::{Error, lambda};
+use simple_lambda_runtime::{lambda, Error};
 
 fn main() {
     let handler = |event: Bytes| -> Result<Bytes, Error> { unimplemented!() };

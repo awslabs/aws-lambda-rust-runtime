@@ -9,7 +9,8 @@ use http::{
     HeaderMap, Method, Request as HttpRequest,
 };
 use serde::{
-    de::{Error as DeError, MapAccess, Visitor}, Deserialize, Deserializer
+    de::{Error as DeError, MapAccess, Visitor},
+    Deserialize, Deserializer,
 };
 use serde_json::Value;
 

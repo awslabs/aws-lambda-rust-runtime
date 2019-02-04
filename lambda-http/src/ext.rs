@@ -42,7 +42,10 @@ pub enum PayloadError {
 ///
 /// You can also access a request's body in deserialized format
 /// for payloads sent in `application/x-www-form-urlencoded` or
-/// `application/x-www-form-urlencoded` format
+/// `application/json` format.
+///
+/// The following handler will work an http request body of `x=1&y=2`
+/// as well as `{"x":1, "y":2}` respectively.
 ///
 /// ```rust,no_run
 /// #[macro_use] extern crate lambda_http;

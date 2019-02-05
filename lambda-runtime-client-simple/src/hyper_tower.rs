@@ -16,8 +16,18 @@ pub(crate) struct ClientWrapper {
 }
 
 impl ClientWrapper {
-    fn new() -> Self {
-        ClientWrapper { inner: Client::new() }
+    fn new(inner: Client<HttpConnector>) -> Self {
+        ClientWrapper { inner }
+    }
+
+    fn handle(&self) -> Self {
+        self.clone()
+    }
+}
+
+impl Default for ClientWrapper {
+    fn default() -> Self {
+        ClientWrapper::new(Client::new())
     }
 }
 
@@ -54,7 +64,11 @@ where
 {
     type Future = future::FutureResult<Self, ()>;
 
-    fn retry(&self, _: &Request<T>, result: Result<&Response<Body>, &hyper::Error>) -> Option<Self::Future> {
+    fn retry(
+        &self,
+        _: &Request<T>,
+        result: Result<&Response<Body>, &hyper::Error>,
+    ) -> Option<Self::Future> {
         if self.attempts == 0 {
             // We ran out of retries, hence us returning none.
             return None;
@@ -90,7 +104,7 @@ where
 }
 
 pub(crate) fn hyper(req: Request<Bytes>) -> impl Future<Item = Response<Bytes>, Error = Error> {
-    let svc = ClientWrapper::new();
+    let svc = ClientWrapper::new(Client::new());
     let policy = RetryPolicy::new(3);
     let mut svc = Retry::new(policy, svc);
 
@@ -99,7 +113,12 @@ pub(crate) fn hyper(req: Request<Bytes>) -> impl Future<Item = Response<Bytes>, 
             let status = res.status().clone();
             res.into_body().concat2().join(Ok(status))
         })
-        .and_then(|(body, status)| Ok(Response::builder().status(status).body(Bytes::from(body)).unwrap()))
+        .and_then(|(body, status)| {
+            Ok(Response::builder()
+                .status(status)
+                .body(Bytes::from(body))
+                .unwrap())
+        })
         .map_err(|e| e.into())
 }
 
@@ -108,7 +127,7 @@ fn example() {
     use http::Method;
 
     use tokio::runtime::current_thread::Runtime;
-    let client = ClientWrapper::new();
+    let client = ClientWrapper::new(Client::new());
     let policy = RetryPolicy::new(3);
     let mut svc = Retry::new(policy, client);
 

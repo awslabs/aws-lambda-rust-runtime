@@ -63,21 +63,22 @@ where
     }
 }
 
-fn run<F>(mut f: impl Handler<Bytes, Bytes> + 'static, catch: F, config: Config) -> Result<(), Error>
+fn run<A, B>(mut handler: A, catch: B, config: Config) -> Result<(), Error>
 where
-    F: FnOnce(Error) -> String,
-    F: Send + 'static,
+    A: Handler<Bytes, Bytes> + 'static,
+    B: FnOnce(Error) -> String + Send + 'static,
 {
     let uri = config.endpoint.parse::<Uri>()?;
-
     let mut runtime = Runtime::new(ServiceFn::new(hyper), uri);
+
     let f = runtime
         .next_event()
         .and_then(move |event| {
             let body = event.into_body();
             poll_fn(move || {
-                blocking(|| f.run(body.clone()))
-            }).map_err(|_| panic!("the threadpool shut down"))
+                blocking(|| handler.run(body.clone()))
+                    .map_err(|e| panic!("the threadpool shut down: {}", e))
+            })
         })
         .and_then(move |res| match res {
             Ok(bytes) => runtime.ok_response(bytes),
@@ -91,10 +92,10 @@ where
     Ok(())
 }
 
-pub fn start<F>(f: impl Handler<Bytes, Bytes> + 'static, catch: F) -> Result<(), Error>
+pub fn start<A, B>(f: A, catch: B) -> Result<(), Error>
 where
-    F: FnOnce(Error) -> String,
-    F: Send + 'static,
+    A: Handler<Bytes, Bytes> + 'static,
+    B: FnOnce(Error) -> String + Send + 'static,
 {
     let config = Config::from_env()?;
     run(f, catch, config)
@@ -133,17 +134,16 @@ where
         self.call(request)
     }
 
-    pub fn init_failure(&mut self, body: Bytes) -> LambdaFuture<Response<Bytes>, T::Error> {
-        let request = self.build(self.uri.clone(), Method::POST, body);
-        self.call(request)
-    }
-
     fn call(&mut self, request: Request<Bytes>) -> LambdaFuture<Response<Bytes>, T::Error> {
         let f = self.inner.call(request);
         Box::new(f)
     }
 
     fn build(&self, uri: Uri, method: Method, body: Bytes) -> Request<Bytes> {
-        Request::builder().uri(uri).method(method).body(body).unwrap()
+        Request::builder()
+            .uri(uri)
+            .method(method)
+            .body(body)
+            .unwrap()
     }
 }

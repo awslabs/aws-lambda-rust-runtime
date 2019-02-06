@@ -4,10 +4,11 @@ extern crate serde_derive;
 use crate::{hyper_tower::*, settings::Config};
 use bytes::{buf::FromBuf, Bytes, IntoBuf};
 use futures::{
-    future::{poll_fn, result, FutureResult},
+    future::{loop_fn, poll_fn, result, FutureResult, Loop},
     Async, Future, Poll,
 };
 use http::{Method, Request, Response, Uri};
+use std::sync::Arc;
 use tokio_threadpool::blocking;
 use tower_service::Service;
 use tower_util::ServiceFn;
@@ -24,7 +25,7 @@ macro_rules! lambda {
     };
 }
 
-pub type Error = Box<std::error::Error + Sync + Send + 'static>;
+pub type Error = Box<dyn std::error::Error + Sync + Send + 'static>;
 
 pub trait Handler<Event, Response>: Send
 where
@@ -63,46 +64,69 @@ where
     }
 }
 
-fn run<A, B>(mut handler: A, catch: B, config: Config) -> Result<(), Error>
-where
-    A: Handler<Bytes, Bytes> + 'static,
-    B: FnOnce(Error) -> String + Send + 'static,
-{
-    let uri = config.endpoint.parse::<Uri>()?;
-    let mut runtime = Runtime::new(ServiceFn::new(hyper), uri);
+struct RuntimeLoop {
+    cfg: Arc<Config>,
+}
 
-    let f = runtime
-        .next_event()
-        .and_then(move |event| {
-            let body = event.into_body();
-            poll_fn(move || {
-                blocking(|| handler.run(body.clone()))
-                    .map_err(|e| panic!("the threadpool shut down: {}", e))
+impl RuntimeLoop {
+    fn new(cfg: Config) -> Self {
+        let cfg = Arc::new(cfg);
+        Self { cfg }
+    }
+
+    fn run<A, B>(&self, mut handler: A, catch: B) -> impl Future<Item = (), Error = Error>
+    where
+        A: Handler<Bytes, Bytes> + 'static,
+        B: FnOnce(Error) -> String + Send + 'static,
+    {
+        let uri = self.cfg.endpoint.parse::<Uri>().unwrap();
+        let mut runtime = RuntimeClient::new(ServiceFn::new(hyper), uri);
+
+        runtime
+            .next_event()
+            .and_then(move |event| {
+                let body = event.into_body();
+                poll_fn(move || {
+                    blocking(|| handler.run(body.clone()))
+                        .map_err(|e| panic!("the threadpool shut down: {}", e))
+                })
             })
-        })
-        .and_then(move |res| match res {
-            Ok(bytes) => runtime.ok_response(bytes),
-            Err(e) => runtime.err_response(Bytes::from(catch(e))),
-        })
-        .map(|_| ())
-        .map_err(|e| panic!("{}", e));
-
-    let rt = tokio::runtime::Runtime::new()?;
-    let _ = rt.block_on_all(f);
-    Ok(())
+            .and_then(move |res| match res {
+                Ok(bytes) => runtime.ok_response(bytes),
+                Err(e) => runtime.err_response(Bytes::from(catch(e))),
+            })
+            .map(|_| ())
+            .map_err(|e| panic!("{}", e))
+    }
 }
 
 pub fn start<A, B>(f: A, catch: B) -> Result<(), Error>
 where
-    A: Handler<Bytes, Bytes> + 'static,
-    B: FnOnce(Error) -> String + Send + 'static,
+    A: Handler<Bytes, Bytes> + Clone + 'static,
+    B: FnOnce(Error) -> String + Clone + Send + 'static,
 {
     let config = Config::from_env()?;
-    run(f, catch, config)
+    let runtime = RuntimeLoop::new(config);
+
+    let lambda = loop_fn(0, move |counter| {
+        runtime
+            .run(f.clone(), catch.clone())
+            .then(move |res| -> Result<_, Error> {
+                if res.is_ok() {
+                    Ok(Loop::Continue(counter))
+                } else {
+                    Ok(Loop::Break(counter))
+                }
+            })
+    });
+    let rt = tokio::runtime::Runtime::new()?;
+    rt.block_on_all(lambda);
+
+    Ok(())
 }
 
 #[derive(Clone)]
-struct Runtime<T>
+struct RuntimeClient<T>
 where
     T: Service<Request<Bytes>>,
 {
@@ -110,13 +134,13 @@ where
     uri: Uri,
 }
 
-impl<T> Runtime<T>
+impl<T> RuntimeClient<T>
 where
     T: Service<Request<Bytes>, Response = Response<Bytes>>,
     T::Future: Send + 'static,
 {
     pub fn new(inner: T, uri: Uri) -> Self {
-        Runtime { inner, uri }
+        RuntimeClient { inner, uri }
     }
 
     pub fn next_event(&mut self) -> LambdaFuture<Response<Bytes>, T::Error> {

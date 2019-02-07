@@ -1,9 +1,11 @@
 use bytes::Bytes;
+use futures::Future;
 use simple_lambda_runtime::{lambda, Error};
 
 fn main() {
-    let handler = |event: Bytes| -> Result<Bytes, Error> { unimplemented!() };
-    let catch = |err: Error| -> String { unimplemented!() };
+    lambda!(handler);
+}
 
-    lambda!(handler, on_err = catch);
+fn handler(event: Bytes) -> Box<Future<Item = Bytes, Error = Error>> {
+    unimplemented!()
 }

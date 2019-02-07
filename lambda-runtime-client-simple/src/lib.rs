@@ -3,28 +3,24 @@ extern crate serde_derive;
 
 use crate::{hyper_tower::*, settings::Config};
 use bytes::{buf::FromBuf, Bytes, IntoBuf};
-use futures::{
-    future::{loop_fn, poll_fn, result, FutureResult, Loop},
-    Async, Future, Poll,
-};
+use futures::{try_ready, Async, Future, Poll, Stream};
 use http::{Method, Request, Response, Uri};
 use std::sync::Arc;
-use tokio_threadpool::blocking;
+use tokio::sync::oneshot;
 use tower_service::Service;
 use tower_util::ServiceFn;
 
 pub mod hyper_tower;
 pub mod settings;
 
-pub type LambdaFuture<T, E> = Box<Future<Item = T, Error = E> + Send>;
-
 #[macro_export]
 macro_rules! lambda {
-    ($handler:ident, on_err = $catch:ident) => {
-        $crate::start($handler, $catch)
+    ($handler:ident) => {
+        $crate::start($handler)
     };
 }
 
+pub type FutureObj<T, E> = Box<Future<Item = T, Error = E> + Send>;
 pub type Error = Box<dyn std::error::Error + Sync + Send + 'static>;
 
 pub trait Handler<Event, Response>: Send
@@ -32,35 +28,35 @@ where
     Event: FromBuf,
     Response: IntoBuf,
 {
-    fn run(&mut self, event: Event) -> Result<Response, Error>;
+    fn run(&mut self, event: Event) -> FutureObj<Response, Error>;
 }
 
 impl<Event, Response, F> Handler<Event, Response> for F
 where
     Event: FromBuf,
     Response: IntoBuf,
-    F: FnMut(Event) -> Result<Response, Error> + Send,
+    F: FnMut(Event) -> FutureObj<Response, Error> + Send,
 {
-    fn run(&mut self, event: Event) -> Result<Response, Error> {
+    fn run(&mut self, event: Event) -> FutureObj<Response, Error> {
         (self)(event)
     }
 }
 
-impl<Event, Response> Service<Event> for Handler<Event, Response>
+impl<Event, Response: 'static> Service<Event> for Handler<Event, Response>
 where
     Event: FromBuf,
     Response: IntoBuf,
 {
     type Response = Response;
     type Error = Error;
-    type Future = FutureResult<Self::Response, Self::Error>;
+    type Future = FutureObj<Self::Response, Self::Error>;
 
     fn poll_ready(&mut self) -> Poll<(), Self::Error> {
         Ok(Async::Ready(()))
     }
 
     fn call(&mut self, req: Event) -> Self::Future {
-        result(self.run(req))
+        Box::new(self.run(req))
     }
 }
 
@@ -74,55 +70,84 @@ impl RuntimeLoop {
         Self { cfg }
     }
 
-    fn run<A, B>(&self, mut handler: A, catch: B) -> impl Future<Item = (), Error = Error>
+    fn run<A>(&self, mut handler: A)
     where
-        A: Handler<Bytes, Bytes> + 'static,
-        B: FnOnce(Error) -> String + Send + 'static,
+        A: Handler<Bytes, Bytes> + Clone + 'static,
     {
         let uri = self.cfg.endpoint.parse::<Uri>().unwrap();
-        let mut runtime = RuntimeClient::new(ServiceFn::new(hyper), uri);
+        let runtime = RuntimeClient::new(ServiceFn::new(hyper), uri.clone());
+        let listener = EventListener::new(runtime, uri.clone());
+        let (tx, rx) = oneshot::channel::<Result<Bytes, Error>>();
 
-        runtime
-            .next_event()
-            .and_then(move |event| {
+        let svc = listener
+            .for_each(move |event| {
                 let body = event.into_body();
-                poll_fn(move || {
-                    blocking(|| handler.run(body.clone()))
-                        .map_err(|e| panic!("the threadpool shut down: {}", e))
-                })
+                let uri = uri.clone();
+                let fut = handler
+                    .run(body)
+                    .then(move |res| {
+                        let mut rt = RuntimeClient::new(ServiceFn::new(hyper), uri);
+                        rt.complete_event(res)
+                    })
+                    .map(|_| ())
+                    .map_err(|_| ());
+
+                tokio::spawn(fut);
+                futures::future::ok(())
             })
-            .and_then(move |res| match res {
-                Ok(bytes) => runtime.ok_response(bytes),
-                Err(e) => runtime.err_response(Bytes::from(catch(e))),
-            })
-            .map(|_| ())
-            .map_err(|e| panic!("{}", e))
+            .map_err(|e| panic!("Error: {}", e));
+
+        tokio::run(svc);
     }
 }
 
-pub fn start<A, B>(f: A, catch: B) -> Result<(), Error>
+pub fn start<A>(f: A) -> Result<(), Error>
 where
     A: Handler<Bytes, Bytes> + Clone + 'static,
-    B: FnOnce(Error) -> String + Clone + Send + 'static,
 {
     let config = Config::from_env()?;
     let runtime = RuntimeLoop::new(config);
 
-    let lambda = loop_fn(0, move |counter| {
-        runtime
-            .run(f.clone(), catch.clone())
-            .then(move |res| -> Result<_, Error> {
-                if res.is_ok() {
-                    Ok(Loop::Continue(counter))
-                } else {
-                    Ok(Loop::Break(counter))
-                }
-            })
-    });
-    let rt = tokio::runtime::Runtime::new()?;
-    rt.block_on_all(lambda);
-
+    runtime.run(f.clone());
     Ok(())
+}
+
+struct EventListener<T>
+where
+    T: Service<Request<Bytes>, Response = Response<Bytes>>,
+    T::Future: Send + 'static,
+{
+    inner: RuntimeClient<T>,
+    uri: Uri,
+}
+
+impl<T> EventListener<T>
+where
+    T: Service<Request<Bytes>, Response = Response<Bytes>>,
+    T::Future: Send + 'static,
+{
+    fn new(inner: RuntimeClient<T>, uri: Uri) -> Self {
+        Self { inner, uri }
+    }
+
+    fn next_event(&mut self) -> FutureObj<Response<Bytes>, T::Error> {
+        let request = make_req(self.uri.clone(), Method::GET, Bytes::new());
+        self.inner.call(request)
+    }
+}
+
+impl<T> Stream for EventListener<T>
+where
+    T: Service<Request<Bytes>, Response = Response<Bytes>>,
+    T::Future: Send + 'static,
+{
+    type Item = Response<Bytes>;
+    type Error = T::Error;
+
+    fn poll(&mut self) -> Poll<Option<Response<Bytes>>, Self::Error> {
+        let value: Response<Bytes> = try_ready!(self.next_event().poll());
+        Ok(Async::Ready(Some(value)))
+    }
 }
 
 #[derive(Clone)]
@@ -143,31 +168,26 @@ where
         RuntimeClient { inner, uri }
     }
 
-    pub fn next_event(&mut self) -> LambdaFuture<Response<Bytes>, T::Error> {
-        let request = self.build(self.uri.clone(), Method::GET, Bytes::new());
-        self.call(request)
+    pub fn complete_event(
+        &mut self,
+        res: Result<Bytes, T::Error>,
+    ) -> FutureObj<Response<Bytes>, T::Error> {
+        let req = match res {
+            Ok(body) => make_req(self.uri.clone(), Method::POST, body),
+            Err(e) => panic!("Error"),
+        };
+        self.call(req)
     }
 
-    pub fn ok_response(&mut self, body: Bytes) -> LambdaFuture<Response<Bytes>, T::Error> {
-        let request = self.build(self.uri.clone(), Method::POST, body);
-        self.call(request)
+    fn call(&mut self, request: Request<Bytes>) -> FutureObj<Response<Bytes>, T::Error> {
+        Box::new(self.inner.call(request))
     }
+}
 
-    pub fn err_response(&mut self, body: Bytes) -> LambdaFuture<Response<Bytes>, T::Error> {
-        let request = self.build(self.uri.clone(), Method::POST, body);
-        self.call(request)
-    }
-
-    fn call(&mut self, request: Request<Bytes>) -> LambdaFuture<Response<Bytes>, T::Error> {
-        let f = self.inner.call(request);
-        Box::new(f)
-    }
-
-    fn build(&self, uri: Uri, method: Method, body: Bytes) -> Request<Bytes> {
-        Request::builder()
-            .uri(uri)
-            .method(method)
-            .body(body)
-            .unwrap()
-    }
+fn make_req(uri: Uri, method: Method, body: Bytes) -> Request<Bytes> {
+    Request::builder()
+        .uri(uri)
+        .method(method)
+        .body(body)
+        .unwrap()
 }

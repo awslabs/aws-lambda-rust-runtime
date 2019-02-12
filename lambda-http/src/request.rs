@@ -107,7 +107,9 @@ where
 }
 
 /// Deserialize a map of Cow<'_, str> => Vec<Cow<'_, str>> into an http::HeaderMap
-fn deserialize_multi_value_headers<'de, D>(deserializer: D) -> Result<HeaderMap<HeaderValue>, D::Error>
+fn deserialize_multi_value_headers<'de, D>(
+    deserializer: D,
+) -> Result<HeaderMap<HeaderValue>, D::Error>
 where
     D: Deserializer<'de>,
 {
@@ -135,8 +137,8 @@ where
                 if !key.is_empty() {
                     for value in values {
                         let header_name = key.parse::<HeaderName>().map_err(A::Error::custom)?;
-                        let header_value =
-                            HeaderValue::from_shared(value.into_owned().into()).map_err(A::Error::custom)?;
+                        let header_value = HeaderValue::from_shared(value.into_owned().into())
+                            .map_err(A::Error::custom)?;
                         headers.append(header_name, header_value);
                     }
                 }
@@ -172,7 +174,8 @@ where
                 .unwrap_or_else(HeaderMap::new);
             while let Some((key, value)) = map.next_entry::<Cow<'_, str>, Cow<'_, str>>()? {
                 let header_name = key.parse::<HeaderName>().map_err(A::Error::custom)?;
-                let header_value = HeaderValue::from_shared(value.into_owned().into()).map_err(A::Error::custom)?;
+                let header_value = HeaderValue::from_shared(value.into_owned().into())
+                    .map_err(A::Error::custom)?;
                 headers.append(header_name, header_value);
             }
             Ok(headers)
@@ -285,7 +288,9 @@ mod tests {
             headers,
             ..GatewayRequest::default()
         };
-        let expected = HttpRequest::get("https://www.rust-lang.org/foo").body(()).unwrap();
+        let expected = HttpRequest::get("https://www.rust-lang.org/foo")
+            .body(())
+            .unwrap();
         let actual = HttpRequest::from(gwr);
         assert_eq!(expected.method(), actual.method());
         assert_eq!(expected.uri(), actual.uri());
@@ -298,7 +303,10 @@ mod tests {
         // https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request
         let input = include_str!("../tests/data/apigw_proxy_request.json");
         let result = serde_json::from_str::<GatewayRequest<'_>>(&input);
-        assert!(result.is_ok(), format!("event was not parsed as expected {:?}", result));
+        assert!(
+            result.is_ok(),
+            format!("event was not parsed as expected {:?}", result)
+        );
     }
 
     #[test]
@@ -345,7 +353,9 @@ mod tests {
 
         assert_eq!(
             serde_json::from_str::<Test>(r#"{"foo":null}"#).expect("failed to deserialize"),
-            Test { foo: HashMap::new() }
+            Test {
+                foo: HashMap::new()
+            }
         )
     }
 

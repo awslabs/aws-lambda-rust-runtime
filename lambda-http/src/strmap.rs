@@ -27,9 +27,12 @@ impl StrMap {
 
     /// Return all values associated with name where available
     pub fn get_all(&self, key: &str) -> Option<Vec<&str>> {
-        self.0
-            .get(key)
-            .map(|values| values.iter().map(|owned| owned.as_str()).collect::<Vec<_>>())
+        self.0.get(key).map(|values| {
+            values
+                .iter()
+                .map(|owned| owned.as_str())
+                .collect::<Vec<_>>()
+        })
     }
 
     /// Return true if the underlying map is empty
@@ -70,7 +73,9 @@ impl<'a> Iterator for StrMapIter<'a> {
 
     #[inline]
     fn next(&mut self) -> Option<(&'a str, &'a str)> {
-        self.keys.next().and_then(|k| self.data.get(k).map(|v| (k.as_str(), v)))
+        self.keys
+            .next()
+            .and_then(|k| self.data.get(k).map(|v| (k.as_str(), v)))
     }
 }
 
@@ -101,7 +106,10 @@ impl<'de> Deserialize<'de> for StrMap {
             where
                 A: MapAccess<'de>,
             {
-                let mut inner = map.size_hint().map(HashMap::with_capacity).unwrap_or_else(HashMap::new);
+                let mut inner = map
+                    .size_hint()
+                    .map(HashMap::with_capacity)
+                    .unwrap_or_else(HashMap::new);
                 // values may either be String or Vec<String>
                 // to handle both single and multi value data
                 while let Some((key, value)) = map.next_entry::<_, OneOrMany>()? {

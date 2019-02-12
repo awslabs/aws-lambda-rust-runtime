@@ -242,7 +242,10 @@ impl RuntimeClient {
                 Ok(())
             }
             Err(e) => {
-                error!("Error when calling runtime API for request {}: {}", request_id, e);
+                error!(
+                    "Error when calling runtime API for request {}: {}",
+                    request_id, e
+                );
                 Err(ApiError::from(e))
             }
         }
@@ -290,7 +293,10 @@ impl RuntimeClient {
                 Ok(())
             }
             Err(e) => {
-                error!("Error when calling runtime API for request {}: {}", request_id, e);
+                error!(
+                    "Error when calling runtime API for request {}: {}",
+                    request_id, e
+                );
                 Err(ApiError::from(e))
             }
         }
@@ -308,10 +314,16 @@ impl RuntimeClient {
     /// If it cannot send the init error. In this case we panic to force the runtime
     /// to restart.
     pub fn fail_init(&self, e: &dyn RuntimeApiError) {
-        let uri: Uri = format!("http://{}/{}/runtime/init/error", self.endpoint, RUNTIME_API_VERSION)
-            .parse()
-            .expect("Could not generate Runtime URI");
-        error!("Calling fail_init Runtime API: {}", e.to_response().error_message);
+        let uri: Uri = format!(
+            "http://{}/{}/runtime/init/error",
+            self.endpoint, RUNTIME_API_VERSION
+        )
+        .parse()
+        .expect("Could not generate Runtime URI");
+        error!(
+            "Calling fail_init Runtime API: {}",
+            e.to_response().error_message
+        );
         let req = self.get_runtime_error_request(&uri, &e.to_response());
 
         self.http_client
@@ -322,7 +334,10 @@ impl RuntimeClient {
                 panic!("Error while sending init failed message: {}", e);
             })
             .map(|resp| {
-                info!("Successfully sent error response to the runtime API: {:?}", resp);
+                info!(
+                    "Successfully sent error response to the runtime API: {:?}",
+                    resp
+                );
             })
             .expect("Could not complete init_fail request");
     }
@@ -348,7 +363,10 @@ impl RuntimeClient {
         Request::builder()
             .method(Method::POST)
             .uri(uri.clone())
-            .header(header::CONTENT_TYPE, header::HeaderValue::from_static(API_CONTENT_TYPE))
+            .header(
+                header::CONTENT_TYPE,
+                header::HeaderValue::from_static(API_CONTENT_TYPE),
+            )
             .body(Body::from(body))
             .unwrap()
     }
@@ -362,7 +380,10 @@ impl RuntimeClient {
                 header::CONTENT_TYPE,
                 header::HeaderValue::from_static(API_ERROR_CONTENT_TYPE),
             )
-            .header(RUNTIME_ERROR_HEADER, HeaderValue::from_static("RuntimeError")) // TODO: We should add this code to the error object.
+            .header(
+                RUNTIME_ERROR_HEADER,
+                HeaderValue::from_static("RuntimeError"),
+            ) // TODO: We should add this code to the error object.
             .body(Body::from(body))
             .unwrap()
     }
@@ -378,14 +399,20 @@ impl RuntimeClient {
     /// A `Result` containing the populated `EventContext` or an `ApiError` if the required headers
     /// were not present or the client context and cognito identity could not be parsed from the
     /// JSON string.
-    fn get_event_context(&self, headers: &HeaderMap<HeaderValue>) -> Result<EventContext, ApiError> {
+    fn get_event_context(
+        &self,
+        headers: &HeaderMap<HeaderValue>,
+    ) -> Result<EventContext, ApiError> {
         // let headers = resp.headers();
 
         let aws_request_id = match headers.get(LambdaHeaders::RequestId.as_str()) {
             Some(value) => value.to_str()?.to_owned(),
             None => {
                 error!("Response headers do not contain request id header");
-                return Err(ApiError::new(&format!("Missing {} header", LambdaHeaders::RequestId)));
+                return Err(ApiError::new(&format!(
+                    "Missing {} header",
+                    LambdaHeaders::RequestId
+                )));
             }
         };
 
@@ -393,7 +420,10 @@ impl RuntimeClient {
             Some(value) => value.to_str()?.to_owned(),
             None => {
                 error!("Response headers do not contain function arn header");
-                return Err(ApiError::new(&format!("Missing {} header", LambdaHeaders::FunctionArn)));
+                return Err(ApiError::new(&format!(
+                    "Missing {} header",
+                    LambdaHeaders::FunctionArn
+                )));
             }
         };
 
@@ -401,7 +431,10 @@ impl RuntimeClient {
             Some(value) => value.to_str()?.to_owned(),
             None => {
                 error!("Response headers do not contain trace id header");
-                return Err(ApiError::new(&format!("Missing {} header", LambdaHeaders::TraceId)));
+                return Err(ApiError::new(&format!(
+                    "Missing {} header",
+                    LambdaHeaders::TraceId
+                )));
             }
         };
 
@@ -409,7 +442,10 @@ impl RuntimeClient {
             Some(value) => value.to_str()?.parse()?,
             None => {
                 error!("Response headers do not contain deadline header");
-                return Err(ApiError::new(&format!("Missing {} header", LambdaHeaders::Deadline)));
+                return Err(ApiError::new(&format!(
+                    "Missing {} header",
+                    LambdaHeaders::Deadline
+                )));
             }
         };
 
@@ -431,7 +467,10 @@ impl RuntimeClient {
 
         if let Some(cognito_json) = headers.get(LambdaHeaders::CognitoIdentity.as_str()) {
             let cognito_json = cognito_json.to_str()?;
-            trace!("Found Cognito Identity in response headers: {}", cognito_json);
+            trace!(
+                "Found Cognito Identity in response headers: {}",
+                cognito_json
+            );
             let identity_value: CognitoIdentity = serde_json::from_str(&cognito_json)?;
             ctx.identity = Option::from(identity_value);
         };

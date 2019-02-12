@@ -175,7 +175,10 @@ impl From<io::Error> for ApiError {
 impl RuntimeApiError for ApiError {
     fn to_response(&self) -> ErrorResponse {
         let backtrace = format!("{:?}", self.backtrace);
-        let trace_vec = backtrace.lines().map(|s| s.to_string()).collect::<Vec<String>>();
+        let trace_vec = backtrace
+            .lines()
+            .map(|s| s.to_string())
+            .collect::<Vec<String>>();
         let mut err = ErrorResponse::unhandled(self.msg.clone());
         err.stack_trace = Option::from(trace_vec);
 

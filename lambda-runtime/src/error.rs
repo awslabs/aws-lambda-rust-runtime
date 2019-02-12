@@ -71,7 +71,12 @@ impl error::RuntimeApiError for RuntimeError {
         error::ErrorResponse {
             error_message: String::from(self.description()),
             error_type: String::from(error::ERROR_TYPE_HANDLED),
-            stack_trace: Option::from(backtrace.lines().map(|s| s.to_string()).collect::<Vec<String>>()),
+            stack_trace: Option::from(
+                backtrace
+                    .lines()
+                    .map(|s| s.to_string())
+                    .collect::<Vec<String>>(),
+            ),
         }
     }
 }
@@ -174,7 +179,12 @@ impl error::RuntimeApiError for HandlerError {
         error::ErrorResponse {
             error_message: String::from(self.description()),
             error_type: String::from(error::ERROR_TYPE_HANDLED),
-            stack_trace: Option::from(backtrace.lines().map(|s| s.to_string()).collect::<Vec<String>>()),
+            stack_trace: Option::from(
+                backtrace
+                    .lines()
+                    .map(|s| s.to_string())
+                    .collect::<Vec<String>>(),
+            ),
         }
     }
 }

@@ -150,10 +150,11 @@ impl<'a> Serialize for Body {
         S: Serializer,
     {
         match self {
-            Body::Text(data) => {
-                serializer.serialize_str(::std::str::from_utf8(data.as_ref()).map_err(S::Error::custom)?)
+            Body::Text(data) => serializer
+                .serialize_str(::std::str::from_utf8(data.as_ref()).map_err(S::Error::custom)?),
+            Body::Binary(data) => {
+                serializer.collect_str(&Base64Display::with_config(data, base64::STANDARD))
             }
-            Body::Binary(data) => serializer.collect_str(&Base64Display::with_config(data, base64::STANDARD)),
             Body::Empty => serializer.serialize_unit(),
         }
     }

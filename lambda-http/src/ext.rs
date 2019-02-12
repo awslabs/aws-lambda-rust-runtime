@@ -134,7 +134,10 @@ impl RequestExt for HttpRequest<super::Body> {
     }
 
     fn request_context(&self) -> RequestContext {
-        self.extensions().get::<RequestContext>().cloned().unwrap_or_default()
+        self.extensions()
+            .get::<RequestContext>()
+            .cloned()
+            .unwrap_or_default()
     }
 
     fn payload<D>(&self) -> Result<Option<D>, PayloadError>
@@ -144,9 +147,11 @@ impl RequestExt for HttpRequest<super::Body> {
         self.headers()
             .get(CONTENT_TYPE)
             .map(|ct| match ct.to_str() {
-                Ok("application/x-www-form-urlencoded") => serde_urlencoded::from_bytes::<D>(self.body().as_ref())
-                    .map_err(PayloadError::WwwFormUrlEncoded)
-                    .map(Some),
+                Ok("application/x-www-form-urlencoded") => {
+                    serde_urlencoded::from_bytes::<D>(self.body().as_ref())
+                        .map_err(PayloadError::WwwFormUrlEncoded)
+                        .map(Some)
+                }
                 Ok("application/json") => serde_json::from_slice::<D>(self.body().as_ref())
                     .map_err(PayloadError::Json)
                     .map(Some),
@@ -177,14 +182,20 @@ mod tests {
             ..GatewayRequest::default()
         };
         let actual = HttpRequest::from(gwr);
-        assert_eq!(actual.query_string_parameters(), StrMap(query.clone().into()));
+        assert_eq!(
+            actual.query_string_parameters(),
+            StrMap(query.clone().into())
+        );
     }
 
     #[test]
     fn requests_have_form_post_parseable_payloads() {
         let mut headers = HeaderMap::new();
         headers.insert("Host", "www.rust-lang.org".parse().unwrap());
-        headers.insert("Content-Type", "application/x-www-form-urlencoded".parse().unwrap());
+        headers.insert(
+            "Content-Type",
+            "application/x-www-form-urlencoded".parse().unwrap(),
+        );
         #[derive(Deserialize, PartialEq, Debug)]
         struct Payload {
             foo: String,
@@ -211,7 +222,10 @@ mod tests {
     fn requests_have_form_post_parseable_payloads_for_hashmaps() {
         let mut headers = HeaderMap::new();
         headers.insert("Host", "www.rust-lang.org".parse().unwrap());
-        headers.insert("Content-Type", "application/x-www-form-urlencoded".parse().unwrap());
+        headers.insert(
+            "Content-Type",
+            "application/x-www-form-urlencoded".parse().unwrap(),
+        );
         let gwr: GatewayRequest<'_> = GatewayRequest {
             path: "/foo".into(),
             headers,

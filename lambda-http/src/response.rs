@@ -19,7 +19,10 @@ use crate::body::Body;
 #[serde(rename_all = "camelCase")]
 pub(crate) struct GatewayResponse {
     pub status_code: u16,
-    #[serde(skip_serializing_if = "HeaderMap::is_empty", serialize_with = "serialize_headers")]
+    #[serde(
+        skip_serializing_if = "HeaderMap::is_empty",
+        serialize_with = "serialize_headers"
+    )]
     pub headers: HeaderMap<HeaderValue>,
     #[serde(
         skip_serializing_if = "HeaderMap::is_empty",
@@ -46,7 +49,10 @@ impl Default for GatewayResponse {
 }
 
 /// Serialize a http::HeaderMap into a serde str => str map
-fn serialize_multi_value_headers<S>(headers: &HeaderMap<HeaderValue>, serializer: S) -> Result<S::Ok, S::Error>
+fn serialize_multi_value_headers<S>(
+    headers: &HeaderMap<HeaderValue>,
+    serializer: S,
+) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
@@ -187,7 +193,8 @@ mod tests {
     #[test]
     fn serialize_default() {
         assert_eq!(
-            serde_json::to_string(&GatewayResponse::default()).expect("failed to serialize response"),
+            serde_json::to_string(&GatewayResponse::default())
+                .expect("failed to serialize response"),
             r#"{"statusCode":200}"#
         );
     }

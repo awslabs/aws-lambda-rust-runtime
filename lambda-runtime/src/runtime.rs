@@ -73,8 +73,11 @@ macro_rules! lambda {
 /// The function panics if the `ConfigProvider` returns an error from the `get_runtime_api_endpoint()`
 /// or `get_function_settings()` methods. The panic forces AWS Lambda to terminate the environment
 /// and spin up a new one for the next invocation.
-pub(crate) fn start_with_config<E, O, C>(f: impl Handler<E, O>, config: &C, runtime: Option<TokioRuntime>)
-where
+pub(crate) fn start_with_config<E, O, C>(
+    f: impl Handler<E, O>,
+    config: &C,
+    runtime: Option<TokioRuntime>,
+) where
     E: serde::de::DeserializeOwned,
     O: serde::Serialize,
     C: ConfigProvider,
@@ -212,12 +215,20 @@ where
                     );
                     match serde_json::to_vec(&response) {
                         Ok(response_bytes) => {
-                            match self.runtime_client.event_response(&request_id, response_bytes) {
-                                Ok(_) => info!("Response for {} accepted by Runtime API", request_id),
+                            match self
+                                .runtime_client
+                                .event_response(&request_id, response_bytes)
+                            {
+                                Ok(_) => {
+                                    info!("Response for {} accepted by Runtime API", request_id)
+                                }
                                 // unrecoverable error while trying to communicate with the endpoint.
                                 // we let the Lambda Runtime API know that we have died
                                 Err(e) => {
-                                    error!("Could not send response for {} to Runtime API: {}", request_id, e);
+                                    error!(
+                                        "Could not send response for {} to Runtime API: {}",
+                                        request_id, e
+                                    );
                                     if !e.recoverable {
                                         error!(
                                             "Error for {} is not recoverable, sending fail_init signal and panicking.",
@@ -242,11 +253,17 @@ where
                 }
                 Err(e) => {
                     debug!("Handler returned an error for {}: {}", request_id, e);
-                    debug!("Attempting to send error response to Runtime API for {}", request_id);
+                    debug!(
+                        "Attempting to send error response to Runtime API for {}",
+                        request_id
+                    );
                     match self.runtime_client.event_error(&request_id, &e) {
                         Ok(_) => info!("Error response for {} accepted by Runtime API", request_id),
                         Err(e) => {
-                            error!("Unable to send error response for {} to Runtime API: {}", request_id, e);
+                            error!(
+                                "Unable to send error response for {} to Runtime API: {}",
+                                request_id, e
+                            );
                             if !e.recoverable {
                                 error!(
                                     "Error for {} is not recoverable, sending fail_init signal and panicking",
@@ -338,7 +355,9 @@ pub(crate) mod tests {
             None,
         )
         .expect("Could not initialize client");
-        let handler = |_e: String, _c: context::Context| -> Result<String, HandlerError> { Ok("hello".to_string()) };
+        let handler = |_e: String, _c: context::Context| -> Result<String, HandlerError> {
+            Ok("hello".to_string())
+        };
         let retries: i8 = 3;
         let runtime = Runtime::new(
             handler,
@@ -364,6 +383,10 @@ pub(crate) mod tests {
             output.err().unwrap()
         );
         let output_string = output.unwrap();
-        assert_eq!(output_string, "hello", "Unexpected output message: {}", output_string);
+        assert_eq!(
+            output_string, "hello",
+            "Unexpected output message: {}",
+            output_string
+        );
     }
 }

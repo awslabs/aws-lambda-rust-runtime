@@ -1,9 +1,15 @@
 #[macro_use]
 extern crate serde_derive;
 
+#[macro_use]
+extern crate tokio_trace;
+extern crate tokio_trace_fmt;
+
 use crate::settings::Config;
+use futures::lazy;
 use hyper::client::HttpConnector;
 use tokio::sync::mpsc::{Receiver, Sender};
+use tokio_trace::field;
 
 use bytes::{buf::FromBuf, Bytes, IntoBuf};
 use futures::{try_ready, Async, Future, Poll, Sink, Stream};
@@ -61,26 +67,34 @@ where
     }
 }
 
-fn run<A>(handler: A, uri: Uri)
+fn run<A>(handler: A, config: Config)
 where
     A: Fn(Body) -> FutureObj<Bytes, Error> + Send + 'static,
 {
+    let uri = config.endpoint.parse::<Uri>().unwrap();
     let listener = EventStream::new(uri.clone());
     let svc = listener
-        .map_err(|e| println!("error accepting event; error = {}", e))
+        // .next_event()
+        // .and_then(move |event| {
+        .map_err(|e| info!({ error = field::debug(e) }, "error accepting event"))
         .for_each(move |event| {
+            dbg!("Accepted event");
             let (tx, rx) = sink(uri.clone());
-
             let handle = (handler)(event.into_body())
-                .then(move |res| tx.send(res).map_err(|e| println!("Unable to send = {}", e)))
+                .then(move |res| {
+                    dbg!(&res);
+                    tx.send(res).map_err(|e| {
+                        dbg!("Unable to send");
+                    })
+                })
                 .map(|sink| {
-                    println!("Responded to the lambda runtime");
+                    dbg!("Responded to the lambda runtime");
                 });
             tokio::spawn(handle);
-            rx.process()
+            Ok(())
         });
 
-    tokio::run(svc);
+    tokio::run(lazy(move || svc));
 }
 
 fn sink(uri: Uri) -> (Sender<Result<Bytes, Error>>, EventSink) {
@@ -92,9 +106,15 @@ pub fn start<A>(f: A) -> Result<(), Error>
 where
     A: Fn(Body) -> FutureObj<Bytes, Error> + Send + 'static,
 {
-    let config = Config::from_env()?;
-    let uri = config.endpoint.parse::<Uri>()?;
-    run(f, uri);
+    let subscriber = tokio_trace_fmt::FmtSubscriber::builder().full().finish();
+    tokio_trace::subscriber::with_default(subscriber, || {
+        span!("lambda").enter(|| {
+            info!("Reading config");
+            let config = Config::from_env();
+            info!("read config; launching function");
+            run(f, config);
+        });
+    });
 
     Ok(())
 }
@@ -105,12 +125,17 @@ struct EventStream {
 
 impl EventStream {
     fn new(uri: Uri) -> Self {
-        Self { uri: uri.clone() }
+        let mut parts = uri.clone().into_parts();
+        parts.scheme = Some("http".parse().unwrap());
+        parts.path_and_query = Some("/2018-06-01/runtime/invocation/next".parse().unwrap());
+        let uri = Uri::from_parts(parts).unwrap();
+        info!({ uri = field::debug(&uri) }, "parsed endpoint");
+        Self { uri }
     }
 
     fn next_event(&mut self) -> impl Future<Item = Response<Body>, Error = hyper::Error> {
         let client = Client::new();
-        client.get(self.uri.clone())
+        span!("next_event").enter(|| client.get(self.uri.clone()))
     }
 }
 
@@ -119,8 +144,12 @@ impl Stream for EventStream {
     type Error = hyper::Error;
 
     fn poll(&mut self) -> Poll<Option<Self::Item>, Self::Error> {
-        let value: Response<Body> = try_ready!(self.next_event().poll());
-        Ok(Async::Ready(Some(value)))
+        loop {
+            match self.next_event().poll()? {
+                Async::Ready(res) => return dbg!(Ok(Async::Ready(Some(res)))),
+                Async::NotReady => return dbg!(Ok(Async::NotReady)),
+            }
+        }
     }
 }
 
@@ -137,8 +166,14 @@ impl EventSink {
     fn process(self) -> impl Future<Item = (), Error = ()> {
         let mut c = RuntimeClient::new(self.uri.clone());
         self.rx
-            .map_err(|_| ())
-            .for_each(move |res| c.complete_event(res))
+            .map_err(|e| {
+                dbg!(e);
+                ()
+            })
+            .for_each(move |res| {
+                dbg!(&res);
+                c.complete_event(res)
+            })
     }
 }
 
@@ -164,7 +199,14 @@ impl RuntimeClient {
             Ok(body) => make_req(self.uri.clone(), Method::POST, body),
             Err(e) => panic!("Error"),
         };
-        self.call(req).map(|_| ()).map_err(|_| ())
+        dbg!(&req);
+        self.call(req)
+            .map(|t| {
+                dbg!(t);
+            })
+            .map_err(|e| {
+                dbg!(e);
+            })
     }
 }
 
@@ -183,9 +225,18 @@ impl Service<Request<Body>> for RuntimeClient {
 }
 
 fn make_req(uri: Uri, method: Method, body: Bytes) -> Request<Body> {
+    let mut parts = uri.clone().into_parts();
+    parts.scheme = Some("http".parse().unwrap());
+    parts.path_and_query = Some(
+        "/2018-06-01/runtime/invocation/52fdfc07-2182-154f-163f-5f0f9a621d72/response"
+            .parse()
+            .unwrap(),
+    );
+    let uri = Uri::from_parts(parts).unwrap();
+
     Request::builder()
         .uri(uri)
         .method(method)
-        .body(Body::from(body))
+        .body(Body::empty())
         .unwrap()
 }

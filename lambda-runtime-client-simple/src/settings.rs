@@ -1,6 +1,6 @@
 use envy;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 pub(crate) struct Config {
     #[serde(rename = "AWS_LAMBDA_RUNTIME_API")]
     pub endpoint: String,
@@ -17,7 +17,11 @@ pub(crate) struct Config {
 }
 
 impl Config {
-    pub(crate) fn from_env() -> Result<Self, envy::Error> {
-        envy::from_env::<Config>()
+    pub(crate) fn from_env() -> Self {
+        Config {
+            endpoint: std::env::var("AWS_LAMBDA_RUNTIME_API").unwrap(),
+            function_name: std::env::var("AWS_LAMBDA_FUNCTION_NAME").unwrap(),
+            ..Config::default()
+        }
     }
 }

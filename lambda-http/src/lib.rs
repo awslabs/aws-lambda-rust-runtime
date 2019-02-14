@@ -53,6 +53,11 @@
 //! }
 //! ```
 
+// only externed because maplit doesn't seem to play well with 2018 edition imports
+#[cfg(test)]
+#[macro_use]
+extern crate maplit;
+
 pub use http::{self, Response};
 use lambda_runtime::{self as lambda, error::HandlerError, Context};
 use tokio::runtime::Runtime as TokioRuntime;

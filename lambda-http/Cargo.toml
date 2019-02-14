@@ -29,5 +29,5 @@ serde_urlencoded = "0.5"
 
 [dev-dependencies]
 log = "^0.4"
+maplit = "1.0"
 simple_logger = "^1"
-

@@ -6,16 +6,13 @@ extern crate tokio_trace;
 extern crate tokio_trace_fmt;
 
 use crate::settings::Config;
-use futures::lazy;
 use hyper::client::HttpConnector;
-use tokio::sync::mpsc::{Receiver, Sender};
 use tokio_trace::field;
 
 use bytes::{buf::FromBuf, Bytes, IntoBuf};
-use futures::{try_ready, Async, Future, Poll, Sink, Stream};
+use futures::{Async, Future, Poll, Stream};
 use http::{Method, Request, Response, Uri};
 use hyper::{Body, Client};
-use tokio::sync::mpsc;
 use tower_service::Service;
 
 pub mod settings;
@@ -73,33 +70,31 @@ where
 {
     let uri = config.endpoint.parse::<Uri>().unwrap();
     let listener = EventStream::new(uri.clone());
+    // Since `EventStream` implements Stream, the `.for_each` combinator is used to
+    // process each incoming event.
     let svc = listener
-        // .next_event()
-        // .and_then(move |event| {
-        .map_err(|e| info!({ error = field::debug(e) }, "error accepting event"))
-        .for_each(move |event| {
-            dbg!("Accepted event");
-            let (tx, rx) = sink(uri.clone());
+        .map_err(|e| error!({ error = field::debug(e) }, "error accepting event"))
+        .for_each(move |event: Response<Body>| {
+            let uri = uri.clone();
+            info!({ event = field::debug(&event), uri = field::debug(&uri) }, "Received event");
             let handle = (handler)(event.into_body())
-                .then(move |res| {
-                    dbg!(&res);
-                    tx.send(res).map_err(|e| {
-                        dbg!("Unable to send");
+                .then(move |res: Result<Bytes, Error>| {
+                    info!({ event = field::debug(&res) }, "processed event");
+
+                    let mut client = RuntimeClient::new(uri.clone());
+                    client.complete_event(res).map_err(|e| {
+                        error!({ error = field::debug(e) }, "Unable to send response");
                     })
                 })
-                .map(|sink| {
-                    dbg!("Responded to the lambda runtime");
+                .map(|resp: Response<Body>| {
+                    info!("Responded to the lambda runtime");
                 });
+            // `tokio::spawn` spawns `handle` onto Tokio's event loop, allowing the above future to execute.
             tokio::spawn(handle);
             Ok(())
         });
 
-    tokio::run(lazy(move || svc));
-}
-
-fn sink(uri: Uri) -> (Sender<Result<Bytes, Error>>, EventSink) {
-    let (tx, rx) = mpsc::channel(1);
-    (tx, EventSink::new(rx, uri))
+    tokio::run(svc);
 }
 
 pub fn start<A>(f: A) -> Result<(), Error>
@@ -119,8 +114,9 @@ where
     Ok(())
 }
 
-struct EventStream {
+pub struct EventStream {
     uri: Uri,
+    current: Option<FutureObj<Response<Body>, Error>>,
 }
 
 impl EventStream {
@@ -130,50 +126,58 @@ impl EventStream {
         parts.path_and_query = Some("/2018-06-01/runtime/invocation/next".parse().unwrap());
         let uri = Uri::from_parts(parts).unwrap();
         info!({ uri = field::debug(&uri) }, "parsed endpoint");
-        Self { uri }
+        Self { uri, current: None }
     }
 
-    fn next_event(&mut self) -> impl Future<Item = Response<Body>, Error = hyper::Error> {
+    fn next_event(&mut self) -> FutureObj<Response<Body>, Error> {
         let client = Client::new();
-        span!("next_event").enter(|| client.get(self.uri.clone()))
+        span!("next_event").enter(|| {
+            let fut = client.get(self.uri.clone());
+            Box::new(fut.map_err(|e| e.into()))
+        })
     }
 }
 
+/// The `Stream` implementation for `EventStream` converts a `Future`
+/// containing the next event from the Lambda Runtime into a continous
+/// stream of events. While _this_ stream will continue to produce
+/// events indefinitely, AWS Lambda will only run the Lambda function attached
+/// to this runtime *if and only if* there is an event availible for it to process.
+/// For Lambda functions that receive a “warm wakeup”—i.e., the function is
+/// readily availible in the Lambda service's cache—this runtime is able
+/// to immediately fetch the next event.
 impl Stream for EventStream {
     type Item = Response<Body>;
-    type Error = hyper::Error;
+    type Error = Error;
 
     fn poll(&mut self) -> Poll<Option<Self::Item>, Self::Error> {
+        // The `loop` is used to drive the inner future (`current`) to completion, advancing
+        // the state of this stream to yield a new `Item`. Loops like the one below are
+        // common in many hand-implemented `Futures` and `Streams`.
         loop {
-            match self.next_event().poll()? {
-                Async::Ready(res) => return dbg!(Ok(Async::Ready(Some(res)))),
-                Async::NotReady => return dbg!(Ok(Async::NotReady)),
+            // The stream first checks an inner future is set. If the future is present,
+            // the _Tokio_ runtime polls the inner future to completition. For more details
+            // on polling asychronous values, refer to the [documentation](https://docs.rs/futures/0.1/futures/future/trait.Future.html#tymethod.poll) on the poll method on `Future`.
+            if self.current.is_some() {
+                match self.current.poll()? {
+                    // If the current inner future signals readiness/that it is complete:
+                    // 1. Create a new Future that represents the _next_ event which will be polled
+                    // by subsequent iterations of this loop.
+                    // 2. Return the current future, yielding the resolved future.
+                    Async::Ready(res) => {
+                        self.current = Some(self.next_event());
+                        return Ok(Async::Ready(res));
+                    }
+                    // Otherwise, the future signals that it's not ready, so we do the same
+                    // to the Tokio runtime.
+                    Async::NotReady => return Ok(Async::NotReady),
+                }
+            // If the future is not set (due to a cold start from inactivity or a fresh deployment),
+            // we set a new Future to be polled in subsequent loops.
+            } else {
+                self.current = Some(self.next_event());
             }
         }
-    }
-}
-
-struct EventSink {
-    rx: Receiver<Result<Bytes, Error>>,
-    uri: Uri,
-}
-
-impl EventSink {
-    fn new(rx: Receiver<Result<Bytes, Error>>, uri: Uri) -> Self {
-        Self { rx, uri }
-    }
-
-    fn process(self) -> impl Future<Item = (), Error = ()> {
-        let mut c = RuntimeClient::new(self.uri.clone());
-        self.rx
-            .map_err(|e| {
-                dbg!(e);
-                ()
-            })
-            .for_each(move |res| {
-                dbg!(&res);
-                c.complete_event(res)
-            })
     }
 }
 
@@ -194,25 +198,19 @@ impl RuntimeClient {
     pub fn complete_event(
         &mut self,
         res: Result<Bytes, Error>,
-    ) -> impl Future<Item = (), Error = ()> {
+    ) -> impl Future<Item = Response<Body>, Error = Error> {
         let req = match res {
-            Ok(body) => make_req(self.uri.clone(), Method::POST, body),
-            Err(e) => panic!("Error"),
+            Ok(body) => make_req(self.uri.clone(), true),
+            Err(e) => make_req(self.uri.clone(), false),
         };
-        dbg!(&req);
         self.call(req)
-            .map(|t| {
-                dbg!(t);
-            })
-            .map_err(|e| {
-                dbg!(e);
-            })
     }
 }
 
+// Tower's Service is a pleasant abstraction over Futures, clients, and services.
 impl Service<Request<Body>> for RuntimeClient {
     type Response = Response<Body>;
-    type Error = hyper::Error;
+    type Error = Error;
     type Future = Box<dyn Future<Item = Self::Response, Error = Self::Error> + Send>;
 
     fn poll_ready(&mut self) -> Result<Async<()>, Self::Error> {
@@ -220,23 +218,31 @@ impl Service<Request<Body>> for RuntimeClient {
     }
 
     fn call(&mut self, req: Request<Body>) -> Self::Future {
-        Box::new(self.inner.request(req))
+        Box::new(self.inner.request(req).map_err(|e| e.into()))
     }
 }
 
-fn make_req(uri: Uri, method: Method, body: Bytes) -> Request<Body> {
+fn make_req(uri: Uri, success: bool) -> Request<Body> {
     let mut parts = uri.clone().into_parts();
     parts.scheme = Some("http".parse().unwrap());
-    parts.path_and_query = Some(
-        "/2018-06-01/runtime/invocation/52fdfc07-2182-154f-163f-5f0f9a621d72/response"
-            .parse()
-            .unwrap(),
-    );
+    if success {
+        parts.path_and_query = Some(
+            "/2018-06-01/runtime/invocation/52fdfc07-2182-154f-163f-5f0f9a621d72/response"
+                .parse()
+                .unwrap(),
+        );
+    } else {
+        parts.path_and_query = Some(
+            "/2018-06-01/runtime/invocation/52fdfc07-2182-154f-163f-5f0f9a621d72/error"
+                .parse()
+                .unwrap(),
+        );
+    }
     let uri = Uri::from_parts(parts).unwrap();
 
     Request::builder()
         .uri(uri)
-        .method(method)
+        .method(Method::POST)
         .body(Body::empty())
         .unwrap()
 }

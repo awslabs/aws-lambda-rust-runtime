@@ -42,15 +42,15 @@ pub enum PayloadError {
 ///
 /// You can also access a request's body in deserialized format
 /// for payloads sent in `application/x-www-form-urlencoded` or
-/// `application/x-www-form-urlencoded` format
+/// `application/json` format.
+///
+/// The following handler will work an http request body of `x=1&y=2`
+/// as well as `{"x":1, "y":2}` respectively.
 ///
 /// ```rust,no_run
-/// #[macro_use] extern crate lambda_http;
-/// extern crate lambda_runtime as lambda;
-/// #[macro_use] extern crate serde_derive;
-///
-/// use lambda::{Context, error::HandlerError};
-/// use lambda_http::{Body, Request, Response, RequestExt};
+/// use lambda_runtime::{Context, error::HandlerError};
+/// use lambda_http::{lambda, Body, Request, Response, RequestExt};
+/// use serde_derive::Deserialize;
 ///
 /// #[derive(Debug,Deserialize,Default)]
 /// struct Args {
@@ -66,7 +66,7 @@ pub enum PayloadError {
 ///
 /// fn handler(
 ///   request: Request,
-///   ctx: lambda::Context
+///   ctx: Context
 /// ) -> Result<Response<Body>, HandlerError> {
 ///   let args: Args = request.payload()
 ///     .unwrap_or_else(|_parse_err| None)

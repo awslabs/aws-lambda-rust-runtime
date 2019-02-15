@@ -1,3 +1,7 @@
+# next (unreleased)
+
+- **New**: `lambda_http::RequestExt` crate now exposes mock helper methods under `cfg(test)` builds to facilitate straightforward unit testability of handlers
+
 # 0.2.0
 
 - **New**: We created lambda_runtime_core crate that implements the runtime's main loop and supports handlers that accept and return Vec<u8>. ([#53](https://github.com/awslabs/aws-lambda-rust-runtime/issues/53))

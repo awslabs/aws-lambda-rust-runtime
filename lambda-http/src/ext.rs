@@ -116,9 +116,9 @@ pub trait RequestExt {
     ///
     /// This is intended for use in mock testing contexts.
     #[cfg(test)]
-    fn with_path_parameters<Q>(self, parameters: Q) -> Self
+    fn with_path_parameters<P>(self, parameters: P) -> Self
     where
-        Q: Into<StrMap>;
+        P: Into<StrMap>;
 
     /// Return [stage variables](https://docs.aws.amazon.com/apigateway/latest/developerguide/stage-variables.html)
     /// associated with the API gateway request. No stage parameters
@@ -131,9 +131,9 @@ pub trait RequestExt {
     ///
     /// This is intended for use in mock testing contexts.
     #[cfg(test)]
-    fn with_stage_variables<Q>(self, parameters: Q) -> Self
+    fn with_stage_variables<V>(self, variables: V) -> Self
     where
-        Q: Into<StrMap>;
+        V: Into<StrMap>;
 
     /// Return request context data assocaited with the ALB or API gateway request
     fn request_context(&self) -> RequestContext;
@@ -178,9 +178,9 @@ impl RequestExt for HttpRequest<super::Body> {
     }
 
     #[cfg(test)]
-    fn with_path_parameters<Q>(self, parameters: Q) -> Self
+    fn with_path_parameters<P>(self, parameters: P) -> Self
     where
-        Q: Into<StrMap>,
+        P: Into<StrMap>,
     {
         let mut s = self;
         s.extensions_mut().insert(PathParameters(parameters.into()));
@@ -195,12 +195,12 @@ impl RequestExt for HttpRequest<super::Body> {
     }
 
     #[cfg(test)]
-    fn with_stage_variables<Q>(self, parameters: Q) -> Self
+    fn with_stage_variables<V>(self, variables: V) -> Self
     where
-        Q: Into<StrMap>,
+        V: Into<StrMap>,
     {
         let mut s = self;
-        s.extensions_mut().insert(StageVariables(parameters.into()));
+        s.extensions_mut().insert(StageVariables(variables.into()));
         s
     }
 

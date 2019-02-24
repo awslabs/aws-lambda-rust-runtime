@@ -96,6 +96,14 @@ pub trait RequestExt {
     /// will yield an empty `StrMap`.
     fn query_string_parameters(&self) -> StrMap;
 
+    /// Configures instance with query string parameters under #[cfg(test)] configurations
+    ///
+    /// This is intended for use in mock testing contexts.
+    #[cfg(test)]
+    fn with_query_string_parameters<Q>(self, parameters: Q) -> Self
+    where
+        Q: Into<StrMap>;
+
     /// Return pre-extracted path parameters, parameter provided in url placeholders
     /// `/foo/{bar}/baz/{boom}`,
     /// associated with the API gateway request. No path parameters
@@ -104,12 +112,28 @@ pub trait RequestExt {
     /// These will always be empty for ALB triggered requests
     fn path_parameters(&self) -> StrMap;
 
+    /// Configures instance with path parameters under #[cfg(test)] configurations
+    ///
+    /// This is intended for use in mock testing contexts.
+    #[cfg(test)]
+    fn with_path_parameters<P>(self, parameters: P) -> Self
+    where
+        P: Into<StrMap>;
+
     /// Return [stage variables](https://docs.aws.amazon.com/apigateway/latest/developerguide/stage-variables.html)
     /// associated with the API gateway request. No stage parameters
     /// will yield an empty `StrMap`
     ///
     /// These will always be empty for ALB triggered requests
     fn stage_variables(&self) -> StrMap;
+
+    /// Configures instance with stage variables under #[cfg(test)] configurations
+    ///
+    /// This is intended for use in mock testing contexts.
+    #[cfg(test)]
+    fn with_stage_variables<V>(self, variables: V) -> Self
+    where
+        V: Into<StrMap>;
 
     /// Return request context data assocaited with the ALB or API gateway request
     fn request_context(&self) -> RequestContext;
@@ -135,17 +159,49 @@ impl RequestExt for HttpRequest<super::Body> {
             .map(|ext| ext.0.clone())
             .unwrap_or_default()
     }
+
+    #[cfg(test)]
+    fn with_query_string_parameters<Q>(self, parameters: Q) -> Self
+    where
+        Q: Into<StrMap>,
+    {
+        let mut s = self;
+        s.extensions_mut().insert(QueryStringParameters(parameters.into()));
+        s
+    }
+
     fn path_parameters(&self) -> StrMap {
         self.extensions()
             .get::<PathParameters>()
             .map(|ext| ext.0.clone())
             .unwrap_or_default()
     }
+
+    #[cfg(test)]
+    fn with_path_parameters<P>(self, parameters: P) -> Self
+    where
+        P: Into<StrMap>,
+    {
+        let mut s = self;
+        s.extensions_mut().insert(PathParameters(parameters.into()));
+        s
+    }
+
     fn stage_variables(&self) -> StrMap {
         self.extensions()
             .get::<StageVariables>()
             .map(|ext| ext.0.clone())
             .unwrap_or_default()
+    }
+
+    #[cfg(test)]
+    fn with_stage_variables<V>(self, variables: V) -> Self
+    where
+        V: Into<StrMap>,
+    {
+        let mut s = self;
+        s.extensions_mut().insert(StageVariables(variables.into()));
+        s
     }
 
     fn request_context(&self) -> RequestContext {
@@ -177,7 +233,34 @@ mod tests {
     use serde_derive::Deserialize;
     use std::collections::HashMap;
 
-    use crate::{LambdaRequest, RequestExt, StrMap};
+    use crate::{LambdaRequest, Request, RequestExt, StrMap};
+
+    #[test]
+    fn requests_can_mock_query_string_parameters_ext() {
+        let mocked = hashmap! {
+            "foo".into() => vec!["bar".into()]
+        };
+        let request = Request::default().with_query_string_parameters(mocked.clone());
+        assert_eq!(request.query_string_parameters(), mocked.into());
+    }
+
+    #[test]
+    fn requests_can_mock_path_parameters_ext() {
+        let mocked = hashmap! {
+            "foo".into() => vec!["bar".into()]
+        };
+        let request = Request::default().with_path_parameters(mocked.clone());
+        assert_eq!(request.path_parameters(), mocked.into());
+    }
+
+    #[test]
+    fn requests_can_mock_stage_variables_ext() {
+        let mocked = hashmap! {
+            "foo".into() => vec!["bar".into()]
+        };
+        let request = Request::default().with_stage_variables(mocked.clone());
+        assert_eq!(request.stage_variables(), mocked.into());
+    }
 
     #[test]
     fn requests_have_query_string_ext() {

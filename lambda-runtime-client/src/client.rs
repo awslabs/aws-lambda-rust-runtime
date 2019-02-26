@@ -493,8 +493,6 @@ pub(crate) mod tests {
             LambdaHeaders::Deadline.as_str(),
             HeaderValue::from_str(&deadline.timestamp_millis().to_string()).unwrap(),
         );
-        //headers.insert(LambdaHeaders::ClientContext.as_str(), HeaderValue::from_str("{}").unwrap());
-        //headers.insert(LambdaHeaders::CognitoIdentity.as_str(), HeaderValue::from_str("{}").unwrap());
         headers
     }
 

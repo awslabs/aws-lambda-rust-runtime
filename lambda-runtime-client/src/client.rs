@@ -413,7 +413,7 @@ impl<'ev> RuntimeClient {
                     None
                 }
             },
-            None => None
+            None => None,
         };
         let deadline = header_string(headers.get(LambdaHeaders::Deadline.as_str()), &LambdaHeaders::Deadline)?
             .parse::<i64>()
@@ -475,15 +475,24 @@ fn header_string(value: Option<&HeaderValue>, header_type: &LambdaHeaders) -> Re
 #[cfg(test)]
 pub(crate) mod tests {
     use super::*;
-    use chrono::{Utc, Duration};
+    use chrono::{Duration, Utc};
 
     fn get_headers() -> HeaderMap<HeaderValue> {
         let mut headers: HeaderMap<HeaderValue> = HeaderMap::new();
-        headers.insert(LambdaHeaders::RequestId.as_str(), HeaderValue::from_str("req_id").unwrap());
-        headers.insert(LambdaHeaders::FunctionArn.as_str(), HeaderValue::from_str("func_arn").unwrap());
+        headers.insert(
+            LambdaHeaders::RequestId.as_str(),
+            HeaderValue::from_str("req_id").unwrap(),
+        );
+        headers.insert(
+            LambdaHeaders::FunctionArn.as_str(),
+            HeaderValue::from_str("func_arn").unwrap(),
+        );
         headers.insert(LambdaHeaders::TraceId.as_str(), HeaderValue::from_str("trace").unwrap());
         let deadline = Utc::now() + Duration::seconds(10);
-        headers.insert(LambdaHeaders::Deadline.as_str(), HeaderValue::from_str(&deadline.timestamp_millis().to_string()).unwrap());
+        headers.insert(
+            LambdaHeaders::Deadline.as_str(),
+            HeaderValue::from_str(&deadline.timestamp_millis().to_string()).unwrap(),
+        );
         //headers.insert(LambdaHeaders::ClientContext.as_str(), HeaderValue::from_str("{}").unwrap());
         //headers.insert(LambdaHeaders::CognitoIdentity.as_str(), HeaderValue::from_str("{}").unwrap());
         headers

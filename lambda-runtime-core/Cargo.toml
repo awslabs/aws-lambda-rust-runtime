@@ -1,6 +1,6 @@
 [package]
 name = "lambda_runtime_core"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Stefano Buliani", "David Barsky"]
 description = "Rust runtime for AWS Lambda"
 keywords = ["AWS", "Lambda", "Runtime", "Rust"]

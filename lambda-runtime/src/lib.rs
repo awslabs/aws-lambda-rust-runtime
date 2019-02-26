@@ -142,7 +142,7 @@ pub(crate) mod tests {
             function_version: "$LATEST".to_string(),
             invoked_function_arn: "arn:aws:lambda".to_string(),
             aws_request_id: "123".to_string(),
-            xray_trace_id: "123".to_string(),
+            xray_trace_id: Some("123".to_string()),
             log_stream_name: "logStream".to_string(),
             log_group_name: "logGroup".to_string(),
             client_context: Option::default(),

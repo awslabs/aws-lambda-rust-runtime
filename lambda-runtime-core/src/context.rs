@@ -32,7 +32,7 @@ pub struct Context {
     /// by the Lambda Runtime APIs as a header. Developers can use this value
     /// with the AWS SDK to create new, custom sub-segments to the current
     /// invocation.
-    pub xray_trace_id: String,
+    pub xray_trace_id: Option<String>,
     /// The name of the CloudWatch log stream for the current execution
     /// environment. This value is extracted from the `AWS_LAMBDA_LOG_STREAM_NAME`
     /// environment variable set by the Lambda service.
@@ -72,7 +72,7 @@ impl Context {
     /// A new, populated `Context` object.
     pub(super) fn new(local_settings: lambda_env::FunctionSettings) -> Context {
         Context {
-            xray_trace_id: String::from(""),
+            xray_trace_id: None,
             memory_limit_in_mb: local_settings.memory_size,
             function_name: local_settings.function_name,
             function_version: local_settings.version,
@@ -107,7 +107,7 @@ pub(crate) mod tests {
             function_version: "$LATEST".to_string(),
             invoked_function_arn: "arn:aws:lambda".to_string(),
             aws_request_id: "123".to_string(),
-            xray_trace_id: "123".to_string(),
+            xray_trace_id: Some("123".to_string()),
             log_stream_name: "logStream".to_string(),
             log_group_name: "logGroup".to_string(),
             client_context: Option::default(),

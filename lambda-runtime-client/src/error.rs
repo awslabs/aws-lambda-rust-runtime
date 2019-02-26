@@ -60,7 +60,7 @@ impl ErrorResponse {
             err.stack_trace = Some(
                 format!("{:?}", stack)
                     .lines()
-                    .map(|s| s.to_string())
+                    .map(std::string::ToString::to_string)
                     .collect::<Vec<String>>(),
             );
             trace!("Completed backtrace collection");

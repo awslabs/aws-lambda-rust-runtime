@@ -1,6 +1,7 @@
 # next (unreleased)
 
-- **New**: `lambda_http::RequestExt` crate now exposes mock helper methods under `cfg(test)` builds to facilitate straightforward unit testability of handlers
+- **New**: The `lambda_http` crate now exposes mock helper methods for `RequestExt` under `cfg(test)` builds to facilitate straight forward unit testability of handlers.
+- **New**: The `lambda_http` crate now exposes two new functions for deserializing requests from text and raw IO: `lambda_http::request::{from_str,from_reader}`.
 
 # 0.2.0
 

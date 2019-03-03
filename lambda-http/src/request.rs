@@ -3,8 +3,6 @@
 //! Typically these are exposed via the `request_context`
 //! request extension method provided by [lambda_http::RequestExt](../trait.RequestExt.html)
 //!
-use std::{borrow::Cow, collections::HashMap, fmt, mem};
-
 use http::{
     self,
     header::{HeaderName, HeaderValue, HOST},
@@ -13,6 +11,7 @@ use http::{
 use serde::de::{Deserialize, Deserializer, Error as DeError, MapAccess, Visitor};
 use serde_derive::Deserialize;
 use serde_json::{error::Error as JsonError, Value};
+use std::{borrow::Cow, collections::HashMap, fmt, io::Read, mem};
 
 use crate::{
     body::Body,
@@ -340,7 +339,7 @@ impl<'a> From<LambdaRequest<'a>> for HttpRequest<Body> {
 /// ```
 pub fn from_reader<R>(rdr: R) -> Result<crate::Request, JsonError>
 where
-    R: std::io::Read,
+    R: Read,
 {
     serde_json::from_reader(rdr).map(LambdaRequest::into)
 }

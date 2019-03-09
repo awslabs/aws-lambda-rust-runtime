@@ -1,10 +1,8 @@
-//! ALB andAPI Gateway request types.
+//! ALB and API Gateway request types.
 //!
 //! Typically these are exposed via the `request_context`
 //! request extension method provided by [lambda_http::RequestExt](../trait.RequestExt.html)
 //!
-use std::{borrow::Cow, collections::HashMap, fmt, mem};
-
 use http::{
     self,
     header::{HeaderName, HeaderValue, HOST},
@@ -12,7 +10,8 @@ use http::{
 };
 use serde::de::{Deserialize, Deserializer, Error as DeError, MapAccess, Visitor};
 use serde_derive::Deserialize;
-use serde_json::Value;
+use serde_json::{error::Error as JsonError, Value};
+use std::{borrow::Cow, collections::HashMap, fmt, io::Read, mem};
 
 use crate::{
     body::Body,
@@ -322,12 +321,55 @@ impl<'a> From<LambdaRequest<'a>> for HttpRequest<Body> {
     }
 }
 
+/// Deserializes a Request from an IO stream of JSON.
+///
+/// # Example
+///
+/// ```rust,no_run
+/// use lambda_http::request::from_reader;
+/// use std::fs::File;
+/// use std::error::Error;
+///
+/// fn main() -> Result<(), Box<dyn Error>> {
+///     let request = from_reader(
+///         File::open("path/to/request.json")?
+///     )?;
+///     Ok(println!("{:#?}", request))
+/// }
+/// ```
+pub fn from_reader<R>(rdr: R) -> Result<crate::Request, JsonError>
+where
+    R: Read,
+{
+    serde_json::from_reader(rdr).map(LambdaRequest::into)
+}
+
+/// Deserializes a Request from a string of JSON text.
+///
+/// # Example
+///
+/// ```rust,no_run
+/// use lambda_http::request::from_str;
+/// use std::fs::File;
+/// use std::error::Error;
+///
+/// fn main() -> Result<(), Box<dyn Error>> {
+///     let request = from_str(
+///         r#"{ ...raw json here... }"#
+///     )?;
+///     Ok(println!("{:#?}", request))
+/// }
+/// ```
+pub fn from_str(s: &str) -> Result<crate::Request, JsonError> {
+    serde_json::from_str(s).map(LambdaRequest::into)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::RequestExt;
     use serde_json;
-    use std::collections::HashMap;
+    use std::{collections::HashMap, fs::File};
 
     #[test]
     fn requests_convert() {
@@ -346,11 +388,20 @@ mod tests {
     }
 
     #[test]
+    fn deserializes_apigw_request_events_from_readables() {
+        // from the docs
+        // https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request
+        // note: file paths are relative to the directory of the crate at runtime
+        let result = from_reader(File::open("tests/data/apigw_proxy_request.json").expect("expected file"));
+        assert!(result.is_ok(), format!("event was not parsed as expected {:?}", result));
+    }
+
+    #[test]
     fn deserializes_apigw_request_events() {
         // from the docs
         // https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request
         let input = include_str!("../tests/data/apigw_proxy_request.json");
-        let result = serde_json::from_str::<LambdaRequest<'_>>(&input);
+        let result = from_str(input);
         assert!(result.is_ok(), format!("event was not parsed as expected {:?}", result));
     }
 
@@ -359,7 +410,7 @@ mod tests {
         // from the docs
         // https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html#multi-value-headers
         let input = include_str!("../tests/data/alb_request.json");
-        let result = serde_json::from_str::<LambdaRequest<'_>>(&input);
+        let result = from_str(input);
         assert!(result.is_ok(), format!("event was not parsed as expected {:?}", result));
     }
 
@@ -368,19 +419,18 @@ mod tests {
         // from docs
         // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
         let input = include_str!("../tests/data/apigw_multi_value_proxy_request.json");
-        let result = serde_json::from_str::<LambdaRequest<'_>>(&input);
+        let result = from_str(input);
         assert!(
             result.is_ok(),
             format!("event is was not parsed as expected {:?}", result)
         );
-        let apigw = result.unwrap();
-        assert!(!apigw.query_string_parameters.is_empty());
-        assert!(!apigw.multi_value_query_string_parameters.is_empty());
-        let actual = HttpRequest::from(apigw);
+        let unwrapped = result.unwrap();
+
+        assert!(!unwrapped.query_string_parameters().is_empty());
 
         // test RequestExt#query_string_parameters does the right thing
         assert_eq!(
-            actual.query_string_parameters().get_all("multivalueName"),
+            unwrapped.query_string_parameters().get_all("multivalueName"),
             Some(vec!["you", "me"])
         );
     }
@@ -390,19 +440,17 @@ mod tests {
         // from docs
         // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
         let input = include_str!("../tests/data/alb_multi_value_request.json");
-        let result = serde_json::from_str::<LambdaRequest<'_>>(&input);
+        let result = from_str(input);
         assert!(
             result.is_ok(),
             format!("event is was not parsed as expected {:?}", result)
         );
-        let apigw = result.unwrap();
-        assert!(!apigw.query_string_parameters.is_empty());
-        assert!(!apigw.multi_value_query_string_parameters.is_empty());
-        let actual = HttpRequest::from(apigw);
+        let unwrapped = result.unwrap();
+        assert!(!unwrapped.query_string_parameters().is_empty());
 
         // test RequestExt#query_string_parameters does the right thing
         assert_eq!(
-            actual.query_string_parameters().get_all("myKey"),
+            unwrapped.query_string_parameters().get_all("myKey"),
             Some(vec!["val1", "val2"])
         );
     }

@@ -10,15 +10,21 @@ failure = "^0.1"
 futures = "^0.1"
 hyper = "^0.12"
 http = "^0.1"
+envy = "0.3"
 tokio = "^0.1"
 tokio-threadpool = "^0.1"
-envy = "0.3"
-tower-service = "0.2"
-tokio-trace = { git = "https://github.com/tokio-rs/tokio", branch = "eliza/tokio-trace" }
-tokio-trace-fmt = { git = "https://github.com/tokio-rs/tokio-trace-nursery", branch = "eliza/fmt" }
+tokio-trace = { git = "https://github.com/tokio-rs/tokio" }
+tokio-trace-fmt = { git = "https://github.com/tokio-rs/tokio-trace-nursery" }
+tower = { git = "https://github.com/tower-rs/tower" }
+tower-service = { git = "https://github.com/tower-rs/tower" }
+tower-add-origin = { git = "https://github.com/tower-rs/tower-http" }
+tower-hyper = { git = "https://github.com/tower-rs/tower-hyper" }
+tower-mock = { git = "https://github.com/tower-rs/tower" }
+tower-retry = { git = "https://github.com/tower-rs/tower" }
+tower-timeout = { git = "https://github.com/tower-rs/tower" }
 serde = { version = "^1" }
 serde_derive = "^1"
 serde_json = "^1"
 
-[patch.crates-io]
-tokio-trace = { git = "https://github.com/tokio-rs/tokio", branch = "eliza/tokio-trace" }
+[dev-dependencies]
+tokio-io = "0.1.12"

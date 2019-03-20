@@ -5,19 +5,28 @@ extern crate serde_derive;
 extern crate tokio_trace;
 extern crate tokio_trace_fmt;
 
-use crate::settings::Config;
+use crate::{client::LambdaSvc, settings::Config};
 use hyper::client::HttpConnector;
+use std::{str::FromStr, sync::Arc};
 use tokio_trace::field;
 
 use bytes::{buf::FromBuf, Bytes, IntoBuf};
 use futures::{Async, Future, Poll, Stream};
-use http::{Method, Request, Response, Uri};
+use http::{
+    uri::{Parts, PathAndQuery, Uri},
+    Request, Response,
+};
 use hyper::{Body, Client};
+use tokio_trace_fmt::FmtSubscriber;
 use tower_service::Service;
 
+pub mod client;
+#[cfg(test)]
+mod mock;
 pub mod settings;
 
 #[macro_export]
+/// The helper lambda macro.
 macro_rules! lambda {
     ($handler:ident) => {
         $crate::start($handler)
@@ -69,19 +78,19 @@ where
     A: Fn(Body) -> FutureObj<Bytes, Error> + Send + 'static,
 {
     let uri = config.endpoint.parse::<Uri>().unwrap();
-    let listener = EventStream::new(uri.clone());
+    let client = RuntimeClient::new(uri);
+    let listener = EventStream::new(client.clone());
     // Since `EventStream` implements Stream, the `.for_each` combinator is used to
     // process each incoming event.
     let svc = listener
         .map_err(|e| error!({ error = field::debug(e) }, "error accepting event"))
         .for_each(move |event: Response<Body>| {
-            let uri = uri.clone();
-            info!({ event = field::debug(&event), uri = field::debug(&uri) }, "Received event");
+            let client = client.clone();
+            info!({ event = field::debug(&event) }, "Received event");
             let handle = (handler)(event.into_body())
                 .then(move |res: Result<Bytes, Error>| {
                     info!({ event = field::debug(&res) }, "processed event");
 
-                    let mut client = RuntimeClient::new(uri.clone());
                     client.complete_event(res).map_err(|e| {
                         error!({ error = field::debug(e) }, "Unable to send response");
                     })
@@ -101,7 +110,7 @@ pub fn start<A>(f: A) -> Result<(), Error>
 where
     A: Fn(Body) -> FutureObj<Bytes, Error> + Send + 'static,
 {
-    let subscriber = tokio_trace_fmt::FmtSubscriber::builder().full().finish();
+    let subscriber = FmtSubscriber::builder().full().finish();
     tokio_trace::subscriber::with_default(subscriber, || {
         span!("lambda").enter(|| {
             info!("Reading config");
@@ -115,24 +124,21 @@ where
 }
 
 pub struct EventStream {
-    uri: Uri,
+    client: RuntimeClient,
     current: Option<FutureObj<Response<Body>, Error>>,
 }
 
 impl EventStream {
-    fn new(uri: Uri) -> Self {
-        let mut parts = uri.clone().into_parts();
-        parts.scheme = Some("http".parse().unwrap());
-        parts.path_and_query = Some("/2018-06-01/runtime/invocation/next".parse().unwrap());
-        let uri = Uri::from_parts(parts).unwrap();
-        info!({ uri = field::debug(&uri) }, "parsed endpoint");
-        Self { uri, current: None }
+    fn new(client: RuntimeClient) -> Self {
+        Self {
+            client: client,
+            current: None,
+        }
     }
 
-    fn next_event(&mut self) -> FutureObj<Response<Body>, Error> {
-        let client = Client::new();
+    fn next_event(&self) -> FutureObj<Response<Body>, Error> {
         span!("next_event").enter(|| {
-            let fut = client.get(self.uri.clone());
+            let fut = self.client.next_event();
             Box::new(fut.map_err(|e| e.into()))
         })
     }
@@ -182,28 +188,80 @@ impl Stream for EventStream {
 }
 
 #[derive(Clone)]
+pub struct Endpoint {
+    base: Uri,
+}
+
+impl Endpoint {
+    pub fn new(base: Uri) -> Arc<Self> {
+        let e = Self { base };
+        Arc::new(e)
+    }
+
+    pub fn next_event(&self) -> Result<Uri, Error> {
+        let mut parts: Parts = self.base.clone().into_parts();
+
+        let query = PathAndQuery::from_str("/2018-06-01/runtime/invocation/next")?;
+        parts.path_and_query = Some(query);
+
+        Ok(Uri::from_parts(parts)?)
+    }
+
+    pub fn init_error(&self) -> Result<Uri, Error> {
+        let mut parts: Parts = self.base.clone().into_parts();
+
+        let query = PathAndQuery::from_str("/2018-06-01/runtime/init/error")?;
+        parts.path_and_query = Some(query);
+
+        Ok(Uri::from_parts(parts)?)
+    }
+
+    pub fn ok_response(&self, event_id: String) -> Result<Uri, Error> {
+        let mut parts: Parts = self.base.clone().into_parts();
+
+        let query = format!("/2018-06-01/runtime/invocation/{}/response", event_id);
+        let query = PathAndQuery::from_str(&query)?;
+        parts.path_and_query = Some(query);
+
+        Ok(Uri::from_parts(parts)?)
+    }
+
+    pub fn err_response(&self, event_id: String) -> Result<Uri, Error> {
+        let mut parts: Parts = self.base.clone().into_parts();
+
+        let query = format!("/2018-06-01/runtime/invocation/{}/error", event_id);
+        let query = PathAndQuery::from_str(&query)?;
+        parts.path_and_query = Some(query);
+
+        Ok(Uri::from_parts(parts)?)
+    }
+}
+
+#[derive(Clone)]
 struct RuntimeClient {
-    uri: Uri,
+    endpoint: Arc<Endpoint>,
     inner: Client<HttpConnector>,
 }
 
 impl RuntimeClient {
-    pub fn new(uri: Uri) -> Self {
+    pub fn new(base: Uri) -> Self {
         Self {
-            uri,
+            endpoint: Endpoint::new(base),
             inner: Client::new(),
         }
     }
 
-    pub fn complete_event(
-        &mut self,
-        res: Result<Bytes, Error>,
-    ) -> impl Future<Item = Response<Body>, Error = Error> {
-        let req = match res {
-            Ok(body) => make_req(self.uri.clone(), true),
-            Err(e) => make_req(self.uri.clone(), false),
+    pub fn next_event(&self) -> FutureObj<Response<Body>, Error> {
+        let uri = match self.endpoint.next_event() {
+            Ok(uri) => uri,
+            Err(e) => return Box::new(futures::future::err(e)),
         };
-        self.call(req)
+
+        Box::new(self.inner.get(uri).map_err(|e| e.into()))
+    }
+
+    pub fn complete_event(&self, res: Result<Bytes, Error>) -> FutureObj<Response<Body>, Error> {
+        unimplemented!()
     }
 }
 
@@ -220,29 +278,4 @@ impl Service<Request<Body>> for RuntimeClient {
     fn call(&mut self, req: Request<Body>) -> Self::Future {
         Box::new(self.inner.request(req).map_err(|e| e.into()))
     }
-}
-
-fn make_req(uri: Uri, success: bool) -> Request<Body> {
-    let mut parts = uri.clone().into_parts();
-    parts.scheme = Some("http".parse().unwrap());
-    if success {
-        parts.path_and_query = Some(
-            "/2018-06-01/runtime/invocation/52fdfc07-2182-154f-163f-5f0f9a621d72/response"
-                .parse()
-                .unwrap(),
-        );
-    } else {
-        parts.path_and_query = Some(
-            "/2018-06-01/runtime/invocation/52fdfc07-2182-154f-163f-5f0f9a621d72/error"
-                .parse()
-                .unwrap(),
-        );
-    }
-    let uri = Uri::from_parts(parts).unwrap();
-
-    Request::builder()
-        .uri(uri)
-        .method(Method::POST)
-        .body(Body::empty())
-        .unwrap()
 }

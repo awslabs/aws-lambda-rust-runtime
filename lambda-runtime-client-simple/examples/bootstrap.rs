@@ -2,9 +2,8 @@
 extern crate tokio_trace;
 
 use bytes::Bytes;
-use futures::Future;
+use futures::{future::ok, Future};
 use hyper::Body;
-use futures::future::ok;
 use simple_lambda_runtime::{lambda, Error};
 
 fn main() -> Result<(), Error> {

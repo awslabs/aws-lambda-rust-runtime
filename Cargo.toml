@@ -5,3 +5,6 @@ members = [
     "lambda-http",
     "lambda-runtime-client-simple"
 ]
+
+[patch.crates-io]
+tower-service = { git = "https://github.com/tower-rs/tower" }

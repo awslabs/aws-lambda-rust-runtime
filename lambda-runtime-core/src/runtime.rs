@@ -214,7 +214,7 @@ where
                     }
                 }
                 Err(e) => {
-                    debug!("Handler returned an error for {}: {}", request_id, e);
+                    error!("Handler returned an error for {}: {}", request_id, e);
                     debug!("Attempting to send error response to Runtime API for {}", request_id);
                     match self.runtime_client.event_error(&request_id, &ErrorResponse::from(e)) {
                         Ok(_) => info!("Error response for {} accepted by Runtime API", request_id),

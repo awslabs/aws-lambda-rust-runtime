@@ -10,20 +10,22 @@ use hyper::client::HttpConnector;
 use std::{str::FromStr, sync::Arc};
 use tokio_trace::field;
 
+use crate::types::{Context, FunctionArn, InvocationDeadline, RequestId, XRayTraceId};
 use bytes::{buf::FromBuf, Bytes, IntoBuf};
-use futures::{Async, Future, Poll, Stream};
+use futures::{Async, Future, Poll, Sink, Stream};
+use headers::{HeaderMap, HeaderMapExt};
 use http::{
     uri::{Parts, PathAndQuery, Uri},
     Request, Response,
 };
 use hyper::{Body, Client};
+use tokio::sync;
 use tokio_trace_fmt::FmtSubscriber;
-use tower_service::Service;
+use tower::{util::ServiceExt, Service};
 
 pub mod client;
-#[cfg(test)]
-mod mock;
 pub mod settings;
+pub mod types;
 
 #[macro_export]
 /// The helper lambda macro.
@@ -82,26 +84,21 @@ where
     let listener = EventStream::new(client.clone());
     // Since `EventStream` implements Stream, the `.for_each` combinator is used to
     // process each incoming event.
+    let (tx, rx) = sync::mpsc::channel(1);
     let svc = listener
         .map_err(|e| error!({ error = field::debug(e) }, "error accepting event"))
-        .for_each(move |event: Response<Body>| {
+        .and_then(move |next_event: Response<Body>| {
             let client = client.clone();
-            info!({ event = field::debug(&event) }, "Received event");
-            let handle = (handler)(event.into_body())
-                .then(move |res: Result<Bytes, Error>| {
-                    info!({ event = field::debug(&res) }, "processed event");
+            info!({ event = field::debug(&next_event) }, "Received event");
 
-                    client.complete_event(res).map_err(|e| {
-                        error!({ error = field::debug(e) }, "Unable to send response");
-                    })
-                })
-                .map(|resp: Response<Body>| {
-                    info!("Responded to the lambda runtime");
-                });
-            // `tokio::spawn` spawns `handle` onto Tokio's event loop, allowing the above future to execute.
-            tokio::spawn(handle);
-            Ok(())
-        });
+            let (parts, body) = next_event.into_parts();
+            let context = Context::new(parts.headers);
+
+            (handler)(body).into()
+        })
+        .forward(tx)
+        .map_err(drop);
+
 
     tokio::run(svc);
 }
@@ -131,7 +128,7 @@ pub struct EventStream {
 impl EventStream {
     fn new(client: RuntimeClient) -> Self {
         Self {
-            client: client,
+            client,
             current: None,
         }
     }
@@ -145,12 +142,12 @@ impl EventStream {
 }
 
 /// The `Stream` implementation for `EventStream` converts a `Future`
-/// containing the next event from the Lambda Runtime into a continous
+/// containing the next event from the Lambda Runtime into a continuous
 /// stream of events. While _this_ stream will continue to produce
 /// events indefinitely, AWS Lambda will only run the Lambda function attached
-/// to this runtime *if and only if* there is an event availible for it to process.
+/// to this runtime *if and only if* there is an event available for it to process.
 /// For Lambda functions that receive a “warm wakeup”—i.e., the function is
-/// readily availible in the Lambda service's cache—this runtime is able
+/// readily available in the Lambda service's cache—this runtime is able
 /// to immediately fetch the next event.
 impl Stream for EventStream {
     type Item = Response<Body>;
@@ -185,6 +182,11 @@ impl Stream for EventStream {
             }
         }
     }
+}
+
+struct EventSink<T, S: Service<T>> {
+    service: S,
+    _phan: std::marker::PhantomData<T>,
 }
 
 #[derive(Clone)]

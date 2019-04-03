@@ -1,76 +1,67 @@
 use bytes::Bytes;
 use futures::{Async, Future};
-use hyper::{
-    client::{
-        connect::{Connect, Destination},
-        HttpConnector,
-    },
-    Body, Request, Response, Uri,
-};
-use std::time::Duration;
-use tower::BoxService as ServiceObj;
-use tower_add_origin::{AddOrigin, Builder};
-use tower_hyper::{client::Client, retry::RetryPolicy};
-use tower_retry::Retry;
-use tower_service::Service;
-use tower_timeout::Timeout;
+use hyper::{Request, Uri};
+use std::{marker::PhantomData, time::Duration};
+use tower::{builder::ServiceBuilder, util::ServiceExt, Service};
+use tower_add_origin::{AddOrigin, Builder as AddOriginBuilder};
+use tower_buffer::{Buffer, BufferLayer};
+use tower_hyper::retry::RetryPolicy;
+use tower_in_flight_limit::{InFlightLimit, InFlightLimitLayer};
+use tower_retry::RetryLayer;
+use tower_timeout::{Timeout, TimeoutLayer};
 
 type Err = Box<dyn std::error::Error + Send + Sync>;
 
-pub(crate) struct LambdaSvc {
-    inner: ServiceObj<Request<Body>, Response<Body>, Err>,
+pub(crate) struct LambdaSvc<S, B>
+where
+    S: Service<Request<B>> + Send + 'static,
+    S::Error: std::error::Error + Send + Sync + 'static,
+    S::Future: Send,
+    B: Send + 'static,
+{
+    inner: Buffer<InFlightLimit<Timeout<AddOrigin<S>>>, Request<B>>,
+    _phan: PhantomData<S>,
 }
 
-impl LambdaSvc {
-    fn new<C>(origin: Uri, connector: C) -> Self
-    where
-        C: Connect + 'static,
-        C::Transport: 'static,
-        C::Future: 'static,
-    {
-        let svc = Client::new(hyper::Client::builder().build::<_, hyper::Body>(connector));
-        let svc = Timeout::new(svc, Duration::from_millis(300));
-        let svc = Builder::new().uri(origin).build(svc).unwrap();
-        let svc = ServiceObj::new(svc);
-        LambdaSvc { inner: svc }
-    }
-}
-
-impl Service<Request<Body>> for LambdaSvc {
-    type Response = Response<Body>;
-    type Error = Err;
-    type Future = Box<Future<Item = Self::Response, Error = Self::Error> + Send>;
-
-    fn poll_ready(&mut self) -> Result<Async<()>, Self::Error> {
-        Ok(Async::Ready(()))
-    }
-
-    fn call(&mut self, origin: Request<Body>) -> Self::Future {
-        let request = Request::builder()
-            .method("GET")
-            .body(Body::empty())
+impl<S, B> LambdaSvc<S, B>
+where
+    S: Service<Request<B>> + Send + 'static,
+    S::Error: std::error::Error + Send + Sync + 'static,
+    S::Future: Send,
+    B: Send + 'static,
+{
+    fn new(svc: S, origin: Uri) -> Self {
+        let svc: AddOrigin<S> = AddOriginBuilder::new().uri(origin).build(svc).unwrap();
+        let svc = ServiceBuilder::new()
+            .layer(InFlightLimitLayer::new(1))
+            .layer(TimeoutLayer::new(Duration::from_millis(300)))
+            .build_service(svc)
             .unwrap();
 
-        let f = self.inner.call(request).map_err(|e| panic!("{:?}", e));
-        Box::new(f)
+        Self {
+            inner: Buffer::new(svc, 1).unwrap(),
+            _phan: PhantomData,
+        }
     }
 }
 
-#[test]
-fn get_next_event() {
-    use crate::mock::MockConnector;
-    use tokio::runtime::current_thread::Runtime;
+impl<S, B> Service<Request<B>> for LambdaSvc<S, B>
+where
+    S: Service<Request<B>> + Send + 'static,
+    S::Error: std::error::Error + Send + Sync + 'static,
+    S::Future: Send,
+    B: Send + 'static,
+{
+    type Response = S::Response;
+    type Error = Err;
+    type Future = Box<dyn Future<Item = Self::Response, Error = Self::Error>>;
 
-    let mut rt = Runtime::new().expect("new rt");
-    let origin = Uri::from_static("http://localhost:9000");
-    let mut conn = MockConnector::new();
-    conn.mock("http://localhost:9000");
+    fn poll_ready(&mut self) -> Result<Async<()>, Self::Error> {
+        self.inner.poll_ready().map_err(|e| e.into())
+    }
 
-    let req = Request::get("/2018-06-01/runtime/invocation/next")
-        .body(Body::empty())
-        .unwrap();
-
-    let mut svc = LambdaSvc::new(origin, conn);
-    let res = svc.call(req);
-    let res = rt.block_on(res);
+    fn call(&mut self, req: Request<B>) -> Self::Future {
+        let fut = self.inner.call(req);
+        Box::new(fut)
+    }
 }

@@ -1,6 +1,6 @@
 [package]
 name = "lambda_runtime_errors"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Stefano Buliani", "David Barsky"]
 edition = "2018"
 description = "Rust runtime errors for AWS Lambda"
@@ -12,7 +12,7 @@ documentation = "https://docs.rs/lambda_runtime_errors"
 
 [dependencies]
 log = "^0.4"
-failure = "^0.1"
+failure = "^0.1.5"
 serde_json = "^1"
 lambda_runtime_errors_derive = { path = "../lambda-runtime-errors-derive", version = "^0.1" }
 

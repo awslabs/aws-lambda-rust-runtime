@@ -1,16 +1,16 @@
 use crate::error::{ApiError, ApiErrorKind, ErrorResponse};
-use failure::ResultExt;
+use failure::{ResultExt, Fail};
 use hyper::{
     client::HttpConnector,
     header::{self, HeaderMap, HeaderValue},
-    rt::{Future, Stream},
     Body, Client, Method, Request, Uri,
 };
 use log::*;
 use serde_derive::*;
 use serde_json;
 use std::{collections::HashMap, fmt};
-use tokio::runtime::Runtime;
+// use tokio::runtime::Runtime;
+use futures::{stream::Stream, future::{self, Future, Either}};
 
 const RUNTIME_API_VERSION: &str = "2018-06-01";
 const API_CONTENT_TYPE: &str = "application/json";
@@ -123,7 +123,7 @@ pub struct EventContext {
 
 /// Used by the Runtime to communicate with the internal endpoint.
 pub struct RuntimeClient {
-    _runtime: Runtime,
+    // _runtime: Runtime,
     http_client: Client<HttpConnector, Body>,
     next_endpoint: Uri,
     runtime_agent: String,
@@ -137,7 +137,7 @@ impl<'ev> RuntimeClient {
     /// identify the runtime being used by the function. For example, the `lambda_runtime_core` crate
     /// uses `AWS_Lambda_Rust/0.1.0 (rustc/1.31.1-stable)`. The runtime client can also receive an
     /// instance of Tokio Runtime to use.
-    pub fn new(host: &str, agent: Option<String>, runtime: Option<Runtime>) -> Result<Self, ApiError> {
+    pub fn new(host: &str, agent: Option<String>/*, runtime: Option<Runtime>*/) -> Result<Self, ApiError> {
         debug!("Starting new HttpRuntimeClient for {}", host);
         let runtime_agent = match agent {
             Some(a) => a,
@@ -145,19 +145,20 @@ impl<'ev> RuntimeClient {
         };
 
         // start a tokio core main event loop for hyper
-        let runtime = match runtime {
-            Some(r) => r,
-            None => Runtime::new().context(ApiErrorKind::Unrecoverable("Could not initialize runtime".to_string()))?,
-        };
+        // let runtime = match runtime {
+        //     Some(r) => r,
+        //     None => Runtime::new().context(ApiErrorKind::Unrecoverable("Could not initialize runtime".to_string()))?,
+        // };
 
-        let http_client = Client::builder().executor(runtime.executor()).build_http();
+        //let http_client = Client::builder().executor(runtime.executor()).build_http();
+        let http_client = Client::new();
         // we cached the parsed Uri since this never changes.
         let next_endpoint = format!("http://{}/{}/runtime/invocation/next", host, RUNTIME_API_VERSION)
             .parse::<Uri>()
             .context(ApiErrorKind::Unrecoverable("Could not parse API uri".to_string()))?;
 
         Ok(RuntimeClient {
-            _runtime: runtime,
+            // _runtime: runtime,
             http_client,
             next_endpoint,
             runtime_agent,
@@ -168,51 +169,52 @@ impl<'ev> RuntimeClient {
 
 impl<'ev> RuntimeClient {
     /// Polls for new events to the Runtime APIs.
-    pub fn next_event(&self) -> Result<(Vec<u8>, EventContext), ApiError> {
+    pub fn next_event(&self) -> impl Future<Item=(Vec<u8>, EventContext), Error=ApiError> {
         trace!("Polling for next event");
 
-        // We wait instead of processing the future asynchronously because AWS Lambda
-        // itself enforces only one event per container at a time. No point in taking on
-        // the additional complexity.
-        let resp = self
-            .http_client
-            .get(self.next_endpoint.clone())
-            .wait()
-            .context(ApiErrorKind::Unrecoverable("Could not fetch next event".to_string()))?;
+        self.http_client.get(self.next_endpoint.clone())
+            .map_err(|e| -> ApiError {
+                e.context(ApiErrorKind::Unrecoverable("Could not fetch next event".to_string())).into()
+            })
+            .and_then(|resp| {
+                if resp.status().is_client_error() {
+                    error!(
+                        "Runtime API returned client error when polling for new events: {}",
+                        resp.status()
+                    );
+                    return Either::A(future::err(ApiErrorKind::Recoverable(format!(
+                        "Error {} when polling for events",
+                        resp.status()
+                    )).into()));
+                }
+                if resp.status().is_server_error() {
+                    error!(
+                        "Runtime API returned server error when polling for new events: {}",
+                        resp.status()
+                    );
+                    return Either::A(future::err(ApiErrorKind::Unrecoverable(
+                        "Server error when polling for new events".to_string(),
+                    ).into()));
+                }
+                let ctx = match Self::get_event_context(&resp.headers()) {
+                    Ok(c) => c,
+                    Err(e) => return Either::A(future::err(e)),
+                };
 
-        if resp.status().is_client_error() {
-            error!(
-                "Runtime API returned client error when polling for new events: {}",
-                resp.status()
-            );
-            Err(ApiErrorKind::Recoverable(format!(
-                "Error {} when polling for events",
-                resp.status()
-            )))?;
-        }
-        if resp.status().is_server_error() {
-            error!(
-                "Runtime API returned server error when polling for new events: {}",
-                resp.status()
-            );
-            Err(ApiErrorKind::Unrecoverable(
-                "Server error when polling for new events".to_string(),
-            ))?;
-        }
-        let ctx = self.get_event_context(&resp.headers())?;
-        let out = resp
-            .into_body()
-            .concat2()
-            .wait()
-            .context(ApiErrorKind::Recoverable("Could not read event boxy".to_string()))?;
-        let buf = out.into_bytes().to_vec();
+                Either::B(resp.into_body()
+                    .concat2()
+                    .map_err(|e| e.context(ApiErrorKind::Recoverable("Could not read event boxy".to_string())).into())
+                    .and_then(|out| {
+                        let buf = out.into_bytes().to_vec();
 
-        trace!(
-            "Received new event for request id {}. Event length {} bytes",
-            ctx.aws_request_id,
-            buf.len()
-        );
-        Ok((buf, ctx))
+                        trace!(
+                            "Received new event for request id {}. Event length {} bytes",
+                            ctx.aws_request_id,
+                            buf.len()
+                        );
+                        Ok((buf, ctx))
+                    }))
+            })
     }
 
     /// Calls the Lambda Runtime APIs to submit a response to an event. In this function we treat
@@ -227,40 +229,37 @@ impl<'ev> RuntimeClient {
     ///
     /// # Returns
     /// A `Result` object containing a bool return value for the call or an `error::ApiError` instance.
-    pub fn event_response(&self, request_id: &str, output: &[u8]) -> Result<(), ApiError> {
+    pub fn event_response(&self, request_id: &str, output: &[u8]) -> impl Future<Item=(), Error=ApiError> {
         trace!(
             "Posting response for request {} to Runtime API. Response length {} bytes",
             request_id,
             output.len()
         );
-        let uri = format!(
-            "http://{}/{}/runtime/invocation/{}/response",
-            self.host, RUNTIME_API_VERSION, request_id
-        )
-        .parse::<Uri>()
-        .context(ApiErrorKind::Unrecoverable(
-            "Could not generate response uri".to_owned(),
-        ))?;
+        let uri = match format!("http://{}/{}/runtime/invocation/{}/response", self.host, RUNTIME_API_VERSION, request_id).parse::<Uri>() {
+            Ok(u) => u,
+            Err(e) => return Either::A(future::err(e.context(ApiErrorKind::Unrecoverable("Could not generate response uri".to_owned())).into())),
+        };
+
         let req = self.get_runtime_post_request(&uri, output);
 
-        let resp = self
-            .http_client
-            .request(req)
-            .wait()
-            .context(ApiErrorKind::Recoverable("Could not post event response".to_string()))?;
-        if !resp.status().is_success() {
-            error!(
-                "Error from Runtime API when posting response for request {}: {}",
-                request_id,
-                resp.status()
-            );
-            Err(ApiErrorKind::Recoverable(format!(
-                "Error {} while sending response",
-                resp.status()
-            )))?;
-        }
-        trace!("Posted response to Runtime API for request {}", request_id);
-        Ok(())
+        let request_id = request_id.to_owned();
+        Either::B(self.http_client.request(req)
+            .map_err(|e| e.context(ApiErrorKind::Recoverable("Could not post event response".to_string())).into())
+            .and_then(move |resp| {
+                if !resp.status().is_success() {
+                    error!(
+                        "Error from Runtime API when posting response for request {}: {}",
+                        request_id,
+                        resp.status()
+                    );
+                    Err(ApiErrorKind::Recoverable(format!(
+                        "Error {} while sending response",
+                        resp.status()
+                    )))?;
+                }
+                trace!("Posted response to Runtime API for request {}", request_id);
+                Ok(())
+            }))
     }
 
     /// Calls Lambda's Runtime APIs to send an error generated by the `Handler`. Because it's rust,
@@ -273,38 +272,37 @@ impl<'ev> RuntimeClient {
     ///
     /// # Returns
     /// A `Result` object containing a bool return value for the call or an `error::ApiError` instance.
-    pub fn event_error(&self, request_id: &str, e: &ErrorResponse) -> Result<(), ApiError> {
+    pub fn event_error(&self, request_id: &str, e: &ErrorResponse) -> impl Future<Item=(), Error=ApiError> {
         trace!(
             "Posting error to runtime API for request {}: {}",
             request_id,
             e.error_message
         );
-        let uri = format!(
-            "http://{}/{}/runtime/invocation/{}/error",
-            self.host, RUNTIME_API_VERSION, request_id
-        )
-        .parse::<Uri>()
-        .context(ApiErrorKind::Unrecoverable(
-            "Could not generate response uri".to_owned(),
-        ))?;
+        let uri = match format!("http://{}/{}/runtime/invocation/{}/error", self.host, RUNTIME_API_VERSION, request_id).parse::<Uri>() {
+            Ok(u) => u,
+            Err(e) => return Either::A(future::err(e.context(ApiErrorKind::Unrecoverable("Could not generate response uri".to_owned())).into())),
+        };
+
         let req = self.get_runtime_error_request(&uri, &e);
 
-        let resp = self.http_client.request(req).wait().context(ApiErrorKind::Recoverable(
-            "Could not post event error response".to_string(),
-        ))?;
-        if !resp.status().is_success() {
-            error!(
-                "Error from Runtime API when posting error response for request {}: {}",
-                request_id,
-                resp.status()
-            );
-            Err(ApiErrorKind::Recoverable(format!(
-                "Error {} while sending response",
-                resp.status()
-            )))?;
-        }
-        trace!("Posted error response for request id {}", request_id);
-        Ok(())
+        let request_id = request_id.to_owned();
+        Either::B(self.http_client.request(req)
+            .map_err(|e| e.context(ApiErrorKind::Recoverable("Could not post event error response".to_string())).into())
+            .and_then(move |resp| {
+                if !resp.status().is_success() {
+                    error!(
+                        "Error from Runtime API when posting error response for request {}: {}",
+                        request_id,
+                        resp.status()
+                    );
+                    Err(ApiErrorKind::Recoverable(format!(
+                        "Error {} while sending response",
+                        resp.status()
+                    )))?;
+                }
+                trace!("Posted error response for request id {}", request_id);
+                Ok(())
+            }))
     }
 
     /// Calls the Runtime APIs to report a failure during the init process.
@@ -318,7 +316,7 @@ impl<'ev> RuntimeClient {
     /// # Panics
     /// If it cannot send the init error. In this case we panic to force the runtime
     /// to restart.
-    pub fn fail_init(&self, e: &ErrorResponse) {
+    pub fn fail_init(&self, e: &ErrorResponse) -> impl Future<Item=(), Error=()> {
         error!("Calling fail_init Runtime API: {}", e.error_message);
         let uri = format!("http://{}/{}/runtime/init/error", self.host, RUNTIME_API_VERSION)
             .parse::<Uri>()
@@ -330,7 +328,6 @@ impl<'ev> RuntimeClient {
 
         self.http_client
             .request(req)
-            .wait()
             .map_err(|e| {
                 error!("Error while sending init failed message: {}", e);
                 panic!("Error while sending init failed message: {}", e);
@@ -338,7 +335,6 @@ impl<'ev> RuntimeClient {
             .map(|resp| {
                 info!("Successfully sent error response to the runtime API: {:?}", resp);
             })
-            .expect("Could not complete init_fail request");
     }
 
     /// Returns the endpoint configured for this HTTP Runtime client.
@@ -393,7 +389,7 @@ impl<'ev> RuntimeClient {
     /// A `Result` containing the populated `EventContext` or an `ApiError` if the required headers
     /// were not present or the client context and cognito identity could not be parsed from the
     /// JSON string.
-    fn get_event_context(&self, headers: &HeaderMap<HeaderValue>) -> Result<EventContext, ApiError> {
+    fn get_event_context(headers: &HeaderMap<HeaderValue>) -> Result<EventContext, ApiError> {
         // let headers = resp.headers();
 
         let aws_request_id = header_string(
@@ -498,10 +494,10 @@ pub(crate) mod tests {
 
     #[test]
     fn get_event_context_with_empty_trace_id() {
-        let client = RuntimeClient::new("localhost:8081", None, None).expect("Could not initialize runtime client");
+        // let client = RuntimeClient::new("localhost:8081", None/*, None*/).expect("Could not initialize runtime client");
         let mut headers = get_headers();
         headers.remove(LambdaHeaders::TraceId.as_str());
-        let headers_result = client.get_event_context(&headers);
+        let headers_result = RuntimeClient::get_event_context(&headers);
         assert_eq!(false, headers_result.is_err());
         let ok_result = headers_result.unwrap();
         assert_eq!(None, ok_result.xray_trace_id);
@@ -510,9 +506,9 @@ pub(crate) mod tests {
 
     #[test]
     fn get_event_context_populates_trace_id_when_present() {
-        let client = RuntimeClient::new("localhost:8081", None, None).expect("Could not initialize runtime client");
+        // let client = RuntimeClient::new("localhost:8081", None/*, None*/).expect("Could not initialize runtime client");
         let headers = get_headers();
-        let headers_result = client.get_event_context(&headers);
+        let headers_result = RuntimeClient::get_event_context(&headers);
         assert_eq!(false, headers_result.is_err());
         assert_eq!(Some("trace".to_owned()), headers_result.unwrap().xray_trace_id);
     }

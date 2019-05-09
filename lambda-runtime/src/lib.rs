@@ -40,9 +40,10 @@ use lambda_runtime_core::{start_with_config, EnvConfigProvider, HandlerError, La
 use serde;
 use serde_json;
 use std::fmt::Display;
-use tokio::runtime::Runtime as TokioRuntime;
+// use tokio::runtime::Runtime as TokioRuntime;
 
 pub use lambda_runtime_core::Context;
+use futures::future::Future;
 
 /// The error module exposes the HandlerError type.
 pub mod error {
@@ -99,14 +100,14 @@ where
 ///
 /// # Panics
 /// The function panics if the Lambda environment variables are not set.
-pub fn start<Event, Output, EventError>(f: impl Handler<Event, Output, EventError>, runtime: Option<TokioRuntime>)
+pub fn start<Event, Output, EventError>(f: impl Handler<Event, Output, EventError>/*, runtime: Option<TokioRuntime>*/) -> impl Future<Item=(), Error=()>
 where
     Event: serde::de::DeserializeOwned,
     Output: serde::Serialize,
     EventError: Fail + LambdaErrorExt + Display + Send + Sync,
 {
     let wrapped = wrap(f);
-    start_with_config(wrapped, &EnvConfigProvider::default(), runtime)
+    start_with_config(wrapped, &EnvConfigProvider::default()/*, runtime*/)
 }
 
 /// Initializes the Lambda runtime with the given handler. Optionally this macro can
@@ -115,16 +116,18 @@ where
 #[macro_export]
 macro_rules! lambda {
     ($handler:ident) => {
-        $crate::start($handler, None)
+        use tokio;
+        tokio::run($crate::start($handler))
     };
     ($handler:ident, $runtime:expr) => {
-        $crate::start($handler, Some($runtime))
+        $runtime.spawn($crate::start($handler))
     };
     ($handler:expr) => {
-        $crate::start($handler, None)
+        use tokio;
+        tokio::run($crate::start($handler))
     };
     ($handler:expr, $runtime:expr) => {
-        $crate::start($handler, Some($runtime))
+        $runtime.spawn($crate::start($handler))
     };
 }
 

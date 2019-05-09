@@ -60,7 +60,8 @@ extern crate maplit;
 
 pub use http::{self, Response};
 use lambda_runtime::{self as lambda, error::HandlerError, Context};
-use tokio::runtime::Runtime as TokioRuntime;
+// use tokio::runtime::Runtime as TokioRuntime;
+use futures::future::Future;
 
 mod body;
 mod ext;
@@ -97,19 +98,19 @@ where
 ///
 /// # Panics
 /// The function panics if the Lambda environment variables are not set.
-pub fn start<R>(f: impl Handler<R>, runtime: Option<TokioRuntime>)
+pub fn start<R>(f: impl Handler<R>/*, runtime: Option<TokioRuntime>*/) -> impl Future<Item=(), Error=()>
 where
     R: IntoResponse,
 {
     // handler requires a mutable ref
     let mut func = f;
     lambda::start(
-        |req: LambdaRequest<'_>, ctx: Context| {
+        move |req: LambdaRequest<'_>, ctx: Context| {
             let is_alb = req.request_context.is_alb();
             func.run(req.into(), ctx)
                 .map(|resp| LambdaResponse::from_response(is_alb, resp.into_response()))
         },
-        runtime,
+        // runtime,
     )
 }
 
@@ -117,15 +118,17 @@ where
 #[macro_export]
 macro_rules! lambda {
     ($handler:expr) => {
-        $crate::start($handler, None)
+        use tokio;
+        tokio::run($crate::start($handler))
     };
     ($handler:expr, $runtime:expr) => {
-        $crate::start($handler, Some($runtime))
+        $runtime.spawn($crate::start($handler))
     };
     ($handler:ident) => {
-        $crate::start($handler, None)
+        use tokio;
+        tokio::run($crate::start($handler))
     };
     ($handler:ident, $runtime:expr) => {
-        $crate::start($handler, Some($runtime))
+        $runtime.spawn($crate::start($handler))
     };
 }

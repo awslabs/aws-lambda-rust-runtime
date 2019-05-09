@@ -9,7 +9,8 @@ use lambda_runtime_client::{error::ErrorResponse, RuntimeClient};
 use lambda_runtime_errors::LambdaErrorExt;
 use log::*;
 use std::{fmt::Display, marker::PhantomData};
-use tokio::runtime::Runtime as TokioRuntime;
+// use tokio::runtime::Runtime as TokioRuntime;
+use futures::future::{Future, Loop, Either, loop_fn};
 
 // include file generated during the build process
 include!(concat!(env!("OUT_DIR"), "/metadata.rs"));
@@ -24,11 +25,11 @@ const MAX_RETRIES: i8 = 3;
 ///
 /// # Panics
 /// The function panics if the Lambda environment variables are not set.
-pub fn start<EventError>(f: impl Handler<EventError>, runtime: Option<TokioRuntime>)
+pub fn start<EventError>(f: impl Handler<EventError>/*, runtime: Option<TokioRuntime>*/) -> impl Future<Item=(), Error=()>
 where
     EventError: Fail + LambdaErrorExt + Display + Send + Sync,
 {
-    start_with_config(f, &EnvConfigProvider::default(), runtime)
+    start_with_config(f, &EnvConfigProvider::default()/*, runtime*/)
 }
 
 #[macro_export]
@@ -37,16 +38,18 @@ where
 /// `runtime` to build the listener on. If none is provided, it creates its own.
 macro_rules! lambda {
     ($handler:ident) => {
-        $crate::start($handler, None)
+        use tokio;
+        tokio::run($crate::start($handler))
     };
     ($handler:ident, $runtime:expr) => {
-        $crate::start($handler, Some($runtime))
+        $runtime.spawn($crate::start($handler))
     };
     ($handler:expr) => {
-        $crate::start($handler, None)
+        use tokio;
+        tokio::run($crate::start($handler))
     };
     ($handler:expr, $runtime:expr) => {
-        $crate::start($handler, Some($runtime))
+        $runtime.spawn($crate::start($handler))
     };
 }
 
@@ -66,8 +69,9 @@ macro_rules! lambda {
 pub fn start_with_config<Config, EventError>(
     f: impl Handler<EventError>,
     config: &Config,
-    runtime: Option<TokioRuntime>,
-) where
+    // runtime: Option<TokioRuntime>,
+) -> impl Future<Item=(), Error=()>
+where
     Config: ConfigProvider,
     EventError: Fail + LambdaErrorExt + Display + Send + Sync,
 {
@@ -93,9 +97,9 @@ pub fn start_with_config<Config, EventError>(
 
     let info = Option::from(runtime_release().to_owned());
 
-    match RuntimeClient::new(&endpoint, info, runtime) {
+    match RuntimeClient::new(&endpoint, info/*, runtime*/) {
         Ok(client) => {
-            start_with_runtime_client(f, function_config, client);
+            start_with_runtime_client(f, function_config, client)
         }
         Err(e) => {
             panic!("Could not create runtime client SDK: {}", e);
@@ -118,13 +122,13 @@ pub(crate) fn start_with_runtime_client<EventError>(
     f: impl Handler<EventError>,
     func_settings: FunctionSettings,
     client: RuntimeClient,
-) where
-    EventError: Fail + LambdaErrorExt + Display + Send + Sync,
+) -> impl Future<Item=(), Error=()>
+where EventError: Fail + LambdaErrorExt + Display + Send + Sync,
 {
-    let mut lambda_runtime: Runtime<_, EventError> = Runtime::new(f, func_settings, MAX_RETRIES, client);
+    let lambda_runtime: Runtime<_, EventError> = Runtime::new(f, func_settings, MAX_RETRIES, client);
 
     // start the infinite loop
-    lambda_runtime.start();
+    lambda_runtime.start()
 }
 
 /// Internal representation of the runtime object that polls for events and communicates
@@ -183,56 +187,65 @@ where
     /// Starts the main event loop and begin polling or new events. If one of the
     /// Runtime APIs returns an unrecoverable error this method calls the init failed
     /// API and then panics.
-    fn start(&mut self) {
+    fn start(self) -> impl Future<Item=(), Error=()> {
         debug!("Beginning main event loop");
-        loop {
-            let (event, ctx) = self.get_next_event(0, None);
-            let request_id = ctx.aws_request_id.clone();
-            info!("Received new event with AWS request id: {}", request_id);
-            let function_outcome = self.invoke(event, ctx);
-            match function_outcome {
-                Ok(response) => {
-                    debug!(
-                        "Function executed succesfully for {}, pushing response to Runtime API",
-                        request_id
-                    );
-                    match self.runtime_client.event_response(&request_id, &response) {
-                        Ok(_) => info!("Response for {} accepted by Runtime API", request_id),
-                        // unrecoverable error while trying to communicate with the endpoint.
-                        // we let the Lambda Runtime API know that we have died
-                        Err(e) => {
-                            error!("Could not send response for {} to Runtime API: {}", request_id, e);
-                            if !e.is_recoverable() {
-                                error!(
-                                    "Error for {} is not recoverable, sending fail_init signal and panicking.",
-                                    request_id
-                                );
-                                self.runtime_client.fail_init(&ErrorResponse::from(e));
-                                panic!("Could not send response");
-                            }
-                        }
+        loop_fn(self, |runtime| {
+            runtime.get_next_event(0, None).and_then(|(mut runtime, event, ctx)| {
+                let request_id = ctx.aws_request_id.clone();
+                info!("Received new event with AWS request id: {}", request_id);
+                let function_outcome = runtime.invoke(event, ctx);
+                match function_outcome {
+                    Ok(response) => {
+                        debug!(
+                            "Function executed succesfully for {}, pushing response to Runtime API",
+                            request_id
+                        );
+                        Either::A(runtime.runtime_client.event_response(&request_id, &response)
+                            .then(move |r| {
+                                match r {
+                                    Ok(_) => info!("Response for {} accepted by Runtime API", request_id),
+                                    // unrecoverable error while trying to communicate with the endpoint.
+                                    // we let the Lambda Runtime API know that we have died
+                                    Err(e) => {
+                                        error!("Could not send response for {} to Runtime API: {}", request_id, e);
+                                        if !e.is_recoverable() {
+                                            error!(
+                                                "Error for {} is not recoverable, sending fail_init signal and panicking.",
+                                                request_id
+                                            );
+                                            runtime.runtime_client.fail_init(&ErrorResponse::from(e));
+                                            panic!("Could not send response");
+                                        }
+                                    },
+                                }
+                                Ok(Loop::Continue(runtime))
+                            }))
+                    }
+                    Err(e) => {
+                        error!("Handler returned an error for {}: {}", request_id, e);
+                        debug!("Attempting to send error response to Runtime API for {}", request_id);
+                        Either::B(runtime.runtime_client.event_error(&request_id, &ErrorResponse::from(e))
+                            .then(move |r| {
+                                match r {
+                                    Ok(_) => info!("Error response for {} accepted by Runtime API", request_id),
+                                    Err(e) => {
+                                        error!("Unable to send error response for {} to Runtime API: {}", request_id, e);
+                                        if !e.is_recoverable() {
+                                            error!(
+                                                "Error for {} is not recoverable, sending fail_init signal and panicking",
+                                                request_id
+                                            );
+                                            runtime.runtime_client.fail_init(&ErrorResponse::from(e));
+                                            panic!("Could not send error response");
+                                        }
+                                    },
+                                }
+                                Ok(Loop::Continue(runtime))
+                            }))
                     }
                 }
-                Err(e) => {
-                    error!("Handler returned an error for {}: {}", request_id, e);
-                    debug!("Attempting to send error response to Runtime API for {}", request_id);
-                    match self.runtime_client.event_error(&request_id, &ErrorResponse::from(e)) {
-                        Ok(_) => info!("Error response for {} accepted by Runtime API", request_id),
-                        Err(e) => {
-                            error!("Unable to send error response for {} to Runtime API: {}", request_id, e);
-                            if !e.is_recoverable() {
-                                error!(
-                                    "Error for {} is not recoverable, sending fail_init signal and panicking",
-                                    request_id
-                                );
-                                self.runtime_client.fail_init(&ErrorResponse::from(e));
-                                panic!("Could not send error response");
-                            }
-                        }
-                    }
-                }
-            }
-        }
+            })
+        })
     }
 
     /// Invoke the handler function. This method is split out of the main loop to
@@ -246,41 +259,47 @@ where
     ///
     /// # Return
     /// The next `Event` object to be processed.
-    pub(super) fn get_next_event(&self, retries: i8, e: Option<RuntimeError>) -> (Vec<u8>, Context) {
-        if let Some(err) = e {
-            if retries > self.max_retries {
-                error!("Unrecoverable error while fetching next event: {}", err);
-                match err.request_id.clone() {
-                    Some(req_id) => {
-                        self.runtime_client
-                            .event_error(&req_id, &ErrorResponse::from(err))
-                            .expect("Could not send event error response");
-                    }
-                    None => {
-                        self.runtime_client.fail_init(&ErrorResponse::from(err));
-                    }
+    pub(super) fn get_next_event(self, retries: i8, e: Option<RuntimeError>) -> impl Future<Item=(Self, Vec<u8>, Context), Error=()> {
+        loop_fn((self, retries, e), |(runtime, retries, e)| {
+            if let Some(err) = e {
+                if retries > runtime.max_retries {
+                    error!("Unrecoverable error while fetching next event: {}", err);
+                    let future = match err.request_id.clone() {
+                        Some(req_id) => {
+                            Either::A(runtime.runtime_client.event_error(&req_id, &ErrorResponse::from(err))
+                                .map_err(|_| panic!("Could not send event error response")))
+                        }
+                        None => {
+                            Either::B(runtime.runtime_client.fail_init(&ErrorResponse::from(err)))
+                        }
+                    };
+                    // to avoid unreachable code
+                    return Either::A(future.then(|_| Err(())).map_err(|_| {
+                        // these errors are not recoverable. Either we can't communicate with the runtie APIs
+                        // or we cannot parse the event. panic to restart the environment.
+                        panic!("Could not retrieve next event");
+                    }));
                 }
-
-                // these errors are not recoverable. Either we can't communicate with the runtie APIs
-                // or we cannot parse the event. panic to restart the environment.
-                panic!("Could not retrieve next event");
             }
-        }
 
-        match self.runtime_client.next_event() {
-            Ok((ev_data, invocation_ctx)) => {
-                let mut handler_ctx = Context::new(self.settings.clone());
-                handler_ctx.invoked_function_arn = invocation_ctx.invoked_function_arn;
-                handler_ctx.aws_request_id = invocation_ctx.aws_request_id;
-                handler_ctx.xray_trace_id = invocation_ctx.xray_trace_id;
-                handler_ctx.client_context = invocation_ctx.client_context;
-                handler_ctx.identity = invocation_ctx.identity;
-                handler_ctx.deadline = invocation_ctx.deadline;
+            Either::B(runtime.runtime_client.next_event()
+                .then(move |r| {
+                    match r {
+                        Ok((ev_data, invocation_ctx)) => {
+                            let mut handler_ctx = Context::new(runtime.settings.clone());
+                            handler_ctx.invoked_function_arn = invocation_ctx.invoked_function_arn;
+                            handler_ctx.aws_request_id = invocation_ctx.aws_request_id;
+                            handler_ctx.xray_trace_id = invocation_ctx.xray_trace_id;
+                            handler_ctx.client_context = invocation_ctx.client_context;
+                            handler_ctx.identity = invocation_ctx.identity;
+                            handler_ctx.deadline = invocation_ctx.deadline;
 
-                (ev_data, handler_ctx)
-            }
-            Err(e) => self.get_next_event(retries + 1, Option::from(RuntimeError::from(e))),
-        }
+                            Ok(Loop::Break((runtime, ev_data, handler_ctx)))
+                        },
+                        Err(e) => Ok(Loop::Continue((runtime, retries + 1, Option::from(RuntimeError::from(e))))),
+                    }
+                }))
+        })
     }
 }
 
@@ -299,7 +318,7 @@ pub(crate) mod tests {
                 .get_runtime_api_endpoint()
                 .expect("Could not get runtime endpoint"),
             None,
-            None,
+            // None,
         )
         .expect("Could not initialize client");
         let handler = |_e: Vec<u8>, _c: context::Context| -> Result<Vec<u8>, HandlerError> { Ok(b"hello".to_vec()) };

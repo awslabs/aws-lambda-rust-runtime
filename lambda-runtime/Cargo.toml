@@ -23,6 +23,7 @@ tokio = "0.1"
 log = "^0.4"
 lambda_runtime_core = { path = "../lambda-runtime-core", version = "^0.1" }
 failure = "^0.1"
+futures = "0.1"
 
 [dev-dependencies]
 simple_logger = "^1"

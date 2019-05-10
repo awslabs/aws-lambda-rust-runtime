@@ -17,7 +17,6 @@ tokio = "^0.1"
 backtrace = "^0.3"
 chrono = "^0.4"
 failure = "^0.1"
-futures = "^0.1"
 lambda_runtime_client = { path = "../lambda-runtime-client", version = "^0.2" }
 lambda_runtime_errors = { path = "../lambda-runtime-errors", version = "^0.1" }
 

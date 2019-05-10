@@ -21,10 +21,9 @@
 //! extern crate serde_derive;
 //! extern crate serde_json;
 //! extern crate tokio;
-//! extern crate futures;
 //!
 //! use lambda_runtime_client::{RuntimeClient, EventContext};
-//! use futures::future::{Future, Either};
+//! use tokio::prelude::future::{Future, Either};
 //! use failure::Fail;
 //!
 //! #[derive(Serialize, Deserialize, Debug)]

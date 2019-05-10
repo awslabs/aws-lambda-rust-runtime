@@ -10,7 +10,7 @@ use serde_derive::*;
 use serde_json;
 use std::{collections::HashMap, fmt};
 // use tokio::runtime::Runtime;
-use futures::{stream::Stream, future::{self, Future, Either}};
+use tokio::prelude::{stream::Stream, future::{self, Future, Either}};
 
 const RUNTIME_API_VERSION: &str = "2018-06-01";
 const API_CONTENT_TYPE: &str = "application/json";

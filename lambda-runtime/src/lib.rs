@@ -43,7 +43,7 @@ use std::fmt::Display;
 // use tokio::runtime::Runtime as TokioRuntime;
 
 pub use lambda_runtime_core::Context;
-use futures::future::Future;
+use tokio::prelude::future::{self, Future, IntoFuture};
 
 /// The error module exposes the HandlerError type.
 pub mod error {
@@ -51,19 +51,21 @@ pub mod error {
 }
 
 /// Functions acting as a handler must conform to this type.
-pub trait Handler<Event, Output, EventError>: Send {
+pub trait Handler<Event, Output, EventError, I>: Send {
     /// Method to execute the handler function
-    fn run(&mut self, event: Event, ctx: Context) -> Result<Output, EventError>;
+    fn run(&mut self, event: Event, ctx: Context) -> I;
 }
 
 /// Implementation of the `Handler` trait for both function pointers
 /// and closures.
-impl<Function, Event, Output, EventError> Handler<Event, Output, EventError> for Function
+impl<Function, Event, Output, EventError, I> Handler<Event, Output, EventError, I> for Function
 where
-    Function: FnMut(Event, Context) -> Result<Output, EventError> + Send,
+    Function: FnMut(Event, Context) -> I + Send,
     EventError: Fail + LambdaErrorExt + Display + Send + Sync,
+    I: IntoFuture<Item=Output, Error=EventError> + Send,
+    I::Future: Send,
 {
-    fn run(&mut self, event: Event, ctx: Context) -> Result<Output, EventError> {
+    fn run(&mut self, event: Event, ctx: Context) -> I {
         (*self)(event, ctx)
     }
 }
@@ -72,23 +74,45 @@ where
 /// defined in the `lambda_runtime_core` crate. The closure simply uses `serde_json`
 /// to serialize and deserialize the incoming event from a `Vec<u8>` and the output
 /// to a `Vec<u8>`.
-fn wrap<Event, Output, EventError>(
-    mut h: impl Handler<Event, Output, EventError>,
-) -> impl FnMut(Vec<u8>, Context) -> Result<Vec<u8>, HandlerError>
+// fn wrap<Event, Output, EventError>(
+//     mut h: impl Handler<Event, Output, EventError>,
+// ) -> impl FnMut(Vec<u8>, Context) -> Result<Vec<u8>, HandlerError>
+// where
+//     Event: serde::de::DeserializeOwned,
+//     Output: serde::Serialize,
+//     EventError: Fail + LambdaErrorExt + Display + Send + Sync,
+// {
+//     move |ev, ctx| {
+//         let event: Event = serde_json::from_slice(&ev)?;
+//         match h.run(event, ctx) {
+//             Ok(out) => {
+//                 let out_bytes = serde_json::to_vec(&out)?;
+//                 Ok(out_bytes)
+//             }
+//             Err(e) => Err(HandlerError::new(e)),
+//         }
+//     }
+// }
+fn wrap<Event, Output, EventError, I>(
+    mut h: impl Handler<Event, Output, EventError, I>,
+) -> impl FnMut(Vec<u8>, Context) -> Box<Future<Item=Vec<u8>, Error=HandlerError> + Send>
 where
-    Event: serde::de::DeserializeOwned,
+    Event: serde::de::DeserializeOwned + Send,
     Output: serde::Serialize,
     EventError: Fail + LambdaErrorExt + Display + Send + Sync,
+    I: IntoFuture<Item=Output, Error=EventError> + Send,
+    I::Future: Send + 'static,
 {
     move |ev, ctx| {
-        let event: Event = serde_json::from_slice(&ev)?;
-        match h.run(event, ctx) {
-            Ok(out) => {
-                let out_bytes = serde_json::to_vec(&out)?;
-                Ok(out_bytes)
-            }
+        let event: Event = match serde_json::from_slice(&ev) {
+            Ok(e) => e,
+            Err(e) => return Box::new(future::err(e.into())),
+        };
+
+        Box::new(h.run(event, ctx).into_future().then(|res| match res {
+            Ok(out) => serde_json::to_vec(&out).map_err(|e| e.into()),
             Err(e) => Err(HandlerError::new(e)),
-        }
+        }))
     }
 }
 
@@ -100,11 +124,13 @@ where
 ///
 /// # Panics
 /// The function panics if the Lambda environment variables are not set.
-pub fn start<Event, Output, EventError>(f: impl Handler<Event, Output, EventError>/*, runtime: Option<TokioRuntime>*/) -> impl Future<Item=(), Error=()>
+pub fn start<Event, Output, EventError, I>(f: impl Handler<Event, Output, EventError, I>/*, runtime: Option<TokioRuntime>*/) -> impl Future<Item=(), Error=()>
 where
-    Event: serde::de::DeserializeOwned,
+    Event: serde::de::DeserializeOwned + Send,
     Output: serde::Serialize,
     EventError: Fail + LambdaErrorExt + Display + Send + Sync,
+    I: IntoFuture<Item=Output, Error=EventError> + Send,
+    I::Future: Send + 'static,
 {
     let wrapped = wrap(f);
     start_with_config(wrapped, &EnvConfigProvider::default()/*, runtime*/)
@@ -137,6 +163,7 @@ pub(crate) mod tests {
     use lambda_runtime_core::Context;
     use serde_derive::{Deserialize, Serialize};
     use serde_json;
+    use tokio::runtime::current_thread::block_on_all;
 
     fn test_context() -> Context {
         Context {
@@ -175,10 +202,10 @@ pub(crate) mod tests {
         let input = Input {
             name: "test".to_owned(),
         };
-        let output = wrapped_ok.run(
+        let output = block_on_all(wrapped_ok.run(
             serde_json::to_vec(&input).expect("Could not convert input to Vec"),
             test_context(),
-        );
+        ));
         assert_eq!(
             output.is_err(),
             false,
@@ -206,10 +233,10 @@ pub(crate) mod tests {
         let input = Input {
             name: "test".to_owned(),
         };
-        let output = wrapped_ok.run(
+        let output = block_on_all(wrapped_ok.run(
             serde_json::to_vec(&input).expect("Could not convert input to Vec"),
             test_context(),
-        );
+        ));
         assert_eq!(output.is_err(), true, "Handler did not throw an error");
         let err = output.err().unwrap();
         assert_eq!(

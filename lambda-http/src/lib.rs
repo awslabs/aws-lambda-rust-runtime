@@ -61,7 +61,7 @@ extern crate maplit;
 pub use http::{self, Response};
 use lambda_runtime::{self as lambda, error::HandlerError, Context};
 // use tokio::runtime::Runtime as TokioRuntime;
-use futures::future::Future;
+use tokio::prelude::future::{Future, IntoFuture};
 
 mod body;
 mod ext;
@@ -76,16 +76,19 @@ use crate::{request::LambdaRequest, response::LambdaResponse};
 pub type Request = http::Request<Body>;
 
 /// Functions serving as ALB and API Gateway handlers must conform to this type.
-pub trait Handler<R>: Send {
+pub trait Handler<R, I>: Send
+    where I: IntoFuture<Item=R, Error=HandlerError> {
     /// Run the handler.
-    fn run(&mut self, event: Request, ctx: Context) -> Result<R, HandlerError>;
+    fn run(&mut self, event: Request, ctx: Context) -> I;
 }
 
-impl<F, R> Handler<R> for F
+impl<F, R, I> Handler<R, I> for F
 where
-    F: FnMut(Request, Context) -> Result<R, HandlerError> + Send,
+    F: FnMut(Request, Context) -> I + Send,
+    I: IntoFuture<Item=R, Error=HandlerError> + Send,
+    I::Future: Send + 'static,
 {
-    fn run(&mut self, event: Request, ctx: Context) -> Result<R, HandlerError> {
+    fn run(&mut self, event: Request, ctx: Context) -> I {
         (*self)(event, ctx)
     }
 }
@@ -98,17 +101,19 @@ where
 ///
 /// # Panics
 /// The function panics if the Lambda environment variables are not set.
-pub fn start<R>(f: impl Handler<R>/*, runtime: Option<TokioRuntime>*/) -> impl Future<Item=(), Error=()>
+pub fn start<R, I>(f: impl Handler<R, I>/*, runtime: Option<TokioRuntime>*/) -> impl Future<Item=(), Error=()>
 where
     R: IntoResponse,
+    I: IntoFuture<Item=R, Error=HandlerError> + Send,
+    I::Future: Send + 'static,
 {
     // handler requires a mutable ref
     let mut func = f;
     lambda::start(
         move |req: LambdaRequest<'_>, ctx: Context| {
             let is_alb = req.request_context.is_alb();
-            func.run(req.into(), ctx)
-                .map(|resp| LambdaResponse::from_response(is_alb, resp.into_response()))
+            func.run(req.into(), ctx).into_future()
+                .map(move |resp| LambdaResponse::from_response(is_alb, resp.into_response()))
         },
         // runtime,
     )

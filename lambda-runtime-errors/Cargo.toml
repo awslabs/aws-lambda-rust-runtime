@@ -18,3 +18,4 @@ lambda_runtime_errors_derive = { path = "../lambda-runtime-errors-derive", versi
 
 [dev-dependencies]
 lambda_runtime_core = { path = "../lambda-runtime-core", version = "^0.1"}
+tokio = "^0.1"

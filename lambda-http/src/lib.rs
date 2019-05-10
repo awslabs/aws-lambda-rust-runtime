@@ -17,7 +17,7 @@
 //! use lambda_runtime::{Context, error::HandlerError};
 //!
 //! fn main() {
-//!     lambda!(hello)
+//!     lambda!(hello);
 //! }
 //!
 //! fn hello(
@@ -49,7 +49,7 @@
 //!           .unwrap_or_else(|| "stranger")
 //!       )
 //!     )
-//!   )
+//!   );
 //! }
 //! ```
 
@@ -76,14 +76,14 @@ use crate::{request::LambdaRequest, response::LambdaResponse};
 pub type Request = http::Request<Body>;
 
 /// Functions serving as ALB and API Gateway handlers must conform to this type.
-pub trait Handler<R> {
+pub trait Handler<R>: Send {
     /// Run the handler.
     fn run(&mut self, event: Request, ctx: Context) -> Result<R, HandlerError>;
 }
 
 impl<F, R> Handler<R> for F
 where
-    F: FnMut(Request, Context) -> Result<R, HandlerError>,
+    F: FnMut(Request, Context) -> Result<R, HandlerError> + Send,
 {
     fn run(&mut self, event: Request, ctx: Context) -> Result<R, HandlerError> {
         (*self)(event, ctx)

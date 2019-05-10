@@ -169,7 +169,7 @@ impl<'ev> RuntimeClient {
 
 impl<'ev> RuntimeClient {
     /// Polls for new events to the Runtime APIs.
-    pub fn next_event(&self) -> impl Future<Item=(Vec<u8>, EventContext), Error=ApiError> {
+    pub fn next_event(&self) -> impl Future<Item=(Vec<u8>, EventContext), Error=ApiError> + Send {
         trace!("Polling for next event");
 
         self.http_client.get(self.next_endpoint.clone())
@@ -203,7 +203,7 @@ impl<'ev> RuntimeClient {
 
                 Either::B(resp.into_body()
                     .concat2()
-                    .map_err(|e| e.context(ApiErrorKind::Recoverable("Could not read event boxy".to_string())).into())
+                    .map_err(|e| e.context(ApiErrorKind::Recoverable("Could not read event body".to_string())).into())
                     .and_then(|out| {
                         let buf = out.into_bytes().to_vec();
 
@@ -229,7 +229,7 @@ impl<'ev> RuntimeClient {
     ///
     /// # Returns
     /// A `Result` object containing a bool return value for the call or an `error::ApiError` instance.
-    pub fn event_response(&self, request_id: &str, output: &[u8]) -> impl Future<Item=(), Error=ApiError> {
+    pub fn event_response(&self, request_id: &str, output: &[u8]) -> impl Future<Item=(), Error=ApiError> + Send {
         trace!(
             "Posting response for request {} to Runtime API. Response length {} bytes",
             request_id,

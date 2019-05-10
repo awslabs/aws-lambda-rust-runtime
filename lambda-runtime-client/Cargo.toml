@@ -29,3 +29,4 @@ futures = "^0.1"
 
 [dev-dependencies]
 chrono = "^0.4"
+lambda_runtime_errors_derive = { path = "../lambda-runtime-errors-derive", version = "^0.1" }

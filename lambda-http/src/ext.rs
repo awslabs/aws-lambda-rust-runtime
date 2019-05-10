@@ -61,7 +61,7 @@ pub enum PayloadError {
 /// }
 ///
 /// fn main() {
-///   lambda!(handler)
+///   lambda!(handler);
 /// }
 ///
 /// fn handler(

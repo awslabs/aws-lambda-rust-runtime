@@ -25,7 +25,7 @@ const MAX_RETRIES: i8 = 3;
 ///
 /// # Panics
 /// The function panics if the Lambda environment variables are not set.
-pub fn start<EventError>(f: impl Handler<EventError> + 'static/*, runtime: Option<TokioRuntime>*/) -> impl Future<Item=(), Error=()>
+pub fn start<EventError>(f: impl Handler<EventError>/*, runtime: Option<TokioRuntime>*/) -> impl Future<Item=(), Error=()> + Send
 where
     EventError: Fail + LambdaErrorExt + Display + Send + Sync,
 {
@@ -67,10 +67,10 @@ macro_rules! lambda {
 /// or `get_function_settings()` methods. The panic forces AWS Lambda to terminate the environment
 /// and spin up a new one for the next invocation.
 pub fn start_with_config<Config, EventError>(
-    f: impl Handler<EventError> + 'static,
+    f: impl Handler<EventError>,
     config: &Config,
     // runtime: Option<TokioRuntime>,
-) -> impl Future<Item=(), Error=()>
+) -> impl Future<Item=(), Error=()> + Send
 where
     Config: ConfigProvider,
     EventError: Fail + LambdaErrorExt + Display + Send + Sync,
@@ -119,10 +119,10 @@ where
 /// # Panics
 /// The function panics if we cannot instantiate a new `RustRuntime` object.
 pub(crate) fn start_with_runtime_client<EventError>(
-    f: impl Handler<EventError> + 'static,
+    f: impl Handler<EventError>,
     func_settings: FunctionSettings,
     client: RuntimeClient,
-) -> impl Future<Item=(), Error=()>
+) -> impl Future<Item=(), Error=()> + Send
 where EventError: Fail + LambdaErrorExt + Display + Send + Sync,
 {
     let lambda_runtime: Runtime<_, EventError> = Runtime::new(f, func_settings, MAX_RETRIES, client);
@@ -187,20 +187,20 @@ where
     /// Starts the main event loop and begin polling or new events. If one of the
     /// Runtime APIs returns an unrecoverable error this method calls the init failed
     /// API and then panics.
-    fn start<'a>(&'a mut self) -> impl Future<Item=(), Error=()> + 'a {
+    fn start(self) -> impl Future<Item=(), Error=()> + Send {
         debug!("Beginning main event loop");
-        loop_fn((), move |_| {
-            self.get_next_event(0, None).and_then(|(event, ctx)| {
+        loop_fn(self, |runtime| {
+            runtime.get_next_event(0, None).and_then(|(mut runtime, event, ctx)| {
                 let request_id = ctx.aws_request_id.clone();
                 info!("Received new event with AWS request id: {}", request_id);
-                let function_outcome = self.invoke(event, ctx);
+                let function_outcome = runtime.invoke(event, ctx);
                 match function_outcome {
                     Ok(response) => {
                         debug!(
                             "Function executed succesfully for {}, pushing response to Runtime API",
                             request_id
                         );
-                        Either::A(self.runtime_client.event_response(&request_id, &response)
+                        Either::A(runtime.runtime_client.event_response(&request_id, &response)
                             .then(move |r| {
                                 match r {
                                     Ok(_) => info!("Response for {} accepted by Runtime API", request_id),
@@ -213,18 +213,18 @@ where
                                                 "Error for {} is not recoverable, sending fail_init signal and panicking.",
                                                 request_id
                                             );
-                                            self.runtime_client.fail_init(&ErrorResponse::from(e));
+                                            runtime.runtime_client.fail_init(&ErrorResponse::from(e));
                                             panic!("Could not send response");
                                         }
                                     },
                                 }
-                                Ok(Loop::Continue(()))
+                                Ok(Loop::Continue(runtime))
                             }))
                     }
                     Err(e) => {
                         error!("Handler returned an error for {}: {}", request_id, e);
                         debug!("Attempting to send error response to Runtime API for {}", request_id);
-                        Either::B(self.runtime_client.event_error(&request_id, &ErrorResponse::from(e))
+                        Either::B(runtime.runtime_client.event_error(&request_id, &ErrorResponse::from(e))
                             .then(move |r| {
                                 match r {
                                     Ok(_) => info!("Error response for {} accepted by Runtime API", request_id),
@@ -235,12 +235,12 @@ where
                                                 "Error for {} is not recoverable, sending fail_init signal and panicking",
                                                 request_id
                                             );
-                                            self.runtime_client.fail_init(&ErrorResponse::from(e));
+                                            runtime.runtime_client.fail_init(&ErrorResponse::from(e));
                                             panic!("Could not send error response");
                                         }
                                     },
                                 }
-                                Ok(Loop::Continue(()))
+                                Ok(Loop::Continue(runtime))
                             }))
                     }
                 }
@@ -259,18 +259,18 @@ where
     ///
     /// # Return
     /// The next `Event` object to be processed.
-    pub(super) fn get_next_event<'a>(&'a self, retries: i8, e: Option<RuntimeError>) -> impl Future<Item=(Vec<u8>, Context), Error=()> + 'a {
-        loop_fn((retries, e), move |(retries, e)| {
+    pub(super) fn get_next_event(self, retries: i8, e: Option<RuntimeError>) -> impl Future<Item=(Self, Vec<u8>, Context), Error=()> + Send {
+        loop_fn((self, retries, e), |(runtime, retries, e)| {
             if let Some(err) = e {
-                if retries > self.max_retries {
+                if retries > runtime.max_retries {
                     error!("Unrecoverable error while fetching next event: {}", err);
                     let future = match err.request_id.clone() {
                         Some(req_id) => {
-                            Either::A(self.runtime_client.event_error(&req_id, &ErrorResponse::from(err))
+                            Either::A(runtime.runtime_client.event_error(&req_id, &ErrorResponse::from(err))
                                 .map_err(|_| panic!("Could not send event error response")))
                         }
                         None => {
-                            Either::B(self.runtime_client.fail_init(&ErrorResponse::from(err)))
+                            Either::B(runtime.runtime_client.fail_init(&ErrorResponse::from(err)))
                         }
                     };
                     // to avoid unreachable code
@@ -282,11 +282,11 @@ where
                 }
             }
 
-            Either::B(self.runtime_client.next_event()
+            Either::B(runtime.runtime_client.next_event()
                 .then(move |r| {
                     match r {
                         Ok((ev_data, invocation_ctx)) => {
-                            let mut handler_ctx = Context::new(self.settings.clone());
+                            let mut handler_ctx = Context::new(runtime.settings.clone());
                             handler_ctx.invoked_function_arn = invocation_ctx.invoked_function_arn;
                             handler_ctx.aws_request_id = invocation_ctx.aws_request_id;
                             handler_ctx.xray_trace_id = invocation_ctx.xray_trace_id;
@@ -294,9 +294,9 @@ where
                             handler_ctx.identity = invocation_ctx.identity;
                             handler_ctx.deadline = invocation_ctx.deadline;
 
-                            Ok(Loop::Break((ev_data, handler_ctx)))
+                            Ok(Loop::Break((runtime, ev_data, handler_ctx)))
                         },
-                        Err(e) => Ok(Loop::Continue((retries + 1, Option::from(RuntimeError::from(e))))),
+                        Err(e) => Ok(Loop::Continue((runtime, retries + 1, Option::from(RuntimeError::from(e))))),
                     }
                 }))
         })

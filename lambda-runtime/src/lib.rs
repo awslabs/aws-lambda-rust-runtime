@@ -51,7 +51,7 @@ pub mod error {
 }
 
 /// Functions acting as a handler must conform to this type.
-pub trait Handler<Event, Output, EventError> {
+pub trait Handler<Event, Output, EventError>: Send {
     /// Method to execute the handler function
     fn run(&mut self, event: Event, ctx: Context) -> Result<Output, EventError>;
 }
@@ -60,7 +60,7 @@ pub trait Handler<Event, Output, EventError> {
 /// and closures.
 impl<Function, Event, Output, EventError> Handler<Event, Output, EventError> for Function
 where
-    Function: FnMut(Event, Context) -> Result<Output, EventError>,
+    Function: FnMut(Event, Context) -> Result<Output, EventError> + Send,
     EventError: Fail + LambdaErrorExt + Display + Send + Sync,
 {
     fn run(&mut self, event: Event, ctx: Context) -> Result<Output, EventError> {

@@ -40,15 +40,13 @@ where
 /// `runtime` to build the listener on. If none is provided, it creates its own.
 macro_rules! lambda {
     ($handler:ident) => {
-        use tokio;
-        tokio::run($crate::start($handler))
+        $crate::tokio::run($crate::start($handler))
     };
     ($handler:ident, $runtime:expr) => {
         $runtime.spawn($crate::start($handler))
     };
     ($handler:expr) => {
-        use tokio;
-        tokio::run($crate::start($handler))
+        $crate::tokio::run($crate::start($handler))
     };
     ($handler:expr, $runtime:expr) => {
         $runtime.spawn($crate::start($handler))

@@ -15,6 +15,8 @@ mod error;
 mod handler;
 mod runtime;
 
+pub use tokio;
+
 pub use crate::{
     context::Context,
     env::{ConfigProvider, EnvConfigProvider},

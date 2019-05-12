@@ -42,6 +42,8 @@ use serde_json;
 use std::fmt::Display;
 // use tokio::runtime::Runtime as TokioRuntime;
 
+pub use tokio;
+
 pub use lambda_runtime_core::Context;
 use tokio::prelude::future::{self, Future, IntoFuture};
 
@@ -142,15 +144,13 @@ where
 #[macro_export]
 macro_rules! lambda {
     ($handler:ident) => {
-        use tokio;
-        tokio::run($crate::start($handler))
+        $crate::tokio::run($crate::start($handler))
     };
     ($handler:ident, $runtime:expr) => {
         $runtime.spawn($crate::start($handler))
     };
     ($handler:expr) => {
-        use tokio;
-        tokio::run($crate::start($handler))
+        $crate::tokio::run($crate::start($handler))
     };
     ($handler:expr, $runtime:expr) => {
         $runtime.spawn($crate::start($handler))

@@ -58,7 +58,10 @@
 #[macro_use]
 extern crate maplit;
 
+pub use tokio;
+
 pub use http::{self, Response};
+
 use lambda_runtime::{self as lambda, error::HandlerError, Context};
 // use tokio::runtime::Runtime as TokioRuntime;
 use tokio::prelude::future::{Future, IntoFuture};
@@ -123,15 +126,13 @@ where
 #[macro_export]
 macro_rules! lambda {
     ($handler:expr) => {
-        use tokio;
-        tokio::run($crate::start($handler))
+        $crate::tokio::run($crate::start($handler))
     };
     ($handler:expr, $runtime:expr) => {
         $runtime.spawn($crate::start($handler))
     };
     ($handler:ident) => {
-        use tokio;
-        tokio::run($crate::start($handler))
+        $crate::tokio::run($crate::start($handler))
     };
     ($handler:ident, $runtime:expr) => {
         $runtime.spawn($crate::start($handler))

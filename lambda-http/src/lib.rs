@@ -63,7 +63,7 @@ pub use tokio;
 pub use http::{self, Response};
 
 use lambda_runtime::{self as lambda, error::HandlerError, Context};
-// use tokio::runtime::Runtime as TokioRuntime;
+
 use tokio::prelude::future::{Future, IntoFuture};
 
 mod body;
@@ -79,19 +79,19 @@ use crate::{request::LambdaRequest, response::LambdaResponse};
 pub type Request = http::Request<Body>;
 
 /// Functions serving as ALB and API Gateway handlers must conform to this type.
-pub trait Handler<R, I>: Send
-    where I: IntoFuture<Item=R, Error=HandlerError> {
+pub trait Handler<Ret, Fut>: Send
+    where Fut: IntoFuture<Item=Ret, Error=HandlerError> {
     /// Run the handler.
-    fn run(&mut self, event: Request, ctx: Context) -> I;
+    fn run(&mut self, event: Request, ctx: Context) -> Fut;
 }
 
-impl<F, R, I> Handler<R, I> for F
+impl<Fun, Ret, Fut> Handler<Ret, Fut> for Fun
 where
-    F: FnMut(Request, Context) -> I + Send,
-    I: IntoFuture<Item=R, Error=HandlerError> + Send,
-    I::Future: Send + 'static,
+    Fun: FnMut(Request, Context) -> Fut + Send,
+    Fut: IntoFuture<Item=Ret, Error=HandlerError> + Send,
+    Fut::Future: Send + 'static,
 {
-    fn run(&mut self, event: Request, ctx: Context) -> I {
+    fn run(&mut self, event: Request, ctx: Context) -> Fut {
         (*self)(event, ctx)
     }
 }
@@ -104,11 +104,11 @@ where
 ///
 /// # Panics
 /// The function panics if the Lambda environment variables are not set.
-pub fn start<R, I>(f: impl Handler<R, I>/*, runtime: Option<TokioRuntime>*/) -> impl Future<Item=(), Error=()>
+pub fn start<Ret, Fut>(f: impl Handler<Ret, Fut>) -> impl Future<Item=(), Error=()>
 where
-    R: IntoResponse,
-    I: IntoFuture<Item=R, Error=HandlerError> + Send,
-    I::Future: Send + 'static,
+    Ret: IntoResponse,
+    Fut: IntoFuture<Item=Ret, Error=HandlerError> + Send,
+    Fut::Future: Send + 'static,
 {
     // handler requires a mutable ref
     let mut func = f;

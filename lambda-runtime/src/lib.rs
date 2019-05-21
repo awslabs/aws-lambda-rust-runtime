@@ -40,7 +40,6 @@ use lambda_runtime_core::{start_with_config, EnvConfigProvider, HandlerError, La
 use serde;
 use serde_json;
 use std::fmt::Display;
-// use tokio::runtime::Runtime as TokioRuntime;
 
 pub use tokio;
 
@@ -53,21 +52,21 @@ pub mod error {
 }
 
 /// Functions acting as a handler must conform to this type.
-pub trait Handler<Event, Output, EventError, I>: Send {
+pub trait Handler<Event, Output, EventError, Fut>: Send {
     /// Method to execute the handler function
-    fn run(&mut self, event: Event, ctx: Context) -> I;
+    fn run(&mut self, event: Event, ctx: Context) -> Fut;
 }
 
 /// Implementation of the `Handler` trait for both function pointers
 /// and closures.
-impl<Function, Event, Output, EventError, I> Handler<Event, Output, EventError, I> for Function
+impl<Function, Event, Output, EventError, Fut> Handler<Event, Output, EventError, Fut> for Function
 where
-    Function: FnMut(Event, Context) -> I + Send,
+    Function: FnMut(Event, Context) -> Fut + Send,
     EventError: Fail + LambdaErrorExt + Display + Send + Sync,
-    I: IntoFuture<Item=Output, Error=EventError> + Send,
-    I::Future: Send,
+    Fut: IntoFuture<Item=Output, Error=EventError> + Send,
+    Fut::Future: Send,
 {
-    fn run(&mut self, event: Event, ctx: Context) -> I {
+    fn run(&mut self, event: Event, ctx: Context) -> Fut {
         (*self)(event, ctx)
     }
 }
@@ -95,15 +94,15 @@ where
 //         }
 //     }
 // }
-fn wrap<Event, Output, EventError, I>(
-    mut h: impl Handler<Event, Output, EventError, I>,
+fn wrap<Event, Output, EventError, Fut>(
+    mut h: impl Handler<Event, Output, EventError, Fut>,
 ) -> impl FnMut(Vec<u8>, Context) -> Box<Future<Item=Vec<u8>, Error=HandlerError> + Send>
 where
     Event: serde::de::DeserializeOwned + Send,
     Output: serde::Serialize,
     EventError: Fail + LambdaErrorExt + Display + Send + Sync,
-    I: IntoFuture<Item=Output, Error=EventError> + Send,
-    I::Future: Send + 'static,
+    Fut: IntoFuture<Item=Output, Error=EventError> + Send,
+    Fut::Future: Send + 'static,
 {
     move |ev, ctx| {
         let event: Event = match serde_json::from_slice(&ev) {
@@ -126,16 +125,16 @@ where
 ///
 /// # Panics
 /// The function panics if the Lambda environment variables are not set.
-pub fn start<Event, Output, EventError, I>(f: impl Handler<Event, Output, EventError, I>/*, runtime: Option<TokioRuntime>*/) -> impl Future<Item=(), Error=()>
+pub fn start<Event, Output, EventError, Fut>(f: impl Handler<Event, Output, EventError, Fut>) -> impl Future<Item=(), Error=()>
 where
     Event: serde::de::DeserializeOwned + Send,
     Output: serde::Serialize,
     EventError: Fail + LambdaErrorExt + Display + Send + Sync,
-    I: IntoFuture<Item=Output, Error=EventError> + Send,
-    I::Future: Send + 'static,
+    Fut: IntoFuture<Item=Output, Error=EventError> + Send,
+    Fut::Future: Send + 'static,
 {
     let wrapped = wrap(f);
-    start_with_config(wrapped, &EnvConfigProvider::default()/*, runtime*/)
+    start_with_config(wrapped, &EnvConfigProvider::default())
 }
 
 /// Initializes the Lambda runtime with the given handler. Optionally this macro can

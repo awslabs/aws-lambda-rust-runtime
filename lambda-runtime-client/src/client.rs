@@ -9,7 +9,7 @@ use log::*;
 use serde_derive::*;
 use serde_json;
 use std::{collections::HashMap, fmt};
-// use tokio::runtime::Runtime;
+
 use tokio::prelude::{stream::Stream, future::{self, Future, Either}};
 
 const RUNTIME_API_VERSION: &str = "2018-06-01";
@@ -137,7 +137,7 @@ impl<'ev> RuntimeClient {
     /// identify the runtime being used by the function. For example, the `lambda_runtime_core` crate
     /// uses `AWS_Lambda_Rust/0.1.0 (rustc/1.31.1-stable)`. The runtime client can also receive an
     /// instance of Tokio Runtime to use.
-    pub fn new(host: &str, agent: Option<String>/*, runtime: Option<Runtime>*/) -> Result<Self, ApiError> {
+    pub fn new(host: &str, agent: Option<String>) -> Result<Self, ApiError> {
         debug!("Starting new HttpRuntimeClient for {}", host);
         let runtime_agent = match agent {
             Some(a) => a,
@@ -494,7 +494,6 @@ pub(crate) mod tests {
 
     #[test]
     fn get_event_context_with_empty_trace_id() {
-        // let client = RuntimeClient::new("localhost:8081", None/*, None*/).expect("Could not initialize runtime client");
         let mut headers = get_headers();
         headers.remove(LambdaHeaders::TraceId.as_str());
         let headers_result = RuntimeClient::get_event_context(&headers);
@@ -506,7 +505,6 @@ pub(crate) mod tests {
 
     #[test]
     fn get_event_context_populates_trace_id_when_present() {
-        // let client = RuntimeClient::new("localhost:8081", None/*, None*/).expect("Could not initialize runtime client");
         let headers = get_headers();
         let headers_result = RuntimeClient::get_event_context(&headers);
         assert_eq!(false, headers_result.is_err());

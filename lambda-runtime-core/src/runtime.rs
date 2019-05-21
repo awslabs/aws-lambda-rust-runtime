@@ -9,7 +9,7 @@ use lambda_runtime_client::{error::ErrorResponse, RuntimeClient};
 use lambda_runtime_errors::LambdaErrorExt;
 use log::*;
 use std::{fmt::Display, marker::PhantomData};
-// use tokio::runtime::Runtime as TokioRuntime;
+
 use tokio::prelude::future::{Future, Loop, Either, loop_fn, IntoFuture};
 
 // include file generated during the build process
@@ -25,13 +25,13 @@ const MAX_RETRIES: i8 = 3;
 ///
 /// # Panics
 /// The function panics if the Lambda environment variables are not set.
-pub fn start<EventError, I>(f: impl Handler<EventError, I>/*, runtime: Option<TokioRuntime>*/) -> impl Future<Item=(), Error=()> + Send
+pub fn start<EventError, Fut>(f: impl Handler<EventError, Fut>) -> impl Future<Item=(), Error=()> + Send
 where
     EventError: Fail + LambdaErrorExt + Display + Send + Sync,
-    I: IntoFuture<Item=Vec<u8>, Error=EventError> + Send,
-    I::Future: Send,
+    Fut: IntoFuture<Item=Vec<u8>, Error=EventError> + Send,
+    Fut::Future: Send,
 {
-    start_with_config(f, &EnvConfigProvider::default()/*, runtime*/)
+    start_with_config(f, &EnvConfigProvider::default())
 }
 
 #[macro_export]
@@ -66,16 +66,16 @@ macro_rules! lambda {
 /// The function panics if the `ConfigProvider` returns an error from the `get_runtime_api_endpoint()`
 /// or `get_function_settings()` methods. The panic forces AWS Lambda to terminate the environment
 /// and spin up a new one for the next invocation.
-pub fn start_with_config<Config, EventError, I>(
-    f: impl Handler<EventError, I>,
+pub fn start_with_config<Config, EventError, Fut>(
+    f: impl Handler<EventError, Fut>,
     config: &Config,
     // runtime: Option<TokioRuntime>,
 ) -> impl Future<Item=(), Error=()> + Send
 where
     Config: ConfigProvider,
     EventError: Fail + LambdaErrorExt + Display + Send + Sync,
-    I: IntoFuture<Item=Vec<u8>, Error=EventError> + Send,
-    I::Future: Send,
+    Fut: IntoFuture<Item=Vec<u8>, Error=EventError> + Send,
+    Fut::Future: Send,
 {
     // if we cannot find the endpoint we panic, nothing else we can do.
     let endpoint: String;
@@ -99,7 +99,7 @@ where
 
     let info = Option::from(runtime_release().to_owned());
 
-    match RuntimeClient::new(&endpoint, info/*, runtime*/) {
+    match RuntimeClient::new(&endpoint, info) {
         Ok(client) => {
             start_with_runtime_client(f, function_config, client)
         }
@@ -120,15 +120,15 @@ where
 ///
 /// # Panics
 /// The function panics if we cannot instantiate a new `RustRuntime` object.
-pub(crate) fn start_with_runtime_client<EventError, I>(
-    f: impl Handler<EventError, I>,
+pub(crate) fn start_with_runtime_client<EventError, Fut>(
+    f: impl Handler<EventError, Fut>,
     func_settings: FunctionSettings,
     client: RuntimeClient,
 ) -> impl Future<Item=(), Error=()> + Send
 where
     EventError: Fail + LambdaErrorExt + Display + Send + Sync,
-    I: IntoFuture<Item=Vec<u8>, Error=EventError> + Send,
-    I::Future: Send,
+    Fut: IntoFuture<Item=Vec<u8>, Error=EventError> + Send,
+    Fut::Future: Send,
 {
     let lambda_runtime: Runtime<_, EventError, _> = Runtime::new(f, func_settings, MAX_RETRIES, client);
 
@@ -138,21 +138,21 @@ where
 
 /// Internal representation of the runtime object that polls for events and communicates
 /// with the Runtime APIs
-pub(super) struct Runtime<Function, EventError, I> {
+pub(super) struct Runtime<Function, EventError, Fut> {
     runtime_client: RuntimeClient,
     handler: Function,
     max_retries: i8,
     settings: FunctionSettings,
     _phantom1: PhantomData<EventError>,
-    _phantom2: PhantomData<I>,
+    _phantom2: PhantomData<Fut>,
 }
 
 // generic methods implementation
-impl<Function, EventError, I> Runtime<Function, EventError, I>
+impl<Function, EventError, Fut> Runtime<Function, EventError, Fut>
 where
-    Function: Handler<EventError, I>,
+    Function: Handler<EventError, Fut>,
     EventError: Fail + LambdaErrorExt + Display + Send + Sync,
-    I: IntoFuture<Item=Vec<u8>, Error=EventError> + Send,
+    Fut: IntoFuture<Item=Vec<u8>, Error=EventError> + Send,
 {
     /// Creates a new instance of the `Runtime` object populated with the environment
     /// settings.
@@ -187,12 +187,12 @@ where
 
 // implementation of methods that require the Event and Output types
 // to be compatible with `serde`'s Deserialize/Serialize.
-impl<Function, EventError, I> Runtime<Function, EventError, I>
+impl<Function, EventError, Fut> Runtime<Function, EventError, Fut>
 where
-    Function: Handler<EventError, I>,
+    Function: Handler<EventError, Fut>,
     EventError: Fail + LambdaErrorExt + Display + Send + Sync,
-    I: IntoFuture<Item=Vec<u8>, Error=EventError> + Send,
-    I::Future: Send,
+    Fut: IntoFuture<Item=Vec<u8>, Error=EventError> + Send,
+    Fut::Future: Send,
 {
     /// Starts the main event loop and begin polling or new events. If one of the
     /// Runtime APIs returns an unrecoverable error this method calls the init failed
@@ -259,7 +259,7 @@ where
 
     /// Invoke the handler function. This method is split out of the main loop to
     /// make it testable.
-    pub(super) fn invoke(&mut self, e: Vec<u8>, ctx: Context) -> I {
+    pub(super) fn invoke(&mut self, e: Vec<u8>, ctx: Context) -> Fut {
         (self.handler).run(e, ctx)
     }
 

@@ -1,0 +1,18 @@
+[package]
+name = "lambda-attributes"
+version = "0.1.0"
+authors = ["David Barsky <dbarsky@amazon.com>"]
+edition = "2018"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = { version = "0.15.39", features = ["full"] }
+proc-macro2 = { version = "0.4.30", features = ["nightly"] }
+quote = "0.6.12"
+bytes = "0.4.12"
+proptest = "0.9.3"
+
+[dev-dependencies]
+runtime = "0.3.0-alpha.5"

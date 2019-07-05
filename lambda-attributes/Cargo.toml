@@ -15,4 +15,4 @@ bytes = "0.4.12"
 proptest = "0.9.3"
 
 [dev-dependencies]
-runtime = "0.3.0-alpha.5"
+runtime = "0.3.0-alpha.6"

@@ -20,4 +20,3 @@ pin-utils = "0.1.0-alpha.4"
 
 [dev-dependencies]
 trybuild = "1"
-better-panic = "0.1.1"

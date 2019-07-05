@@ -1,10 +1,12 @@
 #![feature(async_await, start)]
 
-use lambda::{lambda, Error};
+use lambda::lambda;
+
+type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
 #[lambda]
 #[runtime::main]
-async fn main(s: String) -> Result<String, Error> {
+async fn main(s: String) -> Result<String> {
     Ok(s)
 }
 

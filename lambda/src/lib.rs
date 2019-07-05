@@ -48,7 +48,7 @@ pub mod error_hook;
 /// Types availible to a Lambda function.
 mod types;
 
-pub type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
+type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
 #[derive(Debug)]
 /// A string error, which can be display

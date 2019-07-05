@@ -1,6 +1,8 @@
 #![feature(async_await)]
 
-use lambda::{handler_fn, LambdaCtx, Error};
+use lambda::{handler_fn, LambdaCtx};
+
+type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
 #[runtime::main]
 async fn main() -> Result<(), Error> {

@@ -6,7 +6,7 @@ type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
 #[lambda]
 #[runtime::main]
-async fn main(s: String) -> Result<String> {
+async fn main(s: String) -> Result<String, Error> {
     Ok(s)
 }
 

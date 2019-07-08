@@ -45,9 +45,11 @@ pub fn lambda(_attr: TokenStream, item: TokenStream) -> TokenStream {
             let arg_type = &event.ty;
 
             quote_spanned! { input.span() =>
+                use lambda::LambdaCtx;
+
                 #(#attrs)*
                 #asyncness fn main() {
-                    async fn actual(#arg_name: #arg_type, ctx: Option<lambda::LambdaCtx>) #ret {
+                    async fn actual(#arg_name: #arg_type, ctx: Option<LambdaCtx>) #ret {
                         #body
                     }
                     let f = lambda::handler_fn(actual);

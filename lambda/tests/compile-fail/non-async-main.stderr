@@ -1,11 +1,12 @@
 error: the async keyword is missing from the function declaration
- --> $DIR/non-async-main.rs:2:1
+ --> $DIR/non-async-main.rs:3:1
   |
-2 | fn main() {}
-  | ^^
+3 | #[lambda]
+  | ^^^^^^^^^
 
 error[E0601]: `main` function not found in crate `$CRATE`
   |
   = note: consider adding a `main` function to `$DIR/tests/compile-fail/non-async-main.rs`
 
 For more information about this error, try `rustc --explain E0601`.
+error: Could not compile `lambda-tests`.

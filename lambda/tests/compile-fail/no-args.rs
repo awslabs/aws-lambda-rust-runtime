@@ -1,4 +1,7 @@
 #![feature(async_await)]
 
-#[lambda_attributes::lambda]
+use lambda::lambda;
+
+#[lambda]
+#[tokio::main]
 async fn main() {}

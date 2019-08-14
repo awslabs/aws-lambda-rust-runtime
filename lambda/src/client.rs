@@ -26,20 +26,11 @@ impl Client {
     fn set_origin<B>(&self, req: Request<B>) -> Result<Request<B>, Error> {
         let (mut parts, body) = req.into_parts();
         let (scheme, authority) = {
-            let scheme = self
-                .base
-                .scheme_part()
-                .ok_or(err_fmt!("PathAndQuery not found"))?;
-            let authority = self
-                .base
-                .authority_part()
-                .ok_or(err_fmt!("PathAndQuery not found"))?;
+            let scheme = self.base.scheme_part().ok_or(err_fmt!("PathAndQuery not found"))?;
+            let authority = self.base.authority_part().ok_or(err_fmt!("PathAndQuery not found"))?;
             (scheme, authority)
         };
-        let path = parts
-            .uri
-            .path_and_query()
-            .ok_or(err_fmt!("PathAndQuery not found"))?;
+        let path = parts.uri.path_and_query().ok_or(err_fmt!("PathAndQuery not found"))?;
 
         let uri = Uri::builder()
             .scheme(scheme.clone())
@@ -63,21 +54,16 @@ impl<'a> EventClient<'a> for Client {
     type Fut = BoxFuture<'a, Result<Response<Bytes>, Error>>;
 
     fn call(&self, req: Request<Bytes>) -> Self::Fut {
-        use futures::compat::{Future01CompatExt, Stream01CompatExt};
-        use pin_utils::pin_mut;
-
         let req = {
             let (parts, body) = req.into_parts();
             let body = Body::from(body);
             Request::from_parts(parts, body)
         };
         let req = self.set_origin(req).unwrap();
-        let res = self.client.request(req).compat();
+        let res = self.client.request(req);
         let fut = async {
             let res = res.await?;
-            let (parts, body) = res.into_parts();
-            let body = body.compat();
-            pin_mut!(body);
+            let (parts, mut body) = res.into_parts();
 
             let mut buf: Vec<u8> = vec![];
             while let Some(Ok(chunk)) = body.next().await {

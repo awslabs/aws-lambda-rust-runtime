@@ -28,7 +28,7 @@
 //! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 //!
 //! #[lambda]
-//! #[runtime::main]
+//! #[tokio::main]
 //! async fn main(event: String) -> Result<String, Error> {
 //!     Ok(event)
 //! }
@@ -40,18 +40,16 @@ use futures::prelude::*;
 use http::{Method, Request, Response, Uri};
 pub use lambda_attributes::lambda;
 use serde::{Deserialize, Serialize};
-use std::{convert::TryFrom, env};
+use std::{convert::TryFrom, env, error, fmt};
 
 mod client;
-/// Mechanism to provide a custom error reporting hook.
-pub mod error_hook;
 /// Types availible to a Lambda function.
 mod types;
 
 type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
+/// a string error
 #[derive(Debug)]
-/// A string error, which can be display
 pub(crate) struct StringError(pub String);
 
 impl std::error::Error for StringError {}
@@ -136,7 +134,7 @@ pub fn handler_fn<Function>(f: Function) -> HandlerFn<Function> {
 }
 
 /// A `Handler` or `HttpHandler` implemented by a closure.
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub struct HandlerFn<Function> {
     f: Function,
 }
@@ -169,7 +167,7 @@ where
 ///
 /// use lambda::{handler_fn, LambdaCtx, Error};
 ///
-/// #[runtime::main]
+/// #[tokio::main]
 /// async fn main() -> Result<(), Err> {
 ///     let func = handler_fn(func);
 ///     lambda::run(func).await?;
@@ -180,15 +178,13 @@ where
 ///     Ok(event)
 /// }
 /// ```
-pub async fn run<Function, Event, Output>(
-    mut handler: Function,
-) -> Result<(), Error>
+pub async fn run<Function, Event, Output>(mut handler: Function) -> Result<(), Error>
 where
     Function: Handler<Event, Output>,
     Event: for<'de> Deserialize<'de>,
     Output: Serialize,
 {
-    let uri: Bytes = env::var("AWS_LAMBDA_RUNTIME_API")?.into();
+    let uri = env::var("AWS_LAMBDA_RUNTIME_API")?.into();
     let uri = Uri::from_shared(uri)?;
     let client = Client::new(uri);
     let mut stream = EventStream::new(&client);
@@ -211,8 +207,7 @@ where
                 client.call(req).await?;
             }
             Err(err) => {
-                let err = error_hook::generate_report(err.into());
-                let err = serde_json::to_vec(&err)?;
+                let err = type_name_of_val(err);
                 let uri = format!("/runtime/invocation/{}/error", &ctx.id).parse::<Uri>()?;
                 let req = Request::builder()
                     .uri(uri)
@@ -227,14 +222,37 @@ where
     Ok(())
 }
 
-#[runtime::test]
+fn type_name_of_val<T>(_: T) -> &'static str {
+    std::any::type_name::<T>()
+}
+
+#[derive(Debug, Clone)]
+struct MyError;
+
+impl fmt::Display for MyError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "invalid first item to double")
+    }
+}
+
+// This is important for other errors to wrap this one.
+impl error::Error for MyError {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        // Generic error, underlying cause isn't tracked.
+        None
+    }
+}
+
+#[tokio::test]
 async fn get_next() -> Result<(), Error> {
-    async fn test_fn(req: String, _ctx: Option<LambdaCtx>) -> Result<String, Error> {
-        Ok(req)
+    fn test_fn() -> Result<String, MyError> {
+        Err(MyError)
     }
 
-    let test_fn = handler_fn(test_fn);
-    let _ = run(test_fn).await?;
+    let res = test_fn();
+    if let Err(e) = res {
+        println!("{}", type_name_of_val(e));
+    }
 
     Ok(())
 }

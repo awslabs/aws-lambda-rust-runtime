@@ -14,7 +14,7 @@ documentation = "https://docs.rs/lambda_runtime_errors_derive"
 syn = "^0.15"
 synstructure = "^0.10"
 proc-macro2 = "^0.4" 
-quote = "^0.6"
+quote = "^1.0"
 
 [dev-dependencies]
 lambda_runtime_errors = { path = "../lambda-runtime-errors", version = "^0.1" }

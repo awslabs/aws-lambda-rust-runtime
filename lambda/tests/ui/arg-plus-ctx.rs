@@ -1,4 +1,4 @@
-#![feature(async_await, start)]
+#![feature(start)]
 
 use lambda::{lambda, LambdaCtx};
 

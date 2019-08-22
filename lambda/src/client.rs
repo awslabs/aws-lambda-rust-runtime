@@ -1,5 +1,4 @@
 use crate::{err_fmt, Error};
-use bytes::Bytes;
 use futures::{
     future::BoxFuture,
     prelude::*,
@@ -27,7 +26,7 @@ impl Client {
         let (mut parts, body) = req.into_parts();
         let (scheme, authority) = {
             let scheme = self.base.scheme_part().ok_or(err_fmt!("PathAndQuery not found"))?;
-            let authority = self.base.authority_part().ok_or(err_fmt!("PathAndQuery not found"))?;
+            let authority = self.base.authority_part().ok_or(err_fmt!("Authority not found"))?;
             (scheme, authority)
         };
         let path = parts.uri.path_and_query().ok_or(err_fmt!("PathAndQuery not found"))?;
@@ -46,14 +45,14 @@ impl Client {
 /// A trait modeling interactions with the [Lambda Runtime API](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html).
 pub(crate) trait EventClient<'a>: Send + Sync {
     /// A future containing the next event from the Lambda Runtime API.
-    type Fut: Future<Output = Result<Response<Bytes>, Error>> + Send + 'a;
-    fn call(&self, req: Request<Bytes>) -> Self::Fut;
+    type Fut: Future<Output = Result<Response<Vec<u8>>, Error>> + Send + 'a;
+    fn call(&self, req: Request<Vec<u8>>) -> Self::Fut;
 }
 
 impl<'a> EventClient<'a> for Client {
-    type Fut = BoxFuture<'a, Result<Response<Bytes>, Error>>;
+    type Fut = BoxFuture<'a, Result<Response<Vec<u8>>, Error>>;
 
-    fn call(&self, req: Request<Bytes>) -> Self::Fut {
+    fn call(&self, req: Request<Vec<u8>>) -> Self::Fut {
         let req = {
             let (parts, body) = req.into_parts();
             let body = Body::from(body);
@@ -63,15 +62,9 @@ impl<'a> EventClient<'a> for Client {
         let res = self.client.request(req);
         let fut = async {
             let res = res.await?;
-            let (parts, mut body) = res.into_parts();
-
-            let mut buf: Vec<u8> = vec![];
-            while let Some(Ok(chunk)) = body.next().await {
-                let mut chunk: Vec<u8> = chunk.into_bytes().to_vec();
-                buf.append(&mut chunk)
-            }
-            let buf = Bytes::from(buf);
-            let res = Response::from_parts(parts, buf);
+            let (parts, body) = res.into_parts();
+            let body: Vec<u8> = body.try_concat().await?.to_vec();
+            let res = Response::from_parts(parts, body);
             Ok(res)
         };
 
@@ -87,15 +80,15 @@ impl<'a> EventClient<'a> for Client {
 /// For Lambda functions that receive a “warm wakeup”—i.e., the function is
 /// readily available in the Lambda service's cache—this runtime is able
 /// to immediately fetch the next event.
-pub(crate) struct EventStream<'a, T>
+pub(crate) struct EventListener<'a, T>
 where
     T: EventClient<'a>,
 {
-    current: Option<BoxFuture<'a, Result<Response<Bytes>, Error>>>,
+    current: Option<BoxFuture<'a, Result<Response<Vec<u8>>, Error>>>,
     client: &'a T,
 }
 
-impl<'a, T> EventStream<'a, T>
+impl<'a, T> EventListener<'a, T>
 where
     T: EventClient<'a>,
 {
@@ -106,22 +99,22 @@ where
         }
     }
 
-    pub(crate) fn next_event(&self) -> BoxFuture<'a, Result<Response<Bytes>, Error>> {
+    pub(crate) fn next_event(&self) -> BoxFuture<'a, Result<Response<Vec<u8>>, Error>> {
         let req = Request::builder()
             .method(Method::GET)
             .uri(Uri::from_static("/runtime/invocation/next"))
-            .body(Bytes::new())
+            .body(Vec::new())
             .unwrap();
         Box::pin(self.client.call(req))
     }
 }
 
 #[must_use = "streams do nothing unless you `.await` or poll them"]
-impl<'a, T> Stream for EventStream<'a, T>
+impl<'a, T> Stream for EventListener<'a, T>
 where
     T: EventClient<'a>,
 {
-    type Item = Result<Response<Bytes>, Error>;
+    type Item = Result<Response<Vec<u8>>, Error>;
 
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         // The `loop` is used to drive the inner future (`current`) to completion, advancing

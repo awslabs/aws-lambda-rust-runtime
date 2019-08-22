@@ -1,5 +1,3 @@
-#![feature(async_await)]
-
 use lambda::{handler_fn, LambdaCtx};
 
 type Error = Box<dyn std::error::Error + Send + Sync + 'static>;

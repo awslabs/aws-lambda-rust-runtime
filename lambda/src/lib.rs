@@ -1,4 +1,3 @@
-#![feature(async_await)]
 #![deny(clippy::all, clippy::pedantic, clippy::nursery, clippy::cargo)]
 #![warn(missing_docs, nonstandard_style, rust_2018_idioms)]
 
@@ -23,8 +22,8 @@
 //! of [`lambda::LambdaCtx`].
 //!
 //! ```rust
-//! #![feature(async_await)]
-//!
+//! use lambda::lambda;
+//! 
 //! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 //!
 //! #[lambda]
@@ -34,8 +33,7 @@
 //! }
 //! ```
 pub use crate::types::LambdaCtx;
-use bytes::Bytes;
-use client::{Client, EventClient, EventStream};
+use client::{Client, EventClient, EventListener};
 use futures::prelude::*;
 use http::{Method, Request, Response, Uri};
 pub use lambda_attributes::lambda;
@@ -107,7 +105,7 @@ where
     Output: Serialize,
 {
     /// Errors returned by this handler.
-    type Err: Into<Error>;
+    type Err;
     /// The future response value of this handler.
     type Fut: Future<Output = Result<Output, Self::Err>>;
     /// Process the incoming event and return the response asynchronously.
@@ -144,7 +142,6 @@ where
     Function: Fn(Event, Option<LambdaCtx>) -> Fut,
     Event: for<'de> Deserialize<'de>,
     Output: Serialize,
-    Err: Into<Error>,
     Fut: Future<Output = Result<Output, Err>> + Send,
 {
     type Err = Err;
@@ -163,18 +160,19 @@ where
 ///
 /// # Example
 /// ```rust
-/// #![feature(async_await)]
 ///
-/// use lambda::{handler_fn, LambdaCtx, Error};
+/// use lambda::{handler_fn, LambdaCtx};
+/// 
+/// type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 ///
 /// #[tokio::main]
-/// async fn main() -> Result<(), Err> {
+/// async fn main() -> Result<(), Error> {
 ///     let func = handler_fn(func);
 ///     lambda::run(func).await?;
 ///     Ok(())
 /// }
 ///
-/// async fn func(event: String, _ctx: LambdaCtx) -> Result<String, Err> {
+/// async fn func(event: String, _ctx: Option<LambdaCtx>) -> Result<String, Error> {
 ///     Ok(event)
 /// }
 /// ```
@@ -187,7 +185,7 @@ where
     let uri = env::var("AWS_LAMBDA_RUNTIME_API")?.into();
     let uri = Uri::from_shared(uri)?;
     let client = Client::new(uri);
-    let mut stream = EventStream::new(&client);
+    let mut stream = EventListener::new(&client);
 
     while let Some(event) = stream.next().await {
         let (parts, body) = event?.into_parts();
@@ -202,7 +200,7 @@ where
                 let req = Request::builder()
                     .uri(uri)
                     .method(Method::POST)
-                    .body(Bytes::from(res))?;
+                    .body(res)?;
 
                 client.call(req).await?;
             }
@@ -212,7 +210,7 @@ where
                 let req = Request::builder()
                     .uri(uri)
                     .method(Method::POST)
-                    .body(Bytes::from(err))?;
+                    .body(Vec::from(err))?;
 
                 client.call(req).await?;
             }

@@ -209,7 +209,6 @@ pub mod tests {
         ClientApplication, ClientContext, CognitoIdentity, FunctionArn, InvocationDeadline, MobileClientContext,
         MobileClientIdentity, RequestId, XRayTraceId,
     };
-    use bytes::Bytes;
     use headers::{HeaderMap, HeaderMapExt};
     use http::Response;
     use lambda_attributes::proptest;
@@ -300,9 +299,9 @@ pub mod tests {
         })
     }
 
-    fn gen_next_event() -> impl Strategy<Value = Response<Bytes>> {
+    fn gen_next_event() -> impl Strategy<Value = Response<Vec<u8>>> {
         gen_headers().prop_map(|headers| {
-            let mut resp = Response::new(Bytes::default());
+            let mut resp = Response::new(Vec::default());
             *resp.headers_mut() = headers;
             *resp.status_mut() = http::StatusCode::OK;
             resp

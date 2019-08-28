@@ -76,7 +76,7 @@ Now that we have a deployment package (`lambda.zip`), we can use the [AWS CLI](h
 ```bash
 $ aws lambda create-function --function-name rustTest \
   --handler doesnt.matter \
-  --zip-file file://./lambda.zip \
+  --zip-file fileb://./lambda.zip \
   --runtime provided \
   --role arn:aws:iam::XXXXXXXXXXXXX:role/your_lambda_execution_role \
   --environment Variables={RUST_BACKTRACE=1} \

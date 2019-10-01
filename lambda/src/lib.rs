@@ -98,22 +98,22 @@ impl Config {
     }
 }
 
-/// A trait describing an asynchronous function from `Event` to `Output`. `Event` and `Output` must implement [`Deserialize`](serde::Deserialize) and [`Serialize`](serde::Serialize).
-pub trait Handler<Event, Output>
+/// A trait describing an asynchronous function from `A` to `R`. `A` and `R` must implement [`Deserialize`](serde::Deserialize) and [`Serialize`](serde::Serialize).
+pub trait Handler<A, R>
 where
-    Event: for<'de> Deserialize<'de>,
-    Output: Serialize,
+    A: for<'de> Deserialize<'de>,
+    R: Serialize,
 {
     /// Errors returned by this handler.
     type Err;
     /// The future response value of this handler.
-    type Fut: Future<Output = Result<Output, Self::Err>>;
+    type Fut: Future<Output = Result<R, Self::Err>>;
     /// Process the incoming event and return the response asynchronously.
     ///
     /// # Arguments
     /// * `event` - The data received in the invocation request
     /// * `ctx` - The context for the current invocation
-    fn call(&mut self, event: Event, ctx: Option<LambdaCtx>) -> Self::Fut;
+    fn call(&mut self, event: A, ctx: Option<LambdaCtx>) -> Self::Fut;
 }
 
 /// A trait describing an asynchronous function from `Request<A>` to `Response<B>`. `A` and `B` must implement [`Deserialize`](serde::Deserialize) and [`Serialize`](serde::Serialize).

@@ -211,7 +211,7 @@ pub mod tests {
     };
     use headers::{HeaderMap, HeaderMapExt};
     use http::Response;
-    use lambda_attributes::proptest;
+    use proptest_attributes::proptest;
     use proptest::{collection, option, prelude::*, strategy::Strategy, string::string_regex};
 
     fn gen_request_id() -> impl Strategy<Value = RequestId> {

@@ -1,20 +1,20 @@
 extern crate proc_macro;
 
 use proc_macro::TokenStream;
-use quote::{quote, quote_spanned};
-use syn::{spanned::Spanned, Expr, FnArg, ItemFn};
+use quote::{quote_spanned};
+use syn::{spanned::Spanned, FnArg, ItemFn};
 
 #[cfg(not(test))]
 #[proc_macro_attribute]
 pub fn lambda(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(item as ItemFn);
 
-    let ret = &input.decl.output;
-    let name = &input.ident;
+    let ret = &input.sig.output;
+    let name = &input.sig.ident;
     let body = &input.block;
     let attrs = &input.attrs;
-    let asyncness = &input.asyncness;
-    let inputs = &input.decl.inputs;
+    let asyncness = &input.sig.asyncness;
+    let inputs = &input.sig.inputs;
 
     if name != "main" {
         let tokens = quote_spanned! { name.span() =>
@@ -32,11 +32,11 @@ pub fn lambda(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let result = match inputs.len() {
         1 => {
-            let event = match inputs.first().unwrap().into_value() {
-                FnArg::Captured(arg) => arg,
+            let event = match inputs.first().unwrap() {
+                FnArg::Typed(arg) => arg,
                 _ => {
                     let tokens = quote_spanned! { inputs.span() =>
-                        compile_error!("fn main should take a fully formed argument");
+                        compile_error!("fn main must take a fully formed argument");
                     };
                     return TokenStream::from(tokens);
                 }
@@ -59,8 +59,8 @@ pub fn lambda(_attr: TokenStream, item: TokenStream) -> TokenStream {
             }
         }
         2 => {
-            let event = match inputs.first().unwrap().into_value() {
-                FnArg::Captured(arg) => arg,
+            let event = match inputs.first().unwrap() {
+                FnArg::Typed(arg) => arg,
                 _ => {
                     let tokens = quote_spanned! { inputs.span() =>
                         compile_error!("fn main should take a fully formed argument");
@@ -69,7 +69,7 @@ pub fn lambda(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
             };
             let ctx = match &inputs[1] {
-                FnArg::Captured(arg) => arg,
+                FnArg::Typed(arg) => arg,
                 _ => {
                     let tokens = quote_spanned! { inputs.span() =>
                         compile_error!("fn main should take a fully formed argument");
@@ -103,44 +103,4 @@ pub fn lambda(_attr: TokenStream, item: TokenStream) -> TokenStream {
     };
 
     result.into()
-}
-
-#[proc_macro_attribute]
-pub fn proptest(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let input = syn::parse_macro_input!(item as ItemFn);
-    let call = syn::parse_macro_input!(attr as Expr);
-
-    let ret = &input.decl.output;
-    let name = &input.ident;
-    let body = &input.block;
-    let attrs = &input.attrs;
-    let inputs = &input.decl.inputs;
-
-    match inputs.len() {
-        1 => {
-            let arg = match inputs.first().unwrap().into_value() {
-                FnArg::Captured(arg) => arg,
-                _ => {
-                    let tokens = quote_spanned! { inputs.span() =>
-                        compile_error!("fn main should take a fully formed argument");
-                    };
-                    return TokenStream::from(tokens);
-                }
-            };
-            let arg_name = &arg.pat;
-            quote! {
-                #[test]
-                #(#attrs)*
-                fn #name() #ret {
-                    proptest::proptest!(|(#arg_name in #call)| {
-                        #body
-                    })
-                }
-            }
-        }
-        _ => {
-            unimplemented!();
-        }
-    }
-    .into()
 }

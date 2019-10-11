@@ -15,7 +15,7 @@
 //!
 //! An asynchronous function annotated with the `#[lambda]` attribute must
 //! accept an argument of type `A` which implements [`serde::Deserialize`] and
-//! return a `Result<B, E>`, where `B` implements [serde::Serializable]. `E` is
+//! return a `Result<B, E>`, where `B` implements [`serde::Serializable`]. `E` is
 //! any type that implements `Into<Box<dyn std::error::Error + Send + Sync + 'static>>`.
 //!
 //! Optionally, the `#[lambda]` annotated function can accept an argument
@@ -23,7 +23,7 @@
 //!
 //! ```rust
 //! use lambda::lambda;
-//! 
+//!
 //! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 //!
 //! #[lambda]
@@ -33,8 +33,9 @@
 //! }
 //! ```
 pub use crate::types::LambdaCtx;
-use client::{Client, EventClient, EventListener};
-use futures::prelude::*;
+use client::{events, Client};
+use fehler::{Error, Exception};
+use futures::{pin_mut, prelude::*};
 use http::{Method, Request, Response, Uri};
 pub use lambda_attributes::lambda;
 use serde::{Deserialize, Serialize};
@@ -43,8 +44,6 @@ use std::{convert::TryFrom, env, error, fmt};
 mod client;
 /// Types availible to a Lambda function.
 mod types;
-
-type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
 /// a string error
 #[derive(Debug)]
@@ -57,6 +56,18 @@ impl std::fmt::Display for StringError {
         self.0.fmt(f)
     }
 }
+
+macro_rules! null_display {
+    ($t:ty) => { impl fmt::Display for $t {
+        fn fmt(&self, _: &mut fmt::Formatter) -> fmt::Result { Ok(()) }
+    } };
+}
+
+#[derive(PartialEq, Debug, Error)]
+pub(crate) enum RuntimeError {
+
+}
+null_display!(RuntimeError);
 
 #[doc(hidden)]
 #[macro_export]
@@ -85,7 +96,7 @@ pub struct Config {
 
 impl Config {
     /// Attempts to read configuration from environment variables.
-    pub fn from_env() -> Result<Self, Error> {
+    pub fn from_env() -> Result<Self, Exception> {
         let conf = Config {
             endpoint: env::var("AWS_LAMBDA_RUNTIME_API")?,
             function_name: env::var("AWS_LAMBDA_FUNCTION_NAME")?,
@@ -162,7 +173,7 @@ where
 /// ```rust
 ///
 /// use lambda::{handler_fn, LambdaCtx};
-/// 
+///
 /// type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 ///
 /// #[tokio::main]
@@ -176,7 +187,7 @@ where
 ///     Ok(event)
 /// }
 /// ```
-pub async fn run<Function, Event, Output>(mut handler: Function) -> Result<(), Error>
+pub async fn run<Function, Event, Output>(mut handler: Function) -> Result<(), Exception>
 where
     Function: Handler<Event, Output>,
     Event: for<'de> Deserialize<'de>,
@@ -184,33 +195,29 @@ where
 {
     let uri = env::var("AWS_LAMBDA_RUNTIME_API")?.into();
     let uri = Uri::from_shared(uri)?;
-    let client = Client::new(uri);
-    let mut stream = EventListener::new(&client);
+    let mut client = Client::new(uri);
+    let stream = events(client.clone());
+    pin_mut!(stream);
 
     while let Some(event) = stream.next().await {
         let (parts, body) = event?.into_parts();
         let mut ctx: LambdaCtx = LambdaCtx::try_from(parts.headers)?;
         ctx.env_config = Config::from_env()?;
+        let body = body.try_concat().await?;
         let body = serde_json::from_slice(&body)?;
 
         match handler.call(body, Some(ctx.clone())).await {
             Ok(res) => {
-                let res = serde_json::to_vec(&res)?;
+                let body = serde_json::to_vec(&res)?;
                 let uri = format!("/runtime/invocation/{}/response", &ctx.id).parse::<Uri>()?;
-                let req = Request::builder()
-                    .uri(uri)
-                    .method(Method::POST)
-                    .body(res)?;
+                let req = Request::builder().uri(uri).method(Method::POST).body(body)?;
 
                 client.call(req).await?;
             }
             Err(err) => {
                 let err = type_name_of_val(err);
                 let uri = format!("/runtime/invocation/{}/error", &ctx.id).parse::<Uri>()?;
-                let req = Request::builder()
-                    .uri(uri)
-                    .method(Method::POST)
-                    .body(Vec::from(err))?;
+                let req = Request::builder().uri(uri).method(Method::POST).body(Vec::from(err))?;
 
                 client.call(req).await?;
             }
@@ -242,7 +249,7 @@ impl error::Error for MyError {
 }
 
 #[tokio::test]
-async fn get_next() -> Result<(), Error> {
+async fn get_next() -> Result<(), Exception> {
     fn test_fn() -> Result<String, MyError> {
         Err(MyError)
     }

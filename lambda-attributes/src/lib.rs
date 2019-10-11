@@ -1,7 +1,7 @@
 extern crate proc_macro;
 
 use proc_macro::TokenStream;
-use quote::{quote_spanned};
+use quote::quote_spanned;
 use syn::{spanned::Spanned, FnArg, ItemFn};
 
 #[cfg(not(test))]
@@ -53,7 +53,6 @@ pub fn lambda(_attr: TokenStream, item: TokenStream) -> TokenStream {
                         #body
                     }
                     let f = lambda::handler_fn(actual);
-
                     lambda::run(f).await.unwrap();
                 }
             }

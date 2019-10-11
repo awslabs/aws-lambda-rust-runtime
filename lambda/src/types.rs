@@ -1,4 +1,5 @@
 use crate::{err_fmt, Config};
+use fehler::Exception;
 use headers::{Header, HeaderMap, HeaderMapExt, HeaderName, HeaderValue};
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
@@ -180,7 +181,7 @@ pub struct LambdaCtx {
 }
 
 impl TryFrom<HeaderMap<HeaderValue>> for LambdaCtx {
-    type Error = crate::Error;
+    type Error = Exception;
 
     fn try_from(value: HeaderMap<HeaderValue>) -> Result<Self, Self::Error> {
         let request_id = value.typed_get::<RequestId>().ok_or(err_fmt!("RequestId not found"))?;
@@ -211,8 +212,8 @@ pub mod tests {
     };
     use headers::{HeaderMap, HeaderMapExt};
     use http::Response;
-    use proptest_attributes::proptest;
     use proptest::{collection, option, prelude::*, strategy::Strategy, string::string_regex};
+    use proptest_attributes::proptest;
 
     fn gen_request_id() -> impl Strategy<Value = RequestId> {
         let expr = "[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}";

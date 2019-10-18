@@ -77,7 +77,7 @@ impl Error for RuntimeError {
         &self.msg
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         // Generic error, underlying cause isn't tracked.
         None
     }

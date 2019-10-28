@@ -51,3 +51,18 @@ jobs:
         env:
           RUST_BACKTRACE: 1
           TARGET: ${{ matrix.target }}
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - id: component
+        uses: actions-rs/components-nightly@v1
+        with:
+          component: rustfmt
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ steps.component.outputs.toolchain }}
+          override: true
+          components: rustfmt
+      - name: Run fmt check
+        run: cargo fmt --all -- --check

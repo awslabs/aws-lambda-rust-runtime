@@ -23,7 +23,7 @@ enum FailureErrorKind {
 }
 
 impl Fail for FailureCustomWithKind {
-    fn cause(&self) -> Option<&Fail> {
+    fn cause(&self) -> Option<&dyn Fail> {
         self.inner.cause()
     }
 

@@ -468,5 +468,4 @@ mod tests {
             Test { foo: HashMap::new() }
         )
     }
-
 }

@@ -62,14 +62,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - id: component
-        uses: actions-rs/components-nightly@v1
-        with:
-          component: rustfmt
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: ${{ steps.component.outputs.toolchain }}
-          override: true
+          toolchain: nightly
           components: rustfmt
+          override: true
       - name: Run fmt check
         run: cargo fmt --all -- --check

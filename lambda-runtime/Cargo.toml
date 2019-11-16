@@ -26,4 +26,4 @@ failure = "^0.1"
 
 [dev-dependencies]
 simple_logger = "^1"
-simple-error = "^0.1"
+simple-error = "^0.2"

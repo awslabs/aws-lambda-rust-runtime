@@ -15,11 +15,13 @@ jobs:
           - 1.31.0
           - stable
           - beta
-          # disable because github actions does not have ability to allow failure
-          # - nightly
+          - nightly
         target:
           - ""
           - x86_64-unknown-linux-musl
+        include:
+          - rust: nightly
+            allow_failure: true
         exclude:
           - os: macOS-latest
             target: x86_64-unknown-linux-musl
@@ -29,12 +31,17 @@ jobs:
           - os: ubuntu-latest
             rust: beta
             target: x86_64-unknown-linux-musl
+          - os: ubuntu-latest
+            rust: nightly
+            target: x86_64-unknown-linux-musl
           - os: macOS-latest
             rust: 1.31.0
           - os: macOS-latest
             rust: beta
-          #- os: macOS-latest
-          #  rust: nightly
+          - os: macOS-latest
+            rust: nightly
+    env:
+      RUST_BACKTRACE: 1
     steps:
       - uses: actions/checkout@v1
       - uses: actions-rs/toolchain@v1
@@ -44,25 +51,21 @@ jobs:
       - name: Build
         run: cargo build --all --verbose
         env:
-          RUST_BACKTRACE: 1
           TARGET: ${{ matrix.target }}
+        continue-on-error: ${{ matrix.allow_failure }}
       - name: Run tests
         run: cargo test --all --verbose
         env:
-          RUST_BACKTRACE: 1
           TARGET: ${{ matrix.target }}
+        continue-on-error: ${{ matrix.allow_failure }}
   fmt:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - id: component
-        uses: actions-rs/components-nightly@v1
-        with:
-          component: rustfmt
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: ${{ steps.component.outputs.toolchain }}
-          override: true
+          toolchain: nightly
           components: rustfmt
+          override: true
       - name: Run fmt check
         run: cargo fmt --all -- --check

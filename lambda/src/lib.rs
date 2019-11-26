@@ -34,14 +34,16 @@
 //! ```
 pub use crate::types::LambdaCtx;
 use client::{events, Client};
-use fehler::{Error, Exception};
 use futures::{pin_mut, prelude::*};
 use http::{Method, Request, Response, Uri};
 pub use lambda_attributes::lambda;
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
 use std::{convert::TryFrom, env, error, fmt};
+use thiserror::Error;
 
 mod client;
+mod requests;
 /// Types availible to a Lambda function.
 mod types;
 
@@ -57,16 +59,43 @@ impl std::fmt::Display for StringError {
     }
 }
 
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("error parsing environment variable: {var}")]
+    VarError {
+        var: &'static str,
+        #[source]
+        source: std::env::VarError,
+    },
+    #[error("error making an http request")]
+    Hyper(#[source] hyper::error::Error),
+    #[error("invalid URI: {uri}")]
+    InvalidUri {
+        uri: String,
+        #[source]
+        source: http::uri::InvalidUri,
+    },
+    #[error("invalid http request")]
+    InvalidRequest(#[source] http::Error),
+    #[error("serialization error")]
+    Json {
+        #[source]
+        source: serde_json::error::Error,
+    },
+}
+
 macro_rules! null_display {
-    ($t:ty) => { impl fmt::Display for $t {
-        fn fmt(&self, _: &mut fmt::Formatter) -> fmt::Result { Ok(()) }
-    } };
+    ($t:ty) => {
+        impl fmt::Display for $t {
+            fn fmt(&self, _: &mut fmt::Formatter<'_>) -> fmt::Result {
+                Ok(())
+            }
+        }
+    };
 }
 
 #[derive(PartialEq, Debug, Error)]
-pub(crate) enum RuntimeError {
-
-}
+pub(crate) enum RuntimeError {}
 null_display!(RuntimeError);
 
 #[doc(hidden)]
@@ -96,7 +125,7 @@ pub struct Config {
 
 impl Config {
     /// Attempts to read configuration from environment variables.
-    pub fn from_env() -> Result<Self, Exception> {
+    pub fn from_env() -> Result<Self, anyhow::Error> {
         let conf = Config {
             endpoint: env::var("AWS_LAMBDA_RUNTIME_API")?,
             function_name: env::var("AWS_LAMBDA_FUNCTION_NAME")?,
@@ -187,14 +216,17 @@ where
 ///     Ok(event)
 /// }
 /// ```
-pub async fn run<Function, Event, Output>(mut handler: Function) -> Result<(), Exception>
+pub async fn run<Function, Event, Output>(mut handler: Function) -> Result<(), anyhow::Error>
 where
     Function: Handler<Event, Output>,
     Event: for<'de> Deserialize<'de>,
     Output: Serialize,
 {
-    let uri = env::var("AWS_LAMBDA_RUNTIME_API")?.into();
-    let uri = Uri::from_shared(uri)?;
+    let uri = env::var("AWS_LAMBDA_RUNTIME_API").map_err(|e| Error::VarError {
+        var: "AWS_LAMBDA_RUNTIME_API",
+        source: e,
+    })?;
+    let uri = Uri::from_str(&uri).map_err(|e| Error::InvalidUri { uri, source: e })?;
     let mut client = Client::new(uri);
     let stream = events(client.clone());
     pin_mut!(stream);
@@ -203,21 +235,39 @@ where
         let (parts, body) = event?.into_parts();
         let mut ctx: LambdaCtx = LambdaCtx::try_from(parts.headers)?;
         ctx.env_config = Config::from_env()?;
-        let body = body.try_concat().await?;
-        let body = serde_json::from_slice(&body)?;
+        let body = body.try_concat().await.map_err(Error::Hyper)?;
+        let body = serde_json::from_slice(&body).map_err(|e| Error::Json { source: e })?;
 
         match handler.call(body, Some(ctx.clone())).await {
             Ok(res) => {
-                let body = serde_json::to_vec(&res)?;
-                let uri = format!("/runtime/invocation/{}/response", &ctx.id).parse::<Uri>()?;
-                let req = Request::builder().uri(uri).method(Method::POST).body(body)?;
+                let body = serde_json::to_vec(&res).map_err(|e| Error::Json { source: e })?;
+                let uri = format!("/runtime/invocation/{}/response", &ctx.id)
+                    .parse::<Uri>()
+                    .map_err(|e| Error::InvalidUri {
+                        uri: format!("/runtime/invocation/{}/response", &ctx.id),
+                        source: e,
+                    })?;
+                let req = Request::builder()
+                    .uri(uri)
+                    .method(Method::POST)
+                    .body(body)
+                    .expect("Invalid request");
 
                 client.call(req).await?;
             }
             Err(err) => {
                 let err = type_name_of_val(err);
-                let uri = format!("/runtime/invocation/{}/error", &ctx.id).parse::<Uri>()?;
-                let req = Request::builder().uri(uri).method(Method::POST).body(Vec::from(err))?;
+                let uri = format!("/runtime/invocation/{}/error", &ctx.id)
+                    .parse::<Uri>()
+                    .map_err(|e| Error::InvalidUri {
+                        uri: format!("/runtime/invocation/{}/error", &ctx.id),
+                        source: e,
+                    })?;
+                let req = Request::builder()
+                    .uri(uri)
+                    .method(Method::POST)
+                    .body(Vec::from(err))
+                    .expect("Invalid request");
 
                 client.call(req).await?;
             }
@@ -249,7 +299,7 @@ impl error::Error for MyError {
 }
 
 #[tokio::test]
-async fn get_next() -> Result<(), Exception> {
+async fn get_next() -> Result<(), Error> {
     fn test_fn() -> Result<String, MyError> {
         Err(MyError)
     }

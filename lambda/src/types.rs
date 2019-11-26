@@ -1,17 +1,21 @@
-use crate::{err_fmt, Config};
-use fehler::Exception;
+use crate::{err_fmt, Config, Error};
 use headers::{Header, HeaderMap, HeaderMapExt, HeaderName, HeaderValue};
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, convert::TryFrom};
 
 lazy_static! {
-    static ref AWS_REQUEST_ID: HeaderName = HeaderName::from_static("lambda-runtime-aws-request-id");
-    static ref AWS_INVOCATION_DEADLINE: HeaderName = HeaderName::from_static("lambda-runtime-deadline-ms");
-    static ref AWS_FUNCTION_ARN: HeaderName = HeaderName::from_static("lambda-runtime-invoked-function-arn");
+    static ref AWS_REQUEST_ID: HeaderName =
+        HeaderName::from_static("lambda-runtime-aws-request-id");
+    static ref AWS_INVOCATION_DEADLINE: HeaderName =
+        HeaderName::from_static("lambda-runtime-deadline-ms");
+    static ref AWS_FUNCTION_ARN: HeaderName =
+        HeaderName::from_static("lambda-runtime-invoked-function-arn");
     static ref AWS_XRAY_TRACE_ID: HeaderName = HeaderName::from_static("lambda-runtime-trace-id");
-    static ref AWS_MOBILE_CLIENT_CONTEXT: HeaderName = HeaderName::from_static("lambda-runtime-client-context");
-    static ref AWS_MOBILE_CLIENT_IDENTITY: HeaderName = HeaderName::from_static("lambda-runtime-cognito-identity");
+    static ref AWS_MOBILE_CLIENT_CONTEXT: HeaderName =
+        HeaderName::from_static("lambda-runtime-client-context");
+    static ref AWS_MOBILE_CLIENT_IDENTITY: HeaderName =
+        HeaderName::from_static("lambda-runtime-cognito-identity");
 }
 
 macro_rules! str_header {
@@ -77,7 +81,8 @@ macro_rules! num_header {
             where
                 E: Extend<HeaderValue>,
             {
-                let value = HeaderValue::from_str(&self.0.to_string()).expect("Should not panic on encoding");
+                let value = HeaderValue::from_str(&self.0.to_string())
+                    .expect("Should not panic on encoding");
                 values.extend(std::iter::once(value));
             }
         }
@@ -181,10 +186,12 @@ pub struct LambdaCtx {
 }
 
 impl TryFrom<HeaderMap<HeaderValue>> for LambdaCtx {
-    type Error = Exception;
+    type Error = anyhow::Error;
 
     fn try_from(value: HeaderMap<HeaderValue>) -> Result<Self, Self::Error> {
-        let request_id = value.typed_get::<RequestId>().ok_or(err_fmt!("RequestId not found"))?;
+        let request_id = value
+            .typed_get::<RequestId>()
+            .ok_or(err_fmt!("RequestId not found"))?;
         let function_arn = value
             .typed_get::<FunctionArn>()
             .ok_or(err_fmt!("FunctionArn not found"))?;
@@ -207,8 +214,8 @@ impl TryFrom<HeaderMap<HeaderValue>> for LambdaCtx {
 #[allow(dead_code)]
 pub mod tests {
     use crate::types::{
-        ClientApplication, ClientContext, CognitoIdentity, FunctionArn, InvocationDeadline, MobileClientContext,
-        MobileClientIdentity, RequestId, XRayTraceId,
+        ClientApplication, ClientContext, CognitoIdentity, FunctionArn, InvocationDeadline,
+        MobileClientContext, MobileClientIdentity, RequestId, XRayTraceId,
     };
     use headers::{HeaderMap, HeaderMapExt};
     use http::Response;
@@ -282,7 +289,11 @@ pub mod tests {
     }
 
     fn gen_headers() -> impl Strategy<Value = HeaderMap> {
-        let mandatory = (gen_request_id(), gen_invocation_deadline(), gen_function_arn());
+        let mandatory = (
+            gen_request_id(),
+            gen_invocation_deadline(),
+            gen_function_arn(),
+        );
         let xray = option::of(gen_xray_trace_id());
         let mobile = option::of((gen_client_context(), gen_client_identity()));
         (mandatory, xray, mobile).prop_map(|headers| {

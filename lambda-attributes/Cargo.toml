@@ -8,7 +8,6 @@ edition = "2018"
 proc-macro = true
 
 [dependencies]
-proc-macro2 = { version = "0.4.30", features = ["nightly"] }
+proc-macro2 = { version = "0.4.30" }
 syn = { version = "1.0.5", features = ["full"] }
 quote = "1"
-proptest = "0.9.3"

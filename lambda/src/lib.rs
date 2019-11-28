@@ -35,11 +35,11 @@
 pub use crate::types::LambdaCtx;
 use client::{events, Client};
 use futures::{pin_mut, prelude::*};
-use http::{Method, Request, Response, Uri};
+use http::{Request, Response, Uri};
 pub use lambda_attributes::lambda;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
-use std::{convert::TryFrom, env, error, fmt};
+use std::{convert::TryFrom, env, fmt};
 use thiserror::Error;
 
 mod client;
@@ -47,26 +47,11 @@ mod requests;
 /// Types availible to a Lambda function.
 mod types;
 
-/// a string error
-#[derive(Debug)]
-pub(crate) struct StringError(pub String);
-
-impl std::error::Error for StringError {}
-
-impl std::fmt::Display for StringError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        self.0.fmt(f)
-    }
-}
+use requests::{EventCompletionRequest, EventErrorRequest, IntoRequest};
+use types::Diagnostic;
 
 #[derive(Error, Debug)]
-pub enum Error {
-    #[error("error parsing environment variable: {var}")]
-    VarError {
-        var: &'static str,
-        #[source]
-        source: std::env::VarError,
-    },
+enum Error {
     #[error("error making an http request")]
     Hyper(#[source] hyper::error::Error),
     #[error("invalid URI: {uri}")]
@@ -75,35 +60,11 @@ pub enum Error {
         #[source]
         source: http::uri::InvalidUri,
     },
-    #[error("invalid http request")]
-    InvalidRequest(#[source] http::Error),
     #[error("serialization error")]
     Json {
         #[source]
         source: serde_json::error::Error,
     },
-}
-
-macro_rules! null_display {
-    ($t:ty) => {
-        impl fmt::Display for $t {
-            fn fmt(&self, _: &mut fmt::Formatter<'_>) -> fmt::Result {
-                Ok(())
-            }
-        }
-    };
-}
-
-#[derive(PartialEq, Debug, Error)]
-pub(crate) enum RuntimeError {}
-null_display!(RuntimeError);
-
-#[doc(hidden)]
-#[macro_export]
-macro_rules! err_fmt {
-    {$($t:tt)*} => {
-        $crate::StringError(format!($($t)*))
-    }
 }
 
 /// A struct containing configuration values derived from environment variables.
@@ -183,6 +144,7 @@ where
     Event: for<'de> Deserialize<'de>,
     Output: Serialize,
     Fut: Future<Output = Result<Output, Err>> + Send,
+    Err: Into<Box<dyn std::error::Error + Send + Sync + 'static>> + fmt::Debug,
 {
     type Err = Err;
     type Fut = Fut;
@@ -221,11 +183,9 @@ where
     Function: Handler<Event, Output>,
     Event: for<'de> Deserialize<'de>,
     Output: Serialize,
+    <Function as Handler<Event, Output>>::Err: std::fmt::Debug,
 {
-    let uri = env::var("AWS_LAMBDA_RUNTIME_API").map_err(|e| Error::VarError {
-        var: "AWS_LAMBDA_RUNTIME_API",
-        source: e,
-    })?;
+    let uri = env::var("AWS_LAMBDA_RUNTIME_API").expect("Unable to find environment variable `AWS_LAMBDA_RUNTIME_API`");
     let uri = Uri::from_str(&uri).map_err(|e| Error::InvalidUri { uri, source: e })?;
     let mut client = Client::new(uri);
     let stream = events(client.clone());
@@ -241,34 +201,26 @@ where
         match handler.call(body, Some(ctx.clone())).await {
             Ok(res) => {
                 let body = serde_json::to_vec(&res).map_err(|e| Error::Json { source: e })?;
-                let uri = format!("/runtime/invocation/{}/response", &ctx.id)
-                    .parse::<Uri>()
-                    .map_err(|e| Error::InvalidUri {
-                        uri: format!("/runtime/invocation/{}/response", &ctx.id),
-                        source: e,
-                    })?;
-                let req = Request::builder()
-                    .uri(uri)
-                    .method(Method::POST)
-                    .body(body)
-                    .expect("Invalid request");
+                let req = EventCompletionRequest {
+                    request_id: &ctx.id,
+                    body,
+                };
 
+                let req = req.into_req()?;
                 client.call(req).await?;
             }
             Err(err) => {
-                let err = type_name_of_val(err);
-                let uri = format!("/runtime/invocation/{}/error", &ctx.id)
-                    .parse::<Uri>()
-                    .map_err(|e| Error::InvalidUri {
-                        uri: format!("/runtime/invocation/{}/error", &ctx.id),
-                        source: e,
-                    })?;
-                let req = Request::builder()
-                    .uri(uri)
-                    .method(Method::POST)
-                    .body(Vec::from(err))
-                    .expect("Invalid request");
+                let diagnositic = Diagnostic {
+                    error_message: format!("{:?}", err),
+                    error_type: type_name_of_val(err).to_string()
+                };
+                let body = serde_json::to_vec(&diagnositic).map_err(|e| Error::Json { source: e })?;
+                let req = EventErrorRequest {
+                    request_id: &ctx.id,
+                    body
+                };
 
+                let req = req.into_req()?;
                 client.call(req).await?;
             }
         }
@@ -279,35 +231,4 @@ where
 
 fn type_name_of_val<T>(_: T) -> &'static str {
     std::any::type_name::<T>()
-}
-
-#[derive(Debug, Clone)]
-struct MyError;
-
-impl fmt::Display for MyError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "invalid first item to double")
-    }
-}
-
-// This is important for other errors to wrap this one.
-impl error::Error for MyError {
-    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
-        // Generic error, underlying cause isn't tracked.
-        None
-    }
-}
-
-#[tokio::test]
-async fn get_next() -> Result<(), Error> {
-    fn test_fn() -> Result<String, MyError> {
-        Err(MyError)
-    }
-
-    let res = test_fn();
-    if let Err(e) = res {
-        println!("{}", type_name_of_val(e));
-    }
-
-    Ok(())
 }

@@ -5,7 +5,14 @@ error: The #[lambda] macro can accept one or two arguments.
   | ^^^^^^^^^
 
 error[E0601]: `main` function not found in crate `$CRATE`
+ --> $DIR/no-args.rs:1:1
   |
-  = note: consider adding a `main` function to `$DIR/tests/compile-fail/no-args.rs`
+1 | / use lambda::lambda;
+2 | |
+3 | | #[lambda]
+4 | | #[tokio::main]
+5 | | async fn main() {}
+  | |__________________^ consider adding a `main` function to `$DIR/tests/compile-fail/no-args.rs`
 
 For more information about this error, try `rustc --explain E0601`.
+error: could not compile `lambda-tests`.

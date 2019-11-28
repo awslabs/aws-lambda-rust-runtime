@@ -1,5 +1,5 @@
 use anyhow::Error;
-use http::{Method, Request, Response, Uri};
+use http::{Method, Request, Uri};
 use serde::Serialize;
 use std::str::FromStr;
 
@@ -30,9 +30,9 @@ fn test_next_event_request() {
 }
 
 // /runtime/invocation/{AwsRequestId}/response
-struct EventCompletionRequest<'a, T> {
-    request_id: &'a str,
-    body: T,
+pub(crate) struct EventCompletionRequest<'a, T> {
+    pub(crate) request_id: &'a str,
+    pub(crate) body: T,
 }
 
 impl<'a, T> IntoRequest for EventCompletionRequest<'a, T>
@@ -65,9 +65,9 @@ fn test_event_completion_request() {
 }
 
 // /runtime/invocation/{AwsRequestId}/error
-struct EventErrorRequest<'a, T> {
-    request_id: &'a str,
-    body: T,
+pub(crate) struct EventErrorRequest<'a, T> {
+    pub(crate) request_id: &'a str,
+    pub(crate) body: T,
 }
 
 impl<'a, T> IntoRequest for EventErrorRequest<'a, T>

@@ -1,8 +1,30 @@
-use crate::{err_fmt, Config, Error};
+use crate::Config;
 use headers::{Header, HeaderMap, HeaderMapExt, HeaderName, HeaderValue};
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, convert::TryFrom};
+use std::collections::HashMap;
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct Diagnostic {
+    pub(crate) error_type: String,
+    pub(crate) error_message: String,
+}
+
+#[test]
+fn round_trip_lambda_error() -> Result<(), anyhow::Error> {
+    use serde_json::{json, Value};
+    let expected = json!({
+        "errorMessage" : "Error parsing event data.",
+        "errorType" : "InvalidEventDataException"
+    });
+
+    let actual: Diagnostic = serde_json::from_value(expected.clone())?;
+    let actual: Value = serde_json::to_value(actual)?;
+    assert_eq!(expected, actual);
+
+    Ok(())
+}
 
 lazy_static! {
     static ref AWS_REQUEST_ID: HeaderName =
@@ -185,29 +207,27 @@ pub struct LambdaCtx {
     pub env_config: Config,
 }
 
-impl TryFrom<HeaderMap<HeaderValue>> for LambdaCtx {
-    type Error = anyhow::Error;
+impl From<HeaderMap<HeaderValue>> for LambdaCtx {
 
-    fn try_from(value: HeaderMap<HeaderValue>) -> Result<Self, Self::Error> {
+    fn from(value: HeaderMap<HeaderValue>) -> Self {
         let request_id = value
             .typed_get::<RequestId>()
-            .ok_or(err_fmt!("RequestId not found"))?;
+            .expect("RequestId not found");
         let function_arn = value
             .typed_get::<FunctionArn>()
-            .ok_or(err_fmt!("FunctionArn not found"))?;
+            .expect("FunctionArn not found");
         let deadline = value
             .typed_get::<InvocationDeadline>()
-            .ok_or(err_fmt!("FunctionArn not found"))?;
+            .expect("FunctionArn not found");
         let xray = value.typed_get::<XRayTraceId>();
 
-        let ctx = LambdaCtx {
+        LambdaCtx {
             id: request_id.0,
             deadline: deadline.0,
             invoked_function_arn: function_arn.0,
             xray_trace_id: xray.map(|v| v.0),
             ..Default::default()
-        };
-        Ok(ctx)
+        }
     }
 }
 

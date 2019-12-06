@@ -1,6 +1,6 @@
 [package]
 name = "lambda_runtime_client"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["Stefano Buliani", "David Barsky"]
 edition = "2018"
 description = "Client SDK for AWS Lambda's runtime APIs"

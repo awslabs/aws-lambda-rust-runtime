@@ -340,7 +340,7 @@ dependencies = [
 
 [[package]]
 name = "lambda_runtime_client"
-version = "0.2.2"
+version = "0.2.3"
 dependencies = [
  "chrono 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "failure 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -362,7 +362,7 @@ dependencies = [
  "chrono 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "failure 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "hyper 0.12.24 (registry+https://github.com/rust-lang/crates.io-index)",
- "lambda_runtime_client 0.2.2",
+ "lambda_runtime_client 0.2.3",
  "lambda_runtime_errors 0.1.1",
  "log 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc_version 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",

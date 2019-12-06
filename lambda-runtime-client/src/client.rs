@@ -171,12 +171,19 @@ impl<'ev> RuntimeClient {
     pub fn next_event(&self) -> Result<(Vec<u8>, EventContext), ApiError> {
         trace!("Polling for next event");
 
+        let req = Request::builder()
+            .method(Method::GET)
+            .uri(self.next_endpoint.clone())
+            .header(header::USER_AGENT, self.runtime_agent.clone())
+            .body(Body::from(""))
+            .unwrap();
+
         // We wait instead of processing the future asynchronously because AWS Lambda
         // itself enforces only one event per container at a time. No point in taking on
         // the additional complexity.
         let resp = self
             .http_client
-            .get(self.next_endpoint.clone())
+            .request(req)
             .wait()
             .context(ApiErrorKind::Unrecoverable("Could not fetch next event".to_string()))?;
 

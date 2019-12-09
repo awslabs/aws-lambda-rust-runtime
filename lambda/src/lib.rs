@@ -39,9 +39,9 @@ use futures::{pin_mut, prelude::*};
 use http::{Request, Response, Uri};
 pub use lambda_attributes::lambda;
 use serde::{Deserialize, Serialize};
-use std::str::FromStr;
 use std::{convert::TryFrom, env, fmt};
 use thiserror::Error;
+use tower_service::Service;
 
 mod client;
 mod requests;
@@ -100,48 +100,92 @@ impl Config {
     }
 }
 
-/// A trait describing an asynchronous function from `A` to `R`. `A` and `R` must implement [`Deserialize`](serde::Deserialize) and [`Serialize`](serde::Serialize).
-pub trait Handler<A, R>
-where
-    A: for<'de> Deserialize<'de>,
-    R: Serialize,
-{
+/// A trait describing an asynchronous function `A` to `B.
+pub trait Handler<A, B> {
     /// Errors returned by this handler.
     type Err;
     /// The future response value of this handler.
-    type Fut: Future<Output = Result<R, Self::Err>>;
+    type Fut: Future<Output = Result<B, Self::Err>>;
     /// Process the incoming event and return the response asynchronously.
     ///
     /// # Arguments
     /// * `event` - The data received in the invocation request
     /// * `ctx` - The context for the current invocation
-    fn call(&mut self, event: A, ctx: Option<LambdaCtx>) -> Self::Fut;
+    fn call(&mut self, event: A) -> Self::Fut;
 }
 
-/// A trait describing an asynchronous function from `Request<A>` to `Response<B>`. `A` and `B` must implement [`Deserialize`](serde::Deserialize) and [`Serialize`](serde::Serialize).
-pub trait HttpHandler<A, B>: Handler<Request<A>, Response<B>>
-where
-    Request<A>: for<'de> Deserialize<'de>,
-    Response<B>: Serialize,
-{
+pub trait HttpHandler<A, B> {
+    /// Errors returned by this handler.
+    type Err;
+    /// The future response value of this handler.
+    type Fut: Future<Output = Result<B, Self::Err>>;
     /// Process the incoming request and return the response asynchronously.
-    fn call_http(&mut self, event: Request<A>) -> <Self as Handler<Request<A>, Response<B>>>::Fut;
+    fn call(&mut self, req: A) -> Self::Fut;
+}
+
+impl<T, A, B> HttpHandler<Request<A>, Response<B>> for T
+where
+    T: Handler<Request<A>, Response<B>>,
+    A: for<'de> Deserialize<'de>,
+    B: Serialize,
+{
+    /// Errors returned by this handler.
+    type Err = T::Err;
+    /// The future response value of this handler.
+    type Fut = T::Fut;
+    /// Process the incoming request and return the response asynchronously.
+    fn call(&mut self, req: Request<A>) -> Self::Fut {
+        T::call(self, req)
+    }
+}
+
+pub trait EventHandler<A, B>
+where
+    A: for<'de> Deserialize<'de>,
+    B: Serialize,
+{
+    /// Errors returned by this handler.
+    type Err;
+    /// The future response value of this handler.
+    type Fut: Future<Output = Result<B, Self::Err>>;
+    /// Process the incoming event and return the response asynchronously.
+    ///
+    /// # Arguments
+    /// * `event` - The data received in the invocation request
+    /// * `ctx` - The context for the current invocation
+    fn call(&mut self, event: A) -> Self::Fut;
+}
+
+impl<T, A, B> EventHandler<A, B> for T
+where
+    T: Handler<A, B>,
+    A: for<'de> Deserialize<'de>,
+    B: Serialize,
+{
+    /// Errors returned by this handler.
+    type Err = T::Err;
+    /// The future response value of this handler.
+    type Fut = T::Fut;
+    /// Process the incoming request and return the response asynchronously.
+    fn call(&mut self, req: A) -> Self::Fut {
+        T::call(self, req)
+    }
 }
 
 /// Returns a new `HandlerFn` with the given closure.
-pub fn handler_fn<Function>(f: Function) -> HandlerFn<Function> {
+pub fn handler_fn<F>(f: F) -> HandlerFn<F> {
     HandlerFn { f }
 }
 
 /// A `Handler` or `HttpHandler` implemented by a closure.
 #[derive(Clone, Debug)]
-pub struct HandlerFn<Function> {
-    f: Function,
+pub struct HandlerFn<F> {
+    f: F,
 }
 
 impl<Function, Event, Output, Err, Fut> Handler<Event, Output> for HandlerFn<Function>
 where
-    Function: Fn(Event, Option<LambdaCtx>) -> Fut,
+    Function: Fn(Event) -> Fut,
     Event: for<'de> Deserialize<'de>,
     Output: Serialize,
     Fut: Future<Output = Result<Output, Err>> + Send,
@@ -149,9 +193,9 @@ where
 {
     type Err = Err;
     type Fut = Fut;
-    fn call(&mut self, req: Event, ctx: Option<LambdaCtx>) -> Self::Fut {
+    fn call(&mut self, req: Event) -> Self::Fut {
         // we pass along the context here
-        (self.f)(req, ctx)
+        (self.f)(req)
     }
 }
 
@@ -179,16 +223,19 @@ where
 ///     Ok(event)
 /// }
 /// ```
-pub async fn run<Function, Event, Output>(mut handler: Function) -> Result<(), anyhow::Error>
+pub async fn run<Function, Event, Output>(
+    mut handler: Function,
+    uri: Uri,
+) -> Result<(), anyhow::Error>
 where
     Function: Handler<Event, Output>,
     Event: for<'de> Deserialize<'de>,
     Output: Serialize,
     <Function as Handler<Event, Output>>::Err: std::fmt::Debug,
 {
-    let uri = env::var("AWS_LAMBDA_RUNTIME_API")
-        .expect("Unable to find environment variable `AWS_LAMBDA_RUNTIME_API`");
-    let uri = Uri::from_str(&uri).map_err(|e| Error::InvalidUri { uri, source: e })?;
+    // let uri = env::var("AWS_LAMBDA_RUNTIME_API")
+    //     .expect("Unable to find environment variable `AWS_LAMBDA_RUNTIME_API`");
+    // let uri = Uri::from_str(&uri).map_err(|e| Error::InvalidUri { uri, source: e })?;
     let mut client = Client::new(uri);
     let stream = events(client.clone());
     pin_mut!(stream);
@@ -200,7 +247,7 @@ where
         let body = hyper::body::aggregate(body).await.map_err(Error::Hyper)?;
         let body = serde_json::from_reader(body.reader()).map_err(|e| Error::Json { source: e })?;
 
-        match handler.call(body, Some(ctx.clone())).await {
+        match handler.call(body).await {
             Ok(res) => {
                 let body = serde_json::to_vec(&res).map_err(|e| Error::Json { source: e })?;
                 let req = EventCompletionRequest {
@@ -232,6 +279,39 @@ where
     Ok(())
 }
 
+struct Executor<S, F, T> {
+    client: S,
+    function: F,
+    _phan: std::marker::PhantomData<T>,
+}
+
+impl<S, F, T> Executor<S, F, T>
+where
+    S: Service<T>,
+{
+    fn new(client: S, function: F) -> Executor<S, F, T> {
+        Self {
+            client,
+            function,
+            _phan: std::marker::PhantomData,
+        }
+    }
+}
+
 fn type_name_of_val<T>(_: T) -> &'static str {
     std::any::type_name::<T>()
+}
+
+#[tokio::test]
+async fn test_run() -> Result<(), anyhow::Error> {
+    async fn test_handler(event: String) -> Result<String, Error> {
+        Ok(event)
+    }
+
+    run(
+        handler_fn(test_handler),
+        Uri::from_static("http://localhost:2000"),
+    )
+    .await?;
+    Ok(())
 }

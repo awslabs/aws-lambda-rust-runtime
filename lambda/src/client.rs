@@ -22,20 +22,11 @@ impl Client {
     fn set_origin(&self, req: Request<Vec<u8>>) -> Result<Request<Vec<u8>>, anyhow::Error> {
         let (mut parts, body) = req.into_parts();
         let (scheme, authority) = {
-            let scheme = self
-                .base
-                .scheme_part()
-                .expect("Scheme not found");
-            let authority = self
-                .base
-                .authority_part()
-                .expect("Authority not found");
+            let scheme = self.base.scheme().expect("Scheme not found");
+            let authority = self.base.authority().expect("Authority not found");
             (scheme, authority)
         };
-        let path = parts
-            .uri
-            .path_and_query()
-            .expect("PathAndQuery not found");
+        let path = parts.uri.path_and_query().expect("PathAndQuery not found");
 
         let uri = Uri::builder()
             .scheme(scheme.clone())
@@ -48,7 +39,10 @@ impl Client {
         Ok(Request::from_parts(parts, body))
     }
 
-    pub(crate) async fn call(&mut self, req: Request<Vec<u8>>) -> Result<Response<Body>, anyhow::Error> {
+    pub(crate) async fn call(
+        &mut self,
+        req: Request<Vec<u8>>,
+    ) -> Result<Response<Body>, anyhow::Error> {
         let req = self.set_origin(req)?;
         let (parts, body) = req.into_parts();
         let body = Body::from(body);

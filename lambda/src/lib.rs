@@ -33,6 +33,7 @@
 //! }
 //! ```
 pub use crate::types::LambdaCtx;
+use bytes::buf::BufExt;
 use client::{events, Client};
 use futures::{pin_mut, prelude::*};
 use http::{Request, Response, Uri};
@@ -185,7 +186,8 @@ where
     Output: Serialize,
     <Function as Handler<Event, Output>>::Err: std::fmt::Debug,
 {
-    let uri = env::var("AWS_LAMBDA_RUNTIME_API").expect("Unable to find environment variable `AWS_LAMBDA_RUNTIME_API`");
+    let uri = env::var("AWS_LAMBDA_RUNTIME_API")
+        .expect("Unable to find environment variable `AWS_LAMBDA_RUNTIME_API`");
     let uri = Uri::from_str(&uri).map_err(|e| Error::InvalidUri { uri, source: e })?;
     let mut client = Client::new(uri);
     let stream = events(client.clone());
@@ -195,8 +197,8 @@ where
         let (parts, body) = event?.into_parts();
         let mut ctx: LambdaCtx = LambdaCtx::try_from(parts.headers)?;
         ctx.env_config = Config::from_env()?;
-        let body = body.try_concat().await.map_err(Error::Hyper)?;
-        let body = serde_json::from_slice(&body).map_err(|e| Error::Json { source: e })?;
+        let body = hyper::body::aggregate(body).await.map_err(Error::Hyper)?;
+        let body = serde_json::from_reader(body.reader()).map_err(|e| Error::Json { source: e })?;
 
         match handler.call(body, Some(ctx.clone())).await {
             Ok(res) => {
@@ -212,12 +214,13 @@ where
             Err(err) => {
                 let diagnositic = Diagnostic {
                     error_message: format!("{:?}", err),
-                    error_type: type_name_of_val(err).to_string()
+                    error_type: type_name_of_val(err).to_string(),
                 };
-                let body = serde_json::to_vec(&diagnositic).map_err(|e| Error::Json { source: e })?;
+                let body =
+                    serde_json::to_vec(&diagnositic).map_err(|e| Error::Json { source: e })?;
                 let req = EventErrorRequest {
                     request_id: &ctx.id,
-                    body
+                    body,
                 };
 
                 let req = req.into_req()?;

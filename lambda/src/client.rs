@@ -1,25 +1,25 @@
-use crate::requests::{IntoRequest, NextEventRequest};
-use crate::Error;
-use async_stream::try_stream;
-use futures::prelude::*;
+use crate::Err;
 use http::{Request, Response, Uri};
 use hyper::Body;
+use std::task;
+use tower_service::Service;
 
 #[derive(Debug, Clone)]
-pub(crate) struct Client {
+pub(crate) struct Client<S> {
     base: Uri,
-    client: hyper::Client<hyper::client::HttpConnector>,
+    client: S,
 }
 
-impl Client {
-    pub fn new(base: Uri) -> Self {
-        Self {
-            base,
-            client: hyper::Client::new(),
-        }
+impl<S> Client<S>
+where
+    S: Service<Request<Body>, Response = Response<Body>>,
+    <S as Service<Request<Body>>>::Error: Into<Err> + Send + Sync + 'static + std::error::Error,
+{
+    pub fn new(base: Uri, client: S) -> Self {
+        Self { base, client }
     }
 
-    fn set_origin(&self, req: Request<Vec<u8>>) -> Result<Request<Vec<u8>>, anyhow::Error> {
+    fn set_origin<B>(&self, req: Request<B>) -> Result<Request<B>, Err> {
         let (mut parts, body) = req.into_parts();
         let (scheme, authority) = {
             let scheme = self.base.scheme().expect("Scheme not found");
@@ -39,27 +39,39 @@ impl Client {
         Ok(Request::from_parts(parts, body))
     }
 
-    pub(crate) async fn call(
-        &mut self,
-        req: Request<Vec<u8>>,
-    ) -> Result<Response<Body>, anyhow::Error> {
+    pub(crate) async fn call(&mut self, req: Request<Body>) -> Result<Response<Body>, Err> {
         let req = self.set_origin(req)?;
         let (parts, body) = req.into_parts();
         let body = Body::from(body);
         let req = Request::from_parts(parts, body);
-        let response = self.client.request(req).await.map_err(Error::Hyper)?;
+        let response = self.client.call(req).await?;
         Ok(response)
     }
 }
 
-pub(crate) fn events(client: Client) -> impl Stream<Item = Result<Response<Body>, anyhow::Error>> {
-    try_stream! {
-        let mut client = client;
-        loop {
-            let req = NextEventRequest;
-            let req = req.into_req()?;
-            let event = client.call(req).await?;
-            yield event;
+struct SimulatedClient;
+
+impl Service<Request<Body>> for SimulatedClient {
+    type Response = Response<Body>;
+    type Error = Err;
+    type Future = futures::future::Ready<Result<Self::Response, Self::Error>>;
+
+    fn poll_ready(&mut self, _: &mut task::Context<'_>) -> task::Poll<Result<(), Self::Error>> {
+        task::Poll::Ready(Ok(()))
+    }
+
+    fn call(&mut self, req: Request<Body>) -> Self::Future {
+        let (headers, body) = req.into_parts();
+        let path_and_query = headers
+            .uri
+            .path_and_query()
+            .expect("missing path and query");
+
+        match path_and_query.as_str() {
+            "/runtime/invocation/next" => unimplemented!(),
+            "/runtime/invocation/{}/response" => unimplemented!(),
+            "/runtime/invocation/{}/error" => unimplemented!(),
+            _ => unimplemented!(),
         }
     }
 }

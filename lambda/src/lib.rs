@@ -34,9 +34,10 @@
 //! ```
 pub use crate::types::LambdaCtx;
 use bytes::buf::BufExt;
-use client::{events, Client};
-use futures::{pin_mut, prelude::*};
+use client::Client;
+use futures::prelude::*;
 use http::{Request, Response, Uri};
+use hyper::Body;
 pub use lambda_attributes::lambda;
 use serde::{Deserialize, Serialize};
 use std::{convert::TryFrom, env, fmt};
@@ -48,8 +49,10 @@ mod requests;
 /// Types availible to a Lambda function.
 mod types;
 
-use requests::{EventCompletionRequest, EventErrorRequest, IntoRequest};
+use requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest};
 use types::Diagnostic;
+
+type Err = Box<dyn std::error::Error + Send + Sync + 'static>;
 
 #[derive(Error, Debug)]
 enum Error {
@@ -177,23 +180,34 @@ pub fn handler_fn<F>(f: F) -> HandlerFn<F> {
     HandlerFn { f }
 }
 
+#[test]
+fn construct_handler_fn() {
+    async fn event(event: String) -> Result<String, Error> {
+        unimplemented!()
+    }
+    let f = handler_fn(event);
+
+    async fn http(event: Request<String>) -> Result<Response<String>, Error> {
+        unimplemented!()
+    }
+    let f = handler_fn(event);
+}
+
 /// A `Handler` or `HttpHandler` implemented by a closure.
 #[derive(Clone, Debug)]
 pub struct HandlerFn<F> {
     f: F,
 }
 
-impl<Function, Event, Output, Err, Fut> Handler<Event, Output> for HandlerFn<Function>
+impl<F, A, B, Err, Fut> Handler<A, B> for HandlerFn<F>
 where
-    Function: Fn(Event) -> Fut,
-    Event: for<'de> Deserialize<'de>,
-    Output: Serialize,
-    Fut: Future<Output = Result<Output, Err>> + Send,
+    F: Fn(A) -> Fut,
+    Fut: Future<Output = Result<B, Err>> + Send,
     Err: Into<Box<dyn std::error::Error + Send + Sync + 'static>> + fmt::Debug,
 {
     type Err = Err;
     type Fut = Fut;
-    fn call(&mut self, req: Event) -> Self::Fut {
+    fn call(&mut self, req: A) -> Self::Fut {
         // we pass along the context here
         (self.f)(req)
     }
@@ -223,25 +237,22 @@ where
 ///     Ok(event)
 /// }
 /// ```
-pub async fn run<Function, Event, Output>(
-    mut handler: Function,
-    uri: Uri,
-) -> Result<(), anyhow::Error>
+pub async fn run<F, A, B, S>(mut handler: F, uri: Uri, client: S) -> Result<(), Err>
 where
-    Function: Handler<Event, Output>,
-    Event: for<'de> Deserialize<'de>,
-    Output: Serialize,
-    <Function as Handler<Event, Output>>::Err: std::fmt::Debug,
+    F: Handler<A, B>,
+    <F as Handler<A, B>>::Err: fmt::Debug,
+    A: for<'de> Deserialize<'de>,
+    B: Serialize,
+    S: Service<Request<Body>, Response = Response<Body>>,
+    <S as Service<Request<Body>>>::Error: Into<Err> + Send + Sync + 'static + std::error::Error,
 {
-    // let uri = env::var("AWS_LAMBDA_RUNTIME_API")
-    //     .expect("Unable to find environment variable `AWS_LAMBDA_RUNTIME_API`");
-    // let uri = Uri::from_str(&uri).map_err(|e| Error::InvalidUri { uri, source: e })?;
-    let mut client = Client::new(uri);
-    let stream = events(client.clone());
-    pin_mut!(stream);
+    let mut client = Client::new(uri, client);
+    loop {
+        let req = NextEventRequest;
+        let req = req.into_req()?;
+        let event = client.call(req).await?;
+        let (parts, body) = event.into_parts();
 
-    while let Some(event) = stream.next().await {
-        let (parts, body) = event?.into_parts();
         let mut ctx: LambdaCtx = LambdaCtx::try_from(parts.headers)?;
         ctx.env_config = Config::from_env()?;
         let body = hyper::body::aggregate(body).await.map_err(Error::Hyper)?;
@@ -275,8 +286,6 @@ where
             }
         }
     }
-
-    Ok(())
 }
 
 struct Executor<S, F, T> {
@@ -300,18 +309,4 @@ where
 
 fn type_name_of_val<T>(_: T) -> &'static str {
     std::any::type_name::<T>()
-}
-
-#[tokio::test]
-async fn test_run() -> Result<(), anyhow::Error> {
-    async fn test_handler(event: String) -> Result<String, Error> {
-        Ok(event)
-    }
-
-    run(
-        handler_fn(test_handler),
-        Uri::from_static("http://localhost:2000"),
-    )
-    .await?;
-    Ok(())
 }

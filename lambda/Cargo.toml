@@ -8,7 +8,6 @@ edition = "2018"
 futures = "0.3.1"
 tokio = { version = "0.2.4", features = ["full"] }
 hyper = { git = "https://github.com/hyperium/hyper" }
-async-stream = "0.2"
 serde = { version = "1", features = ["derive"] }
 thiserror = "1.0"
 anyhow = "1.0"

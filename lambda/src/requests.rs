@@ -1,10 +1,11 @@
 use anyhow::Error;
 use http::{Method, Request, Uri};
+use hyper::Body;
 use serde::Serialize;
 use std::str::FromStr;
 
 pub(crate) trait IntoRequest {
-    fn into_req(self) -> Result<http::Request<Vec<u8>>, Error>;
+    fn into_req(self) -> Result<Request<Body>, Error>;
 }
 
 //   /runtime/invocation/next
@@ -12,11 +13,11 @@ pub(crate) trait IntoRequest {
 pub(crate) struct NextEventRequest;
 
 impl IntoRequest for NextEventRequest {
-    fn into_req(self) -> Result<http::Request<Vec<u8>>, Error> {
+    fn into_req(self) -> Result<Request<Body>, Error> {
         let req = Request::builder()
             .method(Method::GET)
             .uri(Uri::from_static("/runtime/invocation/next"))
-            .body(Vec::new())?;
+            .body(Body::empty())?;
         Ok(req)
     }
 }
@@ -39,10 +40,11 @@ impl<'a, T> IntoRequest for EventCompletionRequest<'a, T>
 where
     T: for<'serialize> Serialize,
 {
-    fn into_req(self) -> Result<http::Request<Vec<u8>>, Error> {
+    fn into_req(self) -> Result<Request<Body>, Error> {
         let uri = format!("/runtime/invocation/{}/response", self.request_id);
         let uri = Uri::from_str(&uri)?;
         let body = serde_json::to_vec(&self.body)?;
+        let body = Body::from(body);
 
         let req = Request::builder()
             .method(Method::POST)
@@ -74,10 +76,11 @@ impl<'a, T> IntoRequest for EventErrorRequest<'a, T>
 where
     T: for<'serialize> Serialize,
 {
-    fn into_req(self) -> Result<http::Request<Vec<u8>>, Error> {
+    fn into_req(self) -> Result<Request<Body>, Error> {
         let uri = format!("/runtime/invocation/{}/error", self.request_id);
         let uri = Uri::from_str(&uri)?;
         let body = serde_json::to_vec(&self.body)?;
+        let body = Body::from(body);
 
         let req = Request::builder()
             .method(Method::POST)
@@ -104,7 +107,7 @@ fn test_event_error_request() {
 struct InitErrorRequest;
 
 impl IntoRequest for InitErrorRequest {
-    fn into_req(self) -> Result<http::Request<Vec<u8>>, Error> {
+    fn into_req(self) -> Result<Request<Body>, Error> {
         let uri = format!("/runtime/init/error");
         let uri = Uri::from_str(&uri)?;
 
@@ -112,7 +115,7 @@ impl IntoRequest for InitErrorRequest {
             .method(Method::POST)
             .uri(uri)
             .header("lambda-runtime-function-error-type", "unhandled")
-            .body(Vec::new())?;
+            .body(Body::empty())?;
         Ok(req)
     }
 }

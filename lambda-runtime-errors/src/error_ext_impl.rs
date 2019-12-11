@@ -140,11 +140,6 @@ impl From<VarError> for HandlerError {
         HandlerError::new(e)
     }
 }
-impl From<ParseError> for HandlerError {
-    fn from(e: ParseError) -> Self {
-        HandlerError::new(e)
-    }
-}
 impl From<RecvTimeoutError> for HandlerError {
     fn from(e: RecvTimeoutError) -> Self {
         HandlerError::new(e)

@@ -40,7 +40,8 @@ impl ErrorResponse {
     ///
     /// # Arguments
     ///
-    /// * `message` The error message to be returned to the APIs. Normally the error description()
+    /// * `message` The error message to be returned to the APIs. Normally the error `Display`
+    ///   representation
     /// * `err_type` An error type that identifies the root cause. Normally populated by the
     ///   `error_type()` method in the `LambdaErrorExt` trait.
     /// * `backtrace` The stack trace for the error

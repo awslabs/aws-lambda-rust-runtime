@@ -72,20 +72,11 @@ impl fmt::Display for RuntimeError {
 }
 
 // This is important for other errors to wrap this one.
-impl Error for RuntimeError {
-    fn description(&self) -> &str {
-        &self.msg
-    }
-
-    fn cause(&self) -> Option<&dyn Error> {
-        // Generic error, underlying cause isn't tracked.
-        None
-    }
-}
+impl Error for RuntimeError {}
 
 impl From<env::VarError> for RuntimeError {
     fn from(e: env::VarError) -> Self {
-        RuntimeError::unrecoverable(e.description())
+        RuntimeError::unrecoverable(&e.to_string())
     }
 }
 

@@ -90,7 +90,7 @@ impl ConfigProvider for EnvConfigProvider {
 #[cfg(test)]
 pub(crate) mod tests {
     use crate::{env::*, error};
-    use std::{env, error::Error};
+    use std::env;
 
     pub(crate) struct MockConfigProvider {
         pub(crate) error: bool,
@@ -152,7 +152,7 @@ pub(crate) mod tests {
             env_settings.is_err(),
             false,
             "Env settings returned an error: {}",
-            env_settings.err().unwrap().description()
+            env_settings.err().unwrap()
         );
         let settings = env_settings.unwrap();
         assert_eq!(
@@ -165,7 +165,7 @@ pub(crate) mod tests {
             endpoint.is_err(),
             false,
             "Env endpoint returned an error: {}",
-            endpoint.err().unwrap().description()
+            endpoint.err().unwrap()
         );
 
         unset_env_vars();

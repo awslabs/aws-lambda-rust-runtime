@@ -15,8 +15,8 @@ pub(crate) struct Diagnostic {
 fn round_trip_lambda_error() -> Result<(), anyhow::Error> {
     use serde_json::{json, Value};
     let expected = json!({
-        "errorMessage" : "Error parsing event data.",
-        "errorType" : "InvalidEventDataException"
+        "errorType": "InvalidEventDataError",
+        "errorMessage": "Error parsing event data.",
     });
 
     let actual: Diagnostic = serde_json::from_value(expected.clone())?;
@@ -208,11 +208,8 @@ pub struct LambdaCtx {
 }
 
 impl From<HeaderMap<HeaderValue>> for LambdaCtx {
-
     fn from(value: HeaderMap<HeaderValue>) -> Self {
-        let request_id = value
-            .typed_get::<RequestId>()
-            .expect("RequestId not found");
+        let request_id = value.typed_get::<RequestId>().expect("RequestId not found");
         let function_arn = value
             .typed_get::<FunctionArn>()
             .expect("FunctionArn not found");

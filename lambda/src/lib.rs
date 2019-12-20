@@ -46,6 +46,7 @@ use tower_service::Service;
 
 mod client;
 mod requests;
+mod support;
 /// Types availible to a Lambda function.
 mod types;
 
@@ -246,7 +247,7 @@ where
     S: Service<Request<Body>, Response = Response<Body>>,
     <S as Service<Request<Body>>>::Error: Into<Err> + Send + Sync + 'static + std::error::Error,
 {
-    let mut client = Client::new(uri, client);
+    let mut client = Client::with(uri, client)?;
     loop {
         let req = NextEventRequest;
         let req = req.into_req()?;
@@ -270,15 +271,15 @@ where
                 client.call(req).await?;
             }
             Err(err) => {
-                let diagnositic = Diagnostic {
+                let diagnostic = Diagnostic {
                     error_message: format!("{:?}", err),
-                    error_type: type_name_of_val(err).to_string(),
+                    error_type: type_name_of_val(err).to_owned(),
                 };
                 let body =
-                    serde_json::to_vec(&diagnositic).map_err(|e| Error::Json { source: e })?;
+                    serde_json::to_vec(&diagnostic).map_err(|e| Error::Json { source: e })?;
                 let req = EventErrorRequest {
                     request_id: &ctx.id,
-                    body,
+                    diagnostic,
                 };
 
                 let req = req.into_req()?;

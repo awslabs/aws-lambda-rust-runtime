@@ -1,16 +1,7 @@
-use crate::{
-    requests::{
-        EventCompletionRequest, EventErrorRequest, IntoRequest, IntoResponse, NextEventRequest,
-        NextEventResponse,
-    },
-    support::http,
-    types::Diagnostic,
-    Err,
-};
-use bytes::buf::BufExt as _;
-use http::{uri::PathAndQuery, HeaderValue, Method, Request, Response, StatusCode, Uri};
+use crate::Err;
+use http::{Request, Response, Uri};
 use hyper::Body;
-use std::convert::{TryFrom, TryInto};
+use std::convert::TryInto;
 use tower_service::Service;
 
 #[derive(Debug, Clone)]
@@ -63,11 +54,27 @@ where
     }
 }
 
-#[tokio::test]
-async fn next_event() -> Result<(), Err> {
-    let path = "/runtime/invocation/next";
-    let server = http(move |req| {
-        async move {
+#[cfg(test)]
+mod endpoint_tests {
+    use super::Client;
+    use crate::{
+        requests::{
+            EventCompletionRequest, EventErrorRequest, IntoRequest, IntoResponse, NextEventRequest,
+            NextEventResponse,
+        },
+        support::http,
+        types::Diagnostic,
+        Err,
+    };
+    use bytes::buf::BufExt as _;
+    use http::{uri::PathAndQuery, HeaderValue, Method, Response, StatusCode};
+    use hyper::Body;
+    use std::convert::TryFrom;
+
+    #[tokio::test]
+    async fn next_event() -> Result<(), Err> {
+        let path = "/runtime/invocation/next";
+        let server = http(move |req| async move {
             assert_eq!(req.method(), Method::GET);
             assert_eq!(
                 req.uri().path_and_query().unwrap(),
@@ -83,101 +90,101 @@ async fn next_event() -> Result<(), Err> {
             };
             let rsp = rsp.into_rsp().unwrap();
             rsp
-        }
-    });
+        });
 
-    let url = format!("http://{}/", server.addr());
-    let mut client = Client::with(url, hyper::Client::new())?;
-    let rsp = client.call(NextEventRequest.into_req()?).await?;
-    assert_eq!(rsp.status(), StatusCode::OK);
-    assert_eq!(
-        rsp.headers()["lambda-runtime-deadline-ms"],
-        &HeaderValue::try_from("1542409706888").unwrap()
-    );
+        let url = format!("http://{}/", server.addr());
+        let mut client = Client::with(url, hyper::Client::new())?;
+        let rsp = client.call(NextEventRequest.into_req()?).await?;
+        assert_eq!(rsp.status(), StatusCode::OK);
+        assert_eq!(
+            rsp.headers()["lambda-runtime-deadline-ms"],
+            &HeaderValue::try_from("1542409706888").unwrap()
+        );
 
-    Ok(())
-}
+        Ok(())
+    }
 
-#[tokio::test]
-async fn ok_response() -> Result<(), Err> {
-    let id = "156cb537-e2d4-11e8-9b34-d36013741fb9";
-    let server = http(move |req| {
-        let path = format!("/runtime/invocation/{}/response", id);
+    #[tokio::test]
+    async fn ok_response() -> Result<(), Err> {
+        let id = "156cb537-e2d4-11e8-9b34-d36013741fb9";
+        let server = http(move |req| {
+            let path = format!("/runtime/invocation/{}/response", id);
 
-        async move {
-            assert_eq!(req.method(), Method::POST);
-            assert_eq!(
-                req.uri().path_and_query().unwrap(),
-                &path.parse::<PathAndQuery>().unwrap()
-            );
+            async move {
+                assert_eq!(req.method(), Method::POST);
+                assert_eq!(
+                    req.uri().path_and_query().unwrap(),
+                    &path.parse::<PathAndQuery>().unwrap()
+                );
 
-            Response::builder()
-                .status(StatusCode::ACCEPTED)
-                .body(Body::empty())
-                .unwrap()
-        }
-    });
+                Response::builder()
+                    .status(StatusCode::ACCEPTED)
+                    .body(Body::empty())
+                    .unwrap()
+            }
+        });
 
-    let req = EventCompletionRequest {
-        request_id: id,
-        body: "done",
-    };
+        let req = EventCompletionRequest {
+            request_id: id,
+            body: "done",
+        };
 
-    let url = format!("http://{}/", server.addr());
-    let mut client = Client::with(url, hyper::Client::new())?;
-    let rsp = client.call(req.into_req()?).await?;
-    assert_eq!(rsp.status(), StatusCode::ACCEPTED);
+        let url = format!("http://{}/", server.addr());
+        let mut client = Client::with(url, hyper::Client::new())?;
+        let rsp = client.call(req.into_req()?).await?;
+        assert_eq!(rsp.status(), StatusCode::ACCEPTED);
 
-    Ok(())
-}
+        Ok(())
+    }
 
-#[tokio::test]
-async fn error_response() -> Result<(), Err> {
-    let id = "156cb537-e2d4-11e8-9b34-d36013741fb9";
-    let server = http(move |req| {
-        let path = format!("/runtime/invocation/{}/error", id);
+    #[tokio::test]
+    async fn error_response() -> Result<(), Err> {
+        let id = "156cb537-e2d4-11e8-9b34-d36013741fb9";
+        let server = http(move |req| {
+            let path = format!("/runtime/invocation/{}/error", id);
 
-        async move {
-            let (parts, body) = req.into_parts();
-            let expected = Diagnostic {
+            async move {
+                let (parts, body) = req.into_parts();
+                let expected = Diagnostic {
+                    error_type: "InvalidEventDataError".to_string(),
+                    error_message: "Error parsing event data".to_string(),
+                };
+
+                let body = hyper::body::aggregate(body).await.unwrap();
+                let actual = serde_json::from_reader(body.reader()).unwrap();
+                assert_eq!(expected, actual);
+
+                assert_eq!(parts.method, Method::POST);
+                assert_eq!(
+                    parts.uri.path_and_query().unwrap(),
+                    &path.parse::<PathAndQuery>().unwrap()
+                );
+                let expected = "unhandled";
+                assert_eq!(
+                    parts.headers["lambda-runtime-function-error-type"],
+                    HeaderValue::try_from(expected).unwrap()
+                );
+
+                Response::builder()
+                    .status(StatusCode::ACCEPTED)
+                    .body(Body::empty())
+                    .unwrap()
+            }
+        });
+
+        let req = EventErrorRequest {
+            request_id: id,
+            diagnostic: Diagnostic {
                 error_type: "InvalidEventDataError".to_string(),
                 error_message: "Error parsing event data".to_string(),
-            };
+            },
+        };
 
-            let body = hyper::body::aggregate(body).await.unwrap();
-            let actual = serde_json::from_reader(body.reader()).unwrap();
-            assert_eq!(expected, actual);
+        let url = format!("http://{}/", server.addr());
+        let mut client = Client::with(url, hyper::Client::new())?;
+        let rsp = client.call(req.into_req()?).await?;
+        assert_eq!(rsp.status(), StatusCode::ACCEPTED);
 
-            assert_eq!(parts.method, Method::POST);
-            assert_eq!(
-                parts.uri.path_and_query().unwrap(),
-                &path.parse::<PathAndQuery>().unwrap()
-            );
-            let expected = "unhandled";
-            assert_eq!(
-                parts.headers["lambda-runtime-function-error-type"],
-                HeaderValue::try_from(expected).unwrap()
-            );
-
-            Response::builder()
-                .status(StatusCode::ACCEPTED)
-                .body(Body::empty())
-                .unwrap()
-        }
-    });
-
-    let req = EventErrorRequest {
-        request_id: id,
-        diagnostic: Diagnostic {
-            error_type: "InvalidEventDataError".to_string(),
-            error_message: "Error parsing event data".to_string(),
-        },
-    };
-
-    let url = format!("http://{}/", server.addr());
-    let mut client = Client::with(url, hyper::Client::new())?;
-    let rsp = client.call(req.into_req()?).await?;
-    assert_eq!(rsp.status(), StatusCode::ACCEPTED);
-
-    Ok(())
+        Ok(())
+    }
 }

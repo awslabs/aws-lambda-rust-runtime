@@ -4,7 +4,6 @@ use proc_macro::TokenStream;
 use quote::quote_spanned;
 use syn::{spanned::Spanned, FnArg, ItemFn};
 
-#[cfg(not(test))]
 #[proc_macro_attribute]
 pub fn lambda(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(item as ItemFn);
@@ -49,53 +48,17 @@ pub fn lambda(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
                 #(#attrs)*
                 #asyncness fn main() {
-                    async fn actual(#arg_name: #arg_type, ctx: Option<LambdaCtx>) #ret {
+                    async fn actual(#arg_name: #arg_type) #ret {
                         #body
                     }
                     let f = lambda::handler_fn(actual);
-                    lambda::run(f).await.unwrap();
-                }
-            }
-        }
-        2 => {
-            let event = match inputs.first().unwrap() {
-                FnArg::Typed(arg) => arg,
-                _ => {
-                    let tokens = quote_spanned! { inputs.span() =>
-                        compile_error!("fn main should take a fully formed argument");
-                    };
-                    return TokenStream::from(tokens);
-                }
-            };
-            let ctx = match &inputs[1] {
-                FnArg::Typed(arg) => arg,
-                _ => {
-                    let tokens = quote_spanned! { inputs.span() =>
-                        compile_error!("fn main should take a fully formed argument");
-                    };
-                    return TokenStream::from(tokens);
-                }
-            };
-            let arg_name = &event.pat;
-            let arg_type = &event.ty;
-            let ctx_name = &ctx.pat;
-            let ctx_type = &ctx.ty;
-            quote_spanned! { input.span() =>
-                #(#attrs)*
-                #asyncness fn main() {
-                    async fn actual(#arg_name: #arg_type, #ctx_name: Option<#ctx_type>) #ret {
-                        let #ctx_name = #ctx_name.unwrap();
-                        #body
-                    }
-                    let f = lambda::handler_fn(actual);
-
                     lambda::run(f).await.unwrap();
                 }
             }
         }
         _ => {
             let tokens = quote_spanned! { inputs.span() =>
-                compile_error!("The #[lambda] macro can accept one or two arguments.");
+                compile_error!("The #[lambda] macro can accept only a single argument.");
             };
             return TokenStream::from(tokens);
         }

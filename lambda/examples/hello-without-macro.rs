@@ -1,16 +1,14 @@
-use lambda::{handler_fn, LambdaCtx};
+use lambda::handler_fn;
 
 type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
-fn main() {}
+#[tokio::main]
+async fn main() -> Result<(), Error> {
+    let func = handler_fn(func);
+    lambda::run(func).await?;
+    Ok(())
+}
 
-// #[tokio::main]
-// async fn main() -> Result<(), Error> {
-//     let func = handler_fn(func);
-//     lambda::run(func).await?;
-//     Ok(())
-// }
-
-// async fn func(event: String, _: Option<LambdaCtx>) -> Result<String, Error> {
-//     Ok(event)
-// }
+async fn func(event: String) -> Result<String, Error> {
+    Ok(event)
+}

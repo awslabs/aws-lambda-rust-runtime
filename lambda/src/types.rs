@@ -1,8 +1,7 @@
-use crate::Config;
-use headers::{Header, HeaderMap, HeaderMapExt, HeaderName, HeaderValue};
-use lazy_static::lazy_static;
+use crate::{Config, Err};
+use http::HeaderMap;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::{collections::HashMap, convert::TryFrom};
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -12,7 +11,7 @@ pub(crate) struct Diagnostic {
 }
 
 #[test]
-fn round_trip_lambda_error() -> Result<(), anyhow::Error> {
+fn round_trip_lambda_error() -> Result<(), Err> {
     use serde_json::{json, Value};
     let expected = json!({
         "errorType": "InvalidEventDataError",
@@ -26,124 +25,33 @@ fn round_trip_lambda_error() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-lazy_static! {
-    static ref AWS_REQUEST_ID: HeaderName =
-        HeaderName::from_static("lambda-runtime-aws-request-id");
-    static ref AWS_INVOCATION_DEADLINE: HeaderName =
-        HeaderName::from_static("lambda-runtime-deadline-ms");
-    static ref AWS_FUNCTION_ARN: HeaderName =
-        HeaderName::from_static("lambda-runtime-invoked-function-arn");
-    static ref AWS_XRAY_TRACE_ID: HeaderName = HeaderName::from_static("lambda-runtime-trace-id");
-    static ref AWS_MOBILE_CLIENT_CONTEXT: HeaderName =
-        HeaderName::from_static("lambda-runtime-client-context");
-    static ref AWS_MOBILE_CLIENT_IDENTITY: HeaderName =
-        HeaderName::from_static("lambda-runtime-cognito-identity");
-}
-
-macro_rules! str_header {
-    ($type:tt, $header_name:ident) => {
-        impl Header for $type {
-            fn name() -> &'static HeaderName {
-                &$header_name
-            }
-
-            fn decode<'i, I>(values: &mut I) -> Result<Self, headers::Error>
-            where
-                I: Iterator<Item = &'i HeaderValue>,
-            {
-                let value = values
-                    .next()
-                    .and_then(|val| {
-                        if let Ok(val) = val.to_str() {
-                            return Some(String::from(val));
-                        }
-                        None
-                    })
-                    .ok_or_else(headers::Error::invalid)?;
-                Ok($type(value))
-            }
-
-            fn encode<E>(&self, values: &mut E)
-            where
-                E: Extend<HeaderValue>,
-            {
-                let value = HeaderValue::from_str(&self.0).expect("Should not panic on encoding");
-                values.extend(std::iter::once(value));
-            }
-        }
-    };
-}
-
-macro_rules! num_header {
-    ($type:tt, $header_name:ident) => {
-        impl Header for $type {
-            fn name() -> &'static HeaderName {
-                &$header_name
-            }
-
-            fn decode<'i, I>(values: &mut I) -> Result<Self, headers::Error>
-            where
-                I: Iterator<Item = &'i HeaderValue>,
-            {
-                let value = values
-                    .next()
-                    .and_then(|val| {
-                        if let Ok(val) = val.to_str() {
-                            if let Ok(val) = val.parse::<u64>() {
-                                return Some(val);
-                            }
-                        }
-                        None
-                    })
-                    .ok_or_else(headers::Error::invalid)?;
-                Ok($type(value))
-            }
-
-            fn encode<E>(&self, values: &mut E)
-            where
-                E: Extend<HeaderValue>,
-            {
-                let value = HeaderValue::from_str(&self.0.to_string())
-                    .expect("Should not panic on encoding");
-                values.extend(std::iter::once(value));
-            }
-        }
-    };
-}
-
 /// The request ID, which identifies the request that triggered the function invocation. This header
 /// tracks the invocation within the Lambda control plane. The request ID is used to specify completion
 /// of a given invocation.
 #[derive(Debug, Clone, PartialEq)]
 pub struct RequestId(pub String);
-str_header!(RequestId, AWS_REQUEST_ID);
 
 /// The date that the function times out in Unix time milliseconds. For example, `1542409706888`.
 #[derive(Debug, Clone, PartialEq)]
 pub struct InvocationDeadline(pub u64);
-num_header!(InvocationDeadline, AWS_INVOCATION_DEADLINE);
 
 /// The ARN of the Lambda function, version, or alias that is specified in the invocation.
 /// For instance, `arn:aws:lambda:us-east-2:123456789012:function:custom-runtime`.
 #[derive(Debug, Clone, PartialEq)]
 pub struct FunctionArn(pub String);
-str_header!(FunctionArn, AWS_FUNCTION_ARN);
 
 /// The AWS X-Ray Tracing header. For more information,
 /// please see [AWS' documentation](https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-tracingheader).
 #[derive(Debug, Clone, PartialEq)]
 pub struct XRayTraceId(pub String);
-str_header!(XRayTraceId, AWS_XRAY_TRACE_ID);
 
 /// For invocations from the AWS Mobile SDK contains data about client application and device.
 #[derive(Debug, Clone, PartialEq)]
 struct MobileClientContext(String);
-str_header!(MobileClientContext, AWS_MOBILE_CLIENT_CONTEXT);
 
 /// For invocations from the AWS Mobile SDK, data about the Amazon Cognito identity provider.
 #[derive(Debug, Clone, PartialEq)]
 struct MobileClientIdentity(String);
-str_header!(MobileClientIdentity, AWS_MOBILE_CLIENT_IDENTITY);
 
 /// Client context sent by the AWS Mobile SDK.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
@@ -184,14 +92,15 @@ pub struct CognitoIdentity {
 /// The Lambda function execution context. The values in this struct
 /// are populated using the [Lambda environment variables](https://docs.aws.amazon.com/lambda/latest/dg/current-supported-versions.html)
 /// and the headers returned by the poll request to the Runtime APIs.
+#[non_exhaustive]
 #[derive(Clone, Debug, PartialEq, Default)]
-pub struct LambdaCtx {
+pub struct LambdaCtx<'a> {
     /// The AWS request ID generated by the Lambda service.
-    pub id: String,
+    pub request_id: &'a str,
     /// The execution deadline for the current invocation in milliseconds.
     pub deadline: u64,
     /// The ARN of the Lambda function being invoked.
-    pub invoked_function_arn: String,
+    pub invoked_function_arn: &'a str,
     /// The X-Ray trace ID for the current invocation.
     pub xray_trace_id: Option<String>,
     /// The client context object sent by the AWS mobile SDK. This field is
@@ -207,175 +116,22 @@ pub struct LambdaCtx {
     pub env_config: Config,
 }
 
-impl From<HeaderMap<HeaderValue>> for LambdaCtx {
-    fn from(value: HeaderMap<HeaderValue>) -> Self {
-        let request_id = value.typed_get::<RequestId>().expect("RequestId not found");
-        let function_arn = value
-            .typed_get::<FunctionArn>()
-            .expect("FunctionArn not found");
-        let deadline = value
-            .typed_get::<InvocationDeadline>()
-            .expect("FunctionArn not found");
-        let xray = value.typed_get::<XRayTraceId>();
-
-        LambdaCtx {
-            id: request_id.0,
-            deadline: deadline.0,
-            invoked_function_arn: function_arn.0,
-            xray_trace_id: xray.map(|v| v.0),
+impl<'a> TryFrom<&'a HeaderMap> for LambdaCtx<'a> {
+    type Error = Err;
+    fn try_from(headers: &'a HeaderMap) -> Result<Self, Self::Error> {
+        let ctx = LambdaCtx {
+            request_id: headers["lambda-runtime-aws-request-id"]
+                .to_str()
+                .expect("Missing Request ID"),
+            deadline: headers["lambda-runtime-deadline-ms"]
+                .to_str()?
+                .parse()
+                .expect("Missing deadline"),
+            invoked_function_arn: headers["lambda-runtime-invoked-function-arn"]
+                .to_str()
+                .expect("Missing arn"),
             ..Default::default()
-        }
-    }
-}
-
-#[allow(dead_code)]
-pub mod tests {
-    use crate::types::{
-        ClientApplication, ClientContext, CognitoIdentity, FunctionArn, InvocationDeadline,
-        MobileClientContext, MobileClientIdentity, RequestId, XRayTraceId,
-    };
-    use headers::{HeaderMap, HeaderMapExt};
-    use http::Response;
-    use proptest::{collection, option, prelude::*, strategy::Strategy, string::string_regex};
-    use proptest_attributes::proptest;
-
-    fn gen_request_id() -> impl Strategy<Value = RequestId> {
-        let expr = "[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}";
-        let arbitrary_uuid = string_regex(expr).unwrap();
-        arbitrary_uuid.prop_map(RequestId)
-    }
-
-    fn gen_invocation_deadline() -> impl Strategy<Value = InvocationDeadline> {
-        any::<u64>().prop_map(InvocationDeadline)
-    }
-
-    pub fn gen_function_arn() -> impl Strategy<Value = FunctionArn> {
-        let expr = "arn:aws:lambda:us-east-1:[0-9]{12}:function:custom-runtime";
-        let arn = string_regex(expr).unwrap();
-        arn.prop_map(FunctionArn)
-    }
-
-    fn gen_xray_trace_id() -> impl Strategy<Value = XRayTraceId> {
-        let expr = "Root=1-[a-zA-Z0-9]{32};Parent=[a-z0-9]{16};Sampled=[0-1]{1}";
-        let xray = string_regex(expr).unwrap();
-        xray.prop_map(XRayTraceId)
-    }
-
-    fn uuid() -> impl Strategy<Value = String> {
-        let expr = "[a-zA-Z0-9]{32}";
-        string_regex(expr).unwrap()
-    }
-
-    fn gen_client_context() -> impl Strategy<Value = MobileClientContext> {
-        uuid().prop_map(MobileClientContext)
-    }
-
-    fn gen_client_identity() -> impl Strategy<Value = MobileClientIdentity> {
-        uuid().prop_map(MobileClientIdentity)
-    }
-
-    fn gen_client_identity_struct() -> impl Strategy<Value = CognitoIdentity> {
-        (uuid()).prop_map(|uuid| CognitoIdentity {
-            identity_id: uuid.clone(),
-            identity_pool_id: uuid,
-        })
-    }
-
-    fn gen_client_application() -> impl Strategy<Value = ClientApplication> {
-        (uuid()).prop_map(|uuid| ClientApplication {
-            installation_id: uuid.clone(),
-            app_title: uuid.clone(),
-            app_version_name: uuid.clone(),
-            app_version_code: uuid.clone(),
-            app_package_name: uuid,
-        })
-    }
-
-    fn gen_client_context_struct() -> impl Strategy<Value = ClientContext> {
-        let app = gen_client_application();
-        let overrides = collection::hash_map(uuid(), uuid(), 1..10);
-        let env = collection::hash_map(uuid(), uuid(), 1..10);
-        (app, overrides, env).prop_map(|args| {
-            let (app, overrides, env) = args;
-            ClientContext {
-                client: app,
-                custom: overrides,
-                environment: env,
-            }
-        })
-    }
-
-    fn gen_headers() -> impl Strategy<Value = HeaderMap> {
-        let mandatory = (
-            gen_request_id(),
-            gen_invocation_deadline(),
-            gen_function_arn(),
-        );
-        let xray = option::of(gen_xray_trace_id());
-        let mobile = option::of((gen_client_context(), gen_client_identity()));
-        (mandatory, xray, mobile).prop_map(|headers| {
-            let (mandatory, xray, mobile) = headers;
-            let mut map = HeaderMap::new();
-            map.typed_insert(mandatory.0);
-            map.typed_insert(mandatory.1);
-            map.typed_insert(mandatory.2);
-            xray.map(|xray| map.typed_insert(xray));
-            mobile.map(|mobile| {
-                map.typed_insert(mobile.0);
-                map.typed_insert(mobile.1)
-            });
-            map
-        })
-    }
-
-    fn gen_next_event() -> impl Strategy<Value = Response<Vec<u8>>> {
-        gen_headers().prop_map(|headers| {
-            let mut resp = Response::new(Vec::default());
-            *resp.headers_mut() = headers;
-            *resp.status_mut() = http::StatusCode::OK;
-            resp
-        })
-    }
-
-    #[proptest(gen_request_id())]
-    fn request_id(req: RequestId) {
-        let mut headers = HeaderMap::new();
-        headers.typed_insert(req.clone());
-        prop_assert_eq!(headers.typed_get::<RequestId>(), Some(req));
-    }
-
-    #[proptest(gen_invocation_deadline())]
-    fn deadline(deadline: InvocationDeadline) {
-        let mut headers = HeaderMap::new();
-        headers.typed_insert(deadline.clone());
-        prop_assert_eq!(headers.typed_get::<InvocationDeadline>(), Some(deadline));
-    }
-
-    #[proptest(gen_function_arn())]
-    fn function_arn(arn: FunctionArn) {
-        let mut headers = HeaderMap::new();
-        headers.typed_insert(arn.clone());
-        prop_assert_eq!(headers.typed_get::<FunctionArn>(), Some(arn));
-    }
-
-    #[proptest(gen_xray_trace_id())]
-    fn xray_trace_id(trace_id: XRayTraceId) {
-        let mut headers = HeaderMap::new();
-        headers.typed_insert(trace_id.clone());
-        prop_assert_eq!(headers.typed_get::<XRayTraceId>(), Some(trace_id));
-    }
-
-    #[proptest(gen_client_context())]
-    fn mobile_client_context(ctx: MobileClientContext) {
-        let mut headers = HeaderMap::new();
-        headers.typed_insert(ctx.clone());
-        prop_assert_eq!(headers.typed_get::<MobileClientContext>(), Some(ctx));
-    }
-
-    #[proptest(gen_client_identity())]
-    fn mobile_client_identity(id: MobileClientIdentity) {
-        let mut headers = HeaderMap::new();
-        headers.typed_insert(id.clone());
-        prop_assert_eq!(headers.typed_get::<MobileClientIdentity>(), Some(id))
+        };
+        Ok(ctx)
     }
 }

@@ -1,16 +1,10 @@
 // Borrowed from https://github.com/seanmonstar/reqwest/blob/master/tests/client.rs
 
-use std::convert::Infallible;
-use std::future::Future;
-use std::net;
-use std::sync::mpsc as std_mpsc;
-use std::thread;
-use std::time::Duration;
-
-use tokio::sync::oneshot;
-
 pub use http::Response;
-use tokio::runtime;
+use std::{
+    convert::Infallible, future::Future, net, sync::mpsc as std_mpsc, thread, time::Duration,
+};
+use tokio::{runtime, sync::oneshot};
 
 pub struct Server {
     addr: net::SocketAddr,
@@ -43,7 +37,7 @@ where
     F: Fn(http::Request<hyper::Body>) -> Fut + Clone + Send + 'static,
     Fut: Future<Output = http::Response<hyper::Body>> + Send + 'static,
 {
-    //Spawn new runtime in thread to prevent reactor execution context conflict
+    // Spawn new runtime in thread to prevent reactor execution context conflict
     thread::spawn(move || {
         let mut rt = runtime::Builder::new()
             .basic_scheduler()

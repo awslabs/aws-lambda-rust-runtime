@@ -39,7 +39,15 @@ use http::{Request, Response};
 use hyper::Body;
 pub use lambda_attributes::lambda;
 use serde::{Deserialize, Serialize};
-use std::{convert::TryFrom, env, fmt, future::Future};
+use std::{
+    cell::RefCell,
+    convert::TryFrom,
+    env, fmt,
+    future::Future,
+    mem,
+    pin::Pin,
+    task::{Context, Poll},
+};
 use tower_service::Service;
 
 mod client;
@@ -86,6 +94,40 @@ impl Config {
     }
 }
 
+thread_local! {
+    static TASK_LOCAL: RefCell<Option<types::LambdaCtx>> = RefCell::new(None);
+}
+
+#[pin_project::pin_project]
+struct WithTaskLocal<F> {
+    task_local: Option<types::LambdaCtx>,
+    #[pin]
+    future: F,
+}
+
+impl<F: Future> Future for WithTaskLocal<F> {
+    type Output = F::Output;
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        let this = self.project();
+        TASK_LOCAL.with(|tl| {
+            let prev = tl.borrow_mut().replace(this.task_local.take().unwrap());
+            let res = this.future.poll(cx);
+            // handling the inner future panicking is left as an exercise to the reader
+            *this.task_local = mem::replace(&mut *tl.borrow_mut(), prev);
+            res
+        })
+    }
+}
+
+/// Gets the current function context.
+pub fn context() -> LambdaCtx {
+    TASK_LOCAL.with(|tl| {
+        tl.borrow()
+            .clone()
+            .expect("Context is not set; this is a bug.")
+    })
+}
+
 /// A trait describing an asynchronous function `A` to `B.
 pub trait Handler<A, B> {
     /// Errors returned by this handler.
@@ -130,8 +172,7 @@ where
 ///
 /// # Example
 /// ```rust
-///
-/// use lambda::{handler_fn, LambdaCtx};
+/// use lambda::handler_fn;
 ///
 /// type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 ///
@@ -143,6 +184,7 @@ where
 /// }
 ///
 /// async fn func(s: String) -> Result<String, Error> {
+///     let ctx = lambda::context();
 ///     Ok(s)
 /// }
 /// ```
@@ -154,9 +196,8 @@ where
     B: Serialize,
 {
     let mut handler = handler;
-    let config = Config::from_env().expect("Could not load config");
-    let client =
-        Client::with(&config.endpoint, hyper::Client::new()).expect("Could not create client");
+    let config = Config::from_env()?;
+    let client = Client::with(&config.endpoint, hyper::Client::new())?;
     let mut exec = Executor { client };
     exec.run(&mut handler).await?;
 
@@ -185,19 +226,26 @@ where
             let event = client.call(req).await?;
             let (parts, body) = event.into_parts();
 
-            let mut ctx = LambdaCtx::try_from(&parts.headers)?;
+            let mut ctx = LambdaCtx::try_from(parts.headers)?;
             ctx.env_config = Config::from_env()?;
+
             let body = hyper::body::aggregate(body).await?;
             let body = serde_json::from_reader(body.reader())?;
 
-            let req = match handler.call(body).await {
+            let request_id = &ctx.request_id.clone();
+            let f = WithTaskLocal {
+                task_local: Some(ctx),
+                future: handler.call(body),
+            };
+
+            let req = match f.await {
                 Ok(res) => EventCompletionRequest {
-                    request_id: &ctx.request_id,
+                    request_id,
                     body: serde_json::to_vec(&res)?,
                 }
                 .into_req()?,
                 Err(err) => EventErrorRequest {
-                    request_id: &ctx.request_id,
+                    request_id,
                     diagnostic: Diagnostic {
                         error_message: format!("{:?}", err),
                         error_type: type_name_of_val(err).to_owned(),

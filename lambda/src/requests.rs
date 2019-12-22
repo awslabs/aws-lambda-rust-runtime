@@ -12,7 +12,7 @@ pub(crate) trait IntoResponse {
     fn into_rsp(self) -> Result<Response<Body>, Err>;
 }
 
-//   /runtime/invocation/next
+// /runtime/invocation/next
 #[derive(Debug, PartialEq)]
 pub(crate) struct NextEventRequest;
 
@@ -20,7 +20,7 @@ impl IntoRequest for NextEventRequest {
     fn into_req(self) -> Result<Request<Body>, Err> {
         let req = Request::builder()
             .method(Method::GET)
-            .uri(Uri::from_static("/runtime/invocation/next"))
+            .uri(Uri::from_static("/2018-06-01/runtime/invocation/next"))
             .body(Body::empty())?;
         Ok(req)
     }
@@ -56,7 +56,7 @@ fn test_next_event_request() {
     let req = NextEventRequest;
     let req = req.into_req().unwrap();
     assert_eq!(req.method(), Method::GET);
-    assert_eq!(req.uri(), &Uri::from_static("/runtime/invocation/next"));
+    assert_eq!(req.uri(), &Uri::from_static("/2018-06-01/runtime/invocation/next"));
 }
 
 // /runtime/invocation/{AwsRequestId}/response
@@ -70,15 +70,12 @@ where
     T: for<'serialize> Serialize,
 {
     fn into_req(self) -> Result<Request<Body>, Err> {
-        let uri = format!("/runtime/invocation/{}/response", self.request_id);
+        let uri = format!("/2018-06-01/runtime/invocation/{}/response", self.request_id);
         let uri = Uri::from_str(&uri)?;
         let body = serde_json::to_vec(&self.body)?;
         let body = Body::from(body);
 
-        let req = Request::builder()
-            .method(Method::POST)
-            .uri(uri)
-            .body(body)?;
+        let req = Request::builder().method(Method::POST).uri(uri).body(body)?;
         Ok(req)
     }
 }
@@ -90,7 +87,7 @@ fn test_event_completion_request() {
         body: "hello, world!",
     };
     let req = req.into_req().unwrap();
-    let expected = Uri::from_static("/runtime/invocation/id/response");
+    let expected = Uri::from_static("/2018-06-01/runtime/invocation/id/response");
     assert_eq!(req.method(), Method::POST);
     assert_eq!(req.uri(), &expected);
 }
@@ -103,7 +100,7 @@ pub(crate) struct EventErrorRequest<'a> {
 
 impl<'a> IntoRequest for EventErrorRequest<'a> {
     fn into_req(self) -> Result<Request<Body>, Err> {
-        let uri = format!("/runtime/invocation/{}/error", self.request_id);
+        let uri = format!("/2018-06-01/runtime/invocation/{}/error", self.request_id);
         let uri = Uri::from_str(&uri)?;
         let body = serde_json::to_vec(&self.diagnostic)?;
         let body = Body::from(body);
@@ -127,7 +124,7 @@ fn test_event_error_request() {
         },
     };
     let req = req.into_req().unwrap();
-    let expected = Uri::from_static("/runtime/invocation/id/error");
+    let expected = Uri::from_static("/2018-06-01/runtime/invocation/id/error");
     assert_eq!(req.method(), Method::POST);
     assert_eq!(req.uri(), &expected);
 }
@@ -137,7 +134,7 @@ struct InitErrorRequest;
 
 impl IntoRequest for InitErrorRequest {
     fn into_req(self) -> Result<Request<Body>, Err> {
-        let uri = format!("/runtime/init/error");
+        let uri = format!("/2018-06-01/runtime/init/error");
         let uri = Uri::from_str(&uri)?;
 
         let req = Request::builder()
@@ -153,7 +150,7 @@ impl IntoRequest for InitErrorRequest {
 fn test_init_error_request() {
     let req = InitErrorRequest;
     let req = req.into_req().unwrap();
-    let expected = Uri::from_static("/runtime/init/error");
+    let expected = Uri::from_static("/2018-06-01/runtime/init/error");
     assert_eq!(req.method(), Method::POST);
     assert_eq!(req.uri(), &expected);
 }

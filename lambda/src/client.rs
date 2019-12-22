@@ -5,7 +5,7 @@ use crate::{
 };
 use bytes::buf::ext::BufExt;
 use futures_util::future;
-use http::{HeaderValue, Method, Request, Response, StatusCode, Uri};
+use http::{uri::PathAndQuery, HeaderValue, Method, Request, Response, StatusCode, Uri};
 use hyper::Body;
 use std::{
     convert::{TryFrom, TryInto},
@@ -95,12 +95,9 @@ impl Service<Request<Body>> for NextEventSvc {
 }
 
 async fn next_event(req: Request<Body>) -> Result<Response<Body>, Err> {
-    let path = "/runtime/invocation/next";
+    let path = "/2018-06-01/runtime/invocation/next";
     assert_eq!(req.method(), Method::GET);
-    assert_eq!(
-        req.uri().path_and_query().unwrap(),
-        &http::uri::PathAndQuery::from_static(path)
-    );
+    assert_eq!(req.uri().path_and_query().unwrap(), &PathAndQuery::from_static(path));
 
     let rsp = NextEventResponse {
         request_id: "8476a536-e9f4-11e8-9739-2dfe598c3fcd",
@@ -116,7 +113,8 @@ async fn complete_event(req: Request<Body>) -> Result<Response<Body>, Err> {
     assert_eq!(req.method(), Method::POST);
     let rsp = Response::builder()
         .status(StatusCode::ACCEPTED)
-        .body(Body::empty())?;
+        .body(Body::empty())
+        .expect("Unable to construct response");
     Ok(rsp)
 }
 
@@ -127,21 +125,16 @@ async fn event_err(req: Request<Body>) -> Result<Response<Body>, Err> {
         error_message: "Error parsing event data".to_string(),
     };
 
-    let body = hyper::body::aggregate(body).await.unwrap();
-    let actual = serde_json::from_reader(body.reader()).unwrap();
+    let body = hyper::body::aggregate(body).await?;
+    let actual = serde_json::from_reader(body.reader())?;
     assert_eq!(expected, actual);
 
     assert_eq!(parts.method, Method::POST);
+    let header = "lambda-runtime-function-error-type";
     let expected = "unhandled";
-    assert_eq!(
-        parts.headers["lambda-runtime-function-error-type"],
-        HeaderValue::try_from(expected).unwrap()
-    );
+    assert_eq!(parts.headers[header], HeaderValue::try_from(expected)?);
 
-    let rsp = Response::builder()
-        .status(StatusCode::ACCEPTED)
-        .body(Body::empty())
-        .unwrap();
+    let rsp = Response::builder().status(StatusCode::ACCEPTED).body(Body::empty())?;
     Ok(rsp)
 }
 
@@ -166,64 +159,96 @@ mod endpoint_tests {
     use super::{Client, MakeSvc};
     use crate::{
         requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest},
-        support::http,
         types::Diagnostic,
         Err,
     };
+    use futures::future;
     use http::{HeaderValue, StatusCode};
-    use std::convert::TryFrom;
+    use std::{
+        convert::TryFrom,
+        net::{SocketAddr, TcpListener},
+    };
+
+    fn setup() -> Result<(TcpListener, SocketAddr), Err> {
+        let listener = TcpListener::bind("127.0.0.1:0")?;
+        let addr = listener.local_addr()?;
+        Ok((listener, addr))
+    }
 
     #[tokio::test]
     async fn next_event() -> Result<(), Err> {
-        let server = http(MakeSvc);
-        let url = format!("http://{}/", server.addr());
-        let mut client = Client::with(url, hyper::Client::new())?;
-        let rsp = client.call(NextEventRequest.into_req()?).await?;
-        assert_eq!(rsp.status(), StatusCode::OK);
-        assert_eq!(
-            rsp.headers()["lambda-runtime-deadline-ms"],
-            &HeaderValue::try_from("1542409706888").unwrap()
-        );
+        let (listener, addr) = setup()?;
+        let url = format!("http://{}/", addr);
 
+        let server = tokio::spawn(async move {
+            let svc = hyper::Server::from_tcp(listener)?.serve(MakeSvc);
+            svc.await
+        });
+
+        let client = tokio::spawn(async {
+            let mut client = Client::with(url, hyper::Client::new())?;
+            let req = NextEventRequest.into_req()?;
+            let rsp = client.call(req).await?;
+
+            assert_eq!(rsp.status(), StatusCode::OK);
+            let header = "lambda-runtime-deadline-ms";
+            assert_eq!(rsp.headers()[header], &HeaderValue::try_from("1542409706888")?);
+            Ok::<(), Err>(())
+        });
+        future::try_select(client, server).await.unwrap();
         Ok(())
     }
 
     #[tokio::test]
     async fn ok_response() -> Result<(), Err> {
-        let id = "156cb537-e2d4-11e8-9b34-d36013741fb9";
-        let server = http(MakeSvc);
+        let (listener, addr) = setup()?;
+        let url = format!("http://{}/", addr);
 
-        let req = EventCompletionRequest {
-            request_id: id,
-            body: "done",
-        };
+        let server = tokio::spawn(async move {
+            let svc = hyper::Server::from_tcp(listener)?.serve(MakeSvc);
+            svc.await
+        });
 
-        let url = format!("http://{}/", server.addr());
-        let mut client = Client::with(url, hyper::Client::new())?;
-        let rsp = client.call(req.into_req()?).await?;
-        assert_eq!(rsp.status(), StatusCode::ACCEPTED);
-
+        let client = tokio::spawn(async {
+            let mut client = Client::with(url, hyper::Client::new())?;
+            let req = EventCompletionRequest {
+                request_id: "156cb537-e2d4-11e8-9b34-d36013741fb9",
+                body: "done",
+            };
+            let req = req.into_req()?;
+            let rsp = client.call(req).await?;
+            assert_eq!(rsp.status(), StatusCode::ACCEPTED);
+            Ok::<(), Err>(())
+        });
+        future::try_select(server, client).await.unwrap();
         Ok(())
     }
 
     #[tokio::test]
     async fn error_response() -> Result<(), Err> {
-        let id = "156cb537-e2d4-11e8-9b34-d36013741fb9";
-        let server = http(MakeSvc);
+        let (listener, addr) = setup()?;
+        let url = format!("http://{}/", addr);
 
-        let req = EventErrorRequest {
-            request_id: id,
-            diagnostic: Diagnostic {
-                error_type: "InvalidEventDataError".to_string(),
-                error_message: "Error parsing event data".to_string(),
-            },
-        };
+        let server = tokio::spawn(async move {
+            let svc = hyper::Server::from_tcp(listener)?.serve(MakeSvc);
+            svc.await
+        });
 
-        let url = format!("http://{}/", server.addr());
-        let mut client = Client::with(url, hyper::Client::new())?;
-        let rsp = client.call(req.into_req()?).await?;
-        assert_eq!(rsp.status(), StatusCode::ACCEPTED);
-
+        let client = tokio::spawn(async {
+            let mut client = Client::with(url, hyper::Client::new())?;
+            let req = EventErrorRequest {
+                request_id: "156cb537-e2d4-11e8-9b34-d36013741fb9",
+                diagnostic: Diagnostic {
+                    error_type: "InvalidEventDataError".to_string(),
+                    error_message: "Error parsing event data".to_string(),
+                },
+            };
+            let req = req.into_req()?;
+            let rsp = client.call(req).await?;
+            assert_eq!(rsp.status(), StatusCode::ACCEPTED);
+            Ok::<(), Err>(())
+        });
+        future::try_select(server, client).await.unwrap();
         Ok(())
     }
 }

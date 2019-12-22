@@ -1,5 +1,5 @@
 edition = "2018"
 # https://github.com/rust-lang/rustfmt/blob/master/Configurations.md#merge_imports
-# merge_imports = true
+merge_imports = true
 # https://github.com/rust-lang/rustfmt/blob/master/Configurations.md#max_width
-# max_width = 120
+max_width = 120

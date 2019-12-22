@@ -21,7 +21,7 @@
 //! Optionally, the `#[lambda]` annotated function can accept an argument
 //! of [`lambda::LambdaCtx`].
 //!
-//! ```rust
+//! ```no_run
 //! use lambda::lambda;
 //!
 //! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
@@ -52,8 +52,6 @@ use tower_service::Service;
 
 mod client;
 mod requests;
-#[cfg(test)]
-mod support;
 /// Types availible to a Lambda function.
 mod types;
 
@@ -121,11 +119,7 @@ impl<F: Future> Future for WithTaskLocal<F> {
 
 /// Gets the current function context.
 pub fn context() -> LambdaCtx {
-    TASK_LOCAL.with(|tl| {
-        tl.borrow()
-            .clone()
-            .expect("Context is not set; this is a bug.")
-    })
+    TASK_LOCAL.with(|tl| tl.borrow().clone().expect("Context is not set; this is a bug."))
 }
 
 /// A trait describing an asynchronous function `A` to `B.
@@ -171,7 +165,7 @@ where
 /// Runtime APIs](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html).
 ///
 /// # Example
-/// ```rust
+/// ```no_run
 /// use lambda::handler_fn;
 ///
 /// type Error = Box<dyn std::error::Error + Send + Sync + 'static>;

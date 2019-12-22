@@ -4,7 +4,7 @@ use crate::{
     Err,
 };
 use bytes::buf::ext::BufExt;
-use futures_util::future;
+use futures::future;
 use http::{uri::PathAndQuery, HeaderValue, Method, Request, Response, StatusCode, Uri};
 use hyper::Body;
 use std::{

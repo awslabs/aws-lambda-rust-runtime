@@ -1,9 +1,8 @@
 // Borrowed from https://github.com/seanmonstar/reqwest/blob/master/tests/client.rs
 
-pub use http::Response;
-use std::{
-    convert::Infallible, future::Future, net, sync::mpsc as std_mpsc, thread, time::Duration,
-};
+use crate::client::MakeSvc;
+pub use http::{Request, Response};
+use std::{net, sync::mpsc as std_mpsc, thread, time::Duration};
 use tokio::{runtime, sync::oneshot};
 
 pub struct Server {
@@ -32,11 +31,7 @@ impl Drop for Server {
     }
 }
 
-pub fn http<F, Fut>(func: F) -> Server
-where
-    F: Fn(http::Request<hyper::Body>) -> Fut + Clone + Send + 'static,
-    Fut: Future<Output = http::Response<hyper::Body>> + Send + 'static,
-{
+pub fn http(svc: MakeSvc) -> Server {
     // Spawn new runtime in thread to prevent reactor execution context conflict
     thread::spawn(move || {
         let mut rt = runtime::Builder::new()
@@ -44,19 +39,8 @@ where
             .enable_all()
             .build()
             .expect("new rt");
-        let srv = rt.block_on(async move {
-            hyper::Server::bind(&([127, 0, 0, 1], 0).into()).serve(hyper::service::make_service_fn(
-                move |_| {
-                    let func = func.clone();
-                    async move {
-                        Ok::<_, Infallible>(hyper::service::service_fn(move |req| {
-                            let fut = func(req);
-                            async move { Ok::<_, Infallible>(fut.await) }
-                        }))
-                    }
-                },
-            ))
-        });
+        let srv =
+            rt.block_on(async move { hyper::Server::bind(&([127, 0, 0, 1], 0).into()).serve(svc) });
 
         let addr = srv.local_addr();
         let (shutdown_tx, shutdown_rx) = oneshot::channel();

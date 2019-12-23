@@ -233,11 +233,7 @@ where
             };
 
             let req = match f.await {
-                Ok(res) => EventCompletionRequest {
-                    request_id,
-                    body: serde_json::to_vec(&res)?,
-                }
-                .into_req()?,
+                Ok(res) => EventCompletionRequest { request_id, body: res }.into_req()?,
                 Err(err) => EventErrorRequest {
                     request_id,
                     diagnostic: Diagnostic {

@@ -5,7 +5,10 @@ use crate::{
 };
 use bytes::buf::ext::BufExt;
 use futures::future;
-use http::{uri::{PathAndQuery, Scheme}, HeaderValue, Method, Request, Response, StatusCode, Uri};
+use http::{
+    uri::{PathAndQuery, Scheme},
+    HeaderValue, Method, Request, Response, StatusCode, Uri,
+};
 use hyper::Body;
 use std::{
     convert::{TryFrom, TryInto},

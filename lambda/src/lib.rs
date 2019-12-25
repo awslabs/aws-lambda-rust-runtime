@@ -33,7 +33,6 @@
 //! }
 //! ```
 pub use crate::types::LambdaCtx;
-use bytes::buf::BufExt;
 use client::Client;
 use http::{Request, Response};
 use hyper::Body;
@@ -129,10 +128,6 @@ pub trait Handler<A, B> {
     /// The future response value of this handler.
     type Fut: Future<Output = Result<B, Self::Err>>;
     /// Process the incoming event and return the response asynchronously.
-    ///
-    /// # Arguments
-    /// * `event` - The data received in the invocation request
-    /// * `ctx` - The context for the current invocation
     fn call(&mut self, event: A) -> Self::Fut;
 }
 
@@ -193,7 +188,23 @@ where
     let config = Config::from_env()?;
     let client = Client::with(&config.endpoint, hyper::Client::new())?;
     let mut exec = Executor { client };
-    exec.run(&mut handler).await?;
+    exec.run(&mut handler, false).await?;
+
+    Ok(())
+}
+
+/// Runs the lambda function almost entirely in-memory. This is mean for easier testing.
+pub async fn run_simulated<A, B, F>(handler: F, url: &str) -> Result<(), Err>
+where
+    F: Handler<A, B>,
+    <F as Handler<A, B>>::Err: fmt::Debug,
+    A: for<'de> Deserialize<'de>,
+    B: Serialize,
+{
+    let mut handler = handler;
+    let client = Client::with(url, hyper::Client::new())?;
+    let mut exec = Executor { client };
+    exec.run(&mut handler, true).await?;
 
     Ok(())
 }
@@ -207,7 +218,7 @@ where
     S: Service<Request<Body>, Response = Response<Body>>,
     <S as Service<Request<Body>>>::Error: Into<Err> + Send + Sync + 'static + std::error::Error,
 {
-    async fn run<A, B, F>(&mut self, handler: &mut F) -> Result<(), Err>
+    async fn run<A, B, F>(&mut self, handler: &mut F, once: bool) -> Result<(), Err>
     where
         F: Handler<A, B>,
         <F as Handler<A, B>>::Err: fmt::Debug,
@@ -215,16 +226,16 @@ where
         B: Serialize,
     {
         let client = &mut self.client;
+        // todo: refactor this into a stream so that the `once` boolean can be replaced
+        // a `.take(n).await` combinator if we want to run this once, if `n` is `1`.
         loop {
             let req = NextEventRequest.into_req()?;
             let event = client.call(req).await?;
             let (parts, body) = event.into_parts();
 
-            let mut ctx = LambdaCtx::try_from(parts.headers)?;
-            ctx.env_config = Config::from_env()?;
-
-            let body = hyper::body::aggregate(body).await?;
-            let body = serde_json::from_reader(body.reader())?;
+            let ctx = LambdaCtx::try_from(parts.headers)?;
+            let body = hyper::body::to_bytes(body).await?;
+            let body = serde_json::from_slice(&body)?;
 
             let request_id = &ctx.request_id.clone();
             let f = WithTaskLocal {
@@ -244,6 +255,9 @@ where
                 .into_req()?,
             };
             client.call(req).await?;
+            if once {
+                break Ok(());
+            }
         }
     }
 }

@@ -130,8 +130,14 @@ impl TryFrom<HeaderMap> for LambdaCtx {
                 .expect("Missing deadline"),
             invoked_function_arn: headers["lambda-runtime-invoked-function-arn"]
                 .to_str()
-                .expect("Missing arn")
+                .expect("Missing arn; this is a bug")
                 .to_owned(),
+            xray_trace_id: headers.get("lambda-runtime-trace-id").map(|header| {
+                header
+                    .to_str()
+                    .expect("Invalid XRayTraceID sent by Lambda; this is a bug")
+                    .to_owned()
+            }),
             ..Default::default()
         };
         Ok(ctx)

@@ -10,6 +10,7 @@ use http::{
     HeaderValue, Method, Request, Response, StatusCode, Uri,
 };
 use hyper::Body;
+use serde_json::json;
 use std::{
     convert::{TryFrom, TryInto},
     future::Future,
@@ -70,9 +71,9 @@ where
     }
 }
 
-pub struct NextEventSvc;
+pub struct EndpointSvc;
 
-impl Service<Request<Body>> for NextEventSvc {
+impl Service<Request<Body>> for EndpointSvc {
     type Response = Response<Body>;
     type Error = crate::Err;
     type Future = Fut<'static, Result<Self::Response, Self::Error>>;
@@ -101,13 +102,14 @@ async fn next_event(req: Request<Body>) -> Result<Response<Body>, Err> {
     let path = "/2018-06-01/runtime/invocation/next";
     assert_eq!(req.method(), Method::GET);
     assert_eq!(req.uri().path_and_query().unwrap(), &PathAndQuery::from_static(path));
+    let body = json!({"message": "hello"});
 
     let rsp = NextEventResponse {
         request_id: "8476a536-e9f4-11e8-9739-2dfe598c3fcd",
         deadline: 1542409706888,
         arn: "arn:aws:lambda:us-east-2:123456789012:function:custom-runtime",
         trace_id: "Root=1-5bef4de7-ad49b0e87f6ef6c87fc2e700;Parent=9a9197af755a6419",
-        body: vec![],
+        body: serde_json::to_vec(&body)?,
     };
     rsp.into_rsp()
 }
@@ -144,7 +146,7 @@ async fn event_err(req: Request<Body>) -> Result<Response<Body>, Err> {
 pub struct MakeSvc;
 
 impl<T> Service<T> for MakeSvc {
-    type Response = NextEventSvc;
+    type Response = EndpointSvc;
     type Error = std::io::Error;
     type Future = future::Ready<Result<Self::Response, Self::Error>>;
 
@@ -153,7 +155,7 @@ impl<T> Service<T> for MakeSvc {
     }
 
     fn call(&mut self, _: T) -> Self::Future {
-        future::ok(NextEventSvc)
+        future::ok(EndpointSvc)
     }
 }
 
@@ -161,7 +163,9 @@ impl<T> Service<T> for MakeSvc {
 mod endpoint_tests {
     use super::{Client, MakeSvc};
     use crate::{
+        context, handler_fn,
         requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest},
+        run_simulated,
         types::Diagnostic,
         Err,
     };
@@ -252,6 +256,32 @@ mod endpoint_tests {
             Ok::<(), Err>(())
         });
         future::try_select(server, client).await.unwrap();
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn run_end_to_end() -> Result<(), Err> {
+        use serde_json::Value;
+        let (listener, addr) = setup()?;
+        let url = format!("http://{}/", addr);
+
+        let server = tokio::spawn(async move {
+            let svc = hyper::Server::from_tcp(listener)?.serve(MakeSvc);
+            svc.await
+        });
+
+        async fn handler(s: Value) -> Result<Value, Err> {
+            let ctx = context();
+            assert!(ctx.xray_trace_id.is_some());
+            Ok(s)
+        }
+        let handler = handler_fn(handler);
+
+        let handler = tokio::spawn(async move {
+            run_simulated(handler, &url).await?;
+            Ok::<(), Err>(())
+        });
+        future::try_select(server, handler).await.unwrap();
         Ok(())
     }
 }

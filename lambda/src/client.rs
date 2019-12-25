@@ -5,7 +5,7 @@ use crate::{
 };
 use bytes::buf::ext::BufExt;
 use futures::future;
-use http::{uri::PathAndQuery, HeaderValue, Method, Request, Response, StatusCode, Uri};
+use http::{uri::{PathAndQuery, Scheme}, HeaderValue, Method, Request, Response, StatusCode, Uri};
 use hyper::Body;
 use std::{
     convert::{TryFrom, TryInto},
@@ -40,7 +40,7 @@ where
     fn set_origin<B>(&self, req: Request<B>) -> Result<Request<B>, Err> {
         let (mut parts, body) = req.into_parts();
         let (scheme, authority) = {
-            let scheme = self.base.scheme().expect("Scheme not found");
+            let scheme = self.base.scheme().unwrap_or(&Scheme::HTTP);
             let authority = self.base.authority().expect("Authority not found");
             (scheme, authority)
         };

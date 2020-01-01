@@ -30,7 +30,7 @@ pub(crate) struct Client<S> {
 impl<S> Client<S>
 where
     S: Service<Request<Body>, Response = Response<Body>>,
-    <S as Service<Request<Body>>>::Error: Into<Err> + Send + Sync + 'static + std::error::Error,
+    S::Error: std::error::Error + Send + Sync + 'static,
 {
     pub fn with<T>(base: T, client: S) -> Result<Self, Err>
     where

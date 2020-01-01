@@ -41,7 +41,9 @@ use serde::{Deserialize, Serialize};
 use std::{
     cell::RefCell,
     convert::TryFrom,
-    env, fmt,
+    env,
+    error::Error,
+    fmt,
     future::Future,
     mem,
     pin::Pin,
@@ -57,7 +59,7 @@ mod types;
 use requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest};
 use types::Diagnostic;
 
-type Err = Box<dyn std::error::Error + Send + Sync + 'static>;
+type Err = Box<dyn Error + Send + Sync + 'static>;
 
 /// Configuration derived from environment variables.
 #[derive(Debug, Default, Clone, PartialEq)]
@@ -193,7 +195,7 @@ where
     Ok(())
 }
 
-/// Runs the lambda function almost entirely in-memory. This is mean for easier testing.
+/// Runs the lambda function almost entirely in-memory. This is meant for testing.
 pub async fn run_simulated<A, B, F>(handler: F, url: &str) -> Result<(), Err>
 where
     F: Handler<A, B>,
@@ -216,7 +218,7 @@ struct Executor<S> {
 impl<S> Executor<S>
 where
     S: Service<Request<Body>, Response = Response<Body>>,
-    <S as Service<Request<Body>>>::Error: Into<Err> + Send + Sync + 'static + std::error::Error,
+    <S as Service<Request<Body>>>::Error: Error + Send + Sync + 'static,
 {
     async fn run<A, B, F>(&mut self, handler: &mut F, once: bool) -> Result<(), Err>
     where

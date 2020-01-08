@@ -120,7 +120,7 @@ where
 
 /// The `HandlerError` struct can be use to abstract any `Err` of the handler method `Result`.
 /// The `HandlerError` object can be generated `From` any object that supports `Display`,
-/// `Send, `Sync`, and `Debug`. This allows handler functions to return any error using
+/// `Send`, `Sync`, and `Debug`. This allows handler functions to return any error using
 /// the `?` syntax. For example `let _age_num: u8 = e.age.parse()?;` will return the
 /// `<F as FromStr>::Err` from the handler function.
 //pub type HandlerError = failure::Error;

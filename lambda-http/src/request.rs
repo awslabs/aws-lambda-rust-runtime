@@ -184,7 +184,7 @@ where
                     for value in values {
                         let header_name = key.parse::<HeaderName>().map_err(A::Error::custom)?;
                         let header_value =
-                            HeaderValue::from_shared(value.into_owned().into()).map_err(A::Error::custom)?;
+                            HeaderValue::from_maybe_shared(value.into_owned()).map_err(A::Error::custom)?;
                         headers.append(header_name, header_value);
                     }
                 }
@@ -220,7 +220,7 @@ where
                 .unwrap_or_else(HeaderMap::new);
             while let Some((key, value)) = map.next_entry::<Cow<'_, str>, Cow<'_, str>>()? {
                 let header_name = key.parse::<HeaderName>().map_err(A::Error::custom)?;
-                let header_value = HeaderValue::from_shared(value.into_owned().into()).map_err(A::Error::custom)?;
+                let header_value = HeaderValue::from_maybe_shared(value.into_owned()).map_err(A::Error::custom)?;
                 headers.append(header_name, header_value);
             }
             Ok(headers)
@@ -259,8 +259,8 @@ impl<'a> From<LambdaRequest<'a>> for HttpRequest<Body> {
 
         // build an http::Request<lambda_http::Body> from a lambda_http::LambdaRequest
         let mut builder = HttpRequest::builder();
-        builder.method(http_method);
-        builder.uri({
+        builder = builder.method(http_method);
+        builder = builder.uri({
             format!(
                 "{}://{}{}",
                 headers
@@ -277,16 +277,16 @@ impl<'a> From<LambdaRequest<'a>> for HttpRequest<Body> {
         // multi valued query string parameters are always a super
         // set of singly valued query string parameters,
         // when present, multi-valued query string parameters are preferred
-        builder.extension(QueryStringParameters(
+        builder = builder.extension(QueryStringParameters(
             if multi_value_query_string_parameters.is_empty() {
                 query_string_parameters
             } else {
                 multi_value_query_string_parameters
             },
         ));
-        builder.extension(PathParameters(path_parameters));
-        builder.extension(StageVariables(stage_variables));
-        builder.extension(request_context);
+        builder = builder.extension(PathParameters(path_parameters));
+        builder = builder.extension(StageVariables(stage_variables));
+        builder = builder.extension(request_context);
 
         let mut req = builder
             .body(match body {

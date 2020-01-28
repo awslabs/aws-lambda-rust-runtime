@@ -176,6 +176,21 @@ mod endpoint_tests {
     };
     use tokio::select;
 
+    /// `race` selects over two tasks.
+    ///
+    /// The first task to complete is joined and checked for errors.
+    /// In this test suite, we don't expect that the "server" task
+    /// will ever complete because it is continuously listening for
+    /// incoming events.
+    macro_rules! race {
+        ($left:ident, $right:ident) => {
+            select! {
+                $left = $left => { $left?? },
+                $right = $right => { $right?? }
+            };
+        };
+    }
+
     fn setup() -> Result<(TcpListener, SocketAddr), Err> {
         let listener = TcpListener::bind("127.0.0.1:0")?;
         let addr = listener.local_addr()?;
@@ -202,10 +217,7 @@ mod endpoint_tests {
             assert_eq!(rsp.headers()[header], &HeaderValue::try_from("1542409706888")?);
             Ok::<(), Err>(())
         });
-        select! {
-            _ = client => {},
-            _ = server => unreachable!()
-        };
+        race!(client, server);
         Ok(())
     }
 
@@ -230,10 +242,7 @@ mod endpoint_tests {
             assert_eq!(rsp.status(), StatusCode::ACCEPTED);
             Ok::<(), Err>(())
         });
-        select! {
-            _ = client => {},
-            _ = server => unreachable!()
-        };
+        race!(client, server);
         Ok(())
     }
 
@@ -261,10 +270,7 @@ mod endpoint_tests {
             assert_eq!(rsp.status(), StatusCode::ACCEPTED);
             Ok::<(), Err>(())
         });
-        select! {
-            _ = client => {},
-            _ = server => unreachable!()
-        };
+        race!(client, server);
         Ok(())
     }
 
@@ -286,15 +292,11 @@ mod endpoint_tests {
             Ok(s)
         }
         let handler = handler_fn(handler);
-
-        let handler = tokio::spawn(async move {
+        let client = tokio::spawn(async move {
             run_simulated(handler, &url).await?;
             Ok::<(), Err>(())
         });
-        select! {
-            _ = handler => {},
-            _ = server => unreachable!()
-        };
+        race!(client, server);
         Ok(())
     }
 }

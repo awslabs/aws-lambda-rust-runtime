@@ -38,7 +38,8 @@ use http::{Request, Response};
 use hyper::Body;
 pub use lambda_attributes::lambda;
 use serde::{Deserialize, Serialize};
-use std::{convert::TryFrom, env, error::Error, fmt, future::Future};
+use std::task::{Context, Poll};
+use std::{convert::TryFrom, env, error::Error, fmt, future::Future, pin::Pin};
 use tower_service::Service;
 
 mod client;
@@ -176,6 +177,24 @@ where
 
 struct Executor<S> {
     client: Client<S>,
+}
+
+struct Incoming<S, F> {
+    client: Client<S>,
+    future: Option<F>,
+}
+
+impl<S, F> futures::Stream for Incoming<S, F>
+where
+    S: Service<Request<Body>, Response = Response<Body>>,
+    <S as Service<Request<Body>>>::Error: Error + Send + Sync + 'static,
+    F: Future,
+{
+    type Item = Result<Response<Body>, S::Error>;
+
+    fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+        unimplemented!()
+    }
 }
 
 impl<S> Executor<S>

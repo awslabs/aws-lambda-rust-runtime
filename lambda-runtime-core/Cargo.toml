@@ -21,7 +21,7 @@ lambda_runtime_client = { path = "../lambda-runtime-client", version = "^0.2" }
 lambda_runtime_errors = { path = "../lambda-runtime-errors", version = "^0.1" }
 
 [dev-dependencies]
-simple_logger = "^1.0"
+simple_logger = "^1.5"
 
 [build-dependencies]
 rustc_version = "^0.2"

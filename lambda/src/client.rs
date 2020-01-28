@@ -163,18 +163,18 @@ impl<T> Service<T> for MakeSvc {
 mod endpoint_tests {
     use super::{Client, MakeSvc};
     use crate::{
-        context, handler_fn,
+        handler_fn,
         requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest},
         run_simulated,
         types::Diagnostic,
-        Err,
+        Err, INVOCATION_CTX,
     };
-    use futures::future;
     use http::{HeaderValue, StatusCode};
     use std::{
         convert::TryFrom,
         net::{SocketAddr, TcpListener},
     };
+    use tokio::select;
 
     fn setup() -> Result<(TcpListener, SocketAddr), Err> {
         let listener = TcpListener::bind("127.0.0.1:0")?;
@@ -202,7 +202,10 @@ mod endpoint_tests {
             assert_eq!(rsp.headers()[header], &HeaderValue::try_from("1542409706888")?);
             Ok::<(), Err>(())
         });
-        future::try_select(client, server).await.unwrap();
+        select! {
+            _ = client => {},
+            _ = server => unreachable!()
+        };
         Ok(())
     }
 
@@ -227,7 +230,10 @@ mod endpoint_tests {
             assert_eq!(rsp.status(), StatusCode::ACCEPTED);
             Ok::<(), Err>(())
         });
-        future::try_select(server, client).await.unwrap();
+        select! {
+            _ = client => {},
+            _ = server => unreachable!()
+        };
         Ok(())
     }
 
@@ -255,7 +261,10 @@ mod endpoint_tests {
             assert_eq!(rsp.status(), StatusCode::ACCEPTED);
             Ok::<(), Err>(())
         });
-        future::try_select(server, client).await.unwrap();
+        select! {
+            _ = client => {},
+            _ = server => unreachable!()
+        };
         Ok(())
     }
 
@@ -271,8 +280,9 @@ mod endpoint_tests {
         });
 
         async fn handler(s: Value) -> Result<Value, Err> {
-            let ctx = context();
-            assert!(ctx.xray_trace_id.is_some());
+            INVOCATION_CTX.with(|ctx| {
+                assert!(ctx.xray_trace_id.is_some());
+            });
             Ok(s)
         }
         let handler = handler_fn(handler);
@@ -281,7 +291,10 @@ mod endpoint_tests {
             run_simulated(handler, &url).await?;
             Ok::<(), Err>(())
         });
-        future::try_select(server, handler).await.unwrap();
+        select! {
+            _ = handler => {},
+            _ = server => unreachable!()
+        };
         Ok(())
     }
 }

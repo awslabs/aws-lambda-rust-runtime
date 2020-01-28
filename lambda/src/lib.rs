@@ -38,17 +38,7 @@ use http::{Request, Response};
 use hyper::Body;
 pub use lambda_attributes::lambda;
 use serde::{Deserialize, Serialize};
-use std::{
-    cell::RefCell,
-    convert::TryFrom,
-    env,
-    error::Error,
-    fmt,
-    future::Future,
-    mem,
-    pin::Pin,
-    task::{Context, Poll},
-};
+use std::{convert::TryFrom, env, error::Error, fmt, future::Future};
 use tower_service::Service;
 
 mod client;
@@ -93,34 +83,8 @@ impl Config {
     }
 }
 
-thread_local! {
-    static TASK_LOCAL: RefCell<Option<types::LambdaCtx>> = RefCell::new(None);
-}
-
-#[pin_project::pin_project]
-struct WithTaskLocal<F> {
-    task_local: Option<types::LambdaCtx>,
-    #[pin]
-    future: F,
-}
-
-impl<F: Future> Future for WithTaskLocal<F> {
-    type Output = F::Output;
-    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        let this = self.project();
-        TASK_LOCAL.with(|tl| {
-            let prev = tl.borrow_mut().replace(this.task_local.take().unwrap());
-            let res = this.future.poll(cx);
-            // handling the inner future panicking is left as an exercise to the reader
-            *this.task_local = mem::replace(&mut *tl.borrow_mut(), prev);
-            res
-        })
-    }
-}
-
-/// Gets the current function context.
-pub fn context() -> LambdaCtx {
-    TASK_LOCAL.with(|tl| tl.borrow().clone().expect("Context is not set; this is a bug."))
+tokio::task_local! {
+    pub static INVOCATION_CTX: types::LambdaCtx;
 }
 
 /// A trait describing an asynchronous function `A` to `B.
@@ -175,7 +139,6 @@ where
 /// }
 ///
 /// async fn func(s: String) -> Result<String, Error> {
-///     let ctx = lambda::context();
 ///     Ok(s)
 /// }
 /// ```
@@ -240,10 +203,7 @@ where
             let body = serde_json::from_slice(&body)?;
 
             let request_id = &ctx.request_id.clone();
-            let f = WithTaskLocal {
-                task_local: Some(ctx),
-                future: handler.call(body),
-            };
+            let f = INVOCATION_CTX.scope(ctx, { handler.call(body) });
 
             let req = match f.await {
                 Ok(res) => EventCompletionRequest { request_id, body: res }.into_req()?,

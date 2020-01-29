@@ -84,21 +84,26 @@ impl Service<Request<Body>> for EndpointSvc {
 
     fn call(&mut self, req: Request<Body>) -> Self::Future {
         let fut = async move {
-            let path = req.uri().path_and_query().unwrap().as_str();
-            let rsp = if path.ends_with("next") {
-                next_event(req).await
-            } else if path.ends_with("response") {
-                complete_event(req).await
-            } else {
-                event_err(req).await
-            };
-            rsp
+            let path: Vec<&str> = req
+                .uri()
+                .path_and_query()
+                .unwrap()
+                .as_str()
+                .split("/")
+                .collect::<Vec<&str>>();
+            match &path[1..] {
+                ["2018-06-01", "runtime", "invocation", "next"] => next_event(&req).await,
+                ["2018-06-01", "runtime", "invocation", id, "response"] => complete_event(&req, id).await,
+                ["2018-06-01", "runtime", "invocation", id, "error"] => event_err(&req, id).await,
+                ["2018-06-01", "runtime", "init", "error"] => unimplemented!(),
+                _ => unimplemented!(),
+            }
         };
         Box::pin(fut)
     }
 }
 
-async fn next_event(req: Request<Body>) -> Result<Response<Body>, Err> {
+async fn next_event(req: &Request<Body>) -> Result<Response<Body>, Err> {
     let path = "/2018-06-01/runtime/invocation/next";
     assert_eq!(req.method(), Method::GET);
     assert_eq!(req.uri().path_and_query().unwrap(), &PathAndQuery::from_static(path));
@@ -114,30 +119,27 @@ async fn next_event(req: Request<Body>) -> Result<Response<Body>, Err> {
     rsp.into_rsp()
 }
 
-async fn complete_event(req: Request<Body>) -> Result<Response<Body>, Err> {
-    assert_eq!(req.method(), Method::POST);
+async fn complete_event(req: &Request<Body>, id: &str) -> Result<Response<Body>, Err> {
+    assert_eq!(Method::POST, req.method());
     let rsp = Response::builder()
         .status(StatusCode::ACCEPTED)
         .body(Body::empty())
         .expect("Unable to construct response");
+
+    let expected = format!("/2018-06-01/runtime/invocation/{}/response", id);
+    assert_eq!(expected, req.uri().path());
+
     Ok(rsp)
 }
 
-async fn event_err(req: Request<Body>) -> Result<Response<Body>, Err> {
-    let (parts, body) = req.into_parts();
-    let expected = Diagnostic {
-        error_type: "InvalidEventDataError".to_string(),
-        error_message: "Error parsing event data".to_string(),
-    };
+async fn event_err(req: &Request<Body>, id: &str) -> Result<Response<Body>, Err> {
+    let expected = format!("/2018-06-01/runtime/invocation/{}/error", id);
+    assert_eq!(expected, req.uri().path());
 
-    let body = hyper::body::aggregate(body).await?;
-    let actual = serde_json::from_reader(body.reader())?;
-    assert_eq!(expected, actual);
-
-    assert_eq!(parts.method, Method::POST);
+    assert_eq!(req.method(), Method::POST);
     let header = "lambda-runtime-function-error-type";
     let expected = "unhandled";
-    assert_eq!(parts.headers[header], HeaderValue::try_from(expected)?);
+    assert_eq!(req.headers()[header], HeaderValue::try_from(expected)?);
 
     let rsp = Response::builder().status(StatusCode::ACCEPTED).body(Body::empty())?;
     Ok(rsp)

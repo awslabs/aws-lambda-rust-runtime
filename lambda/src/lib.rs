@@ -38,8 +38,15 @@ use http::{Request, Response};
 use hyper::Body;
 pub use lambda_attributes::lambda;
 use serde::{Deserialize, Serialize};
-use std::task::{Context, Poll};
-use std::{convert::TryFrom, env, error::Error, fmt, future::Future, pin::Pin};
+use std::{
+    convert::TryFrom,
+    env,
+    error::Error,
+    fmt,
+    future::Future,
+    pin::Pin,
+    task::{Context, Poll},
+};
 use tower_service::Service;
 
 mod client;

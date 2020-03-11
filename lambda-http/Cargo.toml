@@ -20,7 +20,7 @@ http = "0.1"
 serde = "^1"
 serde_json = "^1"
 serde_derive = "^1"
-lambda_runtime = { path = "../lambda-runtime", version = "^0.2" }
+lambda = { path = "../lambda" }
 tokio = "^0.1"
 base64 = "0.10"
 failure = "0.1"

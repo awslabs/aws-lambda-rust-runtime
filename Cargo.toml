@@ -1,9 +1,5 @@
 [workspace]
 members = [
-    "lambda-runtime-client",
-    "lambda-runtime-core",
-    "lambda-runtime",
-    "lambda-http",
-    "lambda-runtime-errors",
-    "lambda-runtime-errors-derive"
+    "lambda",
+    "lambda-attributes"
 ]

@@ -23,12 +23,13 @@
 //!
 //! ```no_run
 //! use lambda::lambda;
+//! use serde_json::Value;
 //!
 //! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 //!
 //! #[lambda]
 //! #[tokio::main]
-//! async fn main(event: String) -> Result<String, Error> {
+//! async fn main(event: Value) -> Result<Value, Error> {
 //!     Ok(event)
 //! }
 //! ```
@@ -136,6 +137,7 @@ where
 /// # Example
 /// ```no_run
 /// use lambda::handler_fn;
+/// use serde_json::Value;
 ///
 /// type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 ///
@@ -146,8 +148,8 @@ where
 ///     Ok(())
 /// }
 ///
-/// async fn func(s: String) -> Result<String, Error> {
-///     Ok(s)
+/// async fn func(event: Value) -> Result<Value, Error> {
+///     Ok(event)
 /// }
 /// ```
 pub async fn run<A, B, F>(handler: F) -> Result<(), Err>

@@ -1,4 +1,5 @@
 use lambda::handler_fn;
+use serde_json::Value;
 
 type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
@@ -9,6 +10,6 @@ async fn main() -> Result<(), Error> {
     Ok(())
 }
 
-async fn func(event: String) -> Result<String, Error> {
+async fn func(event: Value) -> Result<Value, Error> {
     Ok(event)
 }

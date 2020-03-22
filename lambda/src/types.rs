@@ -102,7 +102,7 @@ pub struct LambdaCtx {
     /// The ARN of the Lambda function being invoked.
     pub invoked_function_arn: String,
     /// The X-Ray trace ID for the current invocation.
-    pub xray_trace_id: Option<String>,
+    pub xray_trace_id: String,
     /// The client context object sent by the AWS mobile SDK. This field is
     /// empty unless the function is invoked using an AWS mobile SDK.
     pub client_context: Option<ClientContext>,
@@ -132,12 +132,10 @@ impl TryFrom<HeaderMap> for LambdaCtx {
                 .to_str()
                 .expect("Missing arn; this is a bug")
                 .to_owned(),
-            xray_trace_id: headers.get("lambda-runtime-trace-id").map(|header| {
-                header
-                    .to_str()
-                    .expect("Invalid XRayTraceID sent by Lambda; this is a bug")
-                    .to_owned()
-            }),
+            xray_trace_id: headers["lambda-runtime-trace-id"]
+                .to_str()
+                .expect("Invalid XRayTraceID sent by Lambda; this is a bug")
+                .to_owned(),
             ..Default::default()
         };
         Ok(ctx)

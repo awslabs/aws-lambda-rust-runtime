@@ -1,18 +1,16 @@
 use crate::{
     requests::{IntoResponse, NextEventResponse},
-    types::Diagnostic,
     Err,
 };
-use bytes::buf::ext::BufExt;
 use futures::future;
 use http::{
     uri::{PathAndQuery, Scheme},
     HeaderValue, Method, Request, Response, StatusCode, Uri,
 };
-use hyper::Body;
+use hyper::{client::HttpConnector, Body};
 use serde_json::json;
 use std::{
-    convert::{TryFrom, TryInto},
+    convert::TryFrom,
     future::Future,
     pin::Pin,
     task::{Context, Poll},
@@ -21,24 +19,18 @@ use tower_service::Service;
 
 type Fut<'a, T> = Pin<Box<dyn Future<Output = T> + 'a + Send>>;
 
-#[derive(Debug, Clone)]
-pub(crate) struct Client<S> {
+#[derive(Debug)]
+pub(crate) struct Client<C = HttpConnector> {
     base: Uri,
-    client: S,
+    client: hyper::Client<C>,
 }
 
-impl<S> Client<S>
+impl<C> Client<C>
 where
-    S: Service<Request<Body>, Response = Response<Body>>,
-    S::Error: std::error::Error + Send + Sync + 'static,
+    C: hyper::client::connect::Connect + Sync + Send + Clone + 'static,
 {
-    pub fn with<T>(base: T, client: S) -> Result<Self, Err>
-    where
-        T: TryInto<Uri>,
-        <T as TryInto<Uri>>::Error: std::error::Error + Send + Sync + 'static,
-    {
-        let base = base.try_into()?;
-        Ok(Self { base, client })
+    pub fn with(base: Uri, client: hyper::Client<C>) -> Self {
+        Self { base, client }
     }
 
     fn set_origin<B>(&self, req: Request<B>) -> Result<Request<B>, Err> {
@@ -61,12 +53,12 @@ where
         Ok(Request::from_parts(parts, body))
     }
 
-    pub(crate) async fn call(&mut self, req: Request<Body>) -> Result<Response<Body>, Err> {
+    pub(crate) async fn call(&self, req: Request<Body>) -> Result<Response<Body>, Err> {
         let req = self.set_origin(req)?;
         let (parts, body) = req.into_parts();
         let body = Body::from(body);
         let req = Request::from_parts(parts, body);
-        let response = self.client.call(req).await?;
+        let response = self.client.request(req).await?;
         Ok(response)
     }
 }
@@ -173,7 +165,7 @@ mod endpoint_tests {
     };
     use http::{HeaderValue, StatusCode};
     use std::{
-        convert::TryFrom,
+        convert::{TryFrom, TryInto},
         net::{SocketAddr, TcpListener},
     };
     use tokio::select;
@@ -210,7 +202,8 @@ mod endpoint_tests {
         });
 
         let client = tokio::spawn(async {
-            let mut client = Client::with(url, hyper::Client::new())?;
+            let url = url.try_into().expect("Unable to convert to URL");
+            let client = Client::with(url, hyper::Client::new());
             let req = NextEventRequest.into_req()?;
             let rsp = client.call(req).await?;
 
@@ -234,7 +227,8 @@ mod endpoint_tests {
         });
 
         let client = tokio::spawn(async {
-            let mut client = Client::with(url, hyper::Client::new())?;
+            let url = url.try_into().expect("Unable to convert to URL");
+            let client = Client::with(url, hyper::Client::new());
             let req = EventCompletionRequest {
                 request_id: "156cb537-e2d4-11e8-9b34-d36013741fb9",
                 body: "done",
@@ -259,7 +253,8 @@ mod endpoint_tests {
         });
 
         let client = tokio::spawn(async {
-            let mut client = Client::with(url, hyper::Client::new())?;
+            let url = url.try_into().expect("Unable to convert to URL");
+            let client = Client::with(url, hyper::Client::new());
             let req = EventErrorRequest {
                 request_id: "156cb537-e2d4-11e8-9b34-d36013741fb9",
                 diagnostic: Diagnostic {
@@ -288,9 +283,7 @@ mod endpoint_tests {
         });
 
         async fn handler(s: Value) -> Result<Value, Err> {
-            INVOCATION_CTX.with(|ctx| {
-                assert!(ctx.xray_trace_id.is_some());
-            });
+            INVOCATION_CTX.with(|ctx| {});
             Ok(s)
         }
         let handler = handler_fn(handler);

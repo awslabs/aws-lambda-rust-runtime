@@ -1,15 +1,16 @@
-use crate::{types::Diagnostic, Err};
+use crate::types::Diagnostic;
+use anyhow::Error;
 use http::{Method, Request, Response, Uri};
 use hyper::Body;
 use serde::Serialize;
 use std::str::FromStr;
 
 pub(crate) trait IntoRequest {
-    fn into_req(self) -> Result<Request<Body>, Err>;
+    fn into_req(self) -> Result<Request<Body>, Error>;
 }
 
 pub(crate) trait IntoResponse {
-    fn into_rsp(self) -> Result<Response<Body>, Err>;
+    fn into_rsp(self) -> Result<Response<Body>, Error>;
 }
 
 // /runtime/invocation/next
@@ -17,7 +18,7 @@ pub(crate) trait IntoResponse {
 pub(crate) struct NextEventRequest;
 
 impl IntoRequest for NextEventRequest {
-    fn into_req(self) -> Result<Request<Body>, Err> {
+    fn into_req(self) -> Result<Request<Body>, Error> {
         let req = Request::builder()
             .method(Method::GET)
             .uri(Uri::from_static("/2018-06-01/runtime/invocation/next"))
@@ -41,7 +42,7 @@ pub struct NextEventResponse<'a> {
 }
 
 impl<'a> IntoResponse for NextEventResponse<'a> {
-    fn into_rsp(self) -> Result<Response<Body>, Err> {
+    fn into_rsp(self) -> Result<Response<Body>, Error> {
         let rsp = Response::builder()
             .header("lambda-runtime-aws-request-id", self.request_id)
             .header("lambda-runtime-deadline-ms", self.deadline)
@@ -69,7 +70,7 @@ impl<'a, T> IntoRequest for EventCompletionRequest<'a, T>
 where
     T: for<'serialize> Serialize,
 {
-    fn into_req(self) -> Result<Request<Body>, Err> {
+    fn into_req(self) -> Result<Request<Body>, Error> {
         let uri = format!("/2018-06-01/runtime/invocation/{}/response", self.request_id);
         let uri = Uri::from_str(&uri)?;
         let body = serde_json::to_vec(&self.body)?;
@@ -99,7 +100,7 @@ pub(crate) struct EventErrorRequest<'a> {
 }
 
 impl<'a> IntoRequest for EventErrorRequest<'a> {
-    fn into_req(self) -> Result<Request<Body>, Err> {
+    fn into_req(self) -> Result<Request<Body>, Error> {
         let uri = format!("/2018-06-01/runtime/invocation/{}/error", self.request_id);
         let uri = Uri::from_str(&uri)?;
         let body = serde_json::to_vec(&self.diagnostic)?;
@@ -133,7 +134,7 @@ fn test_event_error_request() {
 struct InitErrorRequest;
 
 impl IntoRequest for InitErrorRequest {
-    fn into_req(self) -> Result<Request<Body>, Err> {
+    fn into_req(self) -> Result<Request<Body>, Error> {
         let uri = format!("/2018-06-01/runtime/init/error");
         let uri = Uri::from_str(&uri)?;
 

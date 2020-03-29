@@ -34,6 +34,7 @@
 //! }
 //! ```
 pub use crate::types::LambdaCtx;
+use anyhow::Error;
 use client::Client;
 use futures::stream::{Stream, StreamExt};
 use genawaiter::{sync::gen, yield_};
@@ -41,21 +42,18 @@ pub use lambda_attributes::lambda;
 use serde::{Deserialize, Serialize};
 use std::{
     convert::{TryFrom, TryInto},
-    env,
-    error::Error,
-    fmt,
+    env, fmt,
     future::Future,
 };
 
 mod client;
 mod requests;
+mod simulated;
 /// Types availible to a Lambda function.
 mod types;
 
 use requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest};
 use types::Diagnostic;
-
-type Err = Box<dyn Error + Send + Sync + 'static>;
 
 /// Configuration derived from environment variables.
 #[derive(Debug, Default, Clone, PartialEq)]
@@ -76,7 +74,7 @@ pub struct Config {
 
 impl Config {
     /// Attempts to read configuration from environment variables.
-    pub fn from_env() -> Result<Self, Err> {
+    pub fn from_env() -> Result<Self, Error> {
         let conf = Config {
             endpoint: env::var("AWS_LAMBDA_RUNTIME_API")?,
             function_name: env::var("AWS_LAMBDA_FUNCTION_NAME")?,
@@ -96,9 +94,9 @@ tokio::task_local! {
 /// A trait describing an asynchronous function `A` to `B.
 pub trait Handler<A, B> {
     /// Errors returned by this handler.
-    type Err;
+    type Error;
     /// The future response value of this handler.
-    type Fut: Future<Output = Result<B, Self::Err>>;
+    type Fut: Future<Output = Result<B, Self::Error>>;
     /// Process the incoming event and return the response asynchronously.
     fn call(&mut self, event: A) -> Self::Fut;
 }
@@ -114,13 +112,13 @@ pub struct HandlerFn<F> {
     f: F,
 }
 
-impl<F, A, B, Err, Fut> Handler<A, B> for HandlerFn<F>
+impl<F, A, B, Error, Fut> Handler<A, B> for HandlerFn<F>
 where
     F: Fn(A) -> Fut,
-    Fut: Future<Output = Result<B, Err>> + Send,
-    Err: Into<Box<dyn std::error::Error + Send + Sync + 'static>> + fmt::Debug,
+    Fut: Future<Output = Result<B, Error>> + Send,
+    Error: Into<Box<dyn std::error::Error + Send + Sync + 'static>> + fmt::Debug,
 {
-    type Err = Err;
+    type Error = Error;
     type Fut = Fut;
     fn call(&mut self, req: A) -> Self::Fut {
         // we pass along the context here
@@ -149,10 +147,10 @@ where
 ///     Ok(event)
 /// }
 /// ```
-pub async fn run<A, B, F>(handler: F) -> Result<(), Err>
+pub async fn run<A, B, F>(handler: F) -> Result<(), Error>
 where
     F: Handler<A, B>,
-    <F as Handler<A, B>>::Err: fmt::Debug,
+    <F as Handler<A, B>>::Error: fmt::Debug,
     A: for<'de> Deserialize<'de>,
     B: Serialize,
 {
@@ -167,10 +165,10 @@ where
 }
 
 /// Runs the lambda function almost entirely in-memory. This is meant for testing.
-pub async fn run_simulated<A, B, F>(handler: F, url: &str) -> Result<(), Err>
+pub async fn run_simulated<A, B, F>(handler: F, url: &str) -> Result<(), Error>
 where
     F: Handler<A, B>,
-    <F as Handler<A, B>>::Err: fmt::Debug,
+    <F as Handler<A, B>>::Error: fmt::Debug,
     A: for<'de> Deserialize<'de>,
     B: Serialize,
 {
@@ -183,7 +181,7 @@ where
     Ok(())
 }
 
-fn incoming(client: &Client) -> impl Stream<Item = Result<http::Response<hyper::Body>, Err>> + '_ {
+fn incoming(client: &Client) -> impl Stream<Item = Result<http::Response<hyper::Body>, Error>> + '_ {
     gen!({
         let req = NextEventRequest.into_req().expect("Unable to construct request");
         yield_!(client.call(req).await)
@@ -192,12 +190,12 @@ fn incoming(client: &Client) -> impl Stream<Item = Result<http::Response<hyper::
 
 async fn run_inner<A, B, F>(
     client: &Client,
-    incoming: impl Stream<Item = Result<http::Response<hyper::Body>, Err>> + Unpin,
+    incoming: impl Stream<Item = Result<http::Response<hyper::Body>, Error>> + Unpin,
     handler: &mut F,
-) -> Result<(), Err>
+) -> Result<(), Error>
 where
     F: Handler<A, B>,
-    <F as Handler<A, B>>::Err: fmt::Debug,
+    <F as Handler<A, B>>::Error: fmt::Debug,
     A: for<'de> Deserialize<'de>,
     B: Serialize,
 {
@@ -206,7 +204,7 @@ where
         let event = event?;
         let (parts, body) = event.into_parts();
 
-        let ctx = LambdaCtx::try_from(parts.headers)?;
+        let ctx: LambdaCtx = LambdaCtx::try_from(parts.headers)?;
         let body = hyper::body::to_bytes(body).await?;
         let body = serde_json::from_slice(&body)?;
 
@@ -215,11 +213,11 @@ where
 
         let req = match f.await {
             Ok(res) => EventCompletionRequest { request_id, body: res }.into_req()?,
-            Err(err) => EventErrorRequest {
+            Err(e) => EventErrorRequest {
                 request_id,
                 diagnostic: Diagnostic {
-                    error_message: format!("{:?}", err),
-                    error_type: type_name_of_val(err).to_owned(),
+                    error_message: format!("{:?}", e),
+                    error_type: type_name_of_val(e).to_owned(),
                 },
             }
             .into_req()?,

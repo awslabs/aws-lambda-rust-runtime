@@ -1,4 +1,5 @@
-use crate::{Config, Err};
+use crate::Config;
+use anyhow::Error;
 use http::HeaderMap;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, convert::TryFrom};
@@ -11,7 +12,7 @@ pub(crate) struct Diagnostic {
 }
 
 #[test]
-fn round_trip_lambda_error() -> Result<(), Err> {
+fn round_trip_lambda_error() -> Result<(), Error> {
     use serde_json::{json, Value};
     let expected = json!({
         "errorType": "InvalidEventDataError",
@@ -117,7 +118,7 @@ pub struct LambdaCtx {
 }
 
 impl TryFrom<HeaderMap> for LambdaCtx {
-    type Error = Err;
+    type Error = Error;
     fn try_from(headers: HeaderMap) -> Result<Self, Self::Error> {
         let ctx = LambdaCtx {
             request_id: headers["lambda-runtime-aws-request-id"]

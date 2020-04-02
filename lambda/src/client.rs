@@ -168,9 +168,9 @@ fn set_origin<B>(base: Uri, req: Request<B>) -> Result<Request<B>, Error> {
 #[cfg(test)]
 mod endpoint_tests {
     use super::{handle, set_origin};
-    use crate::simulated::SimulatedConnector;
     use crate::{
         requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest},
+        simulated::SimulatedConnector,
         types::Diagnostic,
     };
     use anyhow::Error;

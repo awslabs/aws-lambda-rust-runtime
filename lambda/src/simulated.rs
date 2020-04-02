@@ -1,13 +1,12 @@
 use http::Uri;
 use hyper::client::connect::Connection;
-use std::cmp::min;
-use std::collections::VecDeque;
-use std::io::Result as IoResult;
 use std::{
+    cmp::min,
+    collections::VecDeque,
     future::Future,
+    io::Result as IoResult,
     pin::Pin,
-    sync::Arc,
-    sync::Mutex,
+    sync::{Arc, Mutex},
     task::{Context, Poll, Waker},
 };
 use tokio::io::{AsyncRead, AsyncWrite};

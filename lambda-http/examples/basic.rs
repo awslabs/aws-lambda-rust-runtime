@@ -1,10 +1,10 @@
-use lambda_http::{handler, lambda, Handler, IntoResponse, Request, RequestExt, Response};
+use lambda_http::{handler, lambda, IntoResponse, Request, RequestExt, Response};
 
 type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    lambda::run(handler(func).to_adapter()).await?;
+    lambda::run(handler(func)).await?;
     Ok(())
 }
 

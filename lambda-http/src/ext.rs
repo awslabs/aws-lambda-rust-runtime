@@ -47,7 +47,7 @@ pub enum PayloadError {
 /// as well as `{"x":1, "y":2}` respectively.
 ///
 /// ```rust,no_run
-/// use lambda_http::{handler, Handler, lambda, Body, IntoResponse, Request, Response, RequestExt};
+/// use lambda_http::{handler, lambda, Body, IntoResponse, Request, Response, RequestExt};
 /// use serde_derive::Deserialize;
 ///
 /// type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
@@ -62,7 +62,7 @@ pub enum PayloadError {
 ///
 /// #[tokio::main]
 /// async fn main() -> Result<(), Error> {
-///   lambda::run(handler(add).to_adapter()).await?;
+///   lambda::run(handler(add)).await?;
 ///   Ok(())
 /// }
 ///

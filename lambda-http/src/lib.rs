@@ -13,12 +13,12 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use lambda_http::{handler, Handler, lambda, IntoResponse, Request, RequestExt};
+//! use lambda_http::{handler, lambda, IntoResponse, Request, RequestExt};
 //! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Error> {
-//!     lambda::run(handler(hello).to_adapter()).await?;
+//!     lambda::run(handler(hello)).await?;
 //!     Ok(())
 //! }
 //!
@@ -65,7 +65,7 @@ pub type Request = http::Request<Body>;
 
 /// Functions serving as ALB and API Gateway REST and HTTP API handlers must conform to this type.
 ///
-/// This can be viewed as a `lambda::Handler` constained to `http` crate `Request` and `Response` types
+/// This can be viewed as a `lambda::Handler` constrained to `http` crate `Request` and `Response` types
 pub trait Handler: Sized {
     /// The type of Error that this Handler will return
     type Err;
@@ -75,16 +75,11 @@ pub trait Handler: Sized {
     type Fut: Future<Output = Result<Self::Response, Self::Err>> + 'static;
     /// Function used to execute handler behavior
     fn call(&mut self, event: Request) -> Self::Fut;
-
-    /// Consumes this Handler into an Adapter type which implements `lambda::Hander`
-    fn to_adapter(self) -> Adapter<Self> {
-        Adapter { h: self }
-    }
 }
 
 /// Coerse a type that implements `Handler` type into a `Handler`
-pub fn handler<H: Handler>(h: H) -> H {
-    h
+pub fn handler<H: Handler>(handler: H) -> Adapter<H> {
+    Adapter { handler }
 }
 
 /// An implementation of `Handler` for a given closure
@@ -124,12 +119,24 @@ where
     }
 }
 
-// Exists only to satisfy the trait cover rule for `lambda::Handler` impl for
-//
+/// Exists only to satisfy the trait cover rule for `lambda::Handler` impl for
+///
+/// User code should never need to interact with this type directly. Since `Adapter` implements `Handler`
+/// It serves as a opaque trait covering type.
+///
 /// See [this article](http://smallcultfollowing.com/babysteps/blog/2015/01/14/little-orphan-impls/)
 /// for a larger explaination of why this is nessessary
 pub struct Adapter<H: Handler> {
-    h: H,
+    handler: H,
+}
+
+impl<H: Handler> Handler for Adapter<H> {
+    type Response = H::Response;
+    type Err = H::Err;
+    type Fut = H::Fut;
+    fn call(&mut self, event: Request) -> Self::Fut {
+        self.handler.call(event)
+    }
 }
 
 impl<H: Handler> LambdaHandler<LambdaRequest<'_>, LambdaResponse> for Adapter<H> {
@@ -137,7 +144,7 @@ impl<H: Handler> LambdaHandler<LambdaRequest<'_>, LambdaResponse> for Adapter<H>
     type Fut = TransformResponse<H::Response, Self::Err>;
     fn call(&mut self, event: LambdaRequest<'_>) -> Self::Fut {
         let is_alb = event.request_context.is_alb();
-        let fut = Box::pin(self.h.call(event.into()));
-        TransformResponse::<H::Response, Self::Err> { is_alb, fut }
+        let fut = Box::pin(self.handler.call(event.into()));
+        TransformResponse { is_alb, fut }
     }
 }

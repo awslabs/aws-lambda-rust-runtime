@@ -1,5 +1,6 @@
 [workspace]
 members = [
     "lambda",
-    "lambda-attributes"
+    "lambda-attributes",
+    "lambda-http"
 ]

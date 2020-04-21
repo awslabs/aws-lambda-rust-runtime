@@ -24,7 +24,7 @@ use crate::{
 #[doc(hidden)]
 #[derive(Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct LambdaRequest<'a> {
+pub struct LambdaRequest<'a> {
     pub(crate) path: Cow<'a, str>,
     #[serde(deserialize_with = "deserialize_method")]
     pub(crate) http_method: Method,
@@ -184,7 +184,7 @@ where
                     for value in values {
                         let header_name = key.parse::<HeaderName>().map_err(A::Error::custom)?;
                         let header_value =
-                            HeaderValue::from_shared(value.into_owned().into()).map_err(A::Error::custom)?;
+                            HeaderValue::from_maybe_shared(value.into_owned()).map_err(A::Error::custom)?;
                         headers.append(header_name, header_value);
                     }
                 }
@@ -220,7 +220,7 @@ where
                 .unwrap_or_else(HeaderMap::new);
             while let Some((key, value)) = map.next_entry::<Cow<'_, str>, Cow<'_, str>>()? {
                 let header_name = key.parse::<HeaderName>().map_err(A::Error::custom)?;
-                let header_value = HeaderValue::from_shared(value.into_owned().into()).map_err(A::Error::custom)?;
+                let header_value = HeaderValue::from_maybe_shared(value.into_owned()).map_err(A::Error::custom)?;
                 headers.append(header_name, header_value);
             }
             Ok(headers)
@@ -258,35 +258,35 @@ impl<'a> From<LambdaRequest<'a>> for HttpRequest<Body> {
         } = value;
 
         // build an http::Request<lambda_http::Body> from a lambda_http::LambdaRequest
-        let mut builder = HttpRequest::builder();
-        builder.method(http_method);
-        builder.uri({
-            format!(
-                "{}://{}{}",
-                headers
-                    .get("X-Forwarded-Proto")
-                    .map(|val| val.to_str().unwrap_or_else(|_| "https"))
-                    .unwrap_or_else(|| "https"),
-                headers
-                    .get(HOST)
-                    .map(|val| val.to_str().unwrap_or_default())
-                    .unwrap_or_default(),
-                path
-            )
-        });
-        // multi valued query string parameters are always a super
-        // set of singly valued query string parameters,
-        // when present, multi-valued query string parameters are preferred
-        builder.extension(QueryStringParameters(
-            if multi_value_query_string_parameters.is_empty() {
-                query_string_parameters
-            } else {
-                multi_value_query_string_parameters
-            },
-        ));
-        builder.extension(PathParameters(path_parameters));
-        builder.extension(StageVariables(stage_variables));
-        builder.extension(request_context);
+        let builder = HttpRequest::builder()
+            .method(http_method)
+            .uri({
+                format!(
+                    "{}://{}{}",
+                    headers
+                        .get("X-Forwarded-Proto")
+                        .map(|val| val.to_str().unwrap_or_else(|_| "https"))
+                        .unwrap_or_else(|| "https"),
+                    headers
+                        .get(HOST)
+                        .map(|val| val.to_str().unwrap_or_default())
+                        .unwrap_or_default(),
+                    path
+                )
+            })
+            // multi valued query string parameters are always a super
+            // set of singly valued query string parameters,
+            // when present, multi-valued query string parameters are preferred
+            .extension(QueryStringParameters(
+                if multi_value_query_string_parameters.is_empty() {
+                    query_string_parameters
+                } else {
+                    multi_value_query_string_parameters
+                },
+            ))
+            .extension(PathParameters(path_parameters))
+            .extension(StageVariables(stage_variables))
+            .extension(request_context);
 
         let mut req = builder
             .body(match body {

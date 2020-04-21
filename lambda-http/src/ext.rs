@@ -1,6 +1,5 @@
 //! ALB and API Gateway extension methods for `http::Request` types
 
-use failure::Fail;
 use http::{header::CONTENT_TYPE, Request as HttpRequest};
 use serde::{de::value::Error as SerdeError, Deserialize};
 use serde_json;
@@ -23,13 +22,13 @@ pub(crate) struct PathParameters(pub(crate) StrMap);
 pub(crate) struct StageVariables(pub(crate) StrMap);
 
 /// Payload deserialization errors
-#[derive(Debug, Fail)]
+#[derive(Debug)]
 pub enum PayloadError {
     /// Returned when `application/json` bodies fail to deserialize a payload
-    #[fail(display = "failed to parse payload from application/json")]
+    //#[fail(display = "failed to parse payload from application/json")]
     Json(serde_json::Error),
     /// Returned when `application/x-www-form-urlencoded` bodies fail to deserialize a payload
-    #[fail(display = "failed to parse payload application/x-www-form-urlencoded")]
+    //#[fail(display = "failed to parse payload application/x-www-form-urlencoded")]
     WwwFormUrlEncoded(SerdeError),
 }
 
@@ -48,9 +47,10 @@ pub enum PayloadError {
 /// as well as `{"x":1, "y":2}` respectively.
 ///
 /// ```rust,no_run
-/// use lambda_runtime::{Context, error::HandlerError};
-/// use lambda_http::{lambda, Body, Request, Response, RequestExt};
+/// use lambda_http::{handler, Handler, lambda, Body, IntoResponse, Request, Response, RequestExt};
 /// use serde_derive::Deserialize;
+///
+/// type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 ///
 /// #[derive(Debug,Deserialize,Default)]
 /// struct Args {
@@ -60,14 +60,15 @@ pub enum PayloadError {
 ///   y: usize
 /// }
 ///
-/// fn main() {
-///   lambda!(handler)
+/// #[tokio::main]
+/// async fn main() -> Result<(), Error> {
+///   lambda::run(handler(add).to_adapter()).await?;
+///   Ok(())
 /// }
 ///
-/// fn handler(
-///   request: Request,
-///   ctx: Context
-/// ) -> Result<Response<Body>, HandlerError> {
+/// async fn add(
+///   request: Request
+/// ) -> Result<Response<Body>, Error> {
 ///   let args: Args = request.payload()
 ///     .unwrap_or_else(|_parse_err| None)
 ///     .unwrap_or_default();

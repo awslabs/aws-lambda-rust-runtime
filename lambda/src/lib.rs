@@ -109,7 +109,7 @@ pub fn handler_fn<F>(f: F) -> HandlerFn<F> {
     HandlerFn { f }
 }
 
-/// A `Handler` or `HttpHandler` implemented by a closure.
+/// A `Handler` implemented by a closure.
 #[derive(Clone, Debug)]
 pub struct HandlerFn<F> {
     f: F,

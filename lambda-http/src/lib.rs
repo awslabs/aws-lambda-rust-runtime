@@ -1,10 +1,10 @@
 #![warn(missing_docs)]
 //#![deny(warnings)]
-//! Enriches the `lambda_runtime` crate with [http](https://github.com/hyperium/http)
-//! types targeting ALB and API Gateway proxy events.
+//! Enriches the `lambda` crate with [http](https://github.com/hyperium/http)
+//! types targeting ALB, API Gateway REST and HTTTP API proxy events.
 //!
 //! Though ALB and API Gateway proxy events are separate Lambda triggers, they both share
-//! similar shapes that contextually map to an http request handler. From a application perspective
+//! similar shapes that can be generalized to http request handler. From a application perspective
 //! the differences shouldn't matter. This crate
 //! abstracts over both using standard [http](https://github.com/hyperium/http) types allowing
 //! you to focus more on your application while giving you to the flexibility to
@@ -13,17 +13,18 @@
 //! # Examples
 //!
 //! ```rust,no_run
-//! use lambda_http::{lambda, IntoResponse, Request, RequestExt};
-//! use lambda_runtime::{Context, error::HandlerError};
+//! use lambda_http::{handler, Handler, lambda, IntoResponse, Request, RequestExt};
+//! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 //!
-//! fn main() {
-//!     lambda!(hello)
+//! #[tokio::main]
+//! async fn main() -> Result<(), Error> {
+//!     lambda::run(handler(hello).to_adapter()).await?;
+//!     Ok(())
 //! }
 //!
-//! fn hello(
+//! async fn hello(
 //!     request: Request,
-//!     _ctx: Context
-//! ) -> Result<impl IntoResponse, HandlerError> {
+//! ) -> Result<impl IntoResponse, Error> {
 //!     Ok(format!(
 //!         "hello {}",
 //!         request
@@ -33,25 +34,6 @@
 //!     ))
 //! }
 //! ```
-//!
-//! You can also provide a closure directly to the `lambda!` macro
-//!
-//! ```rust,no_run
-//! use lambda_http::{lambda, Request, RequestExt};
-//!
-//! fn main() {
-//!   lambda!(
-//!     |request: Request, context| Ok(
-//!       format!(
-//!         "hello {}",
-//!         request.query_string_parameters()
-//!           .get("name")
-//!           .unwrap_or_else(|| "stranger")
-//!       )
-//!     )
-//!   )
-//! }
-//! ```
 
 // only externed because maplit doesn't seem to play well with 2018 edition imports
 #[cfg(test)]
@@ -59,73 +41,103 @@
 extern crate maplit;
 
 pub use http::{self, Response};
-use lambda_runtime::{self as lambda, error::HandlerError, Context};
-use tokio::runtime::Runtime as TokioRuntime;
-
+use lambda::Handler as LambdaHandler;
+pub use lambda::{self};
 mod body;
 mod ext;
 pub mod request;
 mod response;
 mod strmap;
-
 pub use crate::{body::Body, ext::RequestExt, response::IntoResponse, strmap::StrMap};
 use crate::{request::LambdaRequest, response::LambdaResponse};
+use std::{
+    error::Error,
+    fmt,
+    future::Future,
+    pin::Pin,
+    task::{Context, Poll},
+};
+
+type Err = Box<dyn Error + Send + Sync + 'static>;
 
 /// Type alias for `http::Request`s with a fixed `lambda_http::Body` body
 pub type Request = http::Request<Body>;
 
-/// Functions serving as ALB and API Gateway handlers must conform to this type.
-pub trait Handler<R> {
-    /// Run the handler.
-    fn run(&mut self, event: Request, ctx: Context) -> Result<R, HandlerError>;
-}
+/// Functions serving as ALB and API Gateway REST and HTTP API handlers must conform to this type.
+///
+/// This can be viewed as a `lambda::Handler` constained to `http` crate `Request` and `Response` types
+pub trait Handler: Sized {
+    /// The type of Error that this Handler will return
+    type Err;
+    /// The type of Response this Handler will return
+    type Response: IntoResponse;
+    /// The type of Future this Handler will return
+    type Fut: Future<Output = Result<Self::Response, Self::Err>> + 'static;
+    /// Function used to execute handler behavior
+    fn call(&mut self, event: Request) -> Self::Fut;
 
-impl<F, R> Handler<R> for F
-where
-    F: FnMut(Request, Context) -> Result<R, HandlerError>,
-{
-    fn run(&mut self, event: Request, ctx: Context) -> Result<R, HandlerError> {
-        (*self)(event, ctx)
+    /// Consumes this Handler into an Adapter type which implements `lambda::Hander`
+    fn to_adapter(self) -> Adapter<Self> {
+        Adapter { h: self }
     }
 }
 
-/// Creates a new `lambda_runtime::Runtime` and begins polling for ALB and API Gateway events
-///
-/// # Arguments
-///
-/// * `f` A type that conforms to the `Handler` interface.
-///
-/// # Panics
-/// The function panics if the Lambda environment variables are not set.
-pub fn start<R>(f: impl Handler<R>, runtime: Option<TokioRuntime>)
+/// Coerse a type that implements `Handler` type into a `Handler`
+pub fn handler<H: Handler>(h: H) -> H {
+    h
+}
+
+/// An implementation of `Handler` for a given closure
+impl<F, R, Fut> Handler for F
+where
+    F: FnMut(Request) -> Fut,
+    R: IntoResponse,
+    Fut: Future<Output = Result<R, Err>> + Send + 'static,
+    Err: Into<Box<dyn Error + Send + Sync + 'static>> + fmt::Debug,
+{
+    type Response = R;
+    type Err = Err;
+    type Fut = Fut;
+    fn call(&mut self, event: Request) -> Self::Fut {
+        (*self)(event)
+    }
+}
+
+#[doc(hidden)]
+pub struct TransformResponse<R, E> {
+    is_alb: bool,
+    fut: Pin<Box<dyn Future<Output = Result<R, E>>>>,
+}
+
+impl<R, E> Future for TransformResponse<R, E>
 where
     R: IntoResponse,
 {
-    // handler requires a mutable ref
-    let mut func = f;
-    lambda::start(
-        |req: LambdaRequest<'_>, ctx: Context| {
-            let is_alb = req.request_context.is_alb();
-            func.run(req.into(), ctx)
-                .map(|resp| LambdaResponse::from_response(is_alb, resp.into_response()))
-        },
-        runtime,
-    )
+    type Output = Result<LambdaResponse, E>;
+    fn poll(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
+        match self.fut.as_mut().poll(cx) {
+            Poll::Ready(result) => {
+                Poll::Ready(result.map(|resp| LambdaResponse::from_response(self.is_alb, resp.into_response())))
+            }
+            Poll::Pending => Poll::Pending,
+        }
+    }
 }
 
-/// A macro for starting new handler's poll for API Gateway and ALB events
-#[macro_export]
-macro_rules! lambda {
-    ($handler:expr) => {
-        $crate::start($handler, None)
-    };
-    ($handler:expr, $runtime:expr) => {
-        $crate::start($handler, Some($runtime))
-    };
-    ($handler:ident) => {
-        $crate::start($handler, None)
-    };
-    ($handler:ident, $runtime:expr) => {
-        $crate::start($handler, Some($runtime))
-    };
+// Exists only to satisfy the trait cover rule for `lambda::Handler` impl for
+//
+/// See [this article](http://smallcultfollowing.com/babysteps/blog/2015/01/14/little-orphan-impls/)
+/// for a larger explaination of why this is nessessary
+pub struct Adapter<H: Handler> {
+    h: H,
+}
+
+impl<H: Handler> LambdaHandler<LambdaRequest<'_>, LambdaResponse> for Adapter<H> {
+    type Err = H::Err;
+    type Fut = TransformResponse<H::Response, Self::Err>;
+    fn call(&mut self, event: LambdaRequest<'_>) -> Self::Fut {
+        let is_alb = event.request_context.is_alb();
+        let fut = Box::pin(self.h.call(event.into()));
+        TransformResponse::<H::Response, Self::Err> { is_alb, fut }
+    }
 }

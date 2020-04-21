@@ -15,7 +15,7 @@ use crate::body::Body;
 /// Representation of API Gateway response
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct LambdaResponse {
+pub struct LambdaResponse {
     pub status_code: u16,
     // ALB requires a statusDescription i.e. "200 OK" field but API Gateway returns an error
     // when one is provided. only populate this for ALB responses

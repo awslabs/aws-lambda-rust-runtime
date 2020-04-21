@@ -16,18 +16,16 @@ travis-ci = { repository = "awslabs/aws-lambda-rust-runtime" }
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-http = "0.1"
+base64 = "0.12"
+http = "0.2"
+lambda = { path = "../lambda", version = "0.1" }
 serde = "^1"
-serde_json = "^1"
 serde_derive = "^1"
-lambda = { path = "../lambda" }
-tokio = "^0.1"
-base64 = "0.10"
-failure = "0.1"
-failure_derive = "0.1"
-serde_urlencoded = "0.5"
+serde_json = "^1"
+serde_urlencoded = "0.6"
+tokio = "^0.2"
 
 [dev-dependencies]
 log = "^0.4"
 maplit = "1.0"
-simple_logger = "^1"
+tokio = { version = "0.2", features = ["full"] }

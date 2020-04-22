@@ -19,88 +19,146 @@ use crate::{
     strmap::StrMap,
 };
 
-/// Internal representation of an Lambda http event from both
-/// both ALB and API Gateway proxy event perspectives
+/// Internal representation of an Lambda http event from
+/// ALB, API Gateway REST and HTTP API proxy event perspectives
+///
+/// This is not intended to be a type consumed by crate users directly. The order
+/// of the variants are notable. Serde will try to deserialize in this order.
 #[doc(hidden)]
-#[derive(Deserialize, Debug, Default)]
-#[serde(rename_all = "camelCase")]
-pub struct LambdaRequest<'a> {
-    pub(crate) path: Cow<'a, str>,
-    #[serde(deserialize_with = "deserialize_method")]
-    pub(crate) http_method: Method,
-    #[serde(deserialize_with = "deserialize_headers")]
-    pub(crate) headers: HeaderMap<HeaderValue>,
-    /// For alb events these are only present when
-    /// the `lambda.multi_value_headers.enabled` target group setting turned on
-    #[serde(default, deserialize_with = "deserialize_multi_value_headers")]
-    pub(crate) multi_value_headers: HeaderMap<HeaderValue>,
-    #[serde(deserialize_with = "nullable_default")]
-    pub(crate) query_string_parameters: StrMap,
-    /// For alb events these are only present when
-    /// the `lambda.multi_value_headers.enabled` target group setting turned on
-    #[serde(default, deserialize_with = "nullable_default")]
-    pub(crate) multi_value_query_string_parameters: StrMap,
-    /// ALB events do not have path parameters.
-    #[serde(default, deserialize_with = "nullable_default")]
-    pub(crate) path_parameters: StrMap,
-    /// ALB events do not have stage variables.
-    #[serde(default, deserialize_with = "nullable_default")]
-    pub(crate) stage_variables: StrMap,
-    pub(crate) body: Option<Cow<'a, str>>,
-    #[serde(default)]
-    pub(crate) is_base64_encoded: bool,
-    pub(crate) request_context: RequestContext,
-}
-
-/// Event request context as an enumeration of request contexts
-/// for both ALB and API Gateway http events
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug)]
 #[serde(untagged)]
-pub enum RequestContext {
-    /// Api Gateway request context
+pub enum LambdaRequest<'a> {
+    #[serde(rename_all = "camelCase")]
+    ApiGatewayV2 {
+        version: Cow<'a, str>,
+        route_key: Cow<'a, str>,
+        raw_path: Cow<'a, str>,
+        raw_query_string: Cow<'a, str>,
+        cookies: Vec<Cow<'a, str>>,
+        #[serde(deserialize_with = "deserialize_headers")]
+        headers: HeaderMap<HeaderValue>,
+        #[serde(deserialize_with = "nullable_default")]
+        query_string_parameters: StrMap,
+        #[serde(default, deserialize_with = "nullable_default")]
+        path_parameters: StrMap,
+        #[serde(default, deserialize_with = "nullable_default")]
+        stage_variables: StrMap,
+        body: Option<Cow<'a, str>>,
+        #[serde(default)]
+        is_base64_encoded: bool,
+        request_context: ApiGatewayV2RequestContext,
+    },
+    #[serde(rename_all = "camelCase")]
+    Alb {
+        path: Cow<'a, str>,
+        #[serde(deserialize_with = "deserialize_method")]
+        http_method: Method,
+        #[serde(deserialize_with = "deserialize_headers")]
+        headers: HeaderMap<HeaderValue>,
+        /// For alb events these are only present when
+        /// the `lambda.multi_value_headers.enabled` target group setting turned on
+        #[serde(default, deserialize_with = "deserialize_multi_value_headers")]
+        multi_value_headers: HeaderMap<HeaderValue>,
+        #[serde(deserialize_with = "nullable_default")]
+        query_string_parameters: StrMap,
+        /// For alb events these are only present when
+        /// the `lambda.multi_value_headers.enabled` target group setting turned on
+        #[serde(default, deserialize_with = "nullable_default")]
+        multi_value_query_string_parameters: StrMap,
+        body: Option<Cow<'a, str>>,
+        #[serde(default)]
+        is_base64_encoded: bool,
+        request_context: AlbRequestContext,
+    },
     #[serde(rename_all = "camelCase")]
     ApiGateway {
-        //pub path: String,
-        account_id: String,
-        resource_id: String,
-        stage: String,
-        request_id: String,
-        resource_path: String,
-        http_method: String,
+        path: Cow<'a, str>,
+        #[serde(deserialize_with = "deserialize_method")]
+        http_method: Method,
+        #[serde(deserialize_with = "deserialize_headers")]
+        headers: HeaderMap<HeaderValue>,
+        #[serde(default, deserialize_with = "deserialize_multi_value_headers")]
+        multi_value_headers: HeaderMap<HeaderValue>,
+        #[serde(deserialize_with = "nullable_default")]
+        query_string_parameters: StrMap,
+        #[serde(default, deserialize_with = "nullable_default")]
+        multi_value_query_string_parameters: StrMap,
+        #[serde(default, deserialize_with = "nullable_default")]
+        path_parameters: StrMap,
+        #[serde(default, deserialize_with = "nullable_default")]
+        stage_variables: StrMap,
+        body: Option<Cow<'a, str>>,
         #[serde(default)]
-        authorizer: HashMap<String, Value>,
-        api_id: String,
-        identity: Identity,
+        is_base64_encoded: bool,
+        request_context: ApiGatewayRequestContext,
     },
-    /// ALB request context
-    #[serde(rename_all = "camelCase")]
-    Alb { elb: Elb },
 }
 
-impl Default for RequestContext {
-    fn default() -> Self {
-        RequestContext::ApiGateway {
-            account_id: Default::default(),
-            resource_id: Default::default(),
-            stage: Default::default(),
-            request_id: Default::default(),
-            resource_path: Default::default(),
-            http_method: Default::default(),
-            authorizer: Default::default(),
-            api_id: Default::default(),
-            identity: Default::default(),
-        }
-    }
-}
-
-impl RequestContext {
-    /// Return true if this request context represents an ALB request
+impl LambdaRequest<'_> {
+    /// Return true if this request represents an ALB event
+    ///
+    /// Alb responses have unique requirements for responses that
+    /// vary only slightly from APIGateway responses. We serialize
+    /// responses capturing a hint that the request was an alb triggered
+    /// event.
     pub fn is_alb(&self) -> bool {
         match self {
-            RequestContext::Alb { .. } => true,
+            LambdaRequest::Alb { .. } => true,
             _ => false,
         }
     }
+}
+
+#[derive(Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ApiGatewayV2RequestContext {
+    pub account_id: String,
+    pub api_id: String,
+    #[serde(default)]
+    pub authorizer: HashMap<String, Value>,
+    pub domain_name: String,
+    pub domain_prefix: String,
+    pub http: Http,
+    pub request_id: String,
+    pub route_key: String,
+    pub stage: String,
+    pub time: String,
+    pub time_epoch: usize,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ApiGatewayRequestContext {
+    //pub path: String,
+    pub account_id: String,
+    pub resource_id: String,
+    pub stage: String,
+    pub request_id: String,
+    pub resource_path: String,
+    pub http_method: String,
+    #[serde(default)]
+    pub authorizer: HashMap<String, Value>,
+    pub api_id: String,
+    pub identity: Identity,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct AlbRequestContext {
+    pub elb: Elb,
+}
+
+/// Event request context as an enumeration of request contexts
+/// for both ALB and API Gateway and HTTP API events
+#[derive(Deserialize, Debug, Clone)]
+#[serde(untagged)]
+pub enum RequestContext {
+    /// API Gateway v2 request context
+    ApiGatewayV2(ApiGatewayV2RequestContext),
+    /// API Gateway request context
+    ApiGateway(ApiGatewayRequestContext),
+    /// ALB request context
+    Alb(AlbRequestContext),
 }
 
 /// Elastic load balancer context information
@@ -109,6 +167,18 @@ impl RequestContext {
 pub struct Elb {
     /// AWS ARN identifier for the ELB Target Group this lambda was triggered by
     pub target_group_arn: String,
+}
+
+/// Http information captured API Gateway v2 request context
+#[derive(Deserialize, Debug, Default, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct Http {
+    #[serde(deserialize_with = "deserialize_method")]
+    pub method: Method,
+    pub path: String,
+    pub protocol: String,
+    pub source_ip: String,
+    pub user_agent: String,
 }
 
 /// Identity assoicated with API Gateway request
@@ -241,83 +311,210 @@ where
     Ok(opt.unwrap_or_else(T::default))
 }
 
+/// Converts LambdaRequest types into `http::Request<Body>` types
 impl<'a> From<LambdaRequest<'a>> for HttpRequest<Body> {
     fn from(value: LambdaRequest<'_>) -> Self {
-        let LambdaRequest {
-            path,
-            http_method,
-            headers,
-            mut multi_value_headers,
-            query_string_parameters,
-            multi_value_query_string_parameters,
-            path_parameters,
-            stage_variables,
-            body,
-            is_base64_encoded,
-            request_context,
-        } = value;
+        match value {
+            LambdaRequest::ApiGatewayV2 {
+                version,
+                route_key,
+                raw_path,
+                raw_query_string,
+                cookies,
+                headers,
+                query_string_parameters,
+                path_parameters,
+                stage_variables,
+                body,
+                is_base64_encoded,
+                request_context,
+            } => {
+                let builder = HttpRequest::builder()
+                    .method(request_context.http.method.as_ref())
+                    .uri({
+                        format!(
+                            "{}://{}{}",
+                            headers
+                                .get("X-Forwarded-Proto")
+                                .map(|val| val.to_str().unwrap_or_else(|_| "https"))
+                                .unwrap_or_else(|| "https"),
+                            headers
+                                .get(HOST)
+                                .map(|val| val.to_str().unwrap_or_default())
+                                .unwrap_or_else(|| request_context.domain_name.as_ref()),
+                            raw_path
+                        )
+                    })
+                    .extension(QueryStringParameters(query_string_parameters))
+                    .extension(PathParameters(path_parameters))
+                    .extension(StageVariables(stage_variables))
+                    .extension(RequestContext::ApiGatewayV2(request_context));
 
-        // build an http::Request<lambda_http::Body> from a lambda_http::LambdaRequest
-        let builder = HttpRequest::builder()
-            .method(http_method)
-            .uri({
-                format!(
-                    "{}://{}{}",
-                    headers
-                        .get("X-Forwarded-Proto")
-                        .map(|val| val.to_str().unwrap_or_else(|_| "https"))
-                        .unwrap_or_else(|| "https"),
-                    headers
-                        .get(HOST)
-                        .map(|val| val.to_str().unwrap_or_default())
-                        .unwrap_or_default(),
-                    path
-                )
-            })
-            // multi valued query string parameters are always a super
-            // set of singly valued query string parameters,
-            // when present, multi-valued query string parameters are preferred
-            .extension(QueryStringParameters(
-                if multi_value_query_string_parameters.is_empty() {
-                    query_string_parameters
-                } else {
-                    multi_value_query_string_parameters
-                },
-            ))
-            .extension(PathParameters(path_parameters))
-            .extension(StageVariables(stage_variables))
-            .extension(request_context);
+                let mut req = builder
+                    .body(match body {
+                        Some(b) => {
+                            if is_base64_encoded {
+                                // todo: document failure behavior
+                                Body::from(::base64::decode(b.as_ref()).unwrap_or_default())
+                            } else {
+                                Body::from(b.into_owned())
+                            }
+                        }
+                        _ => Body::from(()),
+                    })
+                    .expect("failed to build request");
 
-        let mut req = builder
-            .body(match body {
-                Some(b) => {
-                    if is_base64_encoded {
-                        // todo: document failure behavior
-                        Body::from(::base64::decode(b.as_ref()).unwrap_or_default())
-                    } else {
-                        Body::from(b.into_owned())
+                // no builder method that sets headers in batch
+                mem::replace(req.headers_mut(), headers);
+
+                req
+            }
+            LambdaRequest::ApiGateway {
+                path,
+                http_method,
+                headers,
+                mut multi_value_headers,
+                query_string_parameters,
+                multi_value_query_string_parameters,
+                path_parameters,
+                stage_variables,
+                body,
+                is_base64_encoded,
+                request_context,
+            } => {
+                let builder = HttpRequest::builder()
+                    .method(http_method)
+                    .uri({
+                        format!(
+                            "{}://{}{}",
+                            headers
+                                .get("X-Forwarded-Proto")
+                                .map(|val| val.to_str().unwrap_or_else(|_| "https"))
+                                .unwrap_or_else(|| "https"),
+                            headers
+                                .get(HOST)
+                                .map(|val| val.to_str().unwrap_or_default())
+                                .unwrap_or_default(),
+                            path
+                        )
+                    })
+                    // multi-valued query string parameters are always a super
+                    // set of singly valued query string parameters,
+                    // when present, multi-valued query string parameters are preferred
+                    .extension(QueryStringParameters(
+                        if multi_value_query_string_parameters.is_empty() {
+                            query_string_parameters
+                        } else {
+                            multi_value_query_string_parameters
+                        },
+                    ))
+                    .extension(PathParameters(path_parameters))
+                    .extension(StageVariables(stage_variables))
+                    .extension(RequestContext::ApiGateway(request_context));
+
+                let mut req = builder
+                    .body(match body {
+                        Some(b) => {
+                            if is_base64_encoded {
+                                // todo: document failure behavior
+                                Body::from(::base64::decode(b.as_ref()).unwrap_or_default())
+                            } else {
+                                Body::from(b.into_owned())
+                            }
+                        }
+                        _ => Body::from(()),
+                    })
+                    .expect("failed to build request");
+
+                // merge headers into multi_value_headers and make
+                // multi-value_headers our cannoncial source of request headers
+                for (key, value) in headers {
+                    // see HeaderMap#into_iter() docs for cases when key element may be None
+                    if let Some(first_key) = key {
+                        // if it contains the key, avoid appending a duplicate value
+                        if !multi_value_headers.contains_key(&first_key) {
+                            multi_value_headers.append(first_key, value);
+                        }
                     }
                 }
-                _ => Body::from(()),
-            })
-            .expect("failed to build request");
 
-        // merge headers into multi_value_headers and make
-        // multi_value_headers our cannoncial source of request headers
-        for (key, value) in headers {
-            // see HeaderMap#into_iter() docs for cases when key element may be None
-            if let Some(first_key) = key {
-                // if it contains the key, avoid appending a duplicate value
-                if !multi_value_headers.contains_key(&first_key) {
-                    multi_value_headers.append(first_key, value);
+                // no builder method that sets headers in batch
+                mem::replace(req.headers_mut(), multi_value_headers);
+
+                req
+            }
+            LambdaRequest::Alb {
+                path,
+                http_method,
+                headers,
+                mut multi_value_headers,
+                query_string_parameters,
+                multi_value_query_string_parameters,
+                body,
+                is_base64_encoded,
+                request_context,
+            } => {
+                // build an http::Request<lambda_http::Body> from a lambda_http::LambdaRequest
+                let builder = HttpRequest::builder()
+                    .method(http_method)
+                    .uri({
+                        format!(
+                            "{}://{}{}",
+                            headers
+                                .get("X-Forwarded-Proto")
+                                .map(|val| val.to_str().unwrap_or_else(|_| "https"))
+                                .unwrap_or_else(|| "https"),
+                            headers
+                                .get(HOST)
+                                .map(|val| val.to_str().unwrap_or_default())
+                                .unwrap_or_default(),
+                            path
+                        )
+                    })
+                    // multi valued query string parameters are always a super
+                    // set of singly valued query string parameters,
+                    // when present, multi-valued query string parameters are preferred
+                    .extension(QueryStringParameters(
+                        if multi_value_query_string_parameters.is_empty() {
+                            query_string_parameters
+                        } else {
+                            multi_value_query_string_parameters
+                        },
+                    ))
+                    .extension(RequestContext::Alb(request_context));
+
+                let mut req = builder
+                    .body(match body {
+                        Some(b) => {
+                            if is_base64_encoded {
+                                // todo: document failure behavior
+                                Body::from(::base64::decode(b.as_ref()).unwrap_or_default())
+                            } else {
+                                Body::from(b.into_owned())
+                            }
+                        }
+                        _ => Body::from(()),
+                    })
+                    .expect("failed to build request");
+
+                // merge headers into multi_value_headers and make
+                // multi-value_headers our cannoncial source of request headers
+                for (key, value) in headers {
+                    // see HeaderMap#into_iter() docs for cases when key element may be None
+                    if let Some(first_key) = key {
+                        // if it contains the key, avoid appending a duplicate value
+                        if !multi_value_headers.contains_key(&first_key) {
+                            multi_value_headers.append(first_key, value);
+                        }
+                    }
                 }
+
+                // no builder method that sets headers in batch
+                mem::replace(req.headers_mut(), multi_value_headers);
+
+                req
             }
         }
-
-        // no builder method that sets headers in batch
-        mem::replace(req.headers_mut(), multi_value_headers);
-
-        req
     }
 }
 
@@ -369,23 +566,7 @@ mod tests {
     use super::*;
     use crate::RequestExt;
     use serde_json;
-    use std::{collections::HashMap, fs::File};
-
-    #[test]
-    fn requests_convert() {
-        let mut headers = HeaderMap::new();
-        headers.insert("Host", "www.rust-lang.org".parse().unwrap());
-        let lambda_request: LambdaRequest<'_> = LambdaRequest {
-            path: "/foo".into(),
-            headers,
-            ..LambdaRequest::default()
-        };
-        let expected = HttpRequest::get("https://www.rust-lang.org/foo").body(()).unwrap();
-        let actual = HttpRequest::from(lambda_request);
-        assert_eq!(expected.method(), actual.method());
-        assert_eq!(expected.uri(), actual.uri());
-        assert_eq!(expected.method(), actual.method());
-    }
+    use std::{collections::HashMap, error::Error, fs::File};
 
     #[test]
     fn deserializes_apigw_request_events_from_readables() {
@@ -397,21 +578,55 @@ mod tests {
     }
 
     #[test]
-    fn deserializes_apigw_request_events() {
+    fn deserializes_apigw_v2_request_events() -> Result<(), Box<dyn Error>> {
         // from the docs
         // https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request
-        let input = include_str!("../tests/data/apigw_proxy_request.json");
+        let input = include_str!("../tests/data/apigw_v2_proxy_request.json");
         let result = from_str(input);
-        assert!(result.is_ok(), format!("event was not parsed as expected {:?}", result));
+        assert!(
+            result.is_ok(),
+            format!("event was not parsed as expected {:?} given {}", result, input)
+        );
+        let req = result?;
+        assert_eq!(req.method(), "POST");
+        assert_eq!(req.uri(), "https://id.execute-api.us-east-1.amazonaws.com/my/path");
+        Ok(())
     }
 
     #[test]
-    fn deserialize_alb_request_events() {
+    fn deserializes_apigw_request_events() -> Result<(), Box<dyn Error>> {
+        // from the docs
+        // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
+        // https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html
+        let input = include_str!("../tests/data/apigw_proxy_request.json");
+        let result = from_str(input);
+        assert!(
+            result.is_ok(),
+            format!("event was not parsed as expected {:?} given {}", result, input)
+        );
+        let req = result?;
+        assert_eq!(req.method(), "GET");
+        assert_eq!(
+            req.uri(),
+            "https://wt6mne2s9k.execute-api.us-west-2.amazonaws.com/test/hello"
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn deserializes_alb_request_events() -> Result<(), Box<dyn Error>> {
         // from the docs
         // https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html#multi-value-headers
         let input = include_str!("../tests/data/alb_request.json");
         let result = from_str(input);
-        assert!(result.is_ok(), format!("event was not parsed as expected {:?}", result));
+        assert!(
+            result.is_ok(),
+            format!("event was not parsed as expected {:?} given {}", result, input)
+        );
+        let req = result?;
+        assert_eq!(req.method(), "GET");
+        assert_eq!(req.uri(), "https://lambda-846800462-us-east-2.elb.amazonaws.com/");
+        Ok(())
     }
 
     #[test]
@@ -422,7 +637,7 @@ mod tests {
         let result = from_str(input);
         assert!(
             result.is_ok(),
-            format!("event is was not parsed as expected {:?}", result)
+            format!("event is was not parsed as expected {:?} given {}", result, input)
         );
         let unwrapped = result.unwrap();
 
@@ -443,7 +658,7 @@ mod tests {
         let result = from_str(input);
         assert!(
             result.is_ok(),
-            format!("event is was not parsed as expected {:?}", result)
+            format!("event is was not parsed as expected {:?} given {}", result, input)
         );
         let unwrapped = result.unwrap();
         assert!(!unwrapped.query_string_parameters().is_empty());

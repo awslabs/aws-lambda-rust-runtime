@@ -143,7 +143,7 @@ impl<H: Handler> LambdaHandler<LambdaRequest<'_>, LambdaResponse> for Adapter<H>
     type Err = H::Err;
     type Fut = TransformResponse<H::Response, Self::Err>;
     fn call(&mut self, event: LambdaRequest<'_>) -> Self::Fut {
-        let is_alb = event.request_context.is_alb();
+        let is_alb = event.is_alb();
         let fut = Box::pin(self.handler.call(event.into()));
         TransformResponse { is_alb, fut }
     }

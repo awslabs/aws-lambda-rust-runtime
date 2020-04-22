@@ -13,6 +13,7 @@ use serde_derive::Serialize;
 use crate::body::Body;
 
 /// Representation of API Gateway response
+#[doc(hidden)]
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct LambdaResponse {

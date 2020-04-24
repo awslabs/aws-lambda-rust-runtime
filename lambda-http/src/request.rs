@@ -630,7 +630,7 @@ mod tests {
     }
 
     #[test]
-    fn deserializes_apigw_multi_value_request_events() {
+    fn deserializes_apigw_multi_value_request_events() -> Result<(), Box<dyn Error>> {
         // from docs
         // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
         let input = include_str!("../tests/data/apigw_multi_value_proxy_request.json");
@@ -639,19 +639,20 @@ mod tests {
             result.is_ok(),
             format!("event is was not parsed as expected {:?} given {}", result, input)
         );
-        let unwrapped = result.unwrap();
+        let request = result?;
 
-        assert!(!unwrapped.query_string_parameters().is_empty());
+        assert!(!request.query_string_parameters().is_empty());
 
         // test RequestExt#query_string_parameters does the right thing
         assert_eq!(
-            unwrapped.query_string_parameters().get_all("multivalueName"),
+            request.query_string_parameters().get_all("multivalueName"),
             Some(vec!["you", "me"])
         );
+        Ok(())
     }
 
     #[test]
-    fn deserializes_alb_multi_value_request_events() {
+    fn deserializes_alb_multi_value_request_events() -> Result<(), Box<dyn Error>> {
         // from docs
         // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
         let input = include_str!("../tests/data/alb_multi_value_request.json");
@@ -660,14 +661,15 @@ mod tests {
             result.is_ok(),
             format!("event is was not parsed as expected {:?} given {}", result, input)
         );
-        let unwrapped = result.unwrap();
-        assert!(!unwrapped.query_string_parameters().is_empty());
+        let request = result?;
+        assert!(!request.query_string_parameters().is_empty());
 
         // test RequestExt#query_string_parameters does the right thing
         assert_eq!(
-            unwrapped.query_string_parameters().get_all("myKey"),
+            request.query_string_parameters().get_all("myKey"),
             Some(vec!["val1", "val2"])
         );
+        Ok(())
     }
 
     #[test]

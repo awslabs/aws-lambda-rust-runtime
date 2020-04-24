@@ -316,11 +316,8 @@ impl<'a> From<LambdaRequest<'a>> for HttpRequest<Body> {
     fn from(value: LambdaRequest<'_>) -> Self {
         match value {
             LambdaRequest::ApiGatewayV2 {
-                version,
-                route_key,
                 raw_path,
                 raw_query_string,
-                cookies,
                 headers,
                 query_string_parameters,
                 path_parameters,
@@ -328,6 +325,7 @@ impl<'a> From<LambdaRequest<'a>> for HttpRequest<Body> {
                 body,
                 is_base64_encoded,
                 request_context,
+                ..
             } => {
                 let builder = HttpRequest::builder()
                     .method(request_context.http.method.as_ref())

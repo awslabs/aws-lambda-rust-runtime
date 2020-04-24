@@ -22,7 +22,9 @@ pub(crate) struct PathParameters(pub(crate) StrMap);
 /// These will always be empty for ALB requests
 pub(crate) struct StageVariables(pub(crate) StrMap);
 
-/// Payload deserialization errors
+/// Request payload deserialization errors
+///
+/// Returned by [`RequestExt#payload()`](trait.RequestExt.html#tymethod.payload)
 #[derive(Debug)]
 pub enum PayloadError {
     /// Returned when `application/json` bodies fail to deserialize a payload
@@ -52,9 +54,9 @@ impl Error for PayloadError {}
 ///
 /// # Examples
 ///
-/// You can also access a request's body in deserialized format
-/// for payloads sent in `application/x-www-form-urlencoded` or
-/// `application/json` format.
+/// You can access a request's body in deserialized format
+/// for http request body payloads sent in `application/x-www-form-urlencoded` or
+/// `application/json` formats.
 ///
 /// The following handler will work an http request body of `x=1&y=2`
 /// as well as `{"x":1, "y":2}` respectively.
@@ -327,13 +329,9 @@ mod tests {
             foo: String,
             baz: usize,
         }
-        let request = HttpRequest::builder()
-            .body(Body::from(r#"{"foo":"bar", "baz": 2}"#))?;
+        let request = HttpRequest::builder().body(Body::from(r#"{"foo":"bar", "baz": 2}"#))?;
         let payload: Option<Payload> = request.payload().unwrap_or_default();
-        assert_eq!(
-            payload,
-            None
-        );
+        assert_eq!(payload, None);
         Ok(())
     }
 }

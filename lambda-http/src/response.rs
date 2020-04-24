@@ -106,13 +106,13 @@ impl LambdaResponse {
     }
 }
 
-/// A conversion of self into a `Response`
+/// A conversion of self into a `Response<Body>` for various types.
 ///
 /// Implementations for `Response<B> where B: Into<Body>`,
 /// `B where B: Into<Body>` and `serde_json::Value` are provided
-/// by default
+/// by default.
 ///
-/// # example
+/// # Example
 ///
 /// ```rust
 /// use lambda_http::{Body, IntoResponse, Response};

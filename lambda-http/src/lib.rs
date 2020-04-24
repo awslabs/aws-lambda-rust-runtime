@@ -1,16 +1,35 @@
 #![warn(missing_docs)]
 //#![deny(warnings)]
-//! Enriches the `lambda` crate with [http](https://github.com/hyperium/http)
-//! types targeting ALB, API Gateway REST and HTTTP API proxy events.
+//! Enriches the `lambda` crate with [`http`](https://github.com/hyperium/http)
+//! types targeting AWS [ALB](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html), [API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html) REST and HTTP API lambda integrations.
 //!
-//! Though ALB and API Gateway proxy events are separate Lambda triggers, they both share
-//! similar shapes that can be generalized to http request handler. From a application perspective
-//! the differences shouldn't matter. This crate
-//! abstracts over both using standard [http](https://github.com/hyperium/http) types allowing
-//! you to focus more on your application while giving you to the flexibility to
-//! transparently use whichever http trigger suits your application's needs best.
+//! This crate abstracts over all of these trigger events using standard [`http`](https://github.com/hyperium/http) types minimizing the mental overhead
+//! of the implementation details allowing you to focus more on your application while also giving you to the maximum flexibility to
+//! transparently use whichever lambda trigger suits your application's needs best.
 //!
 //! # Examples
+//!
+//! ## Hello world
+//! lambda_http handlers adapt to the standard `lambda::Handler` interface using the [`handler`](fn.handler.html) function.
+//!
+//! The simplest case http handler is a closure of `http::Request` to a type that can be lifted into an `http::Response`.
+//! You can learn more about these types [here](trait.IntoResponse.html)
+//!
+//! ```rust,no_run
+//! use lambda_http::{handler, lambda};
+//! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
+//!
+//! #[tokio::main]
+//! async fn main() -> Result<(), Error> {
+//!     lambda::run(handler(|req| async { Ok("👋 world!") })).await?;
+//!     Ok(())
+//! }
+//! ```
+//!
+//! ## Leveraging trigger provided data
+//!
+//! You can also access information provided directly from the underlying trigger events, like query string parameters,
+//! with the [`RequestExt`](trait.RequestExt.html) trait.
 //!
 //! ```rust,no_run
 //! use lambda_http::{handler, lambda, IntoResponse, Request, RequestExt};
@@ -44,7 +63,7 @@ pub use http::{self, Response};
 use lambda::Handler as LambdaHandler;
 pub use lambda::{self};
 mod body;
-mod ext;
+pub mod ext;
 pub mod request;
 mod response;
 mod strmap;
@@ -77,12 +96,12 @@ pub trait Handler: Sized {
     fn call(&mut self, event: Request) -> Self::Fut;
 }
 
-/// Coerse a type that implements `Handler` type into a `Handler`
+/// Adapts a [`Handler`](trait.Handler.html) to the `lambda::run` interface
 pub fn handler<H: Handler>(handler: H) -> Adapter<H> {
     Adapter { handler }
 }
 
-/// An implementation of `Handler` for a given closure
+/// An implementation of `Handler` for a given closure return a `Future` representing the computed response
 impl<F, R, Fut> Handler for F
 where
     F: FnMut(Request) -> Fut,
@@ -119,7 +138,7 @@ where
     }
 }
 
-/// Exists only to satisfy the trait cover rule for `lambda::Handler` impl for
+/// Exists only to satisfy the trait cover rule for `lambda::Handler` impl
 ///
 /// User code should never need to interact with this type directly. Since `Adapter` implements `Handler`
 /// It serves as a opaque trait covering type.

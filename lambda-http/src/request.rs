@@ -523,7 +523,7 @@ impl<'a> From<LambdaRequest<'a>> for HttpRequest<Body> {
     }
 }
 
-/// Deserializes a Request from an IO stream of JSON.
+/// Deserializes a `Request` from a `Read` impl providing JSON events.
 ///
 /// # Example
 ///
@@ -546,7 +546,7 @@ where
     serde_json::from_reader(rdr).map(LambdaRequest::into)
 }
 
-/// Deserializes a Request from a string of JSON text.
+/// Deserializes a `Request` from a string of JSON text.
 ///
 /// # Example
 ///

@@ -6,7 +6,7 @@ use serde_json;
 use serde_urlencoded;
 use std::{error::Error, fmt};
 
-use crate::{request::RequestContext, strmap::StrMap};
+use crate::{request::RequestContext, strmap::StrMap, Body};
 
 /// ALB/API gateway pre-parsed http query string parameters
 pub(crate) struct QueryStringParameters(pub(crate) StrMap);
@@ -166,7 +166,7 @@ pub trait RequestExt {
         for<'de> D: Deserialize<'de>;
 }
 
-impl RequestExt for HttpRequest<super::Body> {
+impl RequestExt for HttpRequest<Body> {
     fn query_string_parameters(&self) -> StrMap {
         self.extensions()
             .get::<QueryStringParameters>()
@@ -246,10 +246,10 @@ impl RequestExt for HttpRequest<super::Body> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{LambdaRequest, Request, RequestExt, StrMap};
-    use http::{HeaderMap, Request as HttpRequest};
+    use crate::{Body, LambdaRequest, Request, RequestExt, StrMap};
+    use http::Request as HttpRequest;
     use serde_derive::Deserialize;
-    use std::collections::HashMap;
+    use std::error::Error;
 
     #[test]
     fn requests_can_mock_query_string_parameters_ext() {
@@ -278,92 +278,62 @@ mod tests {
         assert_eq!(request.stage_variables(), mocked.into());
     }
 
-    // #[test]
-    // fn requests_have_query_string_ext() {
-    //     let mut headers = HeaderMap::new();
-    //     headers.insert("Host", "www.rust-lang.org".parse().unwrap());
-    //     let mut query = HashMap::new();
-    //     query.insert("foo".to_owned(), vec!["bar".to_owned()]);
-    //     let lambda_request = LambdaRequest {
-    //         path: "/foo".into(),
-    //         headers,
-    //         query_string_parameters: StrMap(query.clone().into()),
-    //         ..LambdaRequest::default()
-    //     };
-    //     let actual = HttpRequest::from(lambda_request);
-    //     assert_eq!(actual.query_string_parameters(), StrMap(query.clone().into()));
-    // }
+    #[test]
+    fn requests_have_form_post_parsable_payloads() -> Result<(), Box<dyn Error>> {
+        #[derive(Deserialize, PartialEq, Debug)]
+        struct Payload {
+            foo: String,
+            baz: usize,
+        }
+        let request = HttpRequest::builder()
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .body(Body::from("foo=bar&baz=2"))?;
+        let payload: Option<Payload> = request.payload().unwrap_or_default();
+        assert_eq!(
+            payload,
+            Some(Payload {
+                foo: "bar".into(),
+                baz: 2
+            })
+        );
+        Ok(())
+    }
 
-    // #[test]
-    // fn requests_have_form_post_parseable_payloads() {
-    //     let mut headers = HeaderMap::new();
-    //     headers.insert("Host", "www.rust-lang.org".parse().unwrap());
-    //     headers.insert("Content-Type", "application/x-www-form-urlencoded".parse().unwrap());
-    //     #[derive(Deserialize, PartialEq, Debug)]
-    //     struct Payload {
-    //         foo: String,
-    //         baz: usize,
-    //     }
-    //     let lambda_request = LambdaRequest {
-    //         path: "/foo".into(),
-    //         headers,
-    //         body: Some("foo=bar&baz=2".into()),
-    //         ..LambdaRequest::default()
-    //     };
-    //     let actual = HttpRequest::from(lambda_request);
-    //     let payload: Option<Payload> = actual.payload().unwrap_or_default();
-    //     assert_eq!(
-    //         payload,
-    //         Some(Payload {
-    //             foo: "bar".into(),
-    //             baz: 2
-    //         })
-    //     )
-    // }
+    #[test]
+    fn requests_have_json_parseable_payloads() -> Result<(), Box<dyn Error>> {
+        #[derive(Deserialize, PartialEq, Debug)]
+        struct Payload {
+            foo: String,
+            baz: usize,
+        }
+        let request = HttpRequest::builder()
+            .header("Content-Type", "application/json")
+            .body(Body::from(r#"{"foo":"bar", "baz": 2}"#))?;
+        let payload: Option<Payload> = request.payload().unwrap_or_default();
+        assert_eq!(
+            payload,
+            Some(Payload {
+                foo: "bar".into(),
+                baz: 2
+            })
+        );
+        Ok(())
+    }
 
-    // #[test]
-    // fn requests_have_form_post_parseable_payloads_for_hashmaps() {
-    //     let mut headers = HeaderMap::new();
-    //     headers.insert("Host", "www.rust-lang.org".parse().unwrap());
-    //     headers.insert("Content-Type", "application/x-www-form-urlencoded".parse().unwrap());
-    //     let lambda_request = LambdaRequest {
-    //         path: "/foo".into(),
-    //         headers,
-    //         body: Some("foo=bar&baz=2".into()),
-    //         ..LambdaRequest::default()
-    //     };
-    //     let actual = HttpRequest::from(lambda_request);
-    //     let mut expected = HashMap::new();
-    //     expected.insert("foo".to_string(), "bar".to_string());
-    //     expected.insert("baz".to_string(), "2".to_string());
-    //     let payload: Option<HashMap<String, String>> = actual.payload().unwrap_or_default();
-    //     assert_eq!(payload, Some(expected))
-    // }
-
-    // #[test]
-    // fn requests_have_json_parseable_payloads() {
-    //     let mut headers = HeaderMap::new();
-    //     headers.insert("Host", "www.rust-lang.org".parse().unwrap());
-    //     headers.insert("Content-Type", "application/json".parse().unwrap());
-    //     #[derive(Deserialize, PartialEq, Debug)]
-    //     struct Payload {
-    //         foo: String,
-    //         baz: usize,
-    //     }
-    //     let lambda_request: LambdaRequest<'_> = LambdaRequest {
-    //         path: "/foo".into(),
-    //         headers,
-    //         body: Some(r#"{"foo":"bar", "baz": 2}"#.into()),
-    //         ..LambdaRequest::default()
-    //     };
-    //     let actual = HttpRequest::from(lambda_request);
-    //     let payload: Option<Payload> = actual.payload().unwrap_or_default();
-    //     assert_eq!(
-    //         payload,
-    //         Some(Payload {
-    //             foo: "bar".into(),
-    //             baz: 2
-    //         })
-    //     )
-    // }
+    #[test]
+    fn requests_omiting_content_types_do_not_support_parseable_payloads() -> Result<(), Box<dyn Error>> {
+        #[derive(Deserialize, PartialEq, Debug)]
+        struct Payload {
+            foo: String,
+            baz: usize,
+        }
+        let request = HttpRequest::builder()
+            .body(Body::from(r#"{"foo":"bar", "baz": 2}"#))?;
+        let payload: Option<Payload> = request.payload().unwrap_or_default();
+        assert_eq!(
+            payload,
+            None
+        );
+        Ok(())
+    }
 }

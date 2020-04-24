@@ -332,7 +332,7 @@ impl<'a> From<LambdaRequest<'a>> for HttpRequest<Body> {
                 let builder = HttpRequest::builder()
                     .method(request_context.http.method.as_ref())
                     .uri({
-                        format!(
+                        let mut url = format!(
                             "{}://{}{}",
                             headers
                                 .get("X-Forwarded-Proto")
@@ -343,7 +343,12 @@ impl<'a> From<LambdaRequest<'a>> for HttpRequest<Body> {
                                 .map(|val| val.to_str().unwrap_or_default())
                                 .unwrap_or_else(|| request_context.domain_name.as_ref()),
                             raw_path
-                        )
+                        );
+                        if !raw_query_string.is_empty() {
+                            url.push('?');
+                            url.push_str(raw_query_string.as_ref());
+                        }
+                        url
                     })
                     .extension(QueryStringParameters(query_string_parameters))
                     .extension(PathParameters(path_parameters))
@@ -589,7 +594,7 @@ mod tests {
         );
         let req = result?;
         assert_eq!(req.method(), "POST");
-        assert_eq!(req.uri(), "https://id.execute-api.us-east-1.amazonaws.com/my/path");
+        assert_eq!(req.uri(), "https://id.execute-api.us-east-1.amazonaws.com/my/path?parameter1=value1&parameter1=value2&parameter2=value");
         Ok(())
     }
 

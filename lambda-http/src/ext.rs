@@ -4,6 +4,7 @@ use http::{header::CONTENT_TYPE, Request as HttpRequest};
 use serde::{de::value::Error as SerdeError, Deserialize};
 use serde_json;
 use serde_urlencoded;
+use std::{error::Error, fmt};
 
 use crate::{request::RequestContext, strmap::StrMap};
 
@@ -31,6 +32,18 @@ pub enum PayloadError {
     //#[fail(display = "failed to parse payload application/x-www-form-urlencoded")]
     WwwFormUrlEncoded(SerdeError),
 }
+
+impl fmt::Display for PayloadError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            PayloadError::Json(json) => writeln!(f, "error deserializing from application/json {}", json),
+            PayloadError::WwwFormUrlEncoded(form) => {
+                writeln!(f, "error deserializing from application/x-www-form-urlencoded {}", form)
+            }
+        }
+    }
+}
+impl Error for PayloadError {}
 
 /// Extentions for `lambda_http::Request` structs that
 /// provide access to [API gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format)
@@ -236,7 +249,6 @@ mod tests {
     // use http::{HeaderMap, Request as HttpRequest};
     // use serde_derive::Deserialize;
     // use std::collections::HashMap;
-
     // use crate::{LambdaRequest, Request, RequestExt, StrMap};
 
     // #[test]

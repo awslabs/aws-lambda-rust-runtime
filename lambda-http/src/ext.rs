@@ -246,37 +246,37 @@ impl RequestExt for HttpRequest<super::Body> {
 
 #[cfg(test)]
 mod tests {
-    // use http::{HeaderMap, Request as HttpRequest};
-    // use serde_derive::Deserialize;
-    // use std::collections::HashMap;
-    // use crate::{LambdaRequest, Request, RequestExt, StrMap};
+    use crate::{LambdaRequest, Request, RequestExt, StrMap};
+    use http::{HeaderMap, Request as HttpRequest};
+    use serde_derive::Deserialize;
+    use std::collections::HashMap;
 
-    // #[test]
-    // fn requests_can_mock_query_string_parameters_ext() {
-    //     let mocked = hashmap! {
-    //         "foo".into() => vec!["bar".into()]
-    //     };
-    //     let request = Request::default().with_query_string_parameters(mocked.clone());
-    //     assert_eq!(request.query_string_parameters(), mocked.into());
-    // }
+    #[test]
+    fn requests_can_mock_query_string_parameters_ext() {
+        let mocked = hashmap! {
+            "foo".into() => vec!["bar".into()]
+        };
+        let request = Request::default().with_query_string_parameters(mocked.clone());
+        assert_eq!(request.query_string_parameters(), mocked.into());
+    }
 
-    // #[test]
-    // fn requests_can_mock_path_parameters_ext() {
-    //     let mocked = hashmap! {
-    //         "foo".into() => vec!["bar".into()]
-    //     };
-    //     let request = Request::default().with_path_parameters(mocked.clone());
-    //     assert_eq!(request.path_parameters(), mocked.into());
-    // }
+    #[test]
+    fn requests_can_mock_path_parameters_ext() {
+        let mocked = hashmap! {
+            "foo".into() => vec!["bar".into()]
+        };
+        let request = Request::default().with_path_parameters(mocked.clone());
+        assert_eq!(request.path_parameters(), mocked.into());
+    }
 
-    // #[test]
-    // fn requests_can_mock_stage_variables_ext() {
-    //     let mocked = hashmap! {
-    //         "foo".into() => vec!["bar".into()]
-    //     };
-    //     let request = Request::default().with_stage_variables(mocked.clone());
-    //     assert_eq!(request.stage_variables(), mocked.into());
-    // }
+    #[test]
+    fn requests_can_mock_stage_variables_ext() {
+        let mocked = hashmap! {
+            "foo".into() => vec!["bar".into()]
+        };
+        let request = Request::default().with_stage_variables(mocked.clone());
+        assert_eq!(request.stage_variables(), mocked.into());
+    }
 
     // #[test]
     // fn requests_have_query_string_ext() {

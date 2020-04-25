@@ -354,10 +354,7 @@ impl<'a> From<LambdaRequest<'a>> for HttpRequest<Body> {
                     .extension(RequestContext::ApiGatewayV2(request_context));
 
                 let mut req = builder
-                    .body(match body {
-                        Some(b) => Body::from_maybe_encoded(is_base64_encoded, b),
-                        _ => Body::from(()),
-                    })
+                    .body(body.map_or_else(Body::default, |b| Body::from_maybe_encoded(is_base64_encoded, b)))
                     .expect("failed to build request");
 
                 // no builder method that sets headers in batch
@@ -409,10 +406,7 @@ impl<'a> From<LambdaRequest<'a>> for HttpRequest<Body> {
                     .extension(RequestContext::ApiGateway(request_context));
 
                 let mut req = builder
-                    .body(match body {
-                        Some(b) => Body::from_maybe_encoded(is_base64_encoded, b),
-                        _ => Body::from(()),
-                    })
+                    .body(body.map_or_else(Body::default, |b| Body::from_maybe_encoded(is_base64_encoded, b)))
                     .expect("failed to build request");
 
                 // merge headers into multi_value_headers and make
@@ -473,10 +467,7 @@ impl<'a> From<LambdaRequest<'a>> for HttpRequest<Body> {
                     .extension(RequestContext::Alb(request_context));
 
                 let mut req = builder
-                    .body(match body {
-                        Some(b) => Body::from_maybe_encoded(is_base64_encoded, b),
-                        _ => Body::from(()),
-                    })
+                    .body(body.map_or_else(Body::default, |b| Body::from_maybe_encoded(is_base64_encoded, b)))
                     .expect("failed to build request");
 
                 // merge headers into multi_value_headers and make

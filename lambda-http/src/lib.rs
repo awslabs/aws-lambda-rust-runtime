@@ -32,7 +32,7 @@
 //! For the simple cases you may not need much if any bootstrapping. To make life simpler
 //! you can add an `#[lambda_http]` attribute to your `main` function and `lambda::run` machinery
 //! will be wired in for you.
-//! 
+//!
 //! Note: this comes at the expense of any one time `main` function initialization for your lambda task might find value in.
 //! The body of your `main` function     will be executed on every invocation of your lambda task.
 //!
@@ -80,10 +80,10 @@
 #[macro_use]
 extern crate maplit;
 
-pub use lambda_http_attributes::lambda_http;
 pub use http::{self, Response};
 use lambda::Handler as LambdaHandler;
 pub use lambda::{self};
+pub use lambda_http_attributes::lambda_http;
 mod body;
 pub mod ext;
 pub mod request;

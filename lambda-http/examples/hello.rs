@@ -1,4 +1,4 @@
-use lambda_http::{lambda_http, Request, IntoResponse};
+use lambda_http::{lambda_http, IntoResponse, Request};
 
 type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 

@@ -22,7 +22,7 @@
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Error> {
-//!     lambda::run(handler(|req| async { Ok("👋 world!") })).await?;
+//!     lambda::run(handler(|request| async { Ok("👋 world!") })).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -42,7 +42,7 @@
 //!
 //! #[lambda_http]
 //! #[tokio::main]
-//! async fn main(req: Request) -> Result<impl IntoResponse, Error> {
+//! async fn main(_: Request) -> Result<impl IntoResponse, Error> {
 //!     Ok("👋 world!")
 //! }
 //! ```

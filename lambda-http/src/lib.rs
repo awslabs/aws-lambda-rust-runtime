@@ -10,6 +10,7 @@
 //! # Examples
 //!
 //! ## Hello world
+//!
 //! lambda_http handlers adapt to the standard `lambda::Handler` interface using the [`handler`](fn.handler.html) function.
 //!
 //! The simplest case http handler is a closure of `http::Request` to a type that can be lifted into an `http::Response`.
@@ -23,6 +24,26 @@
 //! async fn main() -> Result<(), Error> {
 //!     lambda::run(handler(|req| async { Ok("👋 world!") })).await?;
 //!     Ok(())
+//! }
+//! ```
+//!
+//! ## Hello world (simpler)
+//!
+//! For the simple cases you may not need much if any bootstrapping. To make life simpler
+//! you can add an `#[lambda_http]` attribute to your `main` function and `lambda::run` machinery
+//! will be wired in for you.
+//! 
+//! Note: this comes at the expense of any one time `main` function initialization for your lambda task might find value in.
+//! The body of your `main` function     will be executed on every invocation of your lambda task.
+//!
+//! ```rust,no_run
+//! use lambda_http::{lambda_http, Request, IntoResponse};
+//! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
+//!
+//! #[lambda_http]
+//! #[tokio::main]
+//! async fn main(req: Request) -> Result<impl IntoResponse, Error> {
+//!     Ok("👋 world!")
 //! }
 //! ```
 //!
@@ -59,6 +80,7 @@
 #[macro_use]
 extern crate maplit;
 
+pub use lambda_http_attributes::lambda_http;
 pub use http::{self, Response};
 use lambda::Handler as LambdaHandler;
 pub use lambda::{self};
@@ -79,7 +101,7 @@ use std::{
 
 type Err = Box<dyn Error + Send + Sync + 'static>;
 
-/// Type alias for `http::Request`s with a fixed `lambda_http::Body` body
+/// Type alias for `http::Request`s with a fixed [`Body`](enum.Body.html) type
 pub type Request = http::Request<Body>;
 
 /// Functions serving as ALB and API Gateway REST and HTTP API handlers must conform to this type.

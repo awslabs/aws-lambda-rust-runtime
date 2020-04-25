@@ -1,4 +1,4 @@
-//! ALB and API Gateway extension methods for `http::Request` types
+//! Extension methods for `http::Request` types
 
 use http::{header::CONTENT_TYPE, Request as HttpRequest};
 use serde::{de::value::Error as SerdeError, Deserialize};

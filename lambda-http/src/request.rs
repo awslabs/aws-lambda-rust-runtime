@@ -1,4 +1,4 @@
-//! ALB and API Gateway request types.
+//! ALB and API Gateway request adaptations
 //!
 //! Typically these are exposed via the `request_context`
 //! request extension method provided by [lambda_http::RequestExt](../trait.RequestExt.html)

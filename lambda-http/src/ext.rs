@@ -2,8 +2,6 @@
 
 use http::{header::CONTENT_TYPE, Request as HttpRequest};
 use serde::{de::value::Error as SerdeError, Deserialize};
-use serde_json;
-use serde_urlencoded;
 use std::{error::Error, fmt};
 
 use crate::{request::RequestContext, strmap::StrMap, Body};
@@ -248,7 +246,7 @@ impl RequestExt for HttpRequest<Body> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Body, LambdaRequest, Request, RequestExt, StrMap};
+    use crate::{Body, Request, RequestExt};
     use http::Request as HttpRequest;
     use serde_derive::Deserialize;
     use std::error::Error;

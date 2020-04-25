@@ -355,14 +355,7 @@ impl<'a> From<LambdaRequest<'a>> for HttpRequest<Body> {
 
                 let mut req = builder
                     .body(match body {
-                        Some(b) => {
-                            if is_base64_encoded {
-                                // todo: document failure behavior
-                                Body::from(::base64::decode(b.as_ref()).unwrap_or_default())
-                            } else {
-                                Body::from(b.into_owned())
-                            }
-                        }
+                        Some(b) => Body::from_maybe_encoded(is_base64_encoded, b),
                         _ => Body::from(()),
                     })
                     .expect("failed to build request");
@@ -417,14 +410,7 @@ impl<'a> From<LambdaRequest<'a>> for HttpRequest<Body> {
 
                 let mut req = builder
                     .body(match body {
-                        Some(b) => {
-                            if is_base64_encoded {
-                                // todo: document failure behavior
-                                Body::from(::base64::decode(b.as_ref()).unwrap_or_default())
-                            } else {
-                                Body::from(b.into_owned())
-                            }
-                        }
+                        Some(b) => Body::from_maybe_encoded(is_base64_encoded, b),
                         _ => Body::from(()),
                     })
                     .expect("failed to build request");
@@ -488,14 +474,7 @@ impl<'a> From<LambdaRequest<'a>> for HttpRequest<Body> {
 
                 let mut req = builder
                     .body(match body {
-                        Some(b) => {
-                            if is_base64_encoded {
-                                // todo: document failure behavior
-                                Body::from(::base64::decode(b.as_ref()).unwrap_or_default())
-                            } else {
-                                Body::from(b.into_owned())
-                            }
-                        }
+                        Some(b) => Body::from_maybe_encoded(is_base64_encoded, b),
                         _ => Body::from(()),
                     })
                     .expect("failed to build request");

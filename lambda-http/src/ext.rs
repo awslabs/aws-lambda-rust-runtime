@@ -28,20 +28,20 @@ pub(crate) struct StageVariables(pub(crate) StrMap);
 #[derive(Debug)]
 pub enum PayloadError {
     /// Returned when `application/json` bodies fail to deserialize a payload
-    //#[fail(display = "failed to parse payload from application/json")]
     Json(serde_json::Error),
     /// Returned when `application/x-www-form-urlencoded` bodies fail to deserialize a payload
-    //#[fail(display = "failed to parse payload application/x-www-form-urlencoded")]
     WwwFormUrlEncoded(SerdeError),
 }
 
 impl fmt::Display for PayloadError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            PayloadError::Json(json) => writeln!(f, "error deserializing from application/json {}", json),
-            PayloadError::WwwFormUrlEncoded(form) => {
-                writeln!(f, "error deserializing from application/x-www-form-urlencoded {}", form)
-            }
+            PayloadError::Json(json) => writeln!(f, "failed to parse payload from application/json {}", json),
+            PayloadError::WwwFormUrlEncoded(form) => writeln!(
+                f,
+                "failed to parse payload from application/x-www-form-urlencoded {}",
+                form
+            ),
         }
     }
 }

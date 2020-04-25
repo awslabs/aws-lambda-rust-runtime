@@ -334,12 +334,11 @@ impl<'a> From<LambdaRequest<'a>> for HttpRequest<Body> {
                             "{}://{}{}",
                             headers
                                 .get("X-Forwarded-Proto")
-                                .map(|val| val.to_str().unwrap_or_else(|_| "https"))
-                                .unwrap_or_else(|| "https"),
-                            headers
-                                .get(HOST)
-                                .map(|val| val.to_str().unwrap_or_default())
-                                .unwrap_or_else(|| request_context.domain_name.as_ref()),
+                                .map_or_else(|| "https", |val| val.to_str().unwrap_or_else(|_| "https")),
+                            headers.get(HOST).map_or_else(
+                                || request_context.domain_name.as_ref(),
+                                |val| val.to_str().unwrap_or_default()
+                            ),
                             raw_path
                         );
                         if !raw_query_string.is_empty() {
@@ -382,12 +381,10 @@ impl<'a> From<LambdaRequest<'a>> for HttpRequest<Body> {
                             "{}://{}{}",
                             headers
                                 .get("X-Forwarded-Proto")
-                                .map(|val| val.to_str().unwrap_or_else(|_| "https"))
-                                .unwrap_or_else(|| "https"),
+                                .map_or_else(|| "https", |val| val.to_str().unwrap_or_else(|_| "https")),
                             headers
                                 .get(HOST)
-                                .map(|val| val.to_str().unwrap_or_default())
-                                .unwrap_or_default(),
+                                .map_or_else(|| "", |val| val.to_str().unwrap_or_default()),
                             path
                         )
                     })
@@ -445,12 +442,10 @@ impl<'a> From<LambdaRequest<'a>> for HttpRequest<Body> {
                             "{}://{}{}",
                             headers
                                 .get("X-Forwarded-Proto")
-                                .map(|val| val.to_str().unwrap_or_else(|_| "https"))
-                                .unwrap_or_else(|| "https"),
+                                .map_or_else(|| "https", |val| val.to_str().unwrap_or_else(|_| "https")),
                             headers
                                 .get(HOST)
-                                .map(|val| val.to_str().unwrap_or_default())
-                                .unwrap_or_default(),
+                                .map_or_else(|| "", |val| val.to_str().unwrap_or_default()),
                             path
                         )
                     })

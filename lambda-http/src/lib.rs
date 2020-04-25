@@ -34,7 +34,7 @@
 //! will be wired in for you.
 //!
 //! Note: this comes at the expense of any one time `main` function initialization for your lambda task might find value in.
-//! The body of your `main` function     will be executed on every invocation of your lambda task.
+//! The body of your `main` function will be executed on every invocation of your lambda task.
 //!
 //! ```rust,no_run
 //! use lambda_http::{lambda_http, Request, IntoResponse};

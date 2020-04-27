@@ -1,4 +1,5 @@
-use crate::{Config, Err};
+use crate::Config;
+use anyhow::Error;
 use http::HeaderMap;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, convert::TryFrom};
@@ -11,7 +12,7 @@ pub(crate) struct Diagnostic {
 }
 
 #[test]
-fn round_trip_lambda_error() -> Result<(), Err> {
+fn round_trip_lambda_error() -> Result<(), Error> {
     use serde_json::{json, Value};
     let expected = json!({
         "errorType": "InvalidEventDataError",
@@ -102,7 +103,7 @@ pub struct LambdaCtx {
     /// The ARN of the Lambda function being invoked.
     pub invoked_function_arn: String,
     /// The X-Ray trace ID for the current invocation.
-    pub xray_trace_id: Option<String>,
+    pub xray_trace_id: String,
     /// The client context object sent by the AWS mobile SDK. This field is
     /// empty unless the function is invoked using an AWS mobile SDK.
     pub client_context: Option<ClientContext>,
@@ -117,7 +118,7 @@ pub struct LambdaCtx {
 }
 
 impl TryFrom<HeaderMap> for LambdaCtx {
-    type Error = Err;
+    type Error = Error;
     fn try_from(headers: HeaderMap) -> Result<Self, Self::Error> {
         let ctx = LambdaCtx {
             request_id: headers["lambda-runtime-aws-request-id"]
@@ -132,12 +133,10 @@ impl TryFrom<HeaderMap> for LambdaCtx {
                 .to_str()
                 .expect("Missing arn; this is a bug")
                 .to_owned(),
-            xray_trace_id: headers.get("lambda-runtime-trace-id").map(|header| {
-                header
-                    .to_str()
-                    .expect("Invalid XRayTraceID sent by Lambda; this is a bug")
-                    .to_owned()
-            }),
+            xray_trace_id: headers["lambda-runtime-trace-id"]
+                .to_str()
+                .expect("Invalid XRayTraceID sent by Lambda; this is a bug")
+                .to_owned(),
             ..Default::default()
         };
         Ok(ctx)

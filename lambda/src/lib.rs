@@ -6,10 +6,10 @@
 //! There are two mechanisms of defining a Lambda function:
 //! 1. The `#[lambda]` attribute, which generates the boilerplate needed to
 //!    to launch and run a Lambda function. The `#[lambda]` attribute _must_
-//!    be placed on an asynchronous main funtion. However, asynchronous main
-//!    funtions are not legal valid Rust, which means that a crate like
+//!    be placed on an asynchronous main function. However, asynchronous main
+//!    functions are not legal valid Rust, which means that a crate like
 //!    [Runtime](https://github.com/rustasync/runtime) must be used. A main function
-//!    decorated using `#[lamdba]`
+//!    decorated using `#[lambdas]`
 //! 2. A type that conforms to the [`Handler`] trait. This type can then be passed
 //!    to the the `lambda::run` function, which launches and runs the Lambda runtime.
 //!

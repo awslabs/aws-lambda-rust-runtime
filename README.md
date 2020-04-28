@@ -1,7 +1,5 @@
 # Rust Runtime for AWS Lambda
 
-[![Build Status](https://travis-ci.org/awslabs/aws-lambda-rust-runtime.svg?branch=master)](https://travis-ci.org/awslabs/aws-lambda-rust-runtime)
-
 This package makes it easy to run AWS Lambda Functions written in Rust. This workspace includes multiple crates:
 
 - [![Docs](https://docs.rs/lambda_runtime_client/badge.svg)](https://docs.rs/lambda_runtime_client) **`lambda-runtime-client`** is a client SDK for the Lambda Runtime APIs. You probably don't need to use this crate directly!

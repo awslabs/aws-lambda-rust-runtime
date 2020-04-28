@@ -85,11 +85,13 @@ You can now test the function using the AWS CLI or the AWS Lambda console
 
 ```bash
 $ aws lambda invoke --function-name rustTest \
-  --cli-binary-format raw-in-base64-out \
   --payload '{"firstName": "world"}' \
   output.json
 $ cat output.json  # Prints: {"message":"Hello, world!"}
 ```
+
+**Note:** `--cli-binary-format raw-in-base64-out` is a required
+  argument when using the AWS CLI version 2. [More Information](https://docs.aws.amazon.com/cli/latest/userguide/cliv2-migration.html#cliv2-migration-binaryparam)
 
 #### Serverless Framework
 

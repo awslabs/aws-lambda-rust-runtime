@@ -183,8 +183,10 @@ where
 
 fn incoming(client: &Client) -> impl Stream<Item = Result<http::Response<hyper::Body>, Error>> + '_ {
     gen!({
-        let req = NextEventRequest.into_req().expect("Unable to construct request");
-        yield_!(client.call(req).await)
+        loop {
+            let req = NextEventRequest.into_req().expect("Unable to construct request");
+            yield_!(client.call(req).await)
+        }
     })
 }
 

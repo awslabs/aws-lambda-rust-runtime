@@ -62,13 +62,13 @@ There are currently multiple ways of building this package: manually, and the [S
 To deploy the basic sample as a Lambda function using the [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html), we first need to manually build it with [`cargo`](https://doc.rust-lang.org/cargo/). Since Lambda uses Amazon Linux, you'll need to target your executable for an `x86_64-linux` platform.
 
 ```bash
-$ cargo build -p lambda_runtime --example basic --release
+$ cargo build -p lambda --example hello --release
 ```
 
 For a custom runtime, AWS Lambda looks for an executable called `bootstrap` in the deployment package zip. Rename the generated `basic` executable to `bootstrap` and add it to a zip archive.
 
 ```bash
-$ cp ./target/release/examples/basic ./bootstrap && zip lambda.zip bootstrap && rm bootstrap
+$ cp ./target/release/examples/hello ./bootstrap && zip lambda.zip bootstrap && rm bootstrap
 ```
 
 Now that we have a deployment package (`lambda.zip`), we can use the [AWS CLI](https://aws.amazon.com/cli/) to create a new Lambda function. Make sure to replace the execution role with an existing role in your account!

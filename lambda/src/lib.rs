@@ -49,7 +49,7 @@ use std::{
 mod client;
 mod requests;
 mod simulated;
-/// Types availible to a Lambda function.
+/// Types available to a Lambda function.
 mod types;
 
 use requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest};

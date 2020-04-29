@@ -9,7 +9,7 @@
 //!    be placed on an asynchronous main function. However, asynchronous main
 //!    functions are not legal valid Rust, which means that a crate like
 //!    [Runtime](https://github.com/rustasync/runtime) must be used. A main function
-//!    decorated using `#[lambdas]`
+//!    decorated using a `#[lambda]` attribute macro.
 //! 2. A type that conforms to the [`Handler`] trait. This type can then be passed
 //!    to the the `lambda::run` function, which launches and runs the Lambda runtime.
 //!

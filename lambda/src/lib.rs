@@ -6,13 +6,13 @@
 //! There are two mechanisms available for defining a Lambda function:
 //! 1. The `#[lambda]` attribute, which generates the boilerplate to
 //!    to launch and run a Lambda function.
-//! 
+//!
 //!    The `#[lambda]` attribute _must_ be placed on an asynchronous main function.
 //!    However, as asynchronous main functions are not legal valid Rust
 //!    this means that the main function must also be decorated using a
 //!    `#[tokio::main]` attribute macro. This is available from
 //!    the [tokio](https://github.com/tokio-rs/tokio) crate.
-//! 
+//!
 //! 2. A type that conforms to the [`Handler`] trait. This type can then be passed
 //!    to the the `lambda::run` function, which launches and runs the Lambda runtime.
 //!

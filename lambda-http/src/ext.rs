@@ -43,7 +43,15 @@ impl fmt::Display for PayloadError {
         }
     }
 }
-impl Error for PayloadError {}
+
+impl Error for PayloadError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match self {
+            PayloadError::Json(json) => Some(json),
+            PayloadError::WwwFormUrlEncoded(form) => Some(form),
+        }
+    }
+}
 
 /// Extentions for `lambda_http::Request` structs that
 /// provide access to [API gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format)

@@ -52,9 +52,9 @@ impl Error for PayloadError {}
 ///
 /// # Examples
 ///
-/// You can access a request's body in deserialized format
-/// for http request body payloads sent in `application/x-www-form-urlencoded` or
-/// `application/json` formats.
+/// A request's body can be deserialized if its correctly encoded as per  
+/// the request's `Content-Type` header. The two supported content types are
+/// `application/x-www-form-urlencoded` and `application/json`.
 ///
 /// The following handler will work an http request body of `x=1&y=2`
 /// as well as `{"x":1, "y":2}` respectively.

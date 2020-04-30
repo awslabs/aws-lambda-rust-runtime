@@ -69,7 +69,7 @@ pub enum Body {
 }
 
 impl Body {
-    /// Decodes body, if needed, based aws provided contract
+    /// Decodes body, if needed.
     ///
     /// # Panics
     ///

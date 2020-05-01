@@ -211,15 +211,27 @@ where
         let body = serde_json::from_slice(&body)?;
 
         let request_id = &ctx.request_id.clone();
-        let f = INVOCATION_CTX.scope(ctx, { handler.call(body) });
+        // handler, B need to be Send
+        // let f = tokio::spawn(INVOCATION_CTX.scope(ctx, async move { handler.call(body).await }));
+        let f = tokio::spawn(async { handler.call(body).await });
 
         let req = match f.await {
-            Ok(res) => EventCompletionRequest { request_id, body: res }.into_req()?,
-            Err(e) => EventErrorRequest {
+            Ok(res) => match res {
+                Ok(r) => EventCompletionRequest { request_id, body: r }.into_req()?,
+                Err(e) => EventErrorRequest {
+                    request_id,
+                    diagnostic: Diagnostic {
+                        error_message: format!("{:?}", e),
+                        error_type: type_name_of_val(e).to_owned(),
+                    },
+                }
+                .into_req()?,
+            },
+            Err(panic) => EventErrorRequest {
                 request_id,
                 diagnostic: Diagnostic {
-                    error_message: format!("{:?}", e),
-                    error_type: type_name_of_val(e).to_owned(),
+                    error_message: "Unexpected panic".to_string(),
+                    error_type: "Panic".to_string(),
                 },
             }
             .into_req()?,

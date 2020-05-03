@@ -3,11 +3,6 @@
 //! Typically these are exposed via the `request_context`
 //! request extension method provided by [lambda_http::RequestExt](../trait.RequestExt.html)
 //!
-use http::{
-    self,
-    header::{HeaderName, HeaderValue, HOST},
-    HeaderMap, Method, Request as HttpRequest,
-};
 use serde::de::{Deserialize, Deserializer, Error as DeError, MapAccess, Visitor};
 use serde_derive::Deserialize;
 use serde_json::{error::Error as JsonError, Value};
@@ -36,7 +31,7 @@ pub enum LambdaRequest<'a> {
         raw_query_string: Cow<'a, str>,
         cookies: Vec<Cow<'a, str>>,
         #[serde(deserialize_with = "deserialize_headers")]
-        headers: HeaderMap<HeaderValue>,
+        headers: http::HeaderMap,
         #[serde(deserialize_with = "nullable_default")]
         query_string_parameters: StrMap,
         #[serde(default, deserialize_with = "nullable_default")]
@@ -52,13 +47,13 @@ pub enum LambdaRequest<'a> {
     Alb {
         path: Cow<'a, str>,
         #[serde(deserialize_with = "deserialize_method")]
-        http_method: Method,
+        http_method: http::Method,
         #[serde(deserialize_with = "deserialize_headers")]
-        headers: HeaderMap<HeaderValue>,
+        headers: http::HeaderMap,
         /// For alb events these are only present when
         /// the `lambda.multi_value_headers.enabled` target group setting turned on
         #[serde(default, deserialize_with = "deserialize_multi_value_headers")]
-        multi_value_headers: HeaderMap<HeaderValue>,
+        multi_value_headers: http::HeaderMap,
         #[serde(deserialize_with = "nullable_default")]
         query_string_parameters: StrMap,
         /// For alb events these are only present when
@@ -74,11 +69,11 @@ pub enum LambdaRequest<'a> {
     ApiGateway {
         path: Cow<'a, str>,
         #[serde(deserialize_with = "deserialize_method")]
-        http_method: Method,
+        http_method: http::Method,
         #[serde(deserialize_with = "deserialize_headers")]
-        headers: HeaderMap<HeaderValue>,
+        headers: http::HeaderMap,
         #[serde(default, deserialize_with = "deserialize_multi_value_headers")]
-        multi_value_headers: HeaderMap<HeaderValue>,
+        multi_value_headers: http::HeaderMap,
         #[serde(deserialize_with = "nullable_default")]
         query_string_parameters: StrMap,
         #[serde(default, deserialize_with = "nullable_default")]
@@ -174,7 +169,7 @@ pub struct Elb {
 #[serde(rename_all = "camelCase")]
 pub struct Http {
     #[serde(deserialize_with = "deserialize_method")]
-    pub method: Method,
+    pub method: http::Method,
     pub path: String,
     pub protocol: String,
     pub source_ip: String,
@@ -200,14 +195,14 @@ pub struct Identity {
 }
 
 /// Deserialize a str into an http::Method
-fn deserialize_method<'de, D>(deserializer: D) -> Result<Method, D::Error>
+fn deserialize_method<'de, D>(deserializer: D) -> Result<http::Method, D::Error>
 where
     D: Deserializer<'de>,
 {
     struct MethodVisitor;
 
     impl<'de> Visitor<'de> for MethodVisitor {
-        type Value = Method;
+        type Value = http::Method;
 
         fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
             write!(formatter, "a Method")
@@ -225,14 +220,14 @@ where
 }
 
 /// Deserialize a map of Cow<'_, str> => Vec<Cow<'_, str>> into an http::HeaderMap
-fn deserialize_multi_value_headers<'de, D>(deserializer: D) -> Result<HeaderMap<HeaderValue>, D::Error>
+fn deserialize_multi_value_headers<'de, D>(deserializer: D) -> Result<http::HeaderMap, D::Error>
 where
     D: Deserializer<'de>,
 {
     struct HeaderVisitor;
 
     impl<'de> Visitor<'de> for HeaderVisitor {
-        type Value = HeaderMap<HeaderValue>;
+        type Value = http::HeaderMap;
 
         fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
             write!(formatter, "a multi valued HeaderMap<HeaderValue>")
@@ -244,17 +239,17 @@ where
         {
             let mut headers = map
                 .size_hint()
-                .map(HeaderMap::with_capacity)
-                .unwrap_or_else(HeaderMap::new);
+                .map(http::HeaderMap::with_capacity)
+                .unwrap_or_else(http::HeaderMap::new);
             while let Some((key, values)) = map.next_entry::<Cow<'_, str>, Vec<Cow<'_, str>>>()? {
                 // note the aws docs for multi value headers include an empty key. I'm not sure if this is a doc bug
                 // or not by the http crate doesn't handle it
                 // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
                 if !key.is_empty() {
                     for value in values {
-                        let header_name = key.parse::<HeaderName>().map_err(A::Error::custom)?;
-                        let header_value =
-                            HeaderValue::from_maybe_shared(value.into_owned()).map_err(A::Error::custom)?;
+                        let header_name = key.parse::<http::header::HeaderName>().map_err(A::Error::custom)?;
+                        let header_value = http::header::HeaderValue::from_maybe_shared(value.into_owned())
+                            .map_err(A::Error::custom)?;
                         headers.append(header_name, header_value);
                     }
                 }
@@ -267,14 +262,14 @@ where
 }
 
 /// Deserialize a map of Cow<'_, str> => Cow<'_, str> into an http::HeaderMap
-fn deserialize_headers<'de, D>(deserializer: D) -> Result<HeaderMap<HeaderValue>, D::Error>
+fn deserialize_headers<'de, D>(deserializer: D) -> Result<http::HeaderMap, D::Error>
 where
     D: Deserializer<'de>,
 {
     struct HeaderVisitor;
 
     impl<'de> Visitor<'de> for HeaderVisitor {
-        type Value = HeaderMap<HeaderValue>;
+        type Value = http::HeaderMap;
 
         fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
             write!(formatter, "a HeaderMap<HeaderValue>")
@@ -286,11 +281,12 @@ where
         {
             let mut headers = map
                 .size_hint()
-                .map(HeaderMap::with_capacity)
-                .unwrap_or_else(HeaderMap::new);
+                .map(http::HeaderMap::with_capacity)
+                .unwrap_or_else(http::HeaderMap::new);
             while let Some((key, value)) = map.next_entry::<Cow<'_, str>, Cow<'_, str>>()? {
-                let header_name = key.parse::<HeaderName>().map_err(A::Error::custom)?;
-                let header_value = HeaderValue::from_maybe_shared(value.into_owned()).map_err(A::Error::custom)?;
+                let header_name = key.parse::<http::header::HeaderName>().map_err(A::Error::custom)?;
+                let header_value =
+                    http::header::HeaderValue::from_maybe_shared(value.into_owned()).map_err(A::Error::custom)?;
                 headers.append(header_name, header_value);
             }
             Ok(headers)
@@ -312,7 +308,7 @@ where
 }
 
 /// Converts LambdaRequest types into `http::Request<Body>` types
-impl<'a> From<LambdaRequest<'a>> for HttpRequest<Body> {
+impl<'a> From<LambdaRequest<'a>> for http::Request<Body> {
     fn from(value: LambdaRequest<'_>) -> Self {
         match value {
             LambdaRequest::ApiGatewayV2 {
@@ -327,7 +323,7 @@ impl<'a> From<LambdaRequest<'a>> for HttpRequest<Body> {
                 request_context,
                 ..
             } => {
-                let builder = HttpRequest::builder()
+                let builder = http::Request::builder()
                     .method(request_context.http.method.as_ref())
                     .uri({
                         let mut url = format!(
@@ -337,7 +333,7 @@ impl<'a> From<LambdaRequest<'a>> for HttpRequest<Body> {
                                 .and_then(|val| val.to_str().ok())
                                 .unwrap_or_else(|| "https"),
                             headers
-                                .get(HOST)
+                                .get(http::header::HOST)
                                 .and_then(|val| val.to_str().ok())
                                 .unwrap_or_else(|| request_context.domain_name.as_ref()),
                             raw_path
@@ -375,7 +371,7 @@ impl<'a> From<LambdaRequest<'a>> for HttpRequest<Body> {
                 is_base64_encoded,
                 request_context,
             } => {
-                let builder = HttpRequest::builder()
+                let builder = http::Request::builder()
                     .method(http_method)
                     .uri({
                         format!(
@@ -384,7 +380,10 @@ impl<'a> From<LambdaRequest<'a>> for HttpRequest<Body> {
                                 .get("X-Forwarded-Proto")
                                 .and_then(|val| val.to_str().ok())
                                 .unwrap_or_else(|| "https"),
-                            headers.get(HOST).and_then(|val| val.to_str().ok()).unwrap_or_default(),
+                            headers
+                                .get(http::header::HOST)
+                                .and_then(|val| val.to_str().ok())
+                                .unwrap_or_default(),
                             path
                         )
                     })
@@ -435,7 +434,7 @@ impl<'a> From<LambdaRequest<'a>> for HttpRequest<Body> {
                 request_context,
             } => {
                 // build an http::Request<lambda_http::Body> from a lambda_http::LambdaRequest
-                let builder = HttpRequest::builder()
+                let builder = http::Request::builder()
                     .method(http_method)
                     .uri({
                         format!(
@@ -444,7 +443,10 @@ impl<'a> From<LambdaRequest<'a>> for HttpRequest<Body> {
                                 .get("X-Forwarded-Proto")
                                 .and_then(|val| val.to_str().ok())
                                 .unwrap_or_else(|| "https"),
-                            headers.get(HOST).and_then(|val| val.to_str().ok()).unwrap_or_default(),
+                            headers
+                                .get(http::header::HOST)
+                                .and_then(|val| val.to_str().ok())
+                                .unwrap_or_default(),
                             path
                         )
                     })

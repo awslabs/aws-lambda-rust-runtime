@@ -1,6 +1,5 @@
 //! Extension methods for `http::Request` types
 
-use http::{header::CONTENT_TYPE, Request as HttpRequest};
 use serde::{de::value::Error as SerdeError, Deserialize};
 use std::{error::Error, fmt};
 
@@ -174,7 +173,7 @@ pub trait RequestExt {
         for<'de> D: Deserialize<'de>;
 }
 
-impl RequestExt for HttpRequest<Body> {
+impl RequestExt for http::Request<Body> {
     fn query_string_parameters(&self) -> StrMap {
         self.extensions()
             .get::<QueryStringParameters>()
@@ -238,7 +237,7 @@ impl RequestExt for HttpRequest<Body> {
         for<'de> D: Deserialize<'de>,
     {
         self.headers()
-            .get(CONTENT_TYPE)
+            .get(http::header::CONTENT_TYPE)
             .map(|ct| match ct.to_str() {
                 Ok("application/x-www-form-urlencoded") => serde_urlencoded::from_bytes::<D>(self.body().as_ref())
                     .map_err(PayloadError::WwwFormUrlEncoded)
@@ -255,7 +254,6 @@ impl RequestExt for HttpRequest<Body> {
 #[cfg(test)]
 mod tests {
     use crate::{Body, Request, RequestExt};
-    use http::Request as HttpRequest;
     use serde_derive::Deserialize;
     use std::error::Error;
 
@@ -293,7 +291,7 @@ mod tests {
             foo: String,
             baz: usize,
         }
-        let request = HttpRequest::builder()
+        let request = http::Request::builder()
             .header("Content-Type", "application/x-www-form-urlencoded")
             .body(Body::from("foo=bar&baz=2"))?;
         let payload: Option<Payload> = request.payload().unwrap_or_default();
@@ -314,7 +312,7 @@ mod tests {
             foo: String,
             baz: usize,
         }
-        let request = HttpRequest::builder()
+        let request = http::Request::builder()
             .header("Content-Type", "application/json")
             .body(Body::from(r#"{"foo":"bar", "baz": 2}"#))?;
         let payload: Option<Payload> = request.payload().unwrap_or_default();
@@ -335,7 +333,7 @@ mod tests {
             foo: String,
             baz: usize,
         }
-        let request = HttpRequest::builder().body(Body::from(r#"{"foo":"bar", "baz": 2}"#))?;
+        let request = http::Request::builder().body(Body::from(r#"{"foo":"bar", "baz": 2}"#))?;
         let payload: Option<Payload> = request.payload().unwrap_or_default();
         assert_eq!(payload, None);
         Ok(())

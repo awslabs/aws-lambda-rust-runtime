@@ -255,7 +255,6 @@ impl RequestExt for http::Request<Body> {
 mod tests {
     use crate::{Body, Request, RequestExt};
     use serde_derive::Deserialize;
-    use std::error::Error;
 
     #[test]
     fn requests_can_mock_query_string_parameters_ext() {
@@ -285,7 +284,7 @@ mod tests {
     }
 
     #[test]
-    fn requests_have_form_post_parsable_payloads() -> Result<(), Box<dyn Error>> {
+    fn requests_have_form_post_parsable_payloads() {
         #[derive(Deserialize, PartialEq, Debug)]
         struct Payload {
             foo: String,
@@ -293,7 +292,8 @@ mod tests {
         }
         let request = http::Request::builder()
             .header("Content-Type", "application/x-www-form-urlencoded")
-            .body(Body::from("foo=bar&baz=2"))?;
+            .body(Body::from("foo=bar&baz=2"))
+            .expect("failed to build request");
         let payload: Option<Payload> = request.payload().unwrap_or_default();
         assert_eq!(
             payload,
@@ -302,11 +302,10 @@ mod tests {
                 baz: 2
             })
         );
-        Ok(())
     }
 
     #[test]
-    fn requests_have_json_parseable_payloads() -> Result<(), Box<dyn Error>> {
+    fn requests_have_json_parseable_payloads() {
         #[derive(Deserialize, PartialEq, Debug)]
         struct Payload {
             foo: String,
@@ -314,7 +313,8 @@ mod tests {
         }
         let request = http::Request::builder()
             .header("Content-Type", "application/json")
-            .body(Body::from(r#"{"foo":"bar", "baz": 2}"#))?;
+            .body(Body::from(r#"{"foo":"bar", "baz": 2}"#))
+            .expect("failed to build request");
         let payload: Option<Payload> = request.payload().unwrap_or_default();
         assert_eq!(
             payload,
@@ -323,19 +323,19 @@ mod tests {
                 baz: 2
             })
         );
-        Ok(())
     }
 
     #[test]
-    fn requests_omiting_content_types_do_not_support_parseable_payloads() -> Result<(), Box<dyn Error>> {
+    fn requests_omiting_content_types_do_not_support_parseable_payloads() {
         #[derive(Deserialize, PartialEq, Debug)]
         struct Payload {
             foo: String,
             baz: usize,
         }
-        let request = http::Request::builder().body(Body::from(r#"{"foo":"bar", "baz": 2}"#))?;
+        let request = http::Request::builder()
+            .body(Body::from(r#"{"foo":"bar", "baz": 2}"#))
+            .expect("failed to bulid request");
         let payload: Option<Payload> = request.payload().unwrap_or_default();
         assert_eq!(payload, None);
-        Ok(())
     }
 }

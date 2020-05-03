@@ -547,7 +547,7 @@ mod tests {
     }
 
     #[test]
-    fn deserializes_apigw_v2_request_events() -> Result<(), Box<dyn Error>> {
+    fn deserializes_apigw_v2_request_events() {
         // from the docs
         // https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request
         let input = include_str!("../tests/data/apigw_v2_proxy_request.json");
@@ -556,14 +556,13 @@ mod tests {
             result.is_ok(),
             format!("event was not parsed as expected {:?} given {}", result, input)
         );
-        let req = result?;
+        let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "POST");
         assert_eq!(req.uri(), "https://id.execute-api.us-east-1.amazonaws.com/my/path?parameter1=value1&parameter1=value2&parameter2=value");
-        Ok(())
     }
 
     #[test]
-    fn deserializes_apigw_request_events() -> Result<(), Box<dyn Error>> {
+    fn deserializes_apigw_request_events() {
         // from the docs
         // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
         // https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html
@@ -573,17 +572,16 @@ mod tests {
             result.is_ok(),
             format!("event was not parsed as expected {:?} given {}", result, input)
         );
-        let req = result?;
+        let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "GET");
         assert_eq!(
             req.uri(),
             "https://wt6mne2s9k.execute-api.us-west-2.amazonaws.com/test/hello"
         );
-        Ok(())
     }
 
     #[test]
-    fn deserializes_alb_request_events() -> Result<(), Box<dyn Error>> {
+    fn deserializes_alb_request_events() {
         // from the docs
         // https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html#multi-value-headers
         let input = include_str!("../tests/data/alb_request.json");
@@ -592,14 +590,13 @@ mod tests {
             result.is_ok(),
             format!("event was not parsed as expected {:?} given {}", result, input)
         );
-        let req = result?;
+        let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "GET");
         assert_eq!(req.uri(), "https://lambda-846800462-us-east-2.elb.amazonaws.com/");
-        Ok(())
     }
 
     #[test]
-    fn deserializes_apigw_multi_value_request_events() -> Result<(), Box<dyn Error>> {
+    fn deserializes_apigw_multi_value_request_events() {
         // from docs
         // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
         let input = include_str!("../tests/data/apigw_multi_value_proxy_request.json");
@@ -608,7 +605,7 @@ mod tests {
             result.is_ok(),
             format!("event is was not parsed as expected {:?} given {}", result, input)
         );
-        let request = result?;
+        let request = result.expect("failed to parse request");
 
         assert!(!request.query_string_parameters().is_empty());
 
@@ -617,11 +614,10 @@ mod tests {
             request.query_string_parameters().get_all("multivalueName"),
             Some(vec!["you", "me"])
         );
-        Ok(())
     }
 
     #[test]
-    fn deserializes_alb_multi_value_request_events() -> Result<(), Box<dyn Error>> {
+    fn deserializes_alb_multi_value_request_events() {
         // from docs
         // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
         let input = include_str!("../tests/data/alb_multi_value_request.json");
@@ -630,7 +626,7 @@ mod tests {
             result.is_ok(),
             format!("event is was not parsed as expected {:?} given {}", result, input)
         );
-        let request = result?;
+        let request = result.expect("failed to parse request");
         assert!(!request.query_string_parameters().is_empty());
 
         // test RequestExt#query_string_parameters does the right thing
@@ -638,7 +634,6 @@ mod tests {
             request.query_string_parameters().get_all("myKey"),
             Some(vec!["val1", "val2"])
         );
-        Ok(())
     }
 
     #[test]

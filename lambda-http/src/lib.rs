@@ -9,7 +9,7 @@
 //!
 //! # Examples
 //!
-//! ## Hello world
+//! ## Hello World, Without Macros
 //!
 //! lambda_http handlers adapt to the standard `lambda::Handler` interface using the [`handler`](fn.handler.html) function.
 //!

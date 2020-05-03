@@ -27,7 +27,7 @@
 //! }
 //! ```
 //!
-//! ## Hello world (simpler)
+//! ## Hello World
 //!
 //! For the simple cases you may not need much if any bootstrapping. To make life simpler
 //! you can add an `#[lambda_http]` attribute to your `main` function and `lambda::run` machinery

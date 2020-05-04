@@ -4,7 +4,7 @@ use proc_macro::TokenStream;
 use quote::quote_spanned;
 use syn::{spanned::Spanned, FnArg, ItemFn};
 
-/// Shrink wraps common case for for wiring up `lambda::run` main function
+/// Shrink wraps common case for wiring up `lambda::run` in a main function
 #[proc_macro_attribute]
 pub fn lambda_http(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(item as ItemFn);

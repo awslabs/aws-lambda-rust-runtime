@@ -4,37 +4,22 @@
 //! types targeting AWS [ALB](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html), [API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html) REST and HTTP API lambda integrations.
 //!
 //! This crate abstracts over all of these trigger events using standard [`http`](https://github.com/hyperium/http) types minimizing the mental overhead
-//! of the implementation details allowing you to focus more on your application while also giving you to the maximum flexibility to
-//! transparently use whichever lambda trigger suits your application's needs best.
+//! of understanding the nuances and variation between trigger details allowing you to focus more on your application while also giving you to the maximum flexibility to
+//! transparently use whichever lambda trigger suits your application and cost optimiztions best.
 //!
 //! # Examples
 //!
-//! ## Hello World, Without Macros
+//! ## Hello World
 //!
 //! `lambda_http` handlers adapt to the standard `lambda::Handler` interface using the [`handler`](fn.handler.html) function.
 //!
-//! The simplest case of an http handler is a closure of `http::Request` to a type that can be lifted into an `http::Response`.
-//! You can learn more about these types [here](trait.IntoResponse.html)
+//! The simplest case of an http handler is a function of an `http::Request` to a type that can be lifted into an `http::Response`.
+//! You can learn more about these types [here](trait.IntoResponse.html).
 //!
-//! ```rust,no_run
-//! use lambda_http::{handler, lambda};
-//! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
+//! Adding an `#[lambda_http]` attribute to a `#[tokio::run]`-decorated `main` function will setup and run the Lambda function.
 //!
-//! #[tokio::main]
-//! async fn main() -> Result<(), Error> {
-//!     lambda::run(handler(|request| async { Ok("👋 world!") })).await?;
-//!     Ok(())
-//! }
-//! ```
-//!
-//! ## Hello World
-//!
-//! For the simple cases you may not need much if any bootstrapping. To make life simpler
-//! you can add an `#[lambda_http]` attribute to your `main` function and `lambda::run` machinery
-//! will be wired in for you.
-//!
-//! Note: this comes at the expense of any one time `main` function initialization for your lambda task might find value in.
-//! The body of your `main` function will be executed on every invocation of your lambda task.
+//! Note: this comes at the expense of any onetime initialization your lambda task might find value in.
+//! The full body of your `main` function will be executed on **every** invocation of your lambda task.
 //!
 //! ```rust,no_run
 //! use lambda_http::{lambda_http, Request, IntoResponse};
@@ -45,6 +30,26 @@
 //! async fn main(_: Request) -> Result<impl IntoResponse, Error> {
 //!     Ok("👋 world!")
 //! }
+//! ```
+//! 
+//! ## Hello World, Without Macros
+//!
+//! For cases where your lambda might benfit from one time function initializiation might 
+//! prefer a plain `main` function and invoke `lambda::run` explicitly in combination with the [`handler`](fn.handler.html) function.
+//! Depending on the runtime cost of your dependency bootstrapping, this can reduce the overall latency of your functions execution path.
+//!
+//! ```rust,no_run
+//! use lambda_http::{handler, lambda};
+//! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
+//!
+//! #[tokio::main]
+//! async fn main() -> Result<(), Error> {
+//!     // initialize dependencies once here for the lifetime of your
+//!     // lambda task
+//!     lambda::run(handler(|request| async { Ok("👋 world!") })).await?;
+//!     Ok(())
+//! }
+//! 
 //! ```
 //!
 //! ## Leveraging trigger provided data

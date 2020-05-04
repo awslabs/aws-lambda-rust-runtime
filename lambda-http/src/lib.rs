@@ -31,10 +31,10 @@
 //!     Ok("👋 world!")
 //! }
 //! ```
-//! 
+//!
 //! ## Hello World, Without Macros
 //!
-//! For cases where your lambda might benfit from one time function initializiation might 
+//! For cases where your lambda might benfit from one time function initializiation might
 //! prefer a plain `main` function and invoke `lambda::run` explicitly in combination with the [`handler`](fn.handler.html) function.
 //! Depending on the runtime cost of your dependency bootstrapping, this can reduce the overall latency of your functions execution path.
 //!
@@ -49,7 +49,7 @@
 //!     lambda::run(handler(|request| async { Ok("👋 world!") })).await?;
 //!     Ok(())
 //! }
-//! 
+//!
 //! ```
 //!
 //! ## Leveraging trigger provided data

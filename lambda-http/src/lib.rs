@@ -114,11 +114,11 @@ pub type Request = http::Request<Body>;
 /// This can be viewed as a `lambda::Handler` constrained to `http` crate `Request` and `Response` types
 pub trait Handler: Sized {
     /// The type of Error that this Handler will return
-    type Err;
+    type Error;
     /// The type of Response this Handler will return
     type Response: IntoResponse;
     /// The type of Future this Handler will return
-    type Fut: Future<Output = Result<Self::Response, Self::Err>> + 'static;
+    type Fut: Future<Output = Result<Self::Response, Self::Error>> + 'static;
     /// Function used to execute handler behavior
     fn call(&mut self, event: Request) -> Self::Fut;
 }
@@ -137,7 +137,7 @@ where
     Err: Into<Box<dyn Error + Send + Sync + 'static>> + fmt::Debug,
 {
     type Response = R;
-    type Err = Err;
+    type Error = Err;
     type Fut = Fut;
     fn call(&mut self, event: Request) -> Self::Fut {
         (*self)(event)
@@ -178,7 +178,7 @@ pub struct Adapter<H: Handler> {
 
 impl<H: Handler> Handler for Adapter<H> {
     type Response = H::Response;
-    type Err = H::Err;
+    type Error = H::Error;
     type Fut = H::Fut;
     fn call(&mut self, event: Request) -> Self::Fut {
         self.handler.call(event)
@@ -186,8 +186,8 @@ impl<H: Handler> Handler for Adapter<H> {
 }
 
 impl<H: Handler> LambdaHandler<LambdaRequest<'_>, LambdaResponse> for Adapter<H> {
-    type Err = H::Err;
-    type Fut = TransformResponse<H::Response, Self::Err>;
+    type Error = H::Error;
+    type Fut = TransformResponse<H::Response, Self::Error>;
     fn call(&mut self, event: LambdaRequest<'_>) -> Self::Fut {
         let is_alb = event.is_alb();
         let fut = Box::pin(self.handler.call(event.into()));

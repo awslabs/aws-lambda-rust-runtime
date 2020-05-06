@@ -29,14 +29,14 @@ pub enum LambdaRequest<'a> {
         route_key: Cow<'a, str>,
         raw_path: Cow<'a, str>,
         raw_query_string: Cow<'a, str>,
-        cookies: Vec<Cow<'a, str>>,
+        cookies: Option<Vec<Cow<'a, str>>>,
         #[serde(deserialize_with = "deserialize_headers")]
         headers: http::HeaderMap,
-        #[serde(deserialize_with = "nullable_default")]
+        #[serde(default)]
         query_string_parameters: StrMap,
-        #[serde(default, deserialize_with = "nullable_default")]
+        #[serde(default)]
         path_parameters: StrMap,
-        #[serde(default, deserialize_with = "nullable_default")]
+        #[serde(default)]
         stage_variables: StrMap,
         body: Option<Cow<'a, str>>,
         #[serde(default)]
@@ -544,6 +544,21 @@ mod tests {
         // note: file paths are relative to the directory of the crate at runtime
         let result = from_reader(File::open("tests/data/apigw_proxy_request.json").expect("expected file"));
         assert!(result.is_ok(), format!("event was not parsed as expected {:?}", result));
+    }
+
+    #[test]
+    fn deserializes_minimal_apigw_v2_request_events() {
+        // from the docs
+        // https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request
+        let input = include_str!("../tests/data/apigw_v2_proxy_request_minimal.json");
+        let result = from_str(input);
+        assert!(
+            result.is_ok(),
+            format!("event was not parsed as expected {:?} given {}", result, input)
+        );
+        let req = result.expect("failed to parse request");
+        assert_eq!(req.method(), "GET");
+        assert_eq!(req.uri(), "https://xxx.execute-api.us-east-1.amazonaws.com/");
     }
 
     #[test]

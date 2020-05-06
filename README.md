@@ -1,7 +1,5 @@
 # Rust Runtime for AWS Lambda
 
-[![Build Status](https://travis-ci.org/awslabs/aws-lambda-rust-runtime.svg?branch=master)](https://travis-ci.org/awslabs/aws-lambda-rust-runtime)
-
 This package makes it easy to run AWS Lambda Functions written in Rust. This workspace includes multiple crates:
 
 - [![Docs](https://docs.rs/lambda_runtime_client/badge.svg)](https://docs.rs/lambda_runtime_client) **`lambda-runtime-client`** is a client SDK for the Lambda Runtime APIs. You probably don't need to use this crate directly!
@@ -62,13 +60,13 @@ There are currently multiple ways of building this package: manually, and the [S
 To deploy the basic sample as a Lambda function using the [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html), we first need to manually build it with [`cargo`](https://doc.rust-lang.org/cargo/). Since Lambda uses Amazon Linux, you'll need to target your executable for an `x86_64-linux` platform.
 
 ```bash
-$ cargo build -p lambda_runtime --example basic --release
+$ cargo build -p lambda --example hello --release
 ```
 
 For a custom runtime, AWS Lambda looks for an executable called `bootstrap` in the deployment package zip. Rename the generated `basic` executable to `bootstrap` and add it to a zip archive.
 
 ```bash
-$ cp ./target/release/examples/basic ./bootstrap && zip lambda.zip bootstrap && rm bootstrap
+$ cp ./target/release/examples/hello ./bootstrap && zip lambda.zip bootstrap && rm bootstrap
 ```
 
 Now that we have a deployment package (`lambda.zip`), we can use the [AWS CLI](https://aws.amazon.com/cli/) to create a new Lambda function. Make sure to replace the execution role with an existing role in your account!
@@ -76,7 +74,7 @@ Now that we have a deployment package (`lambda.zip`), we can use the [AWS CLI](h
 ```bash
 $ aws lambda create-function --function-name rustTest \
   --handler doesnt.matter \
-  --zip-file file://./lambda.zip \
+  --zip-file fileb://./lambda.zip \
   --runtime provided \
   --role arn:aws:iam::XXXXXXXXXXXXX:role/your_lambda_execution_role \
   --environment Variables={RUST_BACKTRACE=1} \
@@ -91,6 +89,9 @@ $ aws lambda invoke --function-name rustTest \
   output.json
 $ cat output.json  # Prints: {"message":"Hello, world!"}
 ```
+
+**Note:** `--cli-binary-format raw-in-base64-out` is a required
+  argument when using the AWS CLI version 2. [More Information](https://docs.aws.amazon.com/cli/latest/userguide/cliv2-migration.html#cliv2-migration-binaryparam)
 
 #### Serverless Framework
 

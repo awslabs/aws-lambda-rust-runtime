@@ -3,13 +3,16 @@
 
 //! The official Rust runtime for AWS Lambda.
 //!
-//! There are two mechanisms of defining a Lambda function:
-//! 1. The `#[lambda]` attribute, which generates the boilerplate needed to
-//!    to launch and run a Lambda function. The `#[lambda]` attribute _must_
-//!    be placed on an asynchronous main funtion. However, asynchronous main
-//!    funtions are not legal valid Rust, which means that a crate like
-//!    [Runtime](https://github.com/rustasync/runtime) must be used. A main function
-//!    decorated using `#[lamdba]`
+//! There are two mechanisms available for defining a Lambda function:
+//! 1. The `#[lambda]` attribute, which generates the boilerplate to
+//!    to launch and run a Lambda function.
+//!
+//!    The `#[lambda]` attribute _must_ be placed on an asynchronous main function.
+//!    However, as asynchronous main functions are not legal valid Rust
+//!    this means that the main function must also be decorated using a
+//!    `#[tokio::main]` attribute macro. This is available from
+//!    the [tokio](https://github.com/tokio-rs/tokio) crate.
+//!
 //! 2. A type that conforms to the [`Handler`] trait. This type can then be passed
 //!    to the the `lambda::run` function, which launches and runs the Lambda runtime.
 //!
@@ -49,7 +52,7 @@ use std::{
 mod client;
 mod requests;
 mod simulated;
-/// Types availible to a Lambda function.
+/// Types available to a Lambda function.
 mod types;
 
 use requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest};

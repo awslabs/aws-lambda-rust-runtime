@@ -2,6 +2,7 @@
 name = "lambda"
 version = "0.1.0"
 authors = ["David Barsky <dbarsky@amazon.com>"]
+description = "AWS Lambda Runtime."
 edition = "2018"
 
 [features]

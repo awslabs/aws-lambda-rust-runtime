@@ -535,7 +535,7 @@ mod tests {
     use super::*;
     use crate::RequestExt;
     use serde_json;
-    use std::{collections::HashMap, error::Error, fs::File};
+    use std::{collections::HashMap, fs::File};
 
     #[test]
     fn deserializes_apigw_request_events_from_readables() {

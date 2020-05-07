@@ -1,8 +1,8 @@
-use lambda_http::{lambda_http, IntoResponse, Request};
+use lambda_http::{lambda, IntoResponse, Request};
 
 type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
-#[lambda_http]
+#[lambda(http)]
 #[tokio::main]
 async fn main(_: Request) -> Result<impl IntoResponse, Error> {
     Ok("👋 world")

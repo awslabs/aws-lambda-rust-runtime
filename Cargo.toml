@@ -2,6 +2,5 @@
 members = [
     "lambda",
     "lambda-attributes",
-    "lambda-http",
-    "lambda-http-attributes",
+    "lambda-http"
 ]

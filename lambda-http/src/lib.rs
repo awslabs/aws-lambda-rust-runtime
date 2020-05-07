@@ -16,16 +16,16 @@
 //! The simplest case of an http handler is a function of an `http::Request` to a type that can be lifted into an `http::Response`.
 //! You can learn more about these types [here](trait.IntoResponse.html).
 //!
-//! Adding an `#[lambda_http]` attribute to a `#[tokio::run]`-decorated `main` function will setup and run the Lambda function.
+//! Adding an `#[lambda(http)]` attribute to a `#[tokio::run]`-decorated `main` function will setup and run the Lambda function.
 //!
 //! Note: this comes at the expense of any onetime initialization your lambda task might find value in.
 //! The full body of your `main` function will be executed on **every** invocation of your lambda task.
 //!
 //! ```rust,no_run
-//! use lambda_http::{lambda_http, Request, IntoResponse};
+//! use lambda_http::{lambda, Request, IntoResponse};
 //! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 //!
-//! #[lambda_http]
+//! #[lambda(http)]
 //! #[tokio::main]
 //! async fn main(_: Request) -> Result<impl IntoResponse, Error> {
 //!     Ok("👋 world!")
@@ -88,7 +88,8 @@ extern crate maplit;
 pub use http::{self, Response};
 use lambda::Handler as LambdaHandler;
 pub use lambda::{self};
-pub use lambda_http_attributes::lambda_http;
+pub use lambda_attributes::lambda;
+//pub use lambda_http_attributes::lambda_http;
 mod body;
 pub mod ext;
 pub mod request;

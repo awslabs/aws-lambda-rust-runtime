@@ -97,10 +97,7 @@ impl LambdaRequest<'_> {
     /// responses capturing a hint that the request was an alb triggered
     /// event.
     pub fn is_alb(&self) -> bool {
-        match self {
-            LambdaRequest::Alb { .. } => true,
-            _ => false,
-        }
+        matches!(self, LambdaRequest::Alb { .. })
     }
 }
 

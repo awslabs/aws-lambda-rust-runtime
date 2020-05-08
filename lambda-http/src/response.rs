@@ -13,9 +13,10 @@ use serde_derive::Serialize;
 use crate::body::Body;
 
 /// Representation of API Gateway response
+#[doc(hidden)]
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct LambdaResponse {
+pub struct LambdaResponse {
     pub status_code: u16,
     // ALB requires a statusDescription i.e. "200 OK" field but API Gateway returns an error
     // when one is provided. only populate this for ALB responses
@@ -105,13 +106,13 @@ impl LambdaResponse {
     }
 }
 
-/// A conversion of self into a `Response`
+/// A conversion of self into a `Response<Body>` for various types.
 ///
 /// Implementations for `Response<B> where B: Into<Body>`,
 /// `B where B: Into<Body>` and `serde_json::Value` are provided
-/// by default
+/// by default.
 ///
-/// # example
+/// # Example
 ///
 /// ```rust
 /// use lambda_http::{Body, IntoResponse, Response};

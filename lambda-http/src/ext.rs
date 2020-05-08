@@ -1,12 +1,9 @@
-//! ALB and API Gateway extension methods for `http::Request` types
+//! Extension methods for `http::Request` types
 
-use failure::Fail;
-use http::{header::CONTENT_TYPE, Request as HttpRequest};
 use serde::{de::value::Error as SerdeError, Deserialize};
-use serde_json;
-use serde_urlencoded;
+use std::{error::Error, fmt};
 
-use crate::{request::RequestContext, strmap::StrMap};
+use crate::{request::RequestContext, strmap::StrMap, Body};
 
 /// ALB/API gateway pre-parsed http query string parameters
 pub(crate) struct QueryStringParameters(pub(crate) StrMap);
@@ -22,15 +19,37 @@ pub(crate) struct PathParameters(pub(crate) StrMap);
 /// These will always be empty for ALB requests
 pub(crate) struct StageVariables(pub(crate) StrMap);
 
-/// Payload deserialization errors
-#[derive(Debug, Fail)]
+/// Request payload deserialization errors
+///
+/// Returned by [`RequestExt#payload()`](trait.RequestExt.html#tymethod.payload)
+#[derive(Debug)]
 pub enum PayloadError {
     /// Returned when `application/json` bodies fail to deserialize a payload
-    #[fail(display = "failed to parse payload from application/json")]
     Json(serde_json::Error),
     /// Returned when `application/x-www-form-urlencoded` bodies fail to deserialize a payload
-    #[fail(display = "failed to parse payload application/x-www-form-urlencoded")]
     WwwFormUrlEncoded(SerdeError),
+}
+
+impl fmt::Display for PayloadError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            PayloadError::Json(json) => writeln!(f, "failed to parse payload from application/json {}", json),
+            PayloadError::WwwFormUrlEncoded(form) => writeln!(
+                f,
+                "failed to parse payload from application/x-www-form-urlencoded {}",
+                form
+            ),
+        }
+    }
+}
+
+impl Error for PayloadError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match self {
+            PayloadError::Json(json) => Some(json),
+            PayloadError::WwwFormUrlEncoded(form) => Some(form),
+        }
+    }
 }
 
 /// Extentions for `lambda_http::Request` structs that
@@ -40,17 +59,18 @@ pub enum PayloadError {
 ///
 /// # Examples
 ///
-/// You can also access a request's body in deserialized format
-/// for payloads sent in `application/x-www-form-urlencoded` or
-/// `application/json` format.
+/// A request's body can be deserialized if its correctly encoded as per  
+/// the request's `Content-Type` header. The two supported content types are
+/// `application/x-www-form-urlencoded` and `application/json`.
 ///
 /// The following handler will work an http request body of `x=1&y=2`
 /// as well as `{"x":1, "y":2}` respectively.
 ///
 /// ```rust,no_run
-/// use lambda_runtime::{Context, error::HandlerError};
-/// use lambda_http::{lambda, Body, Request, Response, RequestExt};
+/// use lambda_http::{handler, lambda, Body, IntoResponse, Request, Response, RequestExt};
 /// use serde_derive::Deserialize;
+///
+/// type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 ///
 /// #[derive(Debug,Deserialize,Default)]
 /// struct Args {
@@ -60,14 +80,15 @@ pub enum PayloadError {
 ///   y: usize
 /// }
 ///
-/// fn main() {
-///   lambda!(handler)
+/// #[tokio::main]
+/// async fn main() -> Result<(), Error> {
+///   lambda::run(handler(add)).await?;
+///   Ok(())
 /// }
 ///
-/// fn handler(
-///   request: Request,
-///   ctx: Context
-/// ) -> Result<Response<Body>, HandlerError> {
+/// async fn add(
+///   request: Request
+/// ) -> Result<Response<Body>, Error> {
 ///   let args: Args = request.payload()
 ///     .unwrap_or_else(|_parse_err| None)
 ///     .unwrap_or_default();
@@ -152,7 +173,7 @@ pub trait RequestExt {
         for<'de> D: Deserialize<'de>;
 }
 
-impl RequestExt for HttpRequest<super::Body> {
+impl RequestExt for http::Request<Body> {
     fn query_string_parameters(&self) -> StrMap {
         self.extensions()
             .get::<QueryStringParameters>()
@@ -205,7 +226,10 @@ impl RequestExt for HttpRequest<super::Body> {
     }
 
     fn request_context(&self) -> RequestContext {
-        self.extensions().get::<RequestContext>().cloned().unwrap_or_default()
+        self.extensions()
+            .get::<RequestContext>()
+            .cloned()
+            .expect("Request did not contain a request context")
     }
 
     fn payload<D>(&self) -> Result<Option<D>, PayloadError>
@@ -213,7 +237,7 @@ impl RequestExt for HttpRequest<super::Body> {
         for<'de> D: Deserialize<'de>,
     {
         self.headers()
-            .get(CONTENT_TYPE)
+            .get(http::header::CONTENT_TYPE)
             .map(|ct| match ct.to_str() {
                 Ok("application/x-www-form-urlencoded") => serde_urlencoded::from_bytes::<D>(self.body().as_ref())
                     .map_err(PayloadError::WwwFormUrlEncoded)
@@ -229,11 +253,8 @@ impl RequestExt for HttpRequest<super::Body> {
 
 #[cfg(test)]
 mod tests {
-    use http::{HeaderMap, Request as HttpRequest};
+    use crate::{Body, Request, RequestExt};
     use serde_derive::Deserialize;
-    use std::collections::HashMap;
-
-    use crate::{LambdaRequest, Request, RequestExt, StrMap};
 
     #[test]
     fn requests_can_mock_query_string_parameters_ext() {
@@ -263,91 +284,58 @@ mod tests {
     }
 
     #[test]
-    fn requests_have_query_string_ext() {
-        let mut headers = HeaderMap::new();
-        headers.insert("Host", "www.rust-lang.org".parse().unwrap());
-        let mut query = HashMap::new();
-        query.insert("foo".to_owned(), vec!["bar".to_owned()]);
-        let lambda_request = LambdaRequest {
-            path: "/foo".into(),
-            headers,
-            query_string_parameters: StrMap(query.clone().into()),
-            ..LambdaRequest::default()
-        };
-        let actual = HttpRequest::from(lambda_request);
-        assert_eq!(actual.query_string_parameters(), StrMap(query.clone().into()));
-    }
-
-    #[test]
-    fn requests_have_form_post_parseable_payloads() {
-        let mut headers = HeaderMap::new();
-        headers.insert("Host", "www.rust-lang.org".parse().unwrap());
-        headers.insert("Content-Type", "application/x-www-form-urlencoded".parse().unwrap());
+    fn requests_have_form_post_parsable_payloads() {
         #[derive(Deserialize, PartialEq, Debug)]
         struct Payload {
             foo: String,
             baz: usize,
         }
-        let lambda_request = LambdaRequest {
-            path: "/foo".into(),
-            headers,
-            body: Some("foo=bar&baz=2".into()),
-            ..LambdaRequest::default()
-        };
-        let actual = HttpRequest::from(lambda_request);
-        let payload: Option<Payload> = actual.payload().unwrap_or_default();
+        let request = http::Request::builder()
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .body(Body::from("foo=bar&baz=2"))
+            .expect("failed to build request");
+        let payload: Option<Payload> = request.payload().unwrap_or_default();
         assert_eq!(
             payload,
             Some(Payload {
                 foo: "bar".into(),
                 baz: 2
             })
-        )
-    }
-
-    #[test]
-    fn requests_have_form_post_parseable_payloads_for_hashmaps() {
-        let mut headers = HeaderMap::new();
-        headers.insert("Host", "www.rust-lang.org".parse().unwrap());
-        headers.insert("Content-Type", "application/x-www-form-urlencoded".parse().unwrap());
-        let lambda_request = LambdaRequest {
-            path: "/foo".into(),
-            headers,
-            body: Some("foo=bar&baz=2".into()),
-            ..LambdaRequest::default()
-        };
-        let actual = HttpRequest::from(lambda_request);
-        let mut expected = HashMap::new();
-        expected.insert("foo".to_string(), "bar".to_string());
-        expected.insert("baz".to_string(), "2".to_string());
-        let payload: Option<HashMap<String, String>> = actual.payload().unwrap_or_default();
-        assert_eq!(payload, Some(expected))
+        );
     }
 
     #[test]
     fn requests_have_json_parseable_payloads() {
-        let mut headers = HeaderMap::new();
-        headers.insert("Host", "www.rust-lang.org".parse().unwrap());
-        headers.insert("Content-Type", "application/json".parse().unwrap());
         #[derive(Deserialize, PartialEq, Debug)]
         struct Payload {
             foo: String,
             baz: usize,
         }
-        let lambda_request: LambdaRequest<'_> = LambdaRequest {
-            path: "/foo".into(),
-            headers,
-            body: Some(r#"{"foo":"bar", "baz": 2}"#.into()),
-            ..LambdaRequest::default()
-        };
-        let actual = HttpRequest::from(lambda_request);
-        let payload: Option<Payload> = actual.payload().unwrap_or_default();
+        let request = http::Request::builder()
+            .header("Content-Type", "application/json")
+            .body(Body::from(r#"{"foo":"bar", "baz": 2}"#))
+            .expect("failed to build request");
+        let payload: Option<Payload> = request.payload().unwrap_or_default();
         assert_eq!(
             payload,
             Some(Payload {
                 foo: "bar".into(),
                 baz: 2
             })
-        )
+        );
+    }
+
+    #[test]
+    fn requests_omiting_content_types_do_not_support_parseable_payloads() {
+        #[derive(Deserialize, PartialEq, Debug)]
+        struct Payload {
+            foo: String,
+            baz: usize,
+        }
+        let request = http::Request::builder()
+            .body(Body::from(r#"{"foo":"bar", "baz": 2}"#))
+            .expect("failed to bulid request");
+        let payload: Option<Payload> = request.payload().unwrap_or_default();
+        assert_eq!(payload, None);
     }
 }

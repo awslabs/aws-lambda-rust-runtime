@@ -68,6 +68,22 @@ pub enum Body {
     Binary(Vec<u8>),
 }
 
+impl Body {
+    /// Decodes body, if needed.
+    ///
+    /// # Panics
+    ///
+    /// Panics when aws communicates to handler that request is base64 encoded but
+    /// it can not be base64 decoded
+    pub(crate) fn from_maybe_encoded(is_base64_encoded: bool, body: Cow<'_, str>) -> Body {
+        if is_base64_encoded {
+            Body::from(::base64::decode(body.as_ref()).expect("failed to decode aws base64 encoded body"))
+        } else {
+            Body::from(body.as_ref())
+        }
+    }
+}
+
 impl Default for Body {
     fn default() -> Self {
         Body::Empty

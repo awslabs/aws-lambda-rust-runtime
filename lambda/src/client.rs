@@ -200,7 +200,7 @@ mod endpoint_tests {
         assert_eq!(rsp.headers()[header], &HeaderValue::try_from("1542409706888")?);
 
         // shutdown server...
-        tx.send(()).expect("Reciever has been dropped");
+        tx.send(()).expect("Receiver has been dropped");
         match server.await {
             Ok(_) => Ok(()),
             Err(e) if e.is_panic() => return Err::<(), anyhow::Error>(e.into()),
@@ -266,7 +266,7 @@ mod endpoint_tests {
         assert_eq!(rsp.status(), StatusCode::ACCEPTED);
 
         // shutdown server
-        tx.send(()).expect("Reciever has been dropped");
+        tx.send(()).expect("Receiver has been dropped");
         match server.await {
             Ok(_) => Ok(()),
             Err(e) if e.is_panic() => return Err::<(), anyhow::Error>(e.into()),
@@ -317,7 +317,7 @@ mod endpoint_tests {
     //     assert_eq!(rsp.status(), http::StatusCode::OK);
 
     //     // shutdown server
-    //     tx.send(()).expect("Reciever has been dropped");
+    //     tx.send(()).expect("Receiver has been dropped");
     //     match server.await {
     //         Ok(_) => Ok(()),
     //         Err(e) if e.is_panic() => return Err::<(), anyhow::Error>(e.into()),

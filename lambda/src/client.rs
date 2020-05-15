@@ -232,7 +232,7 @@ mod endpoint_tests {
         assert_eq!(rsp.status(), StatusCode::ACCEPTED);
 
         // shutdown server
-        tx.send(()).expect("Reciever has been dropped");
+        tx.send(()).expect("Receiver has been dropped");
         match server.await {
             Ok(_) => Ok(()),
             Err(e) if e.is_panic() => return Err::<(), anyhow::Error>(e.into()),

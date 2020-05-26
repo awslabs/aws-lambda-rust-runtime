@@ -1,5 +1,7 @@
-use crate::requests::{IntoResponse, NextEventResponse};
-use anyhow::Error;
+use crate::{
+    requests::{IntoResponse, NextEventResponse},
+    Error,
+};
 use http::{
     uri::{PathAndQuery, Scheme},
     HeaderValue, Method, Request, Response, StatusCode, Uri,
@@ -172,8 +174,8 @@ mod endpoint_tests {
         requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest},
         simulated::SimulatedConnector,
         types::Diagnostic,
+        Error,
     };
-    use anyhow::Error;
     use http::{HeaderValue, StatusCode, Uri};
     use std::convert::TryFrom;
     use tokio::sync;
@@ -203,7 +205,7 @@ mod endpoint_tests {
         tx.send(()).expect("Receiver has been dropped");
         match server.await {
             Ok(_) => Ok(()),
-            Err(e) if e.is_panic() => return Err::<(), anyhow::Error>(e.into()),
+            Err(e) if e.is_panic() => return Err::<(), Error>(e.into()),
             Err(_) => unreachable!("This branch shouldn't be reachable"),
         }
     }
@@ -235,7 +237,7 @@ mod endpoint_tests {
         tx.send(()).expect("Receiver has been dropped");
         match server.await {
             Ok(_) => Ok(()),
-            Err(e) if e.is_panic() => return Err::<(), anyhow::Error>(e.into()),
+            Err(e) if e.is_panic() => return Err::<(), Error>(e.into()),
             Err(_) => unreachable!("This branch shouldn't be reachable"),
         }
     }
@@ -269,7 +271,7 @@ mod endpoint_tests {
         tx.send(()).expect("Receiver has been dropped");
         match server.await {
             Ok(_) => Ok(()),
-            Err(e) if e.is_panic() => return Err::<(), anyhow::Error>(e.into()),
+            Err(e) if e.is_panic() => return Err::<(), Error>(e.into()),
             Err(_) => unreachable!("This branch shouldn't be reachable"),
         }
     }

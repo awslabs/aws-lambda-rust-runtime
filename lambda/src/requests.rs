@@ -1,5 +1,4 @@
-use crate::types::Diagnostic;
-use anyhow::Error;
+use crate::{types::Diagnostic, Error};
 use http::{Method, Request, Response, Uri};
 use hyper::Body;
 use serde::Serialize;

@@ -67,10 +67,8 @@ impl Error for PayloadError {
 /// as well as `{"x":1, "y":2}` respectively.
 ///
 /// ```rust,no_run
-/// use lambda_http::{handler, lambda, Body, IntoResponse, Request, Response, RequestExt};
+/// use lambda_http::{handler, lambda, Error, Body, IntoResponse, Request, Response, RequestExt};
 /// use serde_derive::Deserialize;
-///
-/// type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 ///
 /// #[derive(Debug,Deserialize,Default)]
 /// struct Args {

@@ -22,8 +22,7 @@
 //! The full body of your `main` function will be executed on **every** invocation of your lambda task.
 //!
 //! ```rust,no_run
-//! use lambda_http::{lambda, Request, IntoResponse};
-//! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
+//! use lambda_http::{lambda, Error, Request, IntoResponse};
 //!
 //! #[lambda(http)]
 //! #[tokio::main]
@@ -39,8 +38,7 @@
 //! Depending on the runtime cost of your dependency bootstrapping, this can reduce the overall latency of your functions execution path.
 //!
 //! ```rust,no_run
-//! use lambda_http::{handler, lambda};
-//! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
+//! use lambda_http::{handler, lambda, Error};
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Error> {
@@ -58,8 +56,7 @@
 //! with the [`RequestExt`](trait.RequestExt.html) trait.
 //!
 //! ```rust,no_run
-//! use lambda_http::{handler, lambda, IntoResponse, Request, RequestExt};
-//! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
+//! use lambda_http::{handler, lambda, Error, IntoResponse, Request, RequestExt};
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Error> {
@@ -87,7 +84,7 @@ extern crate maplit;
 
 pub use http::{self, Response};
 use lambda::Handler as LambdaHandler;
-pub use lambda::{self};
+pub use lambda::{self, Error};
 pub use lambda_attributes::lambda;
 //pub use lambda_http_attributes::lambda_http;
 mod body;
@@ -98,14 +95,10 @@ mod strmap;
 pub use crate::{body::Body, ext::RequestExt, response::IntoResponse, strmap::StrMap};
 use crate::{request::LambdaRequest, response::LambdaResponse};
 use std::{
-    error::Error,
-    fmt,
     future::Future,
     pin::Pin,
     task::{Context, Poll},
 };
-
-type Err = Box<dyn Error + Send + Sync + 'static>;
 
 /// Type alias for `http::Request`s with a fixed [`Body`](enum.Body.html) type
 pub type Request = http::Request<Body>;
@@ -134,11 +127,10 @@ impl<F, R, Fut> Handler for F
 where
     F: FnMut(Request) -> Fut,
     R: IntoResponse,
-    Fut: Future<Output = Result<R, Err>> + Send + 'static,
-    Err: Into<Box<dyn Error + Send + Sync + 'static>> + fmt::Debug,
+    Fut: Future<Output = Result<R, Error>> + Send + 'static,
 {
     type Response = R;
-    type Error = Err;
+    type Error = Error;
     type Fut = Fut;
     fn call(&mut self, event: Request) -> Self::Fut {
         (*self)(event)

@@ -25,10 +25,8 @@
 //! of [`lambda::LambdaCtx`].
 //!
 //! ```no_run
-//! use lambda::lambda;
+//! use lambda::{lambda, Error};
 //! use serde_json::Value;
-//!
-//! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 //!
 //! #[lambda]
 //! #[tokio::main]
@@ -37,7 +35,6 @@
 //! }
 //! ```
 pub use crate::types::LambdaCtx;
-use anyhow::Error;
 use client::Client;
 use futures::stream::{Stream, StreamExt};
 use genawaiter::{sync::gen, yield_};
@@ -57,6 +54,9 @@ mod types;
 
 use requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest};
 use types::Diagnostic;
+
+/// Error type that lambdas may result in
+pub type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
 /// Configuration derived from environment variables.
 #[derive(Debug, Default, Clone, PartialEq)]
@@ -119,7 +119,7 @@ impl<F, A, B, Error, Fut> Handler<A, B> for HandlerFn<F>
 where
     F: Fn(A) -> Fut,
     Fut: Future<Output = Result<B, Error>> + Send,
-    Error: Into<Box<dyn std::error::Error + Send + Sync + 'static>> + fmt::Debug,
+    Error: Into<Error> + fmt::Debug,
 {
     type Error = Error;
     type Fut = Fut;
@@ -134,10 +134,8 @@ where
 ///
 /// # Example
 /// ```no_run
-/// use lambda::handler_fn;
+/// use lambda::{handler_fn, Error};
 /// use serde_json::Value;
-///
-/// type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 ///
 /// #[tokio::main]
 /// async fn main() -> Result<(), Error> {

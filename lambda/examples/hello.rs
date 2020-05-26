@@ -1,7 +1,5 @@
-use lambda::lambda;
+use lambda::{lambda, Error};
 use serde_json::Value;
-
-type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
 #[lambda]
 #[tokio::main]

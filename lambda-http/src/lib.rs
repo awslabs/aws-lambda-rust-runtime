@@ -22,7 +22,9 @@
 //! The full body of your `main` function will be executed on **every** invocation of your lambda task.
 //!
 //! ```rust,no_run
-//! use lambda_http::{lambda, Error, Request, IntoResponse};
+//! use lambda_http::{lambda, Request, IntoResponse};
+//!
+//! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 //!
 //! #[lambda(http)]
 //! #[tokio::main]
@@ -38,7 +40,9 @@
 //! Depending on the runtime cost of your dependency bootstrapping, this can reduce the overall latency of your functions execution path.
 //!
 //! ```rust,no_run
-//! use lambda_http::{handler, lambda, Error};
+//! use lambda_http::{handler, lambda};
+//!
+//! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Error> {
@@ -56,7 +60,9 @@
 //! with the [`RequestExt`](trait.RequestExt.html) trait.
 //!
 //! ```rust,no_run
-//! use lambda_http::{handler, lambda, Error, IntoResponse, Request, RequestExt};
+//! use lambda_http::{handler, lambda, IntoResponse, Request, RequestExt};
+//!
+//! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Error> {
@@ -84,9 +90,9 @@ extern crate maplit;
 
 pub use http::{self, Response};
 use lambda::Handler as LambdaHandler;
-pub use lambda::{self, Error};
+pub use lambda::{self};
 pub use lambda_attributes::lambda;
-//pub use lambda_http_attributes::lambda_http;
+
 mod body;
 pub mod ext;
 pub mod request;
@@ -99,6 +105,9 @@ use std::{
     pin::Pin,
     task::{Context, Poll},
 };
+
+/// Error type that lambdas may result in
+pub(crate) type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
 /// Type alias for `http::Request`s with a fixed [`Body`](enum.Body.html) type
 pub type Request = http::Request<Body>;

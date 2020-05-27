@@ -1,5 +1,7 @@
-use lambda::{handler_fn, Error};
+use lambda::handler_fn;
 use serde_json::Value;
+
+type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {

@@ -1,4 +1,6 @@
-use lambda_http::{lambda, Error, IntoResponse, Request};
+use lambda_http::{lambda, IntoResponse, Request};
+
+type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
 #[lambda(http)]
 #[tokio::main]

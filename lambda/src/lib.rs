@@ -25,8 +25,10 @@
 //! of [`lambda::LambdaCtx`].
 //!
 //! ```no_run
-//! use lambda::{lambda, Error};
+//! use lambda::{lambda};
 //! use serde_json::Value;
+//!
+//! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 //!
 //! #[lambda]
 //! #[tokio::main]
@@ -56,7 +58,7 @@ use requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEvent
 use types::Diagnostic;
 
 /// Error type that lambdas may result in
-pub type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
+pub(crate) type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
 /// Configuration derived from environment variables.
 #[derive(Debug, Default, Clone, PartialEq)]
@@ -134,8 +136,10 @@ where
 ///
 /// # Example
 /// ```no_run
-/// use lambda::{handler_fn, Error};
+/// use lambda::{handler_fn};
 /// use serde_json::Value;
+///
+/// type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 ///
 /// #[tokio::main]
 /// async fn main() -> Result<(), Error> {

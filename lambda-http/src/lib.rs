@@ -23,6 +23,7 @@
 //!
 //! ```rust,no_run
 //! use lambda_http::{lambda, Request, IntoResponse};
+//!
 //! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 //!
 //! #[lambda(http)]
@@ -40,6 +41,7 @@
 //!
 //! ```rust,no_run
 //! use lambda_http::{handler, lambda};
+//!
 //! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 //!
 //! #[tokio::main]
@@ -59,6 +61,7 @@
 //!
 //! ```rust,no_run
 //! use lambda_http::{handler, lambda, IntoResponse, Request, RequestExt};
+//!
 //! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 //!
 //! #[tokio::main]
@@ -89,7 +92,7 @@ pub use http::{self, Response};
 use lambda::Handler as LambdaHandler;
 pub use lambda::{self};
 pub use lambda_attributes::lambda;
-//pub use lambda_http_attributes::lambda_http;
+
 mod body;
 pub mod ext;
 pub mod request;
@@ -98,14 +101,13 @@ mod strmap;
 pub use crate::{body::Body, ext::RequestExt, response::IntoResponse, strmap::StrMap};
 use crate::{request::LambdaRequest, response::LambdaResponse};
 use std::{
-    error::Error,
-    fmt,
     future::Future,
     pin::Pin,
     task::{Context, Poll},
 };
 
-type Err = Box<dyn Error + Send + Sync + 'static>;
+/// Error type that lambdas may result in
+pub(crate) type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
 /// Type alias for `http::Request`s with a fixed [`Body`](enum.Body.html) type
 pub type Request = http::Request<Body>;
@@ -134,11 +136,10 @@ impl<F, R, Fut> Handler for F
 where
     F: FnMut(Request) -> Fut,
     R: IntoResponse,
-    Fut: Future<Output = Result<R, Err>> + Send + 'static,
-    Err: Into<Box<dyn Error + Send + Sync + 'static>> + fmt::Debug,
+    Fut: Future<Output = Result<R, Error>> + Send + 'static,
 {
     type Response = R;
-    type Error = Err;
+    type Error = Error;
     type Fut = Fut;
     fn call(&mut self, event: Request) -> Self::Fut {
         (*self)(event)

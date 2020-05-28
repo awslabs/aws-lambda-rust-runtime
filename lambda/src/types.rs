@@ -1,5 +1,4 @@
-use crate::Config;
-use anyhow::Error;
+use crate::{Config, Error};
 use http::HeaderMap;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, convert::TryFrom};

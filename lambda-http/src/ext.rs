@@ -67,7 +67,7 @@ impl Error for PayloadError {
 /// as well as `{"x":1, "y":2}` respectively.
 ///
 /// ```rust,no_run
-/// use lambda_http::{handler, lambda, Body, IntoResponse, Request, Response, RequestExt};
+/// use lambda_http::{handler, lambda::{self, LambdaCtx}, Body, IntoResponse, Request, Response, RequestExt};
 /// use serde_derive::Deserialize;
 ///
 /// type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
@@ -87,7 +87,8 @@ impl Error for PayloadError {
 /// }
 ///
 /// async fn add(
-///   request: Request
+///   request: Request,
+///   _: LambdaCtx
 /// ) -> Result<Response<Body>, Error> {
 ///   let args: Args = request.payload()
 ///     .unwrap_or_else(|_parse_err| None)

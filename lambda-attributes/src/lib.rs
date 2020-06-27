@@ -38,28 +38,37 @@ pub fn lambda(attr: TokenStream, item: TokenStream) -> TokenStream {
     }
 
     let result = match inputs.len() {
-        1 => {
-            let event = match inputs.first().unwrap() {
+        2 => {
+            let event = match inputs.first().expect("expected event argument") {
                 FnArg::Typed(arg) => arg,
                 _ => {
                     let tokens = quote_spanned! { inputs.span() =>
-                        compile_error!("fn main must take a fully formed argument");
+                        compile_error!("fn main's first argument must be fully formed");
                     };
                     return TokenStream::from(tokens);
                 }
             };
-            let arg_name = &event.pat;
-            let arg_type = &event.ty;
+            let event_name = &event.pat;
+            let event_type = &event.ty;
+            let context = match inputs.iter().nth(1).expect("expected context argument") {
+                FnArg::Typed(arg) => arg,
+                _ => {
+                    let tokens = quote_spanned! { inputs.span() =>
+                        compile_error!("fn main's second argument must be fully formed");
+                    };
+                    return TokenStream::from(tokens);
+                }
+            };
+            let context_name = &context.pat;
+            let context_type = &context.ty;
 
             if is_http(&args) {
                 quote_spanned! { input.span() =>
-                    use lambda_http::lambda::LambdaCtx;
 
                     #(#attrs)*
                     #asyncness fn main() {
-                        async fn actual(#arg_name: #arg_type) #ret {
-                            #body
-                        }
+                        async fn actual(#event_name: #event_type, #context_name: #context_type) #ret #body
+
                         let f = lambda_http::handler(actual);
                         lambda_http::lambda::run(f).await.unwrap();
                     }
@@ -67,13 +76,10 @@ pub fn lambda(attr: TokenStream, item: TokenStream) -> TokenStream {
             } else {
                 quote_spanned! { input.span() =>
 
-                    use lambda::LambdaCtx;
-
                     #(#attrs)*
                     #asyncness fn main() {
-                        async fn actual(#arg_name: #arg_type) #ret {
-                            #body
-                        }
+                        async fn actual(#event_name: #event_type, #context_name: #context_type) #ret #body
+
                         let f = lambda::handler_fn(actual);
                         lambda::run(f).await.unwrap();
                     }
@@ -82,7 +88,7 @@ pub fn lambda(attr: TokenStream, item: TokenStream) -> TokenStream {
         }
         _ => {
             let tokens = quote_spanned! { inputs.span() =>
-                compile_error!("The #[lambda] macro can accept only a single argument.");
+                compile_error!("The #[lambda] macro can expects two arguments: a triggered event and lambda context.");
             };
             return TokenStream::from(tokens);
         }

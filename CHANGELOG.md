@@ -26,14 +26,15 @@
   +use lambda::{handler_fn, Context};
   use serde_json::Value;
   
+  +type Error = Box<dyn std::error::Error + Sync + Send + 'static>;
+
   -fn main() {
   -    lambda!(handler)
-  +type Error = Box<dyn std::error::Error + Sync + Send + 'static>;
   
   +#[tokio::main]
   +async fn main() -> Result<(), Error> {
-      lambda::run(handler_fn(handler)).await?;
-      Ok(())
+  +    lambda::run(handler_fn(handler)).await?;
+  +    Ok(())
   }
   
   -fn handler(

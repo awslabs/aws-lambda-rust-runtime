@@ -1,6 +1,6 @@
 use lambda_http::{
     handler,
-    lambda::{self, LambdaCtx},
+    lambda::{self, Context},
     IntoResponse, Request, RequestExt, Response,
 };
 
@@ -12,7 +12,7 @@ async fn main() -> Result<(), Error> {
     Ok(())
 }
 
-async fn func(event: Request, _: LambdaCtx) -> Result<impl IntoResponse, Error> {
+async fn func(event: Request, _: Context) -> Result<impl IntoResponse, Error> {
     Ok(match event.query_string_parameters().get("first_name") {
         Some(first_name) => format!("Hello, {}!", first_name).into_response(),
         _ => Response::builder()

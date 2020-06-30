@@ -6,7 +6,7 @@
 
   The crate formerly known as `lambda_runtime` is now simply `lambda`, `lambda_http` remains the same.
 
-  Both crates have note worth breaking api changes. The following is a rough approximation is what a transition to the new runtime will look like for your handlers
+  Both crates have note worth breaking api changes. The following is a rough approximation of what a transition to the new runtime will look like for your handlers
 
   → `Cargo.toml`
 

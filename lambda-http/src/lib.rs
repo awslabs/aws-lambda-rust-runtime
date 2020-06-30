@@ -22,13 +22,13 @@
 //! The full body of your `main` function will be executed on **every** invocation of your lambda task.
 //!
 //! ```rust,no_run
-//! use lambda_http::{lambda, Request, IntoResponse};
+//! use lambda_http::{lambda::{lambda, Context}, Request, IntoResponse};
 //!
 //! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 //!
 //! #[lambda(http)]
 //! #[tokio::main]
-//! async fn main(_: Request) -> Result<impl IntoResponse, Error> {
+//! async fn main(_: Request, _: Context) -> Result<impl IntoResponse, Error> {
 //!     Ok("👋 world!")
 //! }
 //! ```
@@ -48,7 +48,7 @@
 //! async fn main() -> Result<(), Error> {
 //!     // initialize dependencies once here for the lifetime of your
 //!     // lambda task
-//!     lambda::run(handler(|request| async { Ok("👋 world!") })).await?;
+//!     lambda::run(handler(|request, context| async { Ok("👋 world!") })).await?;
 //!     Ok(())
 //! }
 //!
@@ -60,7 +60,7 @@
 //! with the [`RequestExt`](trait.RequestExt.html) trait.
 //!
 //! ```rust,no_run
-//! use lambda_http::{handler, lambda, IntoResponse, Request, RequestExt};
+//! use lambda_http::{handler, lambda::{self, Context}, IntoResponse, Request, RequestExt};
 //!
 //! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 //!
@@ -72,6 +72,7 @@
 //!
 //! async fn hello(
 //!     request: Request,
+//!     _: Context
 //! ) -> Result<impl IntoResponse, Error> {
 //!     Ok(format!(
 //!         "hello {}",
@@ -90,7 +91,7 @@ extern crate maplit;
 
 pub use http::{self, Response};
 use lambda::Handler as LambdaHandler;
-pub use lambda::{self};
+pub use lambda::{self, Context};
 pub use lambda_attributes::lambda;
 
 mod body;
@@ -103,7 +104,7 @@ use crate::{request::LambdaRequest, response::LambdaResponse};
 use std::{
     future::Future,
     pin::Pin,
-    task::{Context, Poll},
+    task::{Context as TaskContext, Poll},
 };
 
 /// Error type that lambdas may result in
@@ -123,7 +124,7 @@ pub trait Handler: Sized {
     /// The type of Future this Handler will return
     type Fut: Future<Output = Result<Self::Response, Self::Error>> + 'static;
     /// Function used to execute handler behavior
-    fn call(&mut self, event: Request) -> Self::Fut;
+    fn call(&mut self, event: Request, context: Context) -> Self::Fut;
 }
 
 /// Adapts a [`Handler`](trait.Handler.html) to the `lambda::run` interface
@@ -134,15 +135,15 @@ pub fn handler<H: Handler>(handler: H) -> Adapter<H> {
 /// An implementation of `Handler` for a given closure return a `Future` representing the computed response
 impl<F, R, Fut> Handler for F
 where
-    F: FnMut(Request) -> Fut,
+    F: FnMut(Request, Context) -> Fut,
     R: IntoResponse,
     Fut: Future<Output = Result<R, Error>> + Send + 'static,
 {
     type Response = R;
     type Error = Error;
     type Fut = Fut;
-    fn call(&mut self, event: Request) -> Self::Fut {
-        (*self)(event)
+    fn call(&mut self, event: Request, context: Context) -> Self::Fut {
+        (*self)(event, context)
     }
 }
 
@@ -157,7 +158,7 @@ where
     R: IntoResponse,
 {
     type Output = Result<LambdaResponse, E>;
-    fn poll(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
+    fn poll(mut self: Pin<&mut Self>, cx: &mut TaskContext) -> Poll<Self::Output> {
         match self.fut.as_mut().poll(cx) {
             Poll::Ready(result) => {
                 Poll::Ready(result.map(|resp| LambdaResponse::from_response(self.is_alb, resp.into_response())))
@@ -182,17 +183,17 @@ impl<H: Handler> Handler for Adapter<H> {
     type Response = H::Response;
     type Error = H::Error;
     type Fut = H::Fut;
-    fn call(&mut self, event: Request) -> Self::Fut {
-        self.handler.call(event)
+    fn call(&mut self, event: Request, context: Context) -> Self::Fut {
+        self.handler.call(event, context)
     }
 }
 
 impl<H: Handler> LambdaHandler<LambdaRequest<'_>, LambdaResponse> for Adapter<H> {
     type Error = H::Error;
     type Fut = TransformResponse<H::Response, Self::Error>;
-    fn call(&mut self, event: LambdaRequest<'_>) -> Self::Fut {
+    fn call(&mut self, event: LambdaRequest<'_>, context: Context) -> Self::Fut {
         let is_alb = event.is_alb();
-        let fut = Box::pin(self.handler.call(event.into()));
+        let fut = Box::pin(self.handler.call(event.into(), context));
         TransformResponse { is_alb, fut }
     }
 }

@@ -17,26 +17,23 @@
 //!    to the the `lambda::run` function, which launches and runs the Lambda runtime.
 //!
 //! An asynchronous function annotated with the `#[lambda]` attribute must
-//! accept an argument of type `A` which implements [`serde::Deserialize`] and
+//! accept an argument of type `A` which implements [`serde::Deserialize`], a [`lambda::Context`] and
 //! return a `Result<B, E>`, where `B` implements [`serde::Serializable`]. `E` is
 //! any type that implements `Into<Box<dyn std::error::Error + Send + Sync + 'static>>`.
 //!
-//! Optionally, the `#[lambda]` annotated function can accept an argument
-//! of [`lambda::LambdaCtx`].
-//!
 //! ```no_run
-//! use lambda::{lambda};
+//! use lambda::{lambda, Context};
 //! use serde_json::Value;
 //!
 //! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 //!
 //! #[lambda]
 //! #[tokio::main]
-//! async fn main(event: Value) -> Result<Value, Error> {
+//! async fn main(event: Value, _: Context) -> Result<Value, Error> {
 //!     Ok(event)
 //! }
 //! ```
-pub use crate::types::LambdaCtx;
+pub use crate::types::Context;
 use client::Client;
 use futures::stream::{Stream, StreamExt};
 use genawaiter::{sync::gen, yield_};
@@ -93,7 +90,7 @@ impl Config {
 }
 
 tokio::task_local! {
-    pub static INVOCATION_CTX: types::LambdaCtx;
+    pub static INVOCATION_CTX: types::Context;
 }
 
 /// A trait describing an asynchronous function `A` to `B.
@@ -102,8 +99,8 @@ pub trait Handler<A, B> {
     type Error;
     /// The future response value of this handler.
     type Fut: Future<Output = Result<B, Self::Error>>;
-    /// Process the incoming event and return the response asynchronously.
-    fn call(&mut self, event: A) -> Self::Fut;
+    /// Process the incoming event and `Context` then return the response asynchronously.
+    fn call(&mut self, event: A, context: Context) -> Self::Fut;
 }
 
 /// Returns a new `HandlerFn` with the given closure.
@@ -119,15 +116,14 @@ pub struct HandlerFn<F> {
 
 impl<F, A, B, Error, Fut> Handler<A, B> for HandlerFn<F>
 where
-    F: Fn(A) -> Fut,
+    F: Fn(A, Context) -> Fut,
     Fut: Future<Output = Result<B, Error>> + Send,
     Error: Into<Error> + fmt::Debug,
 {
     type Error = Error;
     type Fut = Fut;
-    fn call(&mut self, req: A) -> Self::Fut {
-        // we pass along the context here
-        (self.f)(req)
+    fn call(&mut self, req: A, ctx: Context) -> Self::Fut {
+        (self.f)(req, ctx)
     }
 }
 
@@ -136,7 +132,7 @@ where
 ///
 /// # Example
 /// ```no_run
-/// use lambda::{handler_fn};
+/// use lambda::{handler_fn, Context};
 /// use serde_json::Value;
 ///
 /// type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
@@ -148,7 +144,7 @@ where
 ///     Ok(())
 /// }
 ///
-/// async fn func(event: Value) -> Result<Value, Error> {
+/// async fn func(event: Value, _: Context) -> Result<Value, Error> {
 ///     Ok(event)
 /// }
 /// ```
@@ -211,12 +207,12 @@ where
         let event = event?;
         let (parts, body) = event.into_parts();
 
-        let ctx: LambdaCtx = LambdaCtx::try_from(parts.headers)?;
+        let ctx: Context = Context::try_from(parts.headers)?;
         let body = hyper::body::to_bytes(body).await?;
         let body = serde_json::from_slice(&body)?;
 
         let request_id = &ctx.request_id.clone();
-        let f = INVOCATION_CTX.scope(ctx, { handler.call(body) });
+        let f = INVOCATION_CTX.scope(ctx.clone(), handler.call(body, ctx));
 
         let req = match f.await {
             Ok(res) => EventCompletionRequest { request_id, body: res }.into_req()?,

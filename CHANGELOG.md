@@ -2,7 +2,7 @@
 
 - **New**: Almost everything!
 
-  Heavy restructuring was done in order to simply the runtime and to enable asynchronous handlers by default.
+  Heavy restructuring was done in order to simplify the runtime and to enable asynchronous handlers by default.
 
   The crate formerly known as `lambda_runtime` is now simply `lambda`, `lambda_http` remains the same.
 

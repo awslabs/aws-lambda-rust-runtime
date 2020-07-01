@@ -89,10 +89,6 @@ impl Config {
     }
 }
 
-tokio::task_local! {
-    pub static INVOCATION_CTX: types::Context;
-}
-
 /// A trait describing an asynchronous function `A` to `B.
 pub trait Handler<A, B> {
     /// Errors returned by this handler.
@@ -212,7 +208,7 @@ where
         let body = serde_json::from_slice(&body)?;
 
         let request_id = &ctx.request_id.clone();
-        let f = INVOCATION_CTX.scope(ctx.clone(), handler.call(body, ctx));
+        let f = handler.call(body, ctx);
 
         let req = match f.await {
             Ok(res) => EventCompletionRequest { request_id, body: res }.into_req()?,

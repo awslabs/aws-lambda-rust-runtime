@@ -68,3 +68,23 @@ jobs:
           override: true
       - name: Run fmt check
         run: cargo fmt --all -- --check
+
+  # publish rustdoc to a gh-pages branch on pushes to master
+  # this can be helpful to those depending on the mainline branch
+  publish-docs:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Set up Rust
+        uses: hecrj/setup-rust-action@v1
+      - uses: actions/checkout@v2
+      - name: Generate Docs
+        run: |
+          cargo doc --no-deps
+          echo "<meta http-equiv=refresh content=0;url=`lambda/index.html>" > target/doc/index.html
+      - name: Publish
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./target/doc

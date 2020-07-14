@@ -82,7 +82,7 @@ jobs:
       - name: Generate Docs
         run: |
           cargo doc --no-deps
-          echo "<meta http-equiv=refresh content=0;url=`lambda/index.html>" > target/doc/index.html
+          echo "<meta http-equiv=refresh content=0;url=lambda/index.html>" > target/doc/index.html
       - name: Publish
         uses: peaceiris/actions-gh-pages@v3
         with:

@@ -53,17 +53,23 @@ The code above is the same as the [basic example](https://github.com/awslabs/aws
 
 ### Deployment
 
-There are currently multiple ways of building this package: manually, and the [Serverless framework](https://serverless.com/framework/).
+There are currently multiple ways of building this package: manually, and with the [Serverless framework](https://serverless.com/framework/).
 
 #### AWS CLI
 
-To deploy the basic sample as a Lambda function using the [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html), we first need to manually build it with [`cargo`](https://doc.rust-lang.org/cargo/). Since Lambda uses Amazon Linux, you'll need to target your executable for an `x86_64-linux` platform.
+To deploy the basic sample as a Lambda function using the [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html), we first need to manually build it with [`cargo`](https://doc.rust-lang.org/cargo/). Since Lambda uses Amazon Linux, you'll need to target your executable for an `x86_64-unknown-linux-musl` platform.
 
+Run this script once to add the new target:
 ```bash
-$ cargo build -p lambda --example hello --release
+$ rustup target add x86_64-unknown-linux-musl
 ```
 
-For a custom runtime, AWS Lambda looks for an executable called `bootstrap` in the deployment package zip. Rename the generated `basic` executable to `bootstrap` and add it to a zip archive.
+Compile one of the examples as a _release_ with a specific _target_ for deployment to AWS:
+```bash
+$ cargo build -p lambda --example hello --release --target x86_64-unknown-linux-musl
+```
+
+For [a custom runtime](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-custom.html), AWS Lambda looks for an executable called `bootstrap` in the deployment package zip. Rename the generated `basic` executable to `bootstrap` and add it to a zip archive.
 
 ```bash
 $ cp ./target/release/examples/hello ./bootstrap && zip lambda.zip bootstrap && rm bootstrap

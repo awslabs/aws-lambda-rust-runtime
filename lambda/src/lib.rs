@@ -183,7 +183,6 @@ where
     B: Serialize,
 {
     tokio::pin!(incoming);
-
     while let Some(event) = incoming.next().await {
         let event = event?;
         let (parts, body) = event.into_parts();

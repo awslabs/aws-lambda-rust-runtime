@@ -3,16 +3,17 @@
 //! Typically these are exposed via the `request_context`
 //! request extension method provided by [lambda_http::RequestExt](../trait.RequestExt.html)
 //!
-use serde::de::{Deserialize, Deserializer, Error as DeError, MapAccess, Visitor};
-use serde_derive::Deserialize;
-use serde_json::{error::Error as JsonError, Value};
-use std::{borrow::Cow, collections::HashMap, fmt, io::Read, mem};
-
 use crate::{
     body::Body,
     ext::{PathParameters, QueryStringParameters, StageVariables},
     strmap::StrMap,
 };
+use serde::{
+    de::{Deserializer, Error as DeError, MapAccess, Visitor},
+    Deserialize,
+};
+use serde_json::{error::Error as JsonError, Value};
+use std::{borrow::Cow, collections::HashMap, fmt, io::Read, mem};
 
 /// Internal representation of an Lambda http event from
 /// ALB, API Gateway REST and HTTP API proxy event perspectives

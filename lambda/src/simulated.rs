@@ -12,7 +12,7 @@ use std::{
 use tokio::io::{AsyncRead, AsyncWrite};
 use tower_service::Service;
 
-/// Creates a pair of `AsyncRead/AsyncWrite data streams, where the write end of each member of the pair
+/// Creates a pair of `AsyncRead`/`AsyncWrite` data streams, where the write end of each member of the pair
 /// is the read end of the other member of the pair.  This allows us to emulate the behavior of a TcpStream
 /// but in-memory, deterministically, and with full control over failure injection.
 pub(crate) fn chan() -> (SimStream, SimStream) {

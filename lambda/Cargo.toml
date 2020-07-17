@@ -22,6 +22,3 @@ http = "0.2"
 lambda-attributes = { path = "../lambda-attributes", version = "0.1.0", optional = true}
 genawaiter = { version = "0.99", features = ["futures03"] }
 futures = "0.3"
-tracing = "0.1.13"
-tracing-futures = "0.2.3"
-tracing-error = "0.1.2"

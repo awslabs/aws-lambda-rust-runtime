@@ -47,6 +47,7 @@ use std::{
 
 mod client;
 mod requests;
+#[cfg(test)]
 mod simulated;
 /// Types available to a Lambda function.
 mod types;
@@ -156,23 +157,6 @@ where
     let uri = config.endpoint.try_into().expect("Unable to convert to URL");
     let client = Client::with(uri, hyper::Client::new());
     let incoming = incoming(&client);
-    run_inner(&client, incoming, &mut handler).await?;
-
-    Ok(())
-}
-
-/// Runs the lambda function almost entirely in-memory. This is meant for testing.
-pub async fn run_simulated<A, B, F>(handler: F, url: &str) -> Result<(), Error>
-where
-    F: Handler<A, B>,
-    <F as Handler<A, B>>::Error: fmt::Debug,
-    A: for<'de> Deserialize<'de>,
-    B: Serialize,
-{
-    let mut handler = handler;
-    let uri = url.try_into().expect("Unable to convert to URL");
-    let client = Client::with(uri, hyper::Client::new());
-    let incoming = incoming(&client).take(1);
     run_inner(&client, incoming, &mut handler).await?;
 
     Ok(())

@@ -36,7 +36,6 @@
 pub use crate::types::Context;
 use client::Client;
 use futures::stream::{Stream, StreamExt};
-use genawaiter::{sync::gen, yield_};
 pub use lambda_attributes::lambda;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -163,17 +162,18 @@ where
 }
 
 fn incoming(client: &Client) -> impl Stream<Item = Result<http::Response<hyper::Body>, Error>> + '_ {
-    gen!({
+    async_stream::stream! {
         loop {
             let req = NextEventRequest.into_req().expect("Unable to construct request");
-            yield_!(client.call(req).await)
+            let res = client.call(req).await;
+            yield res;
         }
-    })
+    }
 }
 
 async fn run_inner<A, B, F>(
     client: &Client,
-    incoming: impl Stream<Item = Result<http::Response<hyper::Body>, Error>> + Unpin,
+    incoming: impl Stream<Item = Result<http::Response<hyper::Body>, Error>>,
     handler: &mut F,
 ) -> Result<(), Error>
 where
@@ -182,7 +182,8 @@ where
     A: for<'de> Deserialize<'de>,
     B: Serialize,
 {
-    let mut incoming = incoming;
+    tokio::pin!(incoming);
+
     while let Some(event) = incoming.next().await {
         let event = event?;
         let (parts, body) = event.into_parts();

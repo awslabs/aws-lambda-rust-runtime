@@ -4,14 +4,14 @@
 //! The official Rust runtime for AWS Lambda.
 //!
 //! There are two mechanisms available for defining a Lambda function:
-//! 1. The `#[lambda]` attribute, which generates the boilerplate to
+//! 1. The `lambda` attribute maco, which generates the boilerplate to
 //!    to launch and run a Lambda function.
 //!
-//!    The `#[lambda]` attribute _must_ be placed on an asynchronous main function.
+//!    The [`#[lambda]`] attribute _must_ be placed on an asynchronous main function.
 //!    However, as asynchronous main functions are not legal valid Rust
 //!    this means that the main function must also be decorated using a
-//!    `#[tokio::main]` attribute macro. This is available from
-//!    the [tokio](https://github.com/tokio-rs/tokio) crate.
+//!    [`#[tokio::main]`] attribute macro. This is available from
+//!    the [Tokio] crate.
 //!
 //! 2. A type that conforms to the [`Handler`] trait. This type can then be passed
 //!    to the the `lambda::run` function, which launches and runs the Lambda runtime.
@@ -33,16 +33,23 @@
 //!     Ok(event)
 //! }
 //! ```
+//!
+//! [`Handler`]: trait.Handler.html
+//! [`lambda::Context`]: struct.Context.html
+//! [`lambda`]: attr.lambda.html
+//! [`#[tokio::main]`]: https://docs.rs/tokio/0.2.21/tokio/attr.main.html
+//! [Tokio]: https://docs.rs/tokio/
 pub use crate::types::Context;
 use client::Client;
-use futures::stream::{Stream, StreamExt};
 pub use lambda_attributes::lambda;
 use serde::{Deserialize, Serialize};
 use std::{
     convert::{TryFrom, TryInto},
     env, fmt,
     future::Future,
+    sync::Arc,
 };
+use tokio::stream::{Stream, StreamExt};
 
 mod client;
 mod requests;
@@ -89,22 +96,26 @@ impl Config {
     }
 }
 
-/// A trait describing an asynchronous function `A` to `B.
+/// A trait describing an asynchronous function `A` to `B`.
 pub trait Handler<A, B> {
     /// Errors returned by this handler.
     type Error;
-    /// The future response value of this handler.
+    /// Response of this handler.
     type Fut: Future<Output = Result<B, Self::Error>>;
-    /// Process the incoming event and `Context` then return the response asynchronously.
-    fn call(&mut self, event: A, context: Context) -> Self::Fut;
+    /// Handle the incoming event.
+    fn call(&self, event: A, context: Context) -> Self::Fut;
 }
 
-/// Returns a new `HandlerFn` with the given closure.
+/// Returns a new [`HandlerFn`] with the given closure.
+///
+/// [`HandlerFn`]: struct.HandlerFn.html
 pub fn handler_fn<F>(f: F) -> HandlerFn<F> {
     HandlerFn { f }
 }
 
-/// A `Handler` implemented by a closure.
+/// A [`Handler`] implemented by a closure.
+///
+/// [`Handler`]: trait.Handler.html
 #[derive(Clone, Debug)]
 pub struct HandlerFn<F> {
     f: F,
@@ -113,12 +124,12 @@ pub struct HandlerFn<F> {
 impl<F, A, B, Error, Fut> Handler<A, B> for HandlerFn<F>
 where
     F: Fn(A, Context) -> Fut,
-    Fut: Future<Output = Result<B, Error>> + Send,
-    Error: Into<Error> + fmt::Debug,
+    Fut: Future<Output = Result<B, Error>> + Send + Sync,
+    Error: Into<Box<dyn std::error::Error + Send + Sync + 'static>> + fmt::Debug,
 {
     type Error = Error;
     type Fut = Fut;
-    fn call(&mut self, req: A, ctx: Context) -> Self::Fut {
+    fn call(&self, req: A, ctx: Context) -> Self::Fut {
         (self.f)(req, ctx)
     }
 }
@@ -146,17 +157,17 @@ where
 /// ```
 pub async fn run<A, B, F>(handler: F) -> Result<(), Error>
 where
-    F: Handler<A, B>,
-    <F as Handler<A, B>>::Error: fmt::Debug,
-    A: for<'de> Deserialize<'de>,
-    B: Serialize,
+    F: Handler<A, B> + Send + Sync + 'static,
+    <F as Handler<A, B>>::Fut: Future<Output = Result<B, <F as Handler<A, B>>::Error>> + Send + Sync + 'static,
+    <F as Handler<A, B>>::Error: fmt::Debug + Send + Sync + 'static,
+    A: for<'de> Deserialize<'de> + Send + Sync + 'static,
+    B: Serialize + Send + Sync + 'static,
 {
-    let mut handler = handler;
     let config = Config::from_env()?;
     let uri = config.endpoint.try_into().expect("Unable to convert to URL");
     let client = Client::with(uri, hyper::Client::new());
     let incoming = incoming(&client);
-    run_inner(&client, incoming, &mut handler).await?;
+    run_inner(&client, incoming, handler).await?;
 
     Ok(())
 }
@@ -174,14 +185,16 @@ fn incoming(client: &Client) -> impl Stream<Item = Result<http::Response<hyper::
 async fn run_inner<A, B, F>(
     client: &Client,
     incoming: impl Stream<Item = Result<http::Response<hyper::Body>, Error>>,
-    handler: &mut F,
+    handler: F,
 ) -> Result<(), Error>
 where
-    F: Handler<A, B>,
-    <F as Handler<A, B>>::Error: fmt::Debug,
-    A: for<'de> Deserialize<'de>,
-    B: Serialize,
+    F: Handler<A, B> + Send + Sync + 'static,
+    <F as Handler<A, B>>::Fut: Future<Output = Result<B, <F as Handler<A, B>>::Error>> + Send + Sync + 'static,
+    <F as Handler<A, B>>::Error: fmt::Debug + Send + Sync + 'static,
+    A: for<'de> Deserialize<'de> + Send + Sync + 'static,
+    B: Serialize + Send + Sync + 'static,
 {
+    let handler = Arc::new(handler);
     tokio::pin!(incoming);
     while let Some(event) = incoming.next().await {
         let event = event?;
@@ -191,21 +204,38 @@ where
         let body = hyper::body::to_bytes(body).await?;
         let body = serde_json::from_slice(&body)?;
 
+        let handler = Arc::clone(&handler);
         let request_id = &ctx.request_id.clone();
-        let f = handler.call(body, ctx);
+        let task = tokio::spawn(async move { handler.call(body, ctx) });
 
-        let req = match f.await {
-            Ok(res) => EventCompletionRequest { request_id, body: res }.into_req()?,
-            Err(e) => EventErrorRequest {
+        let req = match task.await {
+            Ok(response) => match response.await {
+                Ok(response) => EventCompletionRequest {
+                    request_id,
+                    body: response,
+                }
+                .into_req(),
+                Err(err) => EventErrorRequest {
+                    request_id,
+                    diagnostic: Diagnostic {
+                        error_type: type_name_of_val(&err).to_owned(),
+                        error_message: format!("{:?}", err),
+                    },
+                }
+                .into_req(),
+            },
+            Err(err) if err.is_panic() => EventErrorRequest {
                 request_id,
                 diagnostic: Diagnostic {
-                    error_message: format!("{:?}", e),
-                    error_type: type_name_of_val(e).to_owned(),
+                    error_type: type_name_of_val(&err).to_owned(),
+                    error_message: "Lambda panicked!".to_owned(),
                 },
             }
-            .into_req()?,
+            .into_req(),
+            Err(_) => unreachable!("tokio::task should not be canceled"),
         };
-        client.call(req).await?;
+        let req = req?;
+        client.call(req).await.expect("Unable to send response to Runtime APIs");
     }
 
     Ok(())

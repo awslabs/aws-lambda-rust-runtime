@@ -124,7 +124,7 @@ pub trait Handler: Sized {
     /// The type of Future this Handler will return
     type Fut: Future<Output = Result<Self::Response, Self::Error>> + 'static;
     /// Function used to execute handler behavior
-    fn call(&mut self, event: Request, context: Context) -> Self::Fut;
+    fn call(&self, event: Request, context: Context) -> Self::Fut;
 }
 
 /// Adapts a [`Handler`](trait.Handler.html) to the `lambda::run` interface
@@ -135,15 +135,15 @@ pub fn handler<H: Handler>(handler: H) -> Adapter<H> {
 /// An implementation of `Handler` for a given closure return a `Future` representing the computed response
 impl<F, R, Fut> Handler for F
 where
-    F: FnMut(Request, Context) -> Fut,
+    F: Fn(Request, Context) -> Fut,
     R: IntoResponse,
     Fut: Future<Output = Result<R, Error>> + Send + 'static,
 {
     type Response = R;
     type Error = Error;
     type Fut = Fut;
-    fn call(&mut self, event: Request, context: Context) -> Self::Fut {
-        (*self)(event, context)
+    fn call(&self, event: Request, context: Context) -> Self::Fut {
+        (self)(event, context)
     }
 }
 
@@ -183,7 +183,7 @@ impl<H: Handler> Handler for Adapter<H> {
     type Response = H::Response;
     type Error = H::Error;
     type Fut = H::Fut;
-    fn call(&mut self, event: Request, context: Context) -> Self::Fut {
+    fn call(&self, event: Request, context: Context) -> Self::Fut {
         self.handler.call(event, context)
     }
 }
@@ -191,7 +191,7 @@ impl<H: Handler> Handler for Adapter<H> {
 impl<H: Handler> LambdaHandler<LambdaRequest<'_>, LambdaResponse> for Adapter<H> {
     type Error = H::Error;
     type Fut = TransformResponse<H::Response, Self::Error>;
-    fn call(&mut self, event: LambdaRequest<'_>, context: Context) -> Self::Fut {
+    fn call(&self, event: LambdaRequest<'_>, context: Context) -> Self::Fut {
         let is_alb = event.is_alb();
         let fut = Box::pin(self.handler.call(event.into(), context));
         TransformResponse { is_alb, fut }

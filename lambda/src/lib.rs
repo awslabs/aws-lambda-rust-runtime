@@ -1,4 +1,4 @@
-#![deny(clippy::all, clippy::pedantic, clippy::nursery, clippy::cargo)]
+#![deny(clippy::all, clippy::cargo)]
 #![warn(missing_docs, nonstandard_style, rust_2018_idioms)]
 
 //! The official Rust runtime for AWS Lambda.
@@ -41,6 +41,7 @@
 //! [Tokio]: https://docs.rs/tokio/
 pub use crate::types::Context;
 use client::Client;
+use hyper::client::{connect::Connection, HttpConnector};
 pub use lambda_attributes::lambda;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -49,7 +50,11 @@ use std::{
     future::Future,
     sync::Arc,
 };
-use tokio::stream::{Stream, StreamExt};
+use tokio::{
+    io::{AsyncRead, AsyncWrite},
+    stream::{Stream, StreamExt},
+};
+use tower_service::Service;
 
 mod client;
 mod requests;
@@ -134,6 +139,158 @@ where
     }
 }
 
+#[non_exhaustive]
+#[derive(Debug, PartialEq)]
+enum BuilderError {
+    UnsetUri,
+}
+
+struct Runtime<C: Service<http::Uri> = HttpConnector> {
+    client: Client<C>,
+}
+
+impl Runtime {
+    pub fn builder() -> RuntimeBuilder<HttpConnector> {
+        RuntimeBuilder {
+            connector: HttpConnector::new(),
+            uri: None,
+        }
+    }
+}
+
+impl<C> Runtime<C>
+where
+    C: Service<http::Uri> + Clone + Send + Sync + Unpin + 'static,
+    <C as Service<http::Uri>>::Future: Unpin + Send,
+    <C as Service<http::Uri>>::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
+    <C as Service<http::Uri>>::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
+{
+    pub async fn run<F, A, B>(
+        &self,
+        incoming: impl Stream<Item = Result<http::Response<hyper::Body>, Error>> + Send,
+        handler: F,
+    ) -> Result<(), Error>
+    where
+        F: Handler<A, B> + Send + Sync + 'static,
+        <F as Handler<A, B>>::Fut: Future<Output = Result<B, <F as Handler<A, B>>::Error>> + Send + Sync + 'static,
+        <F as Handler<A, B>>::Error: fmt::Debug + Send + Sync + 'static,
+        A: for<'de> Deserialize<'de> + Send + Sync + 'static,
+        B: Serialize + Send + Sync + 'static,
+    {
+        let client = &self.client;
+        let handler = Arc::new(handler);
+        tokio::pin!(incoming);
+        while let Some(event) = incoming.next().await {
+            let event = event?;
+            let (parts, body) = event.into_parts();
+
+            let ctx: Context = Context::try_from(parts.headers)?;
+            let body = hyper::body::to_bytes(body).await?;
+            let body = serde_json::from_slice(&body)?;
+
+            let handler = Arc::clone(&handler);
+            let request_id = &ctx.request_id.clone();
+            let task = tokio::spawn(async move { handler.call(body, ctx) });
+
+            let req = match task.await {
+                Ok(response) => match response.await {
+                    Ok(response) => EventCompletionRequest {
+                        request_id,
+                        body: response,
+                    }
+                    .into_req(),
+                    Err(err) => EventErrorRequest {
+                        request_id,
+                        diagnostic: Diagnostic {
+                            error_type: type_name_of_val(&err).to_owned(),
+                            error_message: format!("{:?}", err),
+                        },
+                    }
+                    .into_req(),
+                },
+                Err(err) if err.is_panic() => EventErrorRequest {
+                    request_id,
+                    diagnostic: Diagnostic {
+                        error_type: type_name_of_val(&err).to_owned(),
+                        error_message: "Lambda panicked!".to_owned(),
+                    },
+                }
+                .into_req(),
+                Err(_) => unreachable!("tokio::task should not be canceled"),
+            };
+            let req = req?;
+            client.call(req).await.expect("Unable to send response to Runtime APIs");
+        }
+        Ok(())
+    }
+}
+
+struct RuntimeBuilder<C: Service<http::Uri> = hyper::client::HttpConnector> {
+    connector: C,
+    uri: Option<http::Uri>,
+}
+
+impl<C> RuntimeBuilder<C>
+where
+    C: Service<http::Uri> + Clone + Send + Sync + Unpin + 'static,
+    <C as Service<http::Uri>>::Future: Unpin + Send,
+    <C as Service<http::Uri>>::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
+    <C as Service<http::Uri>>::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
+{
+    pub fn with_connector<C2>(self, connector: C2) -> RuntimeBuilder<C2>
+    where
+        C2: Service<http::Uri> + Clone + Send + Sync + Unpin + 'static,
+        <C2 as Service<http::Uri>>::Future: Unpin + Send,
+        <C2 as Service<http::Uri>>::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
+        <C2 as Service<http::Uri>>::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
+    {
+        RuntimeBuilder {
+            connector,
+            uri: self.uri,
+        }
+    }
+
+    pub fn with_endpoint(self, uri: http::Uri) -> Self {
+        Self { uri: Some(uri), ..self }
+    }
+
+    pub fn build(self) -> Result<Runtime<C>, BuilderError> {
+        let uri = match self.uri {
+            Some(uri) => uri,
+            None => return Err(BuilderError::UnsetUri),
+        };
+        let client = Client::with(uri, self.connector);
+
+        Ok(Runtime { client })
+    }
+}
+
+#[test]
+fn test_builder() {
+    let runtime = Runtime::builder()
+        .with_connector(HttpConnector::new())
+        .with_endpoint(http::Uri::from_static("http://nomatter.com"))
+        .build();
+
+    runtime.unwrap();
+}
+
+fn incoming<C>(client: &Client<C>) -> impl Stream<Item = Result<http::Response<hyper::Body>, Error>> + Send + '_
+where
+    C: Service<http::Uri> + Clone + Send + Sync + Unpin + 'static,
+    <C as Service<http::Uri>>::Future: Unpin + Send,
+    <C as Service<http::Uri>>::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
+    <C as Service<http::Uri>>::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
+{
+    async_stream::stream! {
+        loop {
+            let req = NextEventRequest.into_req().expect("Unable to construct request");
+            let res = client.call(req).await;
+            yield res;
+        }
+    }
+}
+
 /// Starts the Lambda Rust runtime and begins polling for events on the [Lambda
 /// Runtime APIs](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html).
 ///
@@ -165,80 +322,15 @@ where
 {
     let config = Config::from_env()?;
     let uri = config.endpoint.try_into().expect("Unable to convert to URL");
-    let client = Client::with(uri, hyper::Client::new());
-    let incoming = incoming(&client);
-    run_inner(&client, incoming, handler).await?;
+    let runtime = Runtime::builder()
+        .with_connector(HttpConnector::new())
+        .with_endpoint(uri)
+        .build()
+        .expect("Unable create runtime");
 
-    Ok(())
-}
-
-fn incoming(client: &Client) -> impl Stream<Item = Result<http::Response<hyper::Body>, Error>> + '_ {
-    async_stream::stream! {
-        loop {
-            let req = NextEventRequest.into_req().expect("Unable to construct request");
-            let res = client.call(req).await;
-            yield res;
-        }
-    }
-}
-
-async fn run_inner<A, B, F>(
-    client: &Client,
-    incoming: impl Stream<Item = Result<http::Response<hyper::Body>, Error>>,
-    handler: F,
-) -> Result<(), Error>
-where
-    F: Handler<A, B> + Send + Sync + 'static,
-    <F as Handler<A, B>>::Fut: Future<Output = Result<B, <F as Handler<A, B>>::Error>> + Send + Sync + 'static,
-    <F as Handler<A, B>>::Error: fmt::Debug + Send + Sync + 'static,
-    A: for<'de> Deserialize<'de> + Send + Sync + 'static,
-    B: Serialize + Send + Sync + 'static,
-{
-    let handler = Arc::new(handler);
-    tokio::pin!(incoming);
-    while let Some(event) = incoming.next().await {
-        let event = event?;
-        let (parts, body) = event.into_parts();
-
-        let ctx: Context = Context::try_from(parts.headers)?;
-        let body = hyper::body::to_bytes(body).await?;
-        let body = serde_json::from_slice(&body)?;
-
-        let handler = Arc::clone(&handler);
-        let request_id = &ctx.request_id.clone();
-        let task = tokio::spawn(async move { handler.call(body, ctx) });
-
-        let req = match task.await {
-            Ok(response) => match response.await {
-                Ok(response) => EventCompletionRequest {
-                    request_id,
-                    body: response,
-                }
-                .into_req(),
-                Err(err) => EventErrorRequest {
-                    request_id,
-                    diagnostic: Diagnostic {
-                        error_type: type_name_of_val(&err).to_owned(),
-                        error_message: format!("{:?}", err),
-                    },
-                }
-                .into_req(),
-            },
-            Err(err) if err.is_panic() => EventErrorRequest {
-                request_id,
-                diagnostic: Diagnostic {
-                    error_type: type_name_of_val(&err).to_owned(),
-                    error_message: "Lambda panicked!".to_owned(),
-                },
-            }
-            .into_req(),
-            Err(_) => unreachable!("tokio::task should not be canceled"),
-        };
-        let req = req?;
-        client.call(req).await.expect("Unable to send response to Runtime APIs");
-    }
-
-    Ok(())
+    let client = &runtime.client;
+    let incoming = incoming(client).take(1);
+    runtime.run(incoming, handler).await
 }
 
 fn type_name_of_val<T>(_: T) -> &'static str {

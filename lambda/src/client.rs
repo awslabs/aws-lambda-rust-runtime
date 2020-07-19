@@ -1,18 +1,20 @@
 use crate::Error;
 use http::{uri::Scheme, Request, Response, Uri};
 use hyper::{client::HttpConnector, Body};
+use std::fmt::Debug;
 
 #[derive(Debug)]
 pub(crate) struct Client<C = HttpConnector> {
-    base: Uri,
-    client: hyper::Client<C>,
+    pub(crate) base: Uri,
+    pub(crate) client: hyper::Client<C>,
 }
 
 impl<C> Client<C>
 where
     C: hyper::client::connect::Connect + Sync + Send + Clone + 'static,
 {
-    pub fn with(base: Uri, client: hyper::Client<C>) -> Self {
+    pub fn with(base: Uri, connector: C) -> Self {
+        let client = hyper::Client::builder().build(connector);
         Self { base, client }
     }
 
@@ -39,7 +41,6 @@ where
     pub(crate) async fn call(&self, req: Request<Body>) -> Result<Response<Body>, Error> {
         let req = self.set_origin(req)?;
         let (parts, body) = req.into_parts();
-        let body = Body::from(body);
         let req = Request::from_parts(parts, body);
         let response = self.client.request(req).await?;
         Ok(response)
@@ -49,45 +50,25 @@ where
 #[cfg(test)]
 mod endpoint_tests {
     use crate::{
+        client::Client,
+        incoming,
         requests::{
             EventCompletionRequest, EventErrorRequest, IntoRequest, IntoResponse, NextEventRequest, NextEventResponse,
         },
-        simulated::SimulatedConnector,
+        simulated,
         types::Diagnostic,
-        Error,
+        Error, Runtime,
     };
-    use http::{
-        uri::{PathAndQuery, Scheme},
-        HeaderValue, Method, Request, Response, StatusCode, Uri,
-    };
+    use http::{uri::PathAndQuery, HeaderValue, Method, Request, Response, StatusCode, Uri};
     use hyper::{server::conn::Http, service::service_fn, Body};
     use serde_json::json;
     use std::convert::TryFrom;
+    use tokio::stream::StreamExt;
     use tokio::{
         io::{AsyncRead, AsyncWrite},
         select,
         sync::{self, oneshot},
     };
-
-    fn set_origin<B>(base: Uri, req: Request<B>) -> Result<Request<B>, Error> {
-        let (mut parts, body) = req.into_parts();
-        let (scheme, authority) = {
-            let scheme = base.scheme().unwrap_or(&Scheme::HTTP);
-            let authority = base.authority().expect("Authority not found");
-            (scheme, authority)
-        };
-        let path = parts.uri.path_and_query().expect("PathAndQuery not found");
-
-        let uri = Uri::builder()
-            .scheme(scheme.clone())
-            .authority(authority.clone())
-            .path_and_query(path.clone())
-            .build()
-            .expect("Unable to build URI");
-
-        parts.uri = uri;
-        Ok(Request::from_parts(parts, body))
-    }
 
     #[cfg(test)]
     async fn next_event(req: &Request<Body>) -> Result<Response<Body>, Error> {
@@ -103,7 +84,7 @@ mod endpoint_tests {
             trace_id: "Root=1-5bef4de7-ad49b0e87f6ef6c87fc2e700;Parent=9a9197af755a6419",
             body: serde_json::to_vec(&body)?,
         };
-        rsp.into_rsp().map_err(|e| e.into())
+        rsp.into_rsp()
     }
 
     #[cfg(test)]
@@ -141,9 +122,9 @@ mod endpoint_tests {
             .path_and_query()
             .expect("PathAndQuery not found")
             .as_str()
-            .split("/")
+            .split('/')
             .collect::<Vec<&str>>();
-        match &path[1..] {
+        match path[1..] {
             ["2018-06-01", "runtime", "invocation", "next"] => next_event(&req).await,
             ["2018-06-01", "runtime", "invocation", id, "response"] => complete_event(&req, id).await,
             ["2018-06-01", "runtime", "invocation", id, "error"] => event_err(&req, id).await,
@@ -160,13 +141,13 @@ mod endpoint_tests {
         let conn = Http::new().serve_connection(io, service_fn(handle_incoming));
         select! {
             _ = rx => {
-                return Ok(())
+                Ok(())
             }
             res = conn => {
                 match res {
-                    Ok(()) => return Ok(()),
+                    Ok(()) => Ok(()),
                     Err(e) => {
-                        return Err(e);
+                        Err(e)
                     }
                 }
             }
@@ -175,20 +156,19 @@ mod endpoint_tests {
 
     #[tokio::test]
     async fn test_next_event() -> Result<(), Error> {
-        let (client, server) = crate::simulated::chan();
         let base = Uri::from_static("http://localhost:9001");
+        let (client, server) = crate::simulated::chan();
 
         let (tx, rx) = sync::oneshot::channel();
         let server = tokio::spawn(async {
             handle(server, rx).await.expect("Unable to handle request");
         });
 
-        let conn = SimulatedConnector { inner: client };
-        let client = hyper::Client::builder().build(conn);
+        let conn = simulated::Connector { inner: client };
+        let client = Client::with(base, conn);
 
         let req = NextEventRequest.into_req()?;
-        let req = set_origin(base, req)?;
-        let rsp = client.request(req).await.expect("Unable to send request");
+        let rsp = client.call(req).await.expect("Unable to send request");
 
         assert_eq!(rsp.status(), StatusCode::OK);
         let header = "lambda-runtime-deadline-ms";
@@ -213,17 +193,16 @@ mod endpoint_tests {
             handle(server, rx).await.expect("Unable to handle request");
         });
 
-        let conn = SimulatedConnector { inner: client };
-        let client = hyper::Client::builder().build(conn);
+        let conn = simulated::Connector { inner: client };
+        let client = Client::with(base, conn);
 
         let req = EventCompletionRequest {
             request_id: "156cb537-e2d4-11e8-9b34-d36013741fb9",
             body: "done",
         };
         let req = req.into_req()?;
-        let req = set_origin(base, req)?;
 
-        let rsp = client.request(req).await?;
+        let rsp = client.call(req).await?;
         assert_eq!(rsp.status(), StatusCode::ACCEPTED);
 
         // shutdown server
@@ -245,8 +224,8 @@ mod endpoint_tests {
             handle(server, rx).await.expect("Unable to handle request");
         });
 
-        let conn = SimulatedConnector { inner: client };
-        let client = hyper::Client::builder().build(conn);
+        let conn = simulated::Connector { inner: client };
+        let client = Client::with(base, conn);
 
         let req = EventErrorRequest {
             request_id: "156cb537-e2d4-11e8-9b34-d36013741fb9",
@@ -256,9 +235,43 @@ mod endpoint_tests {
             },
         };
         let req = req.into_req()?;
-        let req = set_origin(base, req)?;
-        let rsp = client.request(req).await?;
+        let rsp = client.call(req).await?;
         assert_eq!(rsp.status(), StatusCode::ACCEPTED);
+
+        // shutdown server
+        tx.send(()).expect("Receiver has been dropped");
+        match server.await {
+            Ok(_) => Ok(()),
+            Err(e) if e.is_panic() => return Err::<(), Error>(e.into()),
+            Err(_) => unreachable!("This branch shouldn't be reachable"),
+        }
+    }
+
+    #[tokio::test]
+    async fn successful_end_to_end_run() -> Result<(), Error> {
+        let (client, server) = crate::simulated::chan();
+        let (tx, rx) = sync::oneshot::channel();
+        let base = Uri::from_static("http://localhost:9001");
+
+        let server = tokio::spawn(async {
+            handle(server, rx).await.expect("Unable to handle request");
+        });
+        let conn = simulated::Connector { inner: client };
+
+        let runtime = Runtime::builder()
+            .with_endpoint(base)
+            .with_connector(conn)
+            .build()
+            .expect("Unable to build runtime");
+
+        async fn func(event: serde_json::Value, _: crate::Context) -> Result<serde_json::Value, Error> {
+            Ok(event)
+        }
+        let f = crate::handler_fn(func);
+
+        let client = &runtime.client;
+        let incoming = incoming(client).take(1);
+        runtime.run(incoming, f).await?;
 
         // shutdown server
         tx.send(()).expect("Receiver has been dropped");

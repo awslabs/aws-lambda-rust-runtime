@@ -37,11 +37,11 @@ pub(crate) fn chan() -> (SimStream, SimStream) {
 }
 
 #[derive(Clone)]
-pub struct SimulatedConnector {
+pub struct Connector {
     pub inner: SimStream,
 }
 
-impl Service<Uri> for SimulatedConnector {
+impl Service<Uri> for Connector {
     type Response = SimStream;
     type Error = std::io::Error;
     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>;
@@ -209,7 +209,7 @@ mod tests {
         client.write_all(b"Ping").await.expect("Write should succeed");
 
         // Verify we can read it from side 2
-        let mut read_on_server = [0u8; 4];
+        let mut read_on_server = [0_u8; 4];
         server
             .read_exact(&mut read_on_server)
             .await
@@ -220,7 +220,7 @@ mod tests {
         server.write_all(b"Pong").await.expect("Write should succeed");
 
         // Verify we can read it from side 1
-        let mut read_on_client = [0u8; 4];
+        let mut read_on_client = [0_u8; 4];
         client
             .read_exact(&mut read_on_client)
             .await

@@ -1,25 +1,92 @@
 
 ## How to compile and run the examples
 
-1. Compile the example you want to run
+1. Create a Lambda function called _RuntimeTest_ in AWS with a custom runtime and no code.
+
+2. Compile all examples
 
 ```
-cargo build --release --target x86_64-unknown-linux-musl --example error-handling
+cargo build --release --target x86_64-unknown-linux-musl --examples
 ```
-2. Prepare the package
+3. Prepare the package for the example you want to test, e.g.
 ```
-cp ./target/x86_64-unknown-linux-musl/release/examples/error-handling ./bootstrap && zip lambda.zip bootstrap && rm bootstrap
+cp ./target/x86_64-unknown-linux-musl/release/examples/hello ./bootstrap && zip lambda.zip bootstrap && rm bootstrap
 ```
-3. Upload to AWS Lambda
+4. Upload the package to AWS Lambda
 ```
 aws lambda update-function-code --region us-east-1 --function-name RuntimeTest --zip-file fileb://lambda.zip
 ```
-_Remember to replace the names and IDs with your own values._
+_Feel free to replace the names and IDs with your own values._
 
+## basic.rs
 
-## Error handling examples for aws-lambda-rust-runtime
+**Deployment**:
+```bash
+cp ./target/x86_64-unknown-linux-musl/release/examples/basic ./bootstrap && zip lambda.zip bootstrap && rm bootstrap
+aws lambda update-function-code --region us-east-1 --function-name RuntimeTest --zip-file fileb://lambda.zip
+```
 
-#### Error logging by the runtime
+**Test event JSON (success)**:
+```json
+{ "command": "do something" }
+```
+
+Sample response:
+```json
+{
+  "msg": "Command do something executed.",
+  "req_id": "67a038e4-dc19-4adf-aa32-5ba09312c6ca"
+}
+```
+
+**Test event JSON (error)**:
+```json
+{ "foo": "do something" }
+```
+
+Sample response:
+```json
+{
+  "errorType": "alloc::boxed::Box<dyn std::error::Error+core::marker::Sync+core::marker::Send>",
+  "errorMessage": "missing field `command`"
+}
+```
+
+## hello.rs
+
+The most basic example using `#[lambda]` macro to reduce the amount of boilerplate code.
+
+**Deployment**:
+```bash
+cp ./target/x86_64-unknown-linux-musl/release/examples/hello ./bootstrap && zip lambda.zip bootstrap && rm bootstrap
+aws lambda update-function-code --region us-east-1 --function-name RuntimeTest --zip-file fileb://lambda.zip
+```
+
+**Test event JSON**:
+```json
+{ "foo": "bar" }
+```
+
+Sample response:
+```json
+{
+  "foo": "bar"
+}
+```
+
+## hello-without-macro.rs
+
+The same as hello.rs example, but without `#[lambda]` macro to allow for more control at a lower level.
+
+**Deployment**:
+```bash
+cp ./target/x86_64-unknown-linux-musl/release/examples/hello-without-macro ./bootstrap && zip lambda.zip bootstrap && rm bootstrap
+aws lambda update-function-code --region us-east-1 --function-name RuntimeTest --zip-file fileb://lambda.zip
+```
+
+The test event JSON and the sample response are identical to that of _hello.rs_ example.
+
+## error-handling
 
 Errors are logged by the runtime only if `log` is initialised by the handler.
 These examples use `simple_logger`, but you can use any other provider that works with `log`.
@@ -27,11 +94,17 @@ These examples use `simple_logger`, but you can use any other provider that work
 simple_logger::init_with_level(log::Level::Debug)?;
 ```
 
+**Deployment**:
+```bash
+cp ./target/x86_64-unknown-linux-musl/release/examples/error-handling ./bootstrap && zip lambda.zip bootstrap && rm bootstrap
+aws lambda update-function-code --region us-east-1 --function-name RuntimeTest --zip-file fileb://lambda.zip
+```
+
 #### Sample log output
 
 The following input/output examples correspond to different `match` arms in the handler of `error-handling.rs`.
 
-### Invalid JSON input
+### Invalid event JSON
 
 Test input:
 ```json
@@ -58,7 +131,7 @@ REPORT RequestId: b98e07c6-e2ba-4ca6-9968-d0b94729ddba	Duration: 2.06 ms	Billed 
 
 ### A simple text-only error
 
-Test input:
+Test event JSON:
 ```json
 {
   "event_type": "SimpleError"
@@ -83,7 +156,7 @@ REPORT RequestId: 77c66dbf-bd60-4f77-8453-682d0bceba91	Duration: 0.98 ms	Billed 
 
 ### A custom error with JSON output for Display trait
 
-Test input:
+Test event JSON:
 ```json
 {
   "event_type": "CustomError"
@@ -108,7 +181,7 @@ REPORT RequestId: b46b0588-1383-4224-bc7a-42b0d61930c1	Duration: 0.91 ms	Billed 
 
 ### A 3rd party error from _std::fs::File::open_
 
-Test input:
+Test event JSON:
 ```json
 {
   "event_type": "ExternalError"
@@ -133,7 +206,7 @@ REPORT RequestId: 893d24e5-cb79-4f6f-bae0-36304c62e9da	Duration: 1.15 ms	Billed 
 
 ### A response to a successful Lambda execution
 
-Test input:
+Test event JSON:
 ```json
 {
   "event_type": "Response"

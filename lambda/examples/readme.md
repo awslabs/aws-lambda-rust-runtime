@@ -100,11 +100,9 @@ cp ./target/x86_64-unknown-linux-musl/release/examples/error-handling ./bootstra
 aws lambda update-function-code --region us-east-1 --function-name RuntimeTest --zip-file fileb://lambda.zip
 ```
 
-#### Sample log output
-
 The following input/output examples correspond to different `match` arms in the handler of `error-handling.rs`.
 
-### Invalid event JSON
+#### Invalid event JSON
 
 Test input:
 ```json
@@ -129,7 +127,7 @@ END RequestId: b98e07c6-e2ba-4ca6-9968-d0b94729ddba
 REPORT RequestId: b98e07c6-e2ba-4ca6-9968-d0b94729ddba	Duration: 2.06 ms	Billed Duration: 100 ms	Memory Size: 128 MB	Max Memory Used: 28 MB	Init Duration: 33.67 ms	
 ```
 
-### A simple text-only error
+#### A simple text-only error
 
 Test event JSON:
 ```json
@@ -154,7 +152,7 @@ END RequestId: 77c66dbf-bd60-4f77-8453-682d0bceba91
 REPORT RequestId: 77c66dbf-bd60-4f77-8453-682d0bceba91	Duration: 0.98 ms	Billed Duration: 100 ms	Memory Size: 128 MB	Max Memory Used: 28 MB	
 ```
 
-### A custom error with JSON output for Display trait
+#### A custom error with JSON output for Display trait
 
 Test event JSON:
 ```json
@@ -179,7 +177,7 @@ END RequestId: b46b0588-1383-4224-bc7a-42b0d61930c1
 REPORT RequestId: b46b0588-1383-4224-bc7a-42b0d61930c1	Duration: 0.91 ms	Billed Duration: 100 ms	Memory Size: 128 MB	Max Memory Used: 29 MB	
 ```
 
-### A 3rd party error from _std::fs::File::open_
+#### A 3rd party error from _std::fs::File::open_
 
 Test event JSON:
 ```json
@@ -204,7 +202,7 @@ END RequestId: 893d24e5-cb79-4f6f-bae0-36304c62e9da
 REPORT RequestId: 893d24e5-cb79-4f6f-bae0-36304c62e9da	Duration: 1.15 ms	Billed Duration: 100 ms	Memory Size: 128 MB	Max Memory Used: 29 MB	
 ```
 
-### A response to a successful Lambda execution
+#### A response to a successful Lambda execution
 
 Test event JSON:
 ```json

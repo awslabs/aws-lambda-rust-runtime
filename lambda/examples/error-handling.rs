@@ -2,10 +2,9 @@
 use lambda::handler_fn;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use simple_logger;
 use simple_error;
+use simple_logger;
 use std::fs::File;
-
 
 /// A shorthand for `Box<dyn std::error::Error + Send + Sync + 'static>` type required by aws-lambda-rust-runtime.
 pub type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
@@ -54,9 +53,7 @@ pub(crate) async fn func(event: Value, ctx: lambda::Context) -> Result<Value, Er
         }
         Ok(v) if v.event_type == EventType::SimpleError => {
             // generate a simple text message error using `simple_error` crate
-            return Err(Box::new(simple_error::SimpleError::new(
-                "A simple error as requested!",
-            )));
+            return Err(Box::new(simple_error::SimpleError::new("A simple error as requested!")));
         }
         Ok(v) if v.event_type == EventType::CustomError => {
             // generate a custom error using our own structure

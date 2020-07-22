@@ -232,11 +232,8 @@ where
     Ok(())
 }
 
-/// Returns the name of <T> as a slice, but it is always the same
-/// value for all errors:
-/// ```
-/// "alloc::boxed::Box<dyn std::error::Error+core::marker::Sync+core::marker::Send>"
-/// ```
+/// Returns the name of <T> as a slice, but the value is
+/// the same for all errors because the type is the same.
 fn type_name_of_val<T>(_: T) -> &'static str {
     std::any::type_name::<T>()
 }

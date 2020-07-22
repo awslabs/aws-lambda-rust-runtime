@@ -37,6 +37,7 @@ pub use crate::types::Context;
 use client::Client;
 use futures::stream::{Stream, StreamExt};
 pub use lambda_attributes::lambda;
+use log::error;
 use serde::{Deserialize, Serialize};
 use std::{
     convert::{TryFrom, TryInto},
@@ -146,7 +147,7 @@ where
 pub async fn run<A, B, F>(handler: F) -> Result<(), Error>
 where
     F: Handler<A, B>,
-    <F as Handler<A, B>>::Error: fmt::Debug,
+    <F as Handler<A, B>>::Error: fmt::Display,
     A: for<'de> Deserialize<'de>,
     B: Serialize,
 {
@@ -164,7 +165,7 @@ where
 pub async fn run_simulated<A, B, F>(handler: F, url: &str) -> Result<(), Error>
 where
     F: Handler<A, B>,
-    <F as Handler<A, B>>::Error: fmt::Debug,
+    <F as Handler<A, B>>::Error: fmt::Display,
     A: for<'de> Deserialize<'de>,
     B: Serialize,
 {
@@ -194,7 +195,7 @@ async fn run_inner<A, B, F>(
 ) -> Result<(), Error>
 where
     F: Handler<A, B>,
-    <F as Handler<A, B>>::Error: fmt::Debug,
+    <F as Handler<A, B>>::Error: fmt::Display,
     A: for<'de> Deserialize<'de>,
     B: Serialize,
 {
@@ -213,14 +214,17 @@ where
 
         let req = match f.await {
             Ok(res) => EventCompletionRequest { request_id, body: res }.into_req()?,
-            Err(e) => EventErrorRequest {
-                request_id,
-                diagnostic: Diagnostic {
-                    error_message: format!("{:?}", e),
-                    error_type: type_name_of_val(e).to_owned(),
-                },
+            Err(e) => {
+                error!("{}", e);
+                EventErrorRequest {
+                    request_id,
+                    diagnostic: Diagnostic {
+                        error_message: format!("{}", e),
+                        error_type: type_name_of_val(e).to_owned(),
+                    },
+                }
+                .into_req()?
             }
-            .into_req()?,
         };
         client.call(req).await?;
     }
@@ -228,6 +232,11 @@ where
     Ok(())
 }
 
+/// Returns the name of <T> as a slice, but it is always the same
+/// value for all errors:
+/// ```
+/// "alloc::boxed::Box<dyn std::error::Error+core::marker::Sync+core::marker::Send>"
+/// ```
 fn type_name_of_val<T>(_: T) -> &'static str {
     std::any::type_name::<T>()
 }

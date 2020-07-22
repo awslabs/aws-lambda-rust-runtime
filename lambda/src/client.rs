@@ -7,6 +7,7 @@ use http::{
     HeaderValue, Method, Request, Response, StatusCode, Uri,
 };
 use hyper::{client::HttpConnector, server::conn::Http, service::service_fn, Body};
+use log::{error, info};
 use serde_json::json;
 use std::convert::TryFrom;
 use tokio::{
@@ -14,9 +15,7 @@ use tokio::{
     select,
     sync::oneshot,
 };
-use tracing::{error, info, instrument};
 
-#[instrument]
 async fn hello(req: Request<Body>) -> Result<Response<Body>, Error> {
     Ok(Response::new(Body::from("hello")))
 }
@@ -38,7 +37,6 @@ async fn handle_incoming(req: Request<Body>) -> Result<Response<Body>, Error> {
     }
 }
 
-#[instrument(skip(io, rx))]
 async fn handle<I>(io: I, rx: oneshot::Receiver<()>) -> Result<(), hyper::error::Error>
 where
     I: AsyncRead + AsyncWrite + Unpin + 'static,
@@ -53,7 +51,7 @@ where
             match res {
                 Ok(()) => return Ok(()),
                 Err(e) => {
-                    error!(message = "Got error serving connection", e = %e);
+                    error!("Got error serving connection {}", e);
                     return Err(e);
                 }
             }
@@ -275,55 +273,4 @@ mod endpoint_tests {
             Err(_) => unreachable!("This branch shouldn't be reachable"),
         }
     }
-
-    // #[tokio::test]
-    // async fn run_end_to_end() -> Result<(), Error> {
-    //     use serde_json::Value;
-
-    //     let (client, server) = crate::simulated::chan();
-
-    //     let (tx, rx) = sync::oneshot::channel();
-    //     let server = tokio::spawn(async move { handle(server, rx) });
-
-    //     async fn handler(s: Value) -> Result<Value, Error> {
-    //         INVOCATION_CTX.with(|_ctx| {});
-    //         Ok(s)
-    //     }
-    //     let handler = handler_fn(handler);
-    //     let client = tokio::spawn(async move {
-    //         run_simulated(handler, &url).await?;
-    //         Ok::<(), Error>(())
-    //     });
-    //     race!(client, server);
-    //     Ok(())
-    // }
-
-    // #[tokio::test]
-    // async fn test_stream_handler() -> Result<(), Error> {
-    //     let (client, server) = crate::simulated::chan();
-    //     let req = Request::builder()
-    //         .method(Method::GET)
-    //         .uri("http://httpbin.org")
-    //         .body(Body::empty())
-    //         .expect("Can't build request");
-
-    //     let conn = SimulatedConnector { inner: client };
-    //     let client = hyper::Client::builder().build(conn);
-
-    //     let (tx, rx) = sync::oneshot::channel();
-    //     let server = tokio::spawn(async {
-    //         handle(server, rx).await.expect("Unable to handle request");
-    //     });
-
-    //     let rsp = client.request(req).await.expect("Unable to send request");
-    //     assert_eq!(rsp.status(), http::StatusCode::OK);
-
-    //     // shutdown server
-    //     tx.send(()).expect("Receiver has been dropped");
-    //     match server.await {
-    //         Ok(_) => Ok(()),
-    //         Err(e) if e.is_panic() => return Err::<(), anyhow::Error>(e.into()),
-    //         Err(_) => unreachable!("This branch shouldn't be reachable"),
-    //     }
-    // }
 }

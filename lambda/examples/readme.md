@@ -12,7 +12,7 @@ cp ./target/x86_64-unknown-linux-musl/release/examples/error-handling ./bootstra
 ```
 3. Upload to AWS Lambda
 ```
-aws lambda update-function-code --region us-east-1 --function-name ReturnValue --zip-file fileb://lambda.zip
+aws lambda update-function-code --region us-east-1 --function-name RuntimeTest --zip-file fileb://lambda.zip
 ```
 _Remember to replace the names and IDs with your own values._
 

@@ -8,3 +8,7 @@ type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 async fn main(event: Value, _: Context) -> Result<Value, Error> {
     Ok(event)
 }
+
+// #[lambda] attribute removes the need for boilerplate code
+// required by `lambda::run(func).await?` demonstrated in other
+// examples.

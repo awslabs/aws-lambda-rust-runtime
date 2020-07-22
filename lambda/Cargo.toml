@@ -27,3 +27,4 @@ log = "0.4"
 # used in some of the examples
 simple-error = "0.2" 
 simple_logger = "1.6"
+serde_derive = "1.0"

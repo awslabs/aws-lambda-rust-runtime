@@ -1,6 +1,5 @@
 use lambda::{handler_fn, Context};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
 use simple_logger;
 
 /// A shorthand for `Box<dyn std::error::Error + Send + Sync + 'static>`

@@ -55,6 +55,7 @@ use tokio::{
     stream::{Stream, StreamExt},
 };
 use tower_service::Service;
+use tracing::trace;
 
 mod client;
 mod requests;
@@ -320,6 +321,7 @@ where
     A: for<'de> Deserialize<'de> + Send + Sync + 'static,
     B: Serialize + Send + Sync + 'static,
 {
+    trace!("Loading config from env");
     let config = Config::from_env()?;
     let uri = config.endpoint.try_into().expect("Unable to convert to URL");
     let runtime = Runtime::builder()

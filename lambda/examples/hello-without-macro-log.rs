@@ -15,5 +15,6 @@ async fn main() -> Result<(), Error> {
 }
 
 async fn func(event: Value, _: Context) -> Result<Value, Error> {
-    Ok(event)
+    //Ok(event)
+    Err(simple_error::SimpleError::new("simple error").into())
 }

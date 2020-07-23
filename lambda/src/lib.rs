@@ -131,7 +131,7 @@ impl<F, A, B, Error, Fut> Handler<A, B> for HandlerFn<F>
 where
     F: Fn(A, Context) -> Fut,
     Fut: Future<Output = Result<B, Error>> + Send + Sync,
-    Error: Into<Box<dyn std::error::Error + Send + Sync + 'static>> + fmt::Debug,
+    Error: Into<Box<dyn std::error::Error + Send + Sync + 'static>> + fmt::Display,
 {
     type Error = Error;
     type Fut = Fut;
@@ -174,7 +174,7 @@ where
     where
         F: Handler<A, B> + Send + Sync + 'static,
         <F as Handler<A, B>>::Fut: Future<Output = Result<B, <F as Handler<A, B>>::Error>> + Send + Sync + 'static,
-        <F as Handler<A, B>>::Error: fmt::Debug + Send + Sync + 'static,
+        <F as Handler<A, B>>::Error: fmt::Display + Send + Sync + 'static,
         A: for<'de> Deserialize<'de> + Send + Sync + 'static,
         B: Serialize + Send + Sync + 'static,
     {
@@ -204,7 +204,7 @@ where
                         request_id,
                         diagnostic: Diagnostic {
                             error_type: type_name_of_val(&err).to_owned(),
-                            error_message: format!("{:?}", err),
+                            error_message: format!("{}", err),
                         },
                     }
                     .into_req(),
@@ -317,7 +317,7 @@ pub async fn run<A, B, F>(handler: F) -> Result<(), Error>
 where
     F: Handler<A, B> + Send + Sync + 'static,
     <F as Handler<A, B>>::Fut: Future<Output = Result<B, <F as Handler<A, B>>::Error>> + Send + Sync + 'static,
-    <F as Handler<A, B>>::Error: fmt::Debug + Send + Sync + 'static,
+    <F as Handler<A, B>>::Error: fmt::Display + Send + Sync + 'static,
     A: for<'de> Deserialize<'de> + Send + Sync + 'static,
     B: Serialize + Send + Sync + 'static,
 {

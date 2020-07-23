@@ -47,10 +47,11 @@ Sample response:
 Sample response:
 ```json
 {
-  "errorType": "alloc::boxed::Box<dyn std::error::Error+core::marker::Sync+core::marker::Send>",
-  "errorMessage": "missing field `command`"
+  "errorType": "Runtime.ExitError",
+  "errorMessage": "RequestId: 586366df-f271-4e6e-9c30-b3dcab30f4e8 Error: Runtime exited with error: exit status 1"
 }
 ```
+The runtime could not deserialize our invalid input, but it did not give a detailed explanation why the error occurred. See _error-handling.rs_ example for more error handling options.
 
 ## hello.rs
 
@@ -86,9 +87,9 @@ aws lambda update-function-code --region us-east-1 --function-name RuntimeTest -
 
 The test event JSON and the sample response are identical to that of _hello.rs_ example.
 
-## error-handling
+## error-handling.rs
 
-Errors are logged by the runtime only if `log` is initialised by the handler.
+Errors are logged by the runtime only if `log` is initialized by the handler.
 These examples use `simple_logger`, but you can use any other provider that works with `log`.
 ```
 simple_logger::init_with_level(log::Level::Debug)?;

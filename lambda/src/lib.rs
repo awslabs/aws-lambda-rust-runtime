@@ -55,7 +55,7 @@ use tokio::{
     stream::{Stream, StreamExt},
 };
 use tower_service::Service;
-use tracing::trace;
+use tracing::{error, trace};
 
 mod client;
 mod requests;
@@ -200,23 +200,29 @@ where
                         body: response,
                     }
                     .into_req(),
-                    Err(err) => EventErrorRequest {
+                    Err(err) => {
+                        error!("{}", err); // logs the error in CloudWatch
+                        EventErrorRequest {
+                            request_id,
+                            diagnostic: Diagnostic {
+                                error_type: type_name_of_val(&err).to_owned(),
+                                error_message: format!("{}", err), // returns the error to the caller via Lambda API
+                            },
+                        }
+                        .into_req()
+                    }
+                },
+                Err(err) if err.is_panic() => {
+                    error!("Lambda panicked!");
+                    EventErrorRequest {
                         request_id,
                         diagnostic: Diagnostic {
                             error_type: type_name_of_val(&err).to_owned(),
-                            error_message: format!("{}", err),
+                            error_message: "Lambda panicked!".to_owned(),
                         },
                     }
-                    .into_req(),
-                },
-                Err(err) if err.is_panic() => EventErrorRequest {
-                    request_id,
-                    diagnostic: Diagnostic {
-                        error_type: type_name_of_val(&err).to_owned(),
-                        error_message: "Lambda panicked!".to_owned(),
-                    },
+                    .into_req()
                 }
-                .into_req(),
                 Err(_) => unreachable!("tokio::task should not be canceled"),
             };
             let req = req?;

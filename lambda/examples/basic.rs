@@ -1,3 +1,6 @@
+// This example requires the following input to succeed:
+// { "command": "do something" }
+
 use lambda::{handler_fn, Context};
 use serde::{Deserialize, Serialize};
 use simple_logger;

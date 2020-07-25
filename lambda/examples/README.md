@@ -63,13 +63,13 @@ Runtime.ExitError
 
  See _error-handling.rs_ example for more error handling options.
 
-## hello.rs
+## macro.rs
 
 The most basic example using `#[lambda]` macro to reduce the amount of boilerplate code.
 
 **Deployment**:
 ```bash
-cp ./target/x86_64-unknown-linux-musl/release/examples/hello ./bootstrap && zip lambda.zip bootstrap && rm bootstrap
+cp ./target/x86_64-unknown-linux-musl/release/examples/macro ./bootstrap && zip lambda.zip bootstrap && rm bootstrap
 aws lambda update-function-code --region us-east-1 --function-name RuntimeTest --zip-file fileb://lambda.zip
 ```
 
@@ -84,30 +84,6 @@ Sample response:
   "foo": "bar"
 }
 ```
-
-## hello-without-macro-tracing.rs
-
-The same as hello.rs example, but without `#[lambda]` macro to allow for more control at a lower level.
-
-**Deployment**:
-```bash
-cp ./target/x86_64-unknown-linux-musl/release/examples/hello-without-macro-tracing ./bootstrap && zip lambda.zip bootstrap && rm bootstrap
-aws lambda update-function-code --region us-east-1 --function-name RuntimeTest --zip-file fileb://lambda.zip
-```
-
-## hello-without-macro-log.rs
-
-The same as hello.rs example, but without `#[lambda]` macro to allow for more control at a lower level.
-
-**Deployment**:
-```bash
-cp ./target/x86_64-unknown-linux-musl/release/examples/hello-without-macro-log ./bootstrap && zip lambda.zip bootstrap && rm bootstrap
-aws lambda update-function-code --region us-east-1 --function-name RuntimeTest --zip-file fileb://lambda.zip
-```
-
-
-
-The test event JSON and the sample response are identical to that of _hello.rs_ example.
 
 ## error-handling.rs
 

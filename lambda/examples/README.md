@@ -201,6 +201,34 @@ END RequestId: 893d24e5-cb79-4f6f-bae0-36304c62e9da
 REPORT RequestId: 893d24e5-cb79-4f6f-bae0-36304c62e9da	Duration: 1.15 ms	Billed Duration: 100 ms	Memory Size: 128 MB	Max Memory Used: 29 MB	
 ```
 
+#### Handler panic
+
+Test event JSON:
+```json
+{
+  "event_type": "Panic"
+}
+```
+
+Lambda output:
+```
+{
+  "errorType": "Runtime.ExitError",
+  "errorMessage": "RequestId: 2d579019-07f7-409a-a6e6-af7725253307 Error: Runtime exited with error: exit status 101"
+}
+```
+
+CloudWatch records:
+```
+START RequestId: 2d579019-07f7-409a-a6e6-af7725253307 Version: $LATEST
+thread 'main' panicked at 'explicit panic', lambda/examples/error-handling.rs:87:13
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+END RequestId: 2d579019-07f7-409a-a6e6-af7725253307
+REPORT RequestId: 2d579019-07f7-409a-a6e6-af7725253307	Duration: 43.40 ms	Billed Duration: 100 ms	Memory Size: 128 MB	Max Memory Used: 27 MB	Init Duration: 23.15 ms	
+RequestId: 2d579019-07f7-409a-a6e6-af7725253307 Error: Runtime exited with error: exit status 101
+Runtime.ExitError
+```
+
 #### A response to a successful Lambda execution
 
 Test event JSON:

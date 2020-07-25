@@ -7,6 +7,30 @@ use std::fs::File;
 /// A shorthand for `Box<dyn std::error::Error + Send + Sync + 'static>` type required by aws-lambda-rust-runtime.
 pub type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
+/// A simple Lambda request structure with just one field
+/// that tells the Lambda what is expected of it.
+#[derive(Deserialize)]
+struct Request {
+    event_type: EventType,
+}
+
+/// Event types that tell our Lambda what to do do.
+#[derive(Deserialize, PartialEq)]
+enum EventType {
+    Response,
+    ExternalError,
+    SimpleError,
+    CustomError,
+    Panic,
+}
+
+/// A simple Lambda response structure.
+#[derive(Serialize)]
+struct Response {
+    req_id: String,
+    msg: String,
+}
+
 #[derive(Debug, Serialize)]
 struct CustomError {
     is_authenticated: bool,
@@ -53,21 +77,13 @@ async fn main() -> Result<(), Error> {
 
 /// The actual handler of the Lambda request.
 pub(crate) async fn func(event: Value, ctx: lambda::Context) -> Result<Value, Error> {
-    // convert the JSON request to a struct
-    let req = serde_json::from_value::<Request>(event);
-
-    // check if the conversion succeeded and what action was requested
-    match req {
-        Err(e) => {
-            // conversion from JSON to `Request` struct failed
-            // return serde_json error
-            return Err(Box::new(e));
-        }
-        Ok(v) if v.event_type == EventType::SimpleError => {
+    // check what action was requested
+    match serde_json::from_value::<Request>(event)?.event_type {
+        EventType::SimpleError => {
             // generate a simple text message error using `simple_error` crate
             return Err(Box::new(simple_error::SimpleError::new("A simple error as requested!")));
         }
-        Ok(v) if v.event_type == EventType::CustomError => {
+        EventType::CustomError => {
             // generate a custom error using our own structure
             let cust_err = CustomError {
                 is_authenticated: ctx.identity.is_some(),
@@ -76,14 +92,17 @@ pub(crate) async fn func(event: Value, ctx: lambda::Context) -> Result<Value, Er
             };
             return Err(Box::new(cust_err));
         }
-        Ok(v) if v.event_type == EventType::ExternalError => {
+        EventType::ExternalError => {
             // try to open a non-existent file to get an error and propagate it with `?`
             let _file = File::open("non-existent-file.txt")?;
 
             // it should never execute past the above line
             unreachable!();
         }
-        Ok(_) => {
+        EventType::Panic => {
+            panic!();
+        }
+        EventType::Response => {
             // generate and return an OK response in JSON format
             let resp = Response {
                 req_id: ctx.request_id,
@@ -93,27 +112,4 @@ pub(crate) async fn func(event: Value, ctx: lambda::Context) -> Result<Value, Er
             return Ok(json!(resp));
         }
     }
-}
-
-/// A simple Lambda response structure.
-#[derive(Serialize)]
-struct Response {
-    req_id: String,
-    msg: String,
-}
-
-/// A simple Lambda request structure with just one field
-/// that tells the Lambda what is expected of it.
-#[derive(Deserialize)]
-struct Request {
-    event_type: EventType,
-}
-
-/// Event types that tell our Lambda what to do do.
-#[derive(Deserialize, PartialEq)]
-enum EventType {
-    Response,
-    ExternalError,
-    SimpleError,
-    CustomError,
 }

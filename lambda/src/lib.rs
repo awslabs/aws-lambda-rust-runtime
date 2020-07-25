@@ -213,12 +213,12 @@ where
                     }
                 },
                 Err(err) if err.is_panic() => {
-                    error!("Lambda panicked!");
+                    error!("{:?}", err); // inconsistent with other log record formats - to be reviewed
                     EventErrorRequest {
                         request_id,
                         diagnostic: Diagnostic {
                             error_type: type_name_of_val(&err).to_owned(),
-                            error_message: "Lambda panicked!".to_owned(),
+                            error_message: format!("Lambda panicked: {}", err),
                         },
                     }
                     .into_req()

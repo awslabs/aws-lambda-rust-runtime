@@ -63,10 +63,10 @@ mod endpoint_tests {
     use hyper::{server::conn::Http, service::service_fn, Body};
     use serde_json::json;
     use std::convert::TryFrom;
-    use tokio::stream::StreamExt;
     use tokio::{
         io::{AsyncRead, AsyncWrite},
         select,
+        stream::StreamExt,
         sync::{self, oneshot},
     };
 

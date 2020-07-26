@@ -337,7 +337,7 @@ where
         .expect("Unable create runtime");
 
     let client = &runtime.client;
-    let incoming = incoming(client).take(1);
+    let incoming = incoming(client);
     runtime.run(incoming, handler).await
 }
 

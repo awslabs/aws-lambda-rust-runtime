@@ -182,11 +182,13 @@ where
         let handler = Arc::new(handler);
         tokio::pin!(incoming);
         while let Some(event) = incoming.next().await {
+            trace!("New event arrived (run loop)");
             let event = event?;
             let (parts, body) = event.into_parts();
 
             let ctx: Context = Context::try_from(parts.headers)?;
             let body = hyper::body::to_bytes(body).await?;
+            trace!("{}", std::str::from_utf8(&body)?); // this may be very verbose
             let body = serde_json::from_slice(&body)?;
 
             let handler = Arc::clone(&handler);
@@ -195,11 +197,14 @@ where
 
             let req = match task.await {
                 Ok(response) => match response.await {
-                    Ok(response) => EventCompletionRequest {
-                        request_id,
-                        body: response,
+                    Ok(response) => {
+                        trace!("Ok response from handler (run loop)");
+                        EventCompletionRequest {
+                            request_id,
+                            body: response,
+                        }
+                        .into_req()
                     }
-                    .into_req(),
                     Err(err) => {
                         error!("{}", err); // logs the error in CloudWatch
                         EventErrorRequest {
@@ -291,6 +296,7 @@ where
 {
     async_stream::stream! {
         loop {
+            trace!("Waiting for next event (incoming loop)");
             let req = NextEventRequest.into_req().expect("Unable to construct request");
             let res = client.call(req).await;
             yield res;

@@ -143,7 +143,7 @@ $ unzip -o \
 
 ## `lambda`
 
-This library makes it easy to create Rust executables for AWS lambda. The library defines exposes an `#[lambda]` attribute macro. Adding the `#[lambda]` attribute to your `main` function allows you to define your event handler logic in one function as show in the example above.
+This library makes it easy to create Rust executables for AWS lambda. The library defines an `#[lambda]` attribute macro. Adding the `#[lambda]` attribute to your `main` function allows you to define your event handler logic in one function as shown in the example above.
 
 It also exposes the `Handler` trait. A type that conforms to this trait can be passed to the `lambda::run` function, which launches and runs the Lambda runtime.
 
@@ -158,9 +158,6 @@ This project does not currently include Lambda event struct definitions though w
 To serialize and deserialize events and responses, we suggest using the use the [`serde`](https://github.com/serde-rs/serde) library. To receive custom events, annotate your structure with Serde's macros:
 
 ```rust
-extern crate serde;
-extern crate serde_json;
-
 use serde::{Serialize, Deserialize};
 use serde_json::json;
 use std::error::Error;

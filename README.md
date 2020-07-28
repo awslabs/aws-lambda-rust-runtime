@@ -2,58 +2,32 @@
 
 This package makes it easy to run AWS Lambda Functions written in Rust. This workspace includes multiple crates:
 
-- [![Docs](https://docs.rs/lambda_runtime_client/badge.svg)](https://docs.rs/lambda_runtime_client) **`lambda-runtime-client`** is a client SDK for the Lambda Runtime APIs. You probably don't need to use this crate directly!
-- [![Docs](https://docs.rs/lambda_runtime/badge.svg)](https://docs.rs/lambda_runtime) **`lambda-runtime`** is a library that makes it easy to write Lambda functions in Rust.
+- [![Docs](https://docs.rs/lambda/badge.svg)](https://docs.rs/lambda) **`lambda`** is a library that makes it easy to write Lambda functions in Rust.
 - [![Docs](https://docs.rs/lambda_http/badge.svg)](https://docs.rs/lambda_http) **`lambda-http`** is a library that makes it easy to write API Gateway proxy event focused Lambda functions in Rust.
+- [![Docs](https://docs.rs/lambda_attributes/badge.svg)](https://docs.rs/lambda_attributes) **`lambda-attributes`** holds an [attribute macro](https://doc.rust-lang.org/reference/procedural-macros.html#attribute-macros) that runs an `async main` function in the Lamda runtime. You probably don't need to use this crate directly, the macro is exposed by **`lambda`**!
 
 ## Example function
 
-The code below creates a simple function that receives an event with a `greeting` and `name` field and returns a `GreetingResponse` message for the given name and greeting. Notice: to run these examples, we require a minimum Rust version of 1.31.
+The code below creates a simple function that receives an event and echoes it back as a response. Notice: to run these examples, we require a minimum Rust version of 1.31.
 
 ```rust,no_run
-use std::error::Error;
+use lambda::{lambda, Context};
+use serde_json::Value;
 
-use lambda_runtime::{error::HandlerError, lambda, Context};
-use log::{self, error};
-use serde_derive::{Deserialize, Serialize};
-use simple_error::bail;
-use simple_logger;
+type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
-#[derive(Deserialize)]
-struct CustomEvent {
-    #[serde(rename = "firstName")]
-    first_name: String,
-}
-
-#[derive(Serialize)]
-struct CustomOutput {
-    message: String,
-}
-
-fn main() -> Result<(), Box<dyn Error>> {
-    simple_logger::init_with_level(log::Level::Debug)?;
-    lambda!(my_handler);
-
-    Ok(())
-}
-
-fn my_handler(e: CustomEvent, c: Context) -> Result<CustomOutput, HandlerError> {
-    if e.first_name == "" {
-        error!("Empty first name in request {}", c.aws_request_id);
-        bail!("Empty first name");
-    }
-
-    Ok(CustomOutput {
-        message: format!("Hello, {}!", e.first_name),
-    })
+#[lambda]
+#[tokio::main]
+async fn main(event: Value, _: Context) -> Result<Value, Error> {
+    Ok(event)
 }
 ```
 
-The code above is the same as the [basic example](https://github.com/awslabs/aws-lambda-rust-runtime/tree/master/lambda-runtime/examples/basic.rs) in the `lambda-runtime` crate.
+The code above is the same as the [basic example](https://github.com/awslabs/aws-lambda-rust-runtime/tree/master/lambda-runtime/examples/hello.rs) in the `lambda` crate. An [alternative example](https://github.com/awslabs/aws-lambda-rust-runtime/tree/master/lambda-runtime/examples/hello-without-macros.rs) that uses functions instead of an attribute macro to create the handler is available as well.
 
 ### Deployment
 
-There are currently multiple ways of building this package: manually, and with the [Serverless framework](https://serverless.com/framework/).
+There are currently multiple ways of building this package: manually with the AWS CLI, and with the [Serverless framework](https://serverless.com/framework/).
 
 #### AWS CLI
 
@@ -91,9 +65,9 @@ You can now test the function using the AWS CLI or the AWS Lambda console
 
 ```bash
 $ aws lambda invoke --function-name rustTest \
-  --payload '{"firstName": "world"}' \
+  --payload '{"Hello,": "world!"}' \
   output.json
-$ cat output.json  # Prints: {"message":"Hello, world!"}
+$ cat output.json  # Prints: {"Hello,": "world!"}
 ```
 
 **Note:** `--cli-binary-format raw-in-base64-out` is a required
@@ -167,34 +141,13 @@ $ unzip -o \
 # Ctrl-D to yield control back to your function
 ```
 
-## lambda-runtime-client
+## `lambda`
 
-Defines the `RuntimeClient` trait and provides its `HttpRuntimeClient` implementation. The client fetches events and returns output as `Vec<u8>`.
+This library makes it easy to create Rust executables for AWS lambda. The library defines exposes an `#[lambda]` attribute macro. Adding the `#[lambda]` attribute to your `main` function allows you to define your event handler logic in one function as show in the example above.
 
-For error reporting to the runtime APIs the library defines the `RuntimeApiError` trait and the `ErrorResponse` object. Custom errors for the APIs should implement the `to_response() -> ErrorResponse` method of the `RuntimeApiError` trait.
+It also exposes the `Handler` trait. A type that conforms to this trait can be passed to the `lambda::run` function, which launches and runs the Lambda runtime.
 
-## lambda-runtime
-
-This library makes it easy to create Rust executables for AWS lambda. The library defines a `lambda!()` macro. Call the `lambda!()` macro from your main method with an implementation the `Handler` type:
-
-```rust
-pub trait Handler<E, O> {
-    /// Run the handler.
-    fn run(
-        &mut self,
-        event: E,
-        ctx: Context
-    ) -> Result<O, HandlerError>;
-}
-```
-
-`Handler` provides a default implementation that enables you to provide a Rust closure or function pointer to the `lambda!()` macro.
-
-Optionally, you can pass your own instance of Tokio runtime to the `lambda!()` macro: 
-```
-let rt = tokio::runtime::Runtime::new()?;
-lambda!(my_handler, rt);
-```
+The helper function `handler_fn` provides a default implementation that enables you to provide a Rust closure or function pointer to the `lambda::run` function.
 
 ## AWS event objects
 
@@ -206,10 +159,9 @@ To serialize and deserialize events and responses, we suggest using the use the 
 
 ```rust
 extern crate serde;
-extern crate serde_derive;
 extern crate serde_json;
 
-use serde_derive::{Serialize, Deserialize};
+use serde::{Serialize, Deserialize};
 use serde_json::json;
 use std::error::Error;
 

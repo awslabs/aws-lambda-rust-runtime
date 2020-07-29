@@ -7,11 +7,11 @@ This package makes it easy to run AWS Lambda Functions written in Rust. This wor
 
 ## Example function
 
-The code below creates a simple function that receives an event and echoes it back as a response. Notice: this crate is tested against latest stable Rust.
+The code below creates a simple function that receives an event with a `firstName` field and returns a message to the caller. Notice: this crate is tested against latest stable Rust.
 
 ```rust,no_run
 use lambda::{handler_fn, Context};
-use serde_json::Value;
+use serde_json::{json, Value};
 
 type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
@@ -23,7 +23,9 @@ async fn main() -> Result<(), Error> {
 }
 
 async fn func(event: Value, _: Context) -> Result<Value, Error> {
-    Ok(event)
+    let first_name = event["firstName"].as_str().unwrap_or("world");
+
+    Ok(json!({ "message": format!("Hello, {}!", first_name) }))
 }
 ```
 

@@ -143,11 +143,14 @@ $ unzip -o \
 
 ## `lambda`
 
-This library makes it easy to create Rust executables for AWS lambda. The library defines an `#[lambda]` attribute macro. Adding the `#[lambda]` attribute to your `main` function allows you to define your event handler logic in one function as shown in the example above.
+`lambda` is a library for authoring reliable and performant Rust-based AWS Lambda functions. At a high level, it provides a few major components:
+
+- `Handler`, a trait that defines interactions between customer-authored code and this library.
+- `lambda::run`, function that runs an `Handler`.
 
 It also exposes the `Handler` trait. A type that conforms to this trait can be passed to the `lambda::run` function, which launches and runs the Lambda runtime.
 
-The helper function `handler_fn` provides a default implementation that enables you to provide a Rust closure or function pointer to the `lambda::run` function.
+The function `handler_fn` converts a rust function or closure to `Handler`, which can then be run by `lambda::run`.
 
 ## AWS event objects
 

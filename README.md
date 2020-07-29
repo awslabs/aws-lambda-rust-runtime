@@ -4,26 +4,30 @@ This package makes it easy to run AWS Lambda Functions written in Rust. This wor
 
 - [![Docs](https://docs.rs/lambda/badge.svg)](https://docs.rs/lambda) **`lambda`** is a library that makes it easy to write Lambda functions in Rust.
 - [![Docs](https://docs.rs/lambda_http/badge.svg)](https://docs.rs/lambda_http) **`lambda-http`** is a library that makes it easy to write API Gateway proxy event focused Lambda functions in Rust.
-- [![Docs](https://docs.rs/lambda_attributes/badge.svg)](https://docs.rs/lambda_attributes) **`lambda-attributes`** holds an [attribute macro](https://doc.rust-lang.org/reference/procedural-macros.html#attribute-macros) that runs an `async main` function in the Lamda runtime. You probably don't need to use this crate directly, the macro is exposed by **`lambda`**!
 
 ## Example function
 
-The code below creates a simple function that receives an event and echoes it back as a response. Notice: to run these examples, we require a minimum Rust version of 1.31.
+The code below creates a simple function that receives an event and echoes it back as a response. Notice: this crate is tested against latest stable Rust.
 
 ```rust,no_run
-use lambda::{lambda, Context};
+use lambda::{handler_fn, Context};
 use serde_json::Value;
 
 type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
-#[lambda]
 #[tokio::main]
-async fn main(event: Value, _: Context) -> Result<Value, Error> {
+async fn main() -> Result<(), Error> {
+    let func = handler_fn(func);
+    lambda::run(func).await?;
+    Ok(())
+}
+
+async fn func(event: Value, _: Context) -> Result<Value, Error> {
     Ok(event)
 }
 ```
 
-The code above is the same as the [basic example](https://github.com/awslabs/aws-lambda-rust-runtime/tree/master/lambda-runtime/examples/hello.rs) in the `lambda` crate. An [alternative example](https://github.com/awslabs/aws-lambda-rust-runtime/tree/master/lambda-runtime/examples/hello-without-macros.rs) that uses functions instead of an attribute macro to create the handler is available as well.
+The code above is the same as the [basic example](https://github.com/awslabs/aws-lambda-rust-runtime/blob/master/lambda/examples/hello-without-macro.rs) in the `lambda` crate.
 
 ### Deployment
 
@@ -147,8 +151,6 @@ $ unzip -o \
 
 - `Handler`, a trait that defines interactions between customer-authored code and this library.
 - `lambda::run`, function that runs an `Handler`.
-
-It also exposes the `Handler` trait. A type that conforms to this trait can be passed to the `lambda::run` function, which launches and runs the Lambda runtime.
 
 The function `handler_fn` converts a rust function or closure to `Handler`, which can then be run by `lambda::run`.
 

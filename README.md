@@ -2,7 +2,7 @@
 
 This package makes it easy to run AWS Lambda Functions written in Rust. This workspace includes multiple crates:
 
-- [![Docs](https://docs.rs/lambda/badge.svg)](https://docs.rs/lambda) **`lambda`** is a library that makes it easy to write Lambda functions in Rust.
+- [![Docs](https://docs.rs/lambda/badge.svg)](https://docs.rs/lambda) **`lambda`** is a library that provides a Lambda runtime for applications written in Rust.
 - [![Docs](https://docs.rs/lambda_http/badge.svg)](https://docs.rs/lambda_http) **`lambda-http`** is a library that makes it easy to write API Gateway proxy event focused Lambda functions in Rust.
 
 ## Example function

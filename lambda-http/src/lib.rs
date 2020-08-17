@@ -122,7 +122,7 @@ pub trait Handler: Sized {
     /// The type of Response this Handler will return
     type Response: IntoResponse;
     /// The type of Future this Handler will return
-    type Fut: Future<Output = Result<Self::Response, Self::Error>> + 'static;
+    type Fut: Future<Output = Result<Self::Response, Self::Error>> + Send + Sync + 'static;
     /// Function used to execute handler behavior
     fn call(&self, event: Request, context: Context) -> Self::Fut;
 }
@@ -137,7 +137,7 @@ impl<F, R, Fut> Handler for F
 where
     F: Fn(Request, Context) -> Fut,
     R: IntoResponse,
-    Fut: Future<Output = Result<R, Error>> + Send + 'static,
+    Fut: Future<Output = Result<R, Error>> + Send + Sync + 'static,
 {
     type Response = R;
     type Error = Error;
@@ -150,7 +150,7 @@ where
 #[doc(hidden)]
 pub struct TransformResponse<R, E> {
     is_alb: bool,
-    fut: Pin<Box<dyn Future<Output = Result<R, E>>>>,
+    fut: Pin<Box<dyn Future<Output = Result<R, E>> + Send + Sync>>,
 }
 
 impl<R, E> Future for TransformResponse<R, E>

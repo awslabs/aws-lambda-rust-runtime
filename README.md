@@ -190,7 +190,11 @@ pub trait Handler<E, O> {
 
 `Handler` provides a default implementation that enables you to provide a Rust closure or function pointer to the `lambda!()` macro.
 
-Optionally, you can pass your own instance of Tokio runtime to the `lambda!()` macro. See our [`with_custom_runtime.rs` example](https://github.com/awslabs/aws-lambda-rust-runtime/tree/master/lambda-runtime/examples/with_custom_runtime.rs)
+Optionally, you can pass your own instance of Tokio runtime to the `lambda!()` macro: 
+```
+let rt = tokio::runtime::Runtime::new()?;
+lambda!(my_handler, rt);
+```
 
 ## AWS event objects
 

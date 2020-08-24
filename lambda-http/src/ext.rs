@@ -252,7 +252,7 @@ impl RequestExt for http::Request<Body> {
                     }
 
                     Ok(None)
-                },
+                }
                 _ => Ok(None),
             })
             .unwrap_or_else(|| Ok(None))

@@ -662,6 +662,20 @@
 <span id="662">662</span>
 <span id="663">663</span>
 <span id="664">664</span>
+<span id="665">665</span>
+<span id="666">666</span>
+<span id="667">667</span>
+<span id="668">668</span>
+<span id="669">669</span>
+<span id="670">670</span>
+<span id="671">671</span>
+<span id="672">672</span>
+<span id="673">673</span>
+<span id="674">674</span>
+<span id="675">675</span>
+<span id="676">676</span>
+<span id="677">677</span>
+<span id="678">678</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! ALB and API Gateway request adaptations</span>
 <span class="doccomment">//!</span>
@@ -976,15 +990,22 @@
             <span class="ident">LambdaRequest</span>::<span class="ident">ApiGatewayV2</span> {
                 <span class="ident">raw_path</span>,
                 <span class="ident">raw_query_string</span>,
-                <span class="ident">headers</span>,
+                <span class="kw-2">mut</span> <span class="ident">headers</span>,
                 <span class="ident">query_string_parameters</span>,
                 <span class="ident">path_parameters</span>,
                 <span class="ident">stage_variables</span>,
                 <span class="ident">body</span>,
                 <span class="ident">is_base64_encoded</span>,
                 <span class="ident">request_context</span>,
+                <span class="ident">cookies</span>,
                 ..
             } <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">cookies</span>) <span class="op">=</span> <span class="ident">cookies</span> {
+                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">header_value</span>) <span class="op">=</span> <span class="ident">http</span>::<span class="ident">header</span>::<span class="ident">HeaderValue</span>::<span class="ident">from_str</span>(<span class="kw-2">&amp;</span><span class="ident">cookies</span>.<span class="ident">join</span>(<span class="string">&quot;;&quot;</span>)) {
+                        <span class="ident">headers</span>.<span class="ident">append</span>(<span class="ident">http</span>::<span class="ident">header</span>::<span class="ident">COOKIE</span>, <span class="ident">header_value</span>);
+                    }
+                }
+
                 <span class="kw">let</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">http</span>::<span class="ident">Request</span>::<span class="ident">builder</span>()
                     .<span class="ident">method</span>(<span class="ident">request_context</span>.<span class="ident">http</span>.<span class="ident">method</span>.<span class="ident">as_ref</span>())
                     .<span class="ident">uri</span>({
@@ -1234,8 +1255,15 @@
             <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>, <span class="ident">result</span>, <span class="ident">input</span>)
         );
         <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">expect</span>(<span class="string">&quot;failed to parse request&quot;</span>);
+        <span class="kw">let</span> <span class="ident">cookie_header</span> <span class="op">=</span> <span class="ident">req</span>
+            .<span class="ident">headers</span>()
+            .<span class="ident">get</span>(<span class="ident">http</span>::<span class="ident">header</span>::<span class="ident">COOKIE</span>)
+            .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;Cookie header not found&quot;</span>.<span class="ident">to_string</span>())
+            .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">to_str</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">to_string</span>()));
+
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="string">&quot;POST&quot;</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">req</span>.<span class="ident">uri</span>(), <span class="string">&quot;https://id.execute-api.us-east-1.amazonaws.com/my/path?parameter1=value1&amp;parameter1=value2&amp;parameter2=value&quot;</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">cookie_header</span>, <span class="prelude-val">Ok</span>(<span class="string">&quot;cookie1=value1;cookie2=value2&quot;</span>));
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>

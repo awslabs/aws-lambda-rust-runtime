@@ -336,10 +336,6 @@
 <span id="336">336</span>
 <span id="337">337</span>
 <span id="338">338</span>
-<span id="339">339</span>
-<span id="340">340</span>
-<span id="341">341</span>
-<span id="342">342</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Extension methods for `http::Request` types</span>
 
@@ -464,7 +460,6 @@
     <span class="doccomment">/// Configures instance with query string parameters under #[cfg(test)] configurations</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This is intended for use in mock testing contexts.</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
     <span class="kw">fn</span> <span class="ident">with_query_string_parameters</span><span class="op">&lt;</span><span class="ident">Q</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">parameters</span>: <span class="ident">Q</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="ident">Q</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">StrMap</span><span class="op">&gt;</span>;
@@ -480,7 +475,6 @@
     <span class="doccomment">/// Configures instance with path parameters under #[cfg(test)] configurations</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This is intended for use in mock testing contexts.</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
     <span class="kw">fn</span> <span class="ident">with_path_parameters</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">parameters</span>: <span class="ident">P</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="ident">P</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">StrMap</span><span class="op">&gt;</span>;
@@ -525,7 +519,6 @@
             .<span class="ident">unwrap_or_default</span>()
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
     <span class="kw">fn</span> <span class="ident">with_query_string_parameters</span><span class="op">&lt;</span><span class="ident">Q</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">parameters</span>: <span class="ident">Q</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="ident">Q</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">StrMap</span><span class="op">&gt;</span>,
@@ -542,7 +535,6 @@
             .<span class="ident">unwrap_or_default</span>()
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
     <span class="kw">fn</span> <span class="ident">with_path_parameters</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">parameters</span>: <span class="ident">P</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="ident">P</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">StrMap</span><span class="op">&gt;</span>,

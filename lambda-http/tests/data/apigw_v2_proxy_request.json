@@ -3,7 +3,7 @@
     "routeKey": "$default",
     "rawPath": "/my/path",
     "rawQueryString": "parameter1=value1&parameter1=value2&parameter2=value",
-    "cookies": [ "cookie1", "cookie2" ],
+    "cookies": [ "cookie1=value1", "cookie2=value2" ],
     "headers": {
       "Header1": "value1",
       "Header2": "value2"

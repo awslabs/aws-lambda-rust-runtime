@@ -311,15 +311,22 @@ impl<'a> From<LambdaRequest<'a>> for http::Request<Body> {
             LambdaRequest::ApiGatewayV2 {
                 raw_path,
                 raw_query_string,
-                headers,
+                mut headers,
                 query_string_parameters,
                 path_parameters,
                 stage_variables,
                 body,
                 is_base64_encoded,
                 request_context,
+                cookies,
                 ..
             } => {
+                if let Some(cookies) = cookies {
+                    if let Ok(header_value) = http::header::HeaderValue::from_str(&cookies.join(";")) {
+                        headers.append(http::header::COOKIE, header_value);
+                    }
+                }
+
                 let builder = http::Request::builder()
                     .method(request_context.http.method.as_ref())
                     .uri({
@@ -569,8 +576,15 @@ mod tests {
             format!("event was not parsed as expected {:?} given {}", result, input)
         );
         let req = result.expect("failed to parse request");
+        let cookie_header = req
+            .headers()
+            .get(http::header::COOKIE)
+            .ok_or_else(|| "Cookie header not found".to_string())
+            .and_then(|v| v.to_str().map_err(|e| e.to_string()));
+
         assert_eq!(req.method(), "POST");
         assert_eq!(req.uri(), "https://id.execute-api.us-east-1.amazonaws.com/my/path?parameter1=value1&parameter1=value2&parameter2=value");
+        assert_eq!(cookie_header, Ok("cookie1=value1;cookie2=value2"));
     }
 
     #[test]

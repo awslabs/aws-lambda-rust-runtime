@@ -121,7 +121,6 @@ pub trait RequestExt {
     /// Configures instance with query string parameters under #[cfg(test)] configurations
     ///
     /// This is intended for use in mock testing contexts.
-    #[cfg(test)]
     fn with_query_string_parameters<Q>(self, parameters: Q) -> Self
     where
         Q: Into<StrMap>;
@@ -137,7 +136,6 @@ pub trait RequestExt {
     /// Configures instance with path parameters under #[cfg(test)] configurations
     ///
     /// This is intended for use in mock testing contexts.
-    #[cfg(test)]
     fn with_path_parameters<P>(self, parameters: P) -> Self
     where
         P: Into<StrMap>;
@@ -182,7 +180,6 @@ impl RequestExt for http::Request<Body> {
             .unwrap_or_default()
     }
 
-    #[cfg(test)]
     fn with_query_string_parameters<Q>(self, parameters: Q) -> Self
     where
         Q: Into<StrMap>,
@@ -199,7 +196,6 @@ impl RequestExt for http::Request<Body> {
             .unwrap_or_default()
     }
 
-    #[cfg(test)]
     fn with_path_parameters<P>(self, parameters: P) -> Self
     where
         P: Into<StrMap>,

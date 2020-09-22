@@ -2,12 +2,34 @@
 use lambda::handler_fn;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use simple_error;
-use simple_logger;
 use std::fs::File;
 
 /// A shorthand for `Box<dyn std::error::Error + Send + Sync + 'static>` type required by aws-lambda-rust-runtime.
 pub type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
+
+/// A simple Lambda request structure with just one field
+/// that tells the Lambda what is expected of it.
+#[derive(Deserialize)]
+struct Request {
+    event_type: EventType,
+}
+
+/// Event types that tell our Lambda what to do do.
+#[derive(Deserialize, PartialEq)]
+enum EventType {
+    Response,
+    ExternalError,
+    SimpleError,
+    CustomError,
+    Panic,
+}
+
+/// A simple Lambda response structure.
+#[derive(Serialize)]
+struct Response {
+    req_id: String,
+    msg: String,
+}
 
 #[derive(Debug, Serialize)]
 struct CustomError {
@@ -28,10 +50,24 @@ impl std::fmt::Display for CustomError {
     }
 }
 
-/// The entry point called by aws-lambda-rust-runtime client for every new Lambda request.
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    simple_logger::init_with_level(log::Level::Debug)?; // Note, this can only be called once!
+    // The runtime logging can be enabled here by initializing `log` with `simple_logger`
+    // or another compatible crate. The runtime is using `tracing` internally.
+    // You can comment out the `simple_logger` init line and uncomment the following block to
+    // use `tracing` in the handler function.
+    //
+    simple_logger::init_with_level(log::Level::Info)?;
+    /*
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::INFO)
+        // this needs to be set to false, otherwise ANSI color codes will
+        // show up in a confusing manner in CloudWatch logs.
+        .with_ansi(false)
+        // disabling time is handy because CloudWatch will add the ingestion time.
+        .without_time()
+        .init();
+    */
 
     // call the actual handler of the request
     let func = handler_fn(func);
@@ -41,21 +77,13 @@ async fn main() -> Result<(), Error> {
 
 /// The actual handler of the Lambda request.
 pub(crate) async fn func(event: Value, ctx: lambda::Context) -> Result<Value, Error> {
-    // convert the JSON request to a struct
-    let req = serde_json::from_value::<Request>(event);
-
-    // check if the conversion succeeded and what action was requested
-    match req {
-        Err(e) => {
-            // conversion from JSON to `Request` struct failed
-            // return serde_json error
-            return Err(Box::new(e));
-        }
-        Ok(v) if v.event_type == EventType::SimpleError => {
+    // check what action was requested
+    match serde_json::from_value::<Request>(event)?.event_type {
+        EventType::SimpleError => {
             // generate a simple text message error using `simple_error` crate
             return Err(Box::new(simple_error::SimpleError::new("A simple error as requested!")));
         }
-        Ok(v) if v.event_type == EventType::CustomError => {
+        EventType::CustomError => {
             // generate a custom error using our own structure
             let cust_err = CustomError {
                 is_authenticated: ctx.identity.is_some(),
@@ -64,14 +92,17 @@ pub(crate) async fn func(event: Value, ctx: lambda::Context) -> Result<Value, Er
             };
             return Err(Box::new(cust_err));
         }
-        Ok(v) if v.event_type == EventType::ExternalError => {
+        EventType::ExternalError => {
             // try to open a non-existent file to get an error and propagate it with `?`
             let _file = File::open("non-existent-file.txt")?;
 
             // it should never execute past the above line
+            unreachable!();
+        }
+        EventType::Panic => {
             panic!();
         }
-        Ok(_) => {
+        EventType::Response => {
             // generate and return an OK response in JSON format
             let resp = Response {
                 req_id: ctx.request_id,
@@ -81,27 +112,4 @@ pub(crate) async fn func(event: Value, ctx: lambda::Context) -> Result<Value, Er
             return Ok(json!(resp));
         }
     }
-}
-
-/// A simple Lambda response structure.
-#[derive(Serialize)]
-struct Response {
-    req_id: String,
-    msg: String,
-}
-
-/// A simple Lambda request structure with just one field
-/// that tells the Lambda what is expected of it.
-#[derive(Deserialize)]
-struct Request {
-    event_type: EventType,
-}
-
-/// Event types that tell our Lambda what to do do.
-#[derive(Deserialize, PartialEq)]
-enum EventType {
-    Response,
-    ExternalError,
-    SimpleError,
-    CustomError,
 }

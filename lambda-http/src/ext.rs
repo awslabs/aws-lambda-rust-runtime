@@ -1,9 +1,8 @@
 //! Extension methods for `http::Request` types
 
+use crate::{request::RequestContext, strmap::StrMap, Body};
 use serde::{de::value::Error as SerdeError, Deserialize};
 use std::{error::Error, fmt};
-
-use crate::{request::RequestContext, strmap::StrMap, Body};
 
 /// ALB/API gateway pre-parsed http query string parameters
 pub(crate) struct QueryStringParameters(pub(crate) StrMap);
@@ -68,7 +67,7 @@ impl Error for PayloadError {
 ///
 /// ```rust,no_run
 /// use lambda_http::{handler, lambda::{self, Context}, Body, IntoResponse, Request, Response, RequestExt};
-/// use serde_derive::Deserialize;
+/// use serde::Deserialize;
 ///
 /// type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 ///
@@ -121,7 +120,6 @@ pub trait RequestExt {
     /// Configures instance with query string parameters under #[cfg(test)] configurations
     ///
     /// This is intended for use in mock testing contexts.
-    #[cfg(test)]
     fn with_query_string_parameters<Q>(self, parameters: Q) -> Self
     where
         Q: Into<StrMap>;
@@ -137,7 +135,6 @@ pub trait RequestExt {
     /// Configures instance with path parameters under #[cfg(test)] configurations
     ///
     /// This is intended for use in mock testing contexts.
-    #[cfg(test)]
     fn with_path_parameters<P>(self, parameters: P) -> Self
     where
         P: Into<StrMap>;
@@ -182,7 +179,6 @@ impl RequestExt for http::Request<Body> {
             .unwrap_or_default()
     }
 
-    #[cfg(test)]
     fn with_query_string_parameters<Q>(self, parameters: Q) -> Self
     where
         Q: Into<StrMap>,
@@ -199,7 +195,6 @@ impl RequestExt for http::Request<Body> {
             .unwrap_or_default()
     }
 
-    #[cfg(test)]
     fn with_path_parameters<P>(self, parameters: P) -> Self
     where
         P: Into<StrMap>,
@@ -255,7 +250,7 @@ impl RequestExt for http::Request<Body> {
 #[cfg(test)]
 mod tests {
     use crate::{Body, Request, RequestExt};
-    use serde_derive::Deserialize;
+    use serde::Deserialize;
 
     #[test]
     fn requests_can_mock_query_string_parameters_ext() {

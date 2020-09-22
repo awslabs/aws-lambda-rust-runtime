@@ -51,15 +51,25 @@ Sample response:
   "errorMessage": "RequestId: 586366df-f271-4e6e-9c30-b3dcab30f4e8 Error: Runtime exited with error: exit status 1"
 }
 ```
-The runtime could not deserialize our invalid input, but it did not give a detailed explanation why the error occurred. See _error-handling.rs_ example for more error handling options.
+The runtime could not deserialize our invalid input, but it did not give a detailed explanation why the error occurred in the response. More details appear in the CloudWatch log:
+```
+START RequestId: 6e667f61-c5d4-4b07-a60f-cd1ab339c35f Version: $LATEST
+Error: Error("missing field `command`", line: 1, column: 22)
+END RequestId: 6e667f61-c5d4-4b07-a60f-cd1ab339c35f
+REPORT RequestId: 6e667f61-c5d4-4b07-a60f-cd1ab339c35f	Duration: 36.34 ms	Billed Duration: 100 ms	Memory Size: 128 MB	Max Memory Used: 10 MB	
+RequestId: 6e667f61-c5d4-4b07-a60f-cd1ab339c35f Error: Runtime exited with error: exit status 1
+Runtime.ExitError
+```
 
-## hello.rs
+ See _error-handling.rs_ example for more error handling options.
+
+## macro.rs
 
 The most basic example using `#[lambda]` macro to reduce the amount of boilerplate code.
 
 **Deployment**:
 ```bash
-cp ./target/x86_64-unknown-linux-musl/release/examples/hello ./bootstrap && zip lambda.zip bootstrap && rm bootstrap
+cp ./target/x86_64-unknown-linux-musl/release/examples/macro ./bootstrap && zip lambda.zip bootstrap && rm bootstrap
 aws lambda update-function-code --region us-east-1 --function-name RuntimeTest --zip-file fileb://lambda.zip
 ```
 
@@ -74,18 +84,6 @@ Sample response:
   "foo": "bar"
 }
 ```
-
-## hello-without-macro.rs
-
-The same as hello.rs example, but without `#[lambda]` macro to allow for more control at a lower level.
-
-**Deployment**:
-```bash
-cp ./target/x86_64-unknown-linux-musl/release/examples/hello-without-macro ./bootstrap && zip lambda.zip bootstrap && rm bootstrap
-aws lambda update-function-code --region us-east-1 --function-name RuntimeTest --zip-file fileb://lambda.zip
-```
-
-The test event JSON and the sample response are identical to that of _hello.rs_ example.
 
 ## error-handling.rs
 
@@ -201,6 +199,34 @@ START RequestId: 893d24e5-cb79-4f6f-bae0-36304c62e9da Version: $LATEST
 2020-07-21 04:43:56,254 ERROR [lambda] No such file or directory (os error 2)
 END RequestId: 893d24e5-cb79-4f6f-bae0-36304c62e9da
 REPORT RequestId: 893d24e5-cb79-4f6f-bae0-36304c62e9da	Duration: 1.15 ms	Billed Duration: 100 ms	Memory Size: 128 MB	Max Memory Used: 29 MB	
+```
+
+#### Handler panic
+
+Test event JSON:
+```json
+{
+  "event_type": "Panic"
+}
+```
+
+Lambda output:
+```
+{
+  "errorType": "Runtime.ExitError",
+  "errorMessage": "RequestId: 2d579019-07f7-409a-a6e6-af7725253307 Error: Runtime exited with error: exit status 101"
+}
+```
+
+CloudWatch records:
+```
+START RequestId: 2d579019-07f7-409a-a6e6-af7725253307 Version: $LATEST
+thread 'main' panicked at 'explicit panic', lambda/examples/error-handling.rs:87:13
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+END RequestId: 2d579019-07f7-409a-a6e6-af7725253307
+REPORT RequestId: 2d579019-07f7-409a-a6e6-af7725253307	Duration: 43.40 ms	Billed Duration: 100 ms	Memory Size: 128 MB	Max Memory Used: 27 MB	Init Duration: 23.15 ms	
+RequestId: 2d579019-07f7-409a-a6e6-af7725253307 Error: Runtime exited with error: exit status 101
+Runtime.ExitError
 ```
 
 #### A response to a successful Lambda execution

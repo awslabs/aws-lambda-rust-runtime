@@ -6,18 +6,18 @@ use std::{error::Error, fmt};
 use crate::{request::RequestContext, strmap::StrMap, Body};
 
 /// ALB/API gateway pre-parsed http query string parameters
-pub(crate) struct QueryStringParameters(pub(crate) StrMap);
+pub struct QueryStringParameters(pub StrMap);
 
 /// API gateway pre-extracted url path parameters
 ///
 /// These will always be empty for ALB requests
-pub(crate) struct PathParameters(pub(crate) StrMap);
+pub struct PathParameters(pub StrMap);
 
 /// API gateway configured
 /// [stage variables](https://docs.aws.amazon.com/apigateway/latest/developerguide/stage-variables.html)
 ///
 /// These will always be empty for ALB requests
-pub(crate) struct StageVariables(pub(crate) StrMap);
+pub struct StageVariables(pub StrMap);
 
 /// Request payload deserialization errors
 ///

@@ -13,7 +13,7 @@ use serde::{
 ///
 /// Internally data is always represented as many valued
 #[derive(Default, Debug, PartialEq)]
-pub struct StrMap(pub(crate) Arc<HashMap<String, Vec<String>>>);
+pub struct StrMap(pub Arc<HashMap<String, Vec<String>>>);
 
 impl StrMap {
     /// Return a named value where available.

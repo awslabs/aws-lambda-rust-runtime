@@ -204,7 +204,8 @@ where
         let event = event?;
         let (parts, body) = event.into_parts();
 
-        let ctx: Context = Context::try_from(parts.headers)?;
+        let mut ctx: Context = Context::try_from(parts.headers)?;
+        ctx.env_config = Config::from_env()?;
         let body = hyper::body::to_bytes(body).await?;
         let body = serde_json::from_slice(&body)?;
 

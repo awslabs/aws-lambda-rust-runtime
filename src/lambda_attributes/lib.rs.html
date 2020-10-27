@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `lambda-attributes/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../lambda_attributes/index.html'><div class='logo-container'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1"> 1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `lambda-attributes/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../lambda_attributes/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+                <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1"> 1</span>
 <span id="2"> 2</span>
 <span id="3"> 3</span>
 <span id="4"> 4</span>
@@ -104,15 +105,15 @@
 <span class="kw">use</span> <span class="ident">syn</span>::{<span class="ident">spanned</span>::<span class="ident">Spanned</span>, <span class="ident">AttributeArgs</span>, <span class="ident">FnArg</span>, <span class="ident">ItemFn</span>, <span class="ident">Meta</span>, <span class="ident">NestedMeta</span>};
 
 <span class="doccomment">/// Return true if attribute macro args declares http flavor in the form `#[lambda(http)]`</span>
-<span class="kw">fn</span> <span class="ident">is_http</span>(<span class="ident">args</span>: <span class="kw-2">&amp;</span><span class="ident">AttributeArgs</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+<span class="kw">fn</span> <span class="ident">is_http</span>(<span class="ident">args</span>: <span class="kw-2">&amp;</span><span class="ident">AttributeArgs</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
     <span class="ident">args</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">arg</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">arg</span> {
-        <span class="ident">NestedMeta</span>::<span class="ident">Meta</span>(<span class="ident">Meta</span>::<span class="ident">Path</span>(<span class="ident">path</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">path</span>.<span class="ident">is_ident</span>(<span class="string">&quot;http&quot;</span>),
-        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
+        <span class="ident">NestedMeta</span>::<span class="ident">Meta</span>(<span class="ident">Meta</span>::<span class="ident">Path</span>(<span class="ident">path</span>)) <span class="op">=&gt;</span> <span class="ident">path</span>.<span class="ident">is_ident</span>(<span class="string">&quot;http&quot;</span>),
+        <span class="kw">_</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
     })
 }
 
 <span class="attribute">#[<span class="ident">proc_macro_attribute</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lambda</span>(<span class="ident">attr</span>: <span class="ident">TokenStream</span>, <span class="ident">item</span>: <span class="ident">TokenStream</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TokenStream</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lambda</span>(<span class="ident">attr</span>: <span class="ident">TokenStream</span>, <span class="ident">item</span>: <span class="ident">TokenStream</span>) <span class="op">-&gt;</span> <span class="ident">TokenStream</span> {
     <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="ident">syn</span>::<span class="macro">parse_macro_input</span><span class="macro">!</span>(<span class="ident">item</span> <span class="kw">as</span> <span class="ident">ItemFn</span>);
     <span class="kw">let</span> <span class="ident">args</span> <span class="op">=</span> <span class="ident">syn</span>::<span class="macro">parse_macro_input</span><span class="macro">!</span>(<span class="ident">attr</span> <span class="kw">as</span> <span class="ident">AttributeArgs</span>);
     <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">input</span>.<span class="ident">sig</span>.<span class="ident">output</span>;
@@ -122,26 +123,26 @@
     <span class="kw">let</span> <span class="ident">asyncness</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">input</span>.<span class="ident">sig</span>.<span class="ident">asyncness</span>;
     <span class="kw">let</span> <span class="ident">inputs</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">input</span>.<span class="ident">sig</span>.<span class="ident">inputs</span>;
 
-    <span class="kw">if</span> <span class="ident">name</span> <span class="op">!</span><span class="op">=</span> <span class="string">&quot;main&quot;</span> {
-        <span class="kw">let</span> <span class="ident">tokens</span> <span class="op">=</span> <span class="macro">quote_spanned</span><span class="macro">!</span> { <span class="ident">name</span>.<span class="ident">span</span>() <span class="op">=</span><span class="op">&gt;</span>
+    <span class="kw">if</span> <span class="ident">name</span> <span class="op">!=</span> <span class="string">&quot;main&quot;</span> {
+        <span class="kw">let</span> <span class="ident">tokens</span> <span class="op">=</span> <span class="macro">quote_spanned</span><span class="macro">!</span> { <span class="ident">name</span>.<span class="ident">span</span>() <span class="op">=&gt;</span>
             <span class="macro">compile_error</span><span class="macro">!</span>(<span class="string">&quot;only the main function can be tagged with #[lambda]&quot;</span>);
         };
         <span class="kw">return</span> <span class="ident">TokenStream</span>::<span class="ident">from</span>(<span class="ident">tokens</span>);
     }
 
     <span class="kw">if</span> <span class="ident">asyncness</span>.<span class="ident">is_none</span>() {
-        <span class="kw">let</span> <span class="ident">tokens</span> <span class="op">=</span> <span class="macro">quote_spanned</span><span class="macro">!</span> { <span class="ident">input</span>.<span class="ident">span</span>() <span class="op">=</span><span class="op">&gt;</span>
+        <span class="kw">let</span> <span class="ident">tokens</span> <span class="op">=</span> <span class="macro">quote_spanned</span><span class="macro">!</span> { <span class="ident">input</span>.<span class="ident">span</span>() <span class="op">=&gt;</span>
           <span class="macro">compile_error</span><span class="macro">!</span>(<span class="string">&quot;the async keyword is missing from the function declaration&quot;</span>);
         };
         <span class="kw">return</span> <span class="ident">TokenStream</span>::<span class="ident">from</span>(<span class="ident">tokens</span>);
     }
 
     <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">inputs</span>.<span class="ident">len</span>() {
-        <span class="number">2</span> <span class="op">=</span><span class="op">&gt;</span> {
+        <span class="number">2</span> <span class="op">=&gt;</span> {
             <span class="kw">let</span> <span class="ident">event</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">inputs</span>.<span class="ident">first</span>().<span class="ident">expect</span>(<span class="string">&quot;expected event argument&quot;</span>) {
-                <span class="ident">FnArg</span>::<span class="ident">Typed</span>(<span class="ident">arg</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">arg</span>,
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
-                    <span class="kw">let</span> <span class="ident">tokens</span> <span class="op">=</span> <span class="macro">quote_spanned</span><span class="macro">!</span> { <span class="ident">inputs</span>.<span class="ident">span</span>() <span class="op">=</span><span class="op">&gt;</span>
+                <span class="ident">FnArg</span>::<span class="ident">Typed</span>(<span class="ident">arg</span>) <span class="op">=&gt;</span> <span class="ident">arg</span>,
+                <span class="kw">_</span> <span class="op">=&gt;</span> {
+                    <span class="kw">let</span> <span class="ident">tokens</span> <span class="op">=</span> <span class="macro">quote_spanned</span><span class="macro">!</span> { <span class="ident">inputs</span>.<span class="ident">span</span>() <span class="op">=&gt;</span>
                         <span class="macro">compile_error</span><span class="macro">!</span>(<span class="string">&quot;fn main&#39;s first argument must be fully formed&quot;</span>);
                     };
                     <span class="kw">return</span> <span class="ident">TokenStream</span>::<span class="ident">from</span>(<span class="ident">tokens</span>);
@@ -150,9 +151,9 @@
             <span class="kw">let</span> <span class="ident">event_name</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">event</span>.<span class="ident">pat</span>;
             <span class="kw">let</span> <span class="ident">event_type</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">event</span>.<span class="ident">ty</span>;
             <span class="kw">let</span> <span class="ident">context</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">inputs</span>.<span class="ident">iter</span>().<span class="ident">nth</span>(<span class="number">1</span>).<span class="ident">expect</span>(<span class="string">&quot;expected context argument&quot;</span>) {
-                <span class="ident">FnArg</span>::<span class="ident">Typed</span>(<span class="ident">arg</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">arg</span>,
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
-                    <span class="kw">let</span> <span class="ident">tokens</span> <span class="op">=</span> <span class="macro">quote_spanned</span><span class="macro">!</span> { <span class="ident">inputs</span>.<span class="ident">span</span>() <span class="op">=</span><span class="op">&gt;</span>
+                <span class="ident">FnArg</span>::<span class="ident">Typed</span>(<span class="ident">arg</span>) <span class="op">=&gt;</span> <span class="ident">arg</span>,
+                <span class="kw">_</span> <span class="op">=&gt;</span> {
+                    <span class="kw">let</span> <span class="ident">tokens</span> <span class="op">=</span> <span class="macro">quote_spanned</span><span class="macro">!</span> { <span class="ident">inputs</span>.<span class="ident">span</span>() <span class="op">=&gt;</span>
                         <span class="macro">compile_error</span><span class="macro">!</span>(<span class="string">&quot;fn main&#39;s second argument must be fully formed&quot;</span>);
                     };
                     <span class="kw">return</span> <span class="ident">TokenStream</span>::<span class="ident">from</span>(<span class="ident">tokens</span>);
@@ -162,7 +163,7 @@
             <span class="kw">let</span> <span class="ident">context_type</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">context</span>.<span class="ident">ty</span>;
 
             <span class="kw">if</span> <span class="ident">is_http</span>(<span class="kw-2">&amp;</span><span class="ident">args</span>) {
-                <span class="macro">quote_spanned</span><span class="macro">!</span> { <span class="ident">input</span>.<span class="ident">span</span>() <span class="op">=</span><span class="op">&gt;</span>
+                <span class="macro">quote_spanned</span><span class="macro">!</span> { <span class="ident">input</span>.<span class="ident">span</span>() <span class="op">=&gt;</span>
 
                     #(#<span class="ident">attrs</span>)<span class="op">*</span>
                     #<span class="ident">asyncness</span> <span class="kw">fn</span> <span class="ident">main</span>() {
@@ -173,7 +174,7 @@
                     }
                 }
             } <span class="kw">else</span> {
-                <span class="macro">quote_spanned</span><span class="macro">!</span> { <span class="ident">input</span>.<span class="ident">span</span>() <span class="op">=</span><span class="op">&gt;</span>
+                <span class="macro">quote_spanned</span><span class="macro">!</span> { <span class="ident">input</span>.<span class="ident">span</span>() <span class="op">=&gt;</span>
 
                     #(#<span class="ident">attrs</span>)<span class="op">*</span>
                     #<span class="ident">asyncness</span> <span class="kw">fn</span> <span class="ident">main</span>() {
@@ -185,8 +186,8 @@
                 }
             }
         }
-        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="kw">let</span> <span class="ident">tokens</span> <span class="op">=</span> <span class="macro">quote_spanned</span><span class="macro">!</span> { <span class="ident">inputs</span>.<span class="ident">span</span>() <span class="op">=</span><span class="op">&gt;</span>
+        <span class="kw">_</span> <span class="op">=&gt;</span> {
+            <span class="kw">let</span> <span class="ident">tokens</span> <span class="op">=</span> <span class="macro">quote_spanned</span><span class="macro">!</span> { <span class="ident">inputs</span>.<span class="ident">span</span>() <span class="op">=&gt;</span>
                 <span class="macro">compile_error</span><span class="macro">!</span>(<span class="string">&quot;The #[lambda] macro can expects two arguments: a triggered event and lambda context.&quot;</span>);
             };
             <span class="kw">return</span> <span class="ident">TokenStream</span>::<span class="ident">from</span>(<span class="ident">tokens</span>);

@@ -90,15 +90,28 @@ pub enum LambdaRequest<'a> {
 }
 
 impl LambdaRequest<'_> {
-    /// Return true if this request represents an ALB event
-    ///
-    /// Alb responses have unique requirements for responses that
-    /// vary only slightly from APIGateway responses. We serialize
-    /// responses capturing a hint that the request was an alb triggered
-    /// event.
-    pub fn is_alb(&self) -> bool {
-        matches!(self, LambdaRequest::Alb { .. })
+    /// Return the `RequestOrigin` of the request to determine where the `LambdaRequest`
+    /// originated from, so that the appropriate response can be selected based on what
+    /// type of response the request origin expects.
+    pub fn request_origin(&self) -> RequestOrigin {
+        match self {
+            LambdaRequest::ApiGatewayV2 { .. } => RequestOrigin::ApiGatewayV2,
+            LambdaRequest::Alb { .. } => RequestOrigin::Alb,
+            LambdaRequest::ApiGateway { .. } => RequestOrigin::ApiGateway,
+        }
     }
+}
+
+/// Represents the origin from which the lambda was requested from.
+#[doc(hidden)]
+#[derive(Debug)]
+pub enum RequestOrigin {
+    /// API Gateway v2 request origin
+    ApiGatewayV2,
+    /// API Gateway request origin
+    ApiGateway,
+    /// ALB request origin
+    Alb,
 }
 
 #[derive(Deserialize, Debug, Clone)]

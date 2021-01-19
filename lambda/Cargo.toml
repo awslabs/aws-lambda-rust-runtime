@@ -7,7 +7,6 @@ edition = "2018"
 license = "Apache-2.0"
 
 [features]
-# no features by default
 default = ["simulated", "derive"]
 simulated = []
 derive = ["lambda-attributes"]

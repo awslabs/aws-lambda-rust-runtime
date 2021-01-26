@@ -13,7 +13,7 @@ derive = ["lambda-attributes"]
 
 [dependencies]
 tokio = { version = "1.0", features = ["macros", "io-util", "sync", "rt-multi-thread"] }
-hyper = { version = "0.14", features = ["full"] }
+hyper = { version = "0.14", features = ["http1", "client", "server", "stream", "runtime"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1.0.39"
 bytes = "1.0"

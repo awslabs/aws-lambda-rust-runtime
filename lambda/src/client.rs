@@ -39,7 +39,7 @@ async fn handle_incoming(req: Request<Body>) -> Result<Response<Body>, Error> {
 }
 
 #[instrument(skip(io, rx))]
-async fn handle<I>(io: I, rx: oneshot::Receiver<()>) -> Result<(), hyper::error::Error>
+async fn handle<I>(io: I, rx: oneshot::Receiver<()>) -> Result<(), hyper::Error>
 where
     I: AsyncRead + AsyncWrite + Unpin + 'static,
 {

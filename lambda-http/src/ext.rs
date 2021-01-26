@@ -236,12 +236,19 @@ impl RequestExt for http::Request<Body> {
         self.headers()
             .get(http::header::CONTENT_TYPE)
             .map(|ct| match ct.to_str() {
-                Ok("application/x-www-form-urlencoded") => serde_urlencoded::from_bytes::<D>(self.body().as_ref())
-                    .map_err(PayloadError::WwwFormUrlEncoded)
-                    .map(Some),
-                Ok("application/json") => serde_json::from_slice::<D>(self.body().as_ref())
-                    .map_err(PayloadError::Json)
-                    .map(Some),
+                Ok(content_type) => {
+                    if content_type.starts_with("application/x-www-form-urlencoded") {
+                        return serde_urlencoded::from_bytes::<D>(self.body().as_ref())
+                            .map_err(PayloadError::WwwFormUrlEncoded)
+                            .map(Some);
+                    } else if content_type.starts_with("application/json") {
+                        return serde_json::from_slice::<D>(self.body().as_ref())
+                            .map_err(PayloadError::Json)
+                            .map(Some);
+                    }
+
+                    Ok(None)
+                }
                 _ => Ok(None),
             })
             .unwrap_or_else(|| Ok(None))
@@ -310,6 +317,48 @@ mod tests {
         }
         let request = http::Request::builder()
             .header("Content-Type", "application/json")
+            .body(Body::from(r#"{"foo":"bar", "baz": 2}"#))
+            .expect("failed to build request");
+        let payload: Option<Payload> = request.payload().unwrap_or_default();
+        assert_eq!(
+            payload,
+            Some(Payload {
+                foo: "bar".into(),
+                baz: 2
+            })
+        );
+    }
+
+    #[test]
+    fn requests_match_form_post_content_type_with_charset() {
+        #[derive(Deserialize, PartialEq, Debug)]
+        struct Payload {
+            foo: String,
+            baz: usize,
+        }
+        let request = http::Request::builder()
+            .header("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+            .body(Body::from("foo=bar&baz=2"))
+            .expect("failed to build request");
+        let payload: Option<Payload> = request.payload().unwrap_or_default();
+        assert_eq!(
+            payload,
+            Some(Payload {
+                foo: "bar".into(),
+                baz: 2
+            })
+        );
+    }
+
+    #[test]
+    fn requests_match_json_content_type_with_charset() {
+        #[derive(Deserialize, PartialEq, Debug)]
+        struct Payload {
+            foo: String,
+            baz: usize,
+        }
+        let request = http::Request::builder()
+            .header("Content-Type", "application/json; charset=UTF-8")
             .body(Body::from(r#"{"foo":"bar", "baz": 2}"#))
             .expect("failed to build request");
         let payload: Option<Payload> = request.payload().unwrap_or_default();

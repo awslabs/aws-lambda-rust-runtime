@@ -111,9 +111,7 @@ impl BufferState {
     }
     /// Writes data to the front of the deque byte buffer
     fn write(&mut self, buf: &[u8]) {
-        for b in buf {
-            self.buffer.push_front(*b)
-        }
+        self.buffer.extend(buf);
 
         // If somebody is waiting on this data, wake them up.
         if let Some(waker) = self.read_waker.take() {
@@ -122,14 +120,22 @@ impl BufferState {
     }
 
     /// Read data from the end of the deque byte buffer
-    fn read(&mut self, to_buf: &mut ReadBuf<'_>) -> usize {
+    fn read(&mut self, to_buf: &mut ReadBuf<'_>) {
         // Read no more bytes than we have available, and no more bytes than we were asked for
         let bytes_to_read = min(to_buf.remaining(), self.buffer.len());
-        for _ in 0..bytes_to_read {
-            to_buf.put_slice(&[self.buffer.pop_back().unwrap()]);
-        }
+        // a VecDeque isn't contiguous, so we have 2 slices we need to account for
+        let (buf_l, buf_r) = self.buffer.as_slices();
+        if let Some(buf) = buf_l.get(..bytes_to_read) {
+            // if buf_l has enough to satisfy bytes_to_read, just take from it
+            to_buf.put_slice(buf);
+        } else {
+            // otherwise, use up all of buf_l and take the remaining from buf_r
+            to_buf.put_slice(buf_l);
+            to_buf.put_slice(&buf_r[..bytes_to_read - buf_l.len()]);
+        };
 
-        bytes_to_read
+        // cut off what we've read from the start of the buffer
+        self.buffer.drain(..bytes_to_read);
     }
 }
 
@@ -179,17 +185,16 @@ impl AsyncRead for ReadHalf {
             .lock()
             .expect("Lock was poisoned when acquiring buffer lock for ReadHalf");
 
-        let bytes_read = read_from.read(buf);
-
         // Returning Poll::Ready(Ok(0)) would indicate that there is nothing more to read, which
         // means that someone trying to read from a VecDeque that hasn't been written to yet
         // would get an Eof error (as I learned the hard way).  Instead we should return Poll:Pending
         // to indicate that there could be more to read in the future.
-        if bytes_read == 0 {
+        if read_from.buffer.is_empty() && buf.remaining() != 0 {
+            // the user wanted to read something, but we don't have it
             read_from.read_waker = Some(cx.waker().clone());
             Poll::Pending
         } else {
-            //read_from.read_waker = Some(cx.waker().clone());
+            read_from.read(buf);
             Poll::Ready(Ok(()))
         }
     }

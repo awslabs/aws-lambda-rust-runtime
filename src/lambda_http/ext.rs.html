@@ -339,6 +339,55 @@
 <span id="336">336</span>
 <span id="337">337</span>
 <span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Extension methods for `http::Request` types</span>
 
@@ -578,12 +627,19 @@
         <span class="self">self</span>.<span class="ident">headers</span>()
             .<span class="ident">get</span>(<span class="ident">http</span>::<span class="ident">header</span>::<span class="ident">CONTENT_TYPE</span>)
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">ct</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">ct</span>.<span class="ident">to_str</span>() {
-                <span class="prelude-val">Ok</span>(<span class="string">&quot;application/x-www-form-urlencoded&quot;</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">serde_urlencoded</span>::<span class="ident">from_bytes</span>::<span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="self">self</span>.<span class="ident">body</span>().<span class="ident">as_ref</span>())
-                    .<span class="ident">map_err</span>(<span class="ident">PayloadError</span>::<span class="ident">WwwFormUrlEncoded</span>)
-                    .<span class="ident">map</span>(<span class="prelude-val">Some</span>),
-                <span class="prelude-val">Ok</span>(<span class="string">&quot;application/json&quot;</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">serde_json</span>::<span class="ident">from_slice</span>::<span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="self">self</span>.<span class="ident">body</span>().<span class="ident">as_ref</span>())
-                    .<span class="ident">map_err</span>(<span class="ident">PayloadError</span>::<span class="ident">Json</span>)
-                    .<span class="ident">map</span>(<span class="prelude-val">Some</span>),
+                <span class="prelude-val">Ok</span>(<span class="ident">content_type</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="kw">if</span> <span class="ident">content_type</span>.<span class="ident">starts_with</span>(<span class="string">&quot;application/x-www-form-urlencoded&quot;</span>) {
+                        <span class="kw">return</span> <span class="ident">serde_urlencoded</span>::<span class="ident">from_bytes</span>::<span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="self">self</span>.<span class="ident">body</span>().<span class="ident">as_ref</span>())
+                            .<span class="ident">map_err</span>(<span class="ident">PayloadError</span>::<span class="ident">WwwFormUrlEncoded</span>)
+                            .<span class="ident">map</span>(<span class="prelude-val">Some</span>);
+                    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">content_type</span>.<span class="ident">starts_with</span>(<span class="string">&quot;application/json&quot;</span>) {
+                        <span class="kw">return</span> <span class="ident">serde_json</span>::<span class="ident">from_slice</span>::<span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="self">self</span>.<span class="ident">body</span>().<span class="ident">as_ref</span>())
+                            .<span class="ident">map_err</span>(<span class="ident">PayloadError</span>::<span class="ident">Json</span>)
+                            .<span class="ident">map</span>(<span class="prelude-val">Some</span>);
+                    }
+
+                    <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
+                }
                 <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
             })
             .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>))
@@ -652,6 +708,48 @@
         }
         <span class="kw">let</span> <span class="ident">request</span> <span class="op">=</span> <span class="ident">http</span>::<span class="ident">Request</span>::<span class="ident">builder</span>()
             .<span class="ident">header</span>(<span class="string">&quot;Content-Type&quot;</span>, <span class="string">&quot;application/json&quot;</span>)
+            .<span class="ident">body</span>(<span class="ident">Body</span>::<span class="ident">from</span>(<span class="string">r#&quot;{&quot;foo&quot;:&quot;bar&quot;, &quot;baz&quot;: 2}&quot;#</span>))
+            .<span class="ident">expect</span>(<span class="string">&quot;failed to build request&quot;</span>);
+        <span class="kw">let</span> <span class="ident">payload</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Payload</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">payload</span>().<span class="ident">unwrap_or_default</span>();
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="ident">payload</span>,
+            <span class="prelude-val">Some</span>(<span class="ident">Payload</span> {
+                <span class="ident">foo</span>: <span class="string">&quot;bar&quot;</span>.<span class="ident">into</span>(),
+                <span class="ident">baz</span>: <span class="number">2</span>
+            })
+        );
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">requests_match_form_post_content_type_with_charset</span>() {
+        <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
+        <span class="kw">struct</span> <span class="ident">Payload</span> {
+            <span class="ident">foo</span>: <span class="ident">String</span>,
+            <span class="ident">baz</span>: <span class="ident">usize</span>,
+        }
+        <span class="kw">let</span> <span class="ident">request</span> <span class="op">=</span> <span class="ident">http</span>::<span class="ident">Request</span>::<span class="ident">builder</span>()
+            .<span class="ident">header</span>(<span class="string">&quot;Content-Type&quot;</span>, <span class="string">&quot;application/x-www-form-urlencoded; charset=UTF-8&quot;</span>)
+            .<span class="ident">body</span>(<span class="ident">Body</span>::<span class="ident">from</span>(<span class="string">&quot;foo=bar&amp;baz=2&quot;</span>))
+            .<span class="ident">expect</span>(<span class="string">&quot;failed to build request&quot;</span>);
+        <span class="kw">let</span> <span class="ident">payload</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Payload</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">payload</span>().<span class="ident">unwrap_or_default</span>();
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="ident">payload</span>,
+            <span class="prelude-val">Some</span>(<span class="ident">Payload</span> {
+                <span class="ident">foo</span>: <span class="string">&quot;bar&quot;</span>.<span class="ident">into</span>(),
+                <span class="ident">baz</span>: <span class="number">2</span>
+            })
+        );
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">requests_match_json_content_type_with_charset</span>() {
+        <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
+        <span class="kw">struct</span> <span class="ident">Payload</span> {
+            <span class="ident">foo</span>: <span class="ident">String</span>,
+            <span class="ident">baz</span>: <span class="ident">usize</span>,
+        }
+        <span class="kw">let</span> <span class="ident">request</span> <span class="op">=</span> <span class="ident">http</span>::<span class="ident">Request</span>::<span class="ident">builder</span>()
+            .<span class="ident">header</span>(<span class="string">&quot;Content-Type&quot;</span>, <span class="string">&quot;application/json; charset=UTF-8&quot;</span>)
             .<span class="ident">body</span>(<span class="ident">Body</span>::<span class="ident">from</span>(<span class="string">r#&quot;{&quot;foo&quot;:&quot;bar&quot;, &quot;baz&quot;: 2}&quot;#</span>))
             .<span class="ident">expect</span>(<span class="string">&quot;failed to build request&quot;</span>);
         <span class="kw">let</span> <span class="ident">payload</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Payload</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">payload</span>().<span class="ident">unwrap_or_default</span>();

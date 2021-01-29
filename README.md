@@ -66,6 +66,14 @@ Run this script once to add the new target:
 $ rustup target add x86_64-unknown-linux-musl
 ```
 
+
+  * **Note:** If you are running on Mac OS you'll need to install the linker for the target platform. You do this using the `musl-cross` tap from [Homebrew](https://brew.sh/) which provides a complete cross-compilation toolchain for Mac OS. Once `musl-cross` is installed we will also need to inform cargo of the newly installed linker when building for the `x86_64-unknown-linux-musl` platform.
+```bash
+$ brew install filosottile/musl-cross/musl-cross
+$ mkdir .cargo
+$ echo $'[target.x86_64-unknown-linux-musl]\nlinker = "x86_64-linux-musl-gcc"' > .cargo/config
+```
+
 Compile one of the examples as a _release_ with a specific _target_ for deployment to AWS:
 ```bash
 $ cargo build -p lambda --example hello --release --target x86_64-unknown-linux-musl

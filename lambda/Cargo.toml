@@ -7,9 +7,8 @@ edition = "2018"
 license = "Apache-2.0"
 
 [features]
-default = ["simulated", "derive"]
+default = ["simulated"]
 simulated = []
-derive = ["lambda-attributes"]
 
 [dependencies]
 tokio = { version = "1.0", features = ["macros", "io-util", "sync", "rt-multi-thread"] }
@@ -18,7 +17,6 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1.0.39"
 bytes = "1.0"
 http = "0.2"
-lambda-attributes = { path = "../lambda-attributes", version = "0.1.0", optional = true}
 async-stream = "0.3"
 futures = "0.3"
 tracing = "0.1.13"

@@ -19,7 +19,6 @@ maintenance = { status = "actively-developed" }
 base64 = "0.12"
 http = "0.2"
 lambda = { path = "../lambda", version = "0.1" }
-lambda-attributes = { path = "../lambda-attributes", version = "0.1" }
 serde = "^1"
 serde_derive = "^1"
 serde_json = "^1"

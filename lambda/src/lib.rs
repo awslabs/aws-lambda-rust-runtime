@@ -36,7 +36,6 @@
 pub use crate::types::Context;
 use client::Client;
 use futures::stream::{Stream, StreamExt};
-pub use lambda_attributes::lambda;
 use serde::{Deserialize, Serialize};
 use std::{
     convert::{TryFrom, TryInto},

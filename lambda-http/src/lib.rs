@@ -10,7 +10,7 @@
 //! # Examples
 //!
 //! ## Hello World
-//! 
+//!
 //! The following example is how you would structure your Lambda such that you have a `main` function where you explicitly invoke
 //! `lambda::run` in combination with the [`handler`](fn.handler.html) function. This pattern allows you to utilize global initialization
 //! of tools such as loggers, to use on warm invokes to the same Lambda function after the first request, helping to reduce the latency of

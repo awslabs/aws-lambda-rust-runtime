@@ -1,8 +1,11 @@
 /// See https://github.com/awslabs/aws-lambda-rust-runtime for more info on Rust runtime for AWS Lambda
 use lambda::handler_fn;
+use log::LevelFilter;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+use simple_logger::SimpleLogger;
 use std::fs::File;
+
 
 /// A shorthand for `Box<dyn std::error::Error + Send + Sync + 'static>` type required by aws-lambda-rust-runtime.
 pub type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
@@ -57,7 +60,10 @@ async fn main() -> Result<(), Error> {
     // You can comment out the `simple_logger` init line and uncomment the following block to
     // use `tracing` in the handler function.
     //
-    simple_logger::init_with_level(log::Level::Info)?;
+    SimpleLogger::new()
+        .with_level(LevelFilter::Info)
+        .init()
+        .unwrap();
     /*
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::INFO)

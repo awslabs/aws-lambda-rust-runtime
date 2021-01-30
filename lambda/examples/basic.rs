@@ -2,8 +2,9 @@
 // { "command": "do something" }
 
 use lambda::{handler_fn, Context};
+use log::LevelFilter;
 use serde::{Deserialize, Serialize};
-use simple_logger;
+use simple_logger::SimpleLogger;
 
 /// A shorthand for `Box<dyn std::error::Error + Send + Sync + 'static>`
 /// type required by aws-lambda-rust-runtime.
@@ -31,7 +32,10 @@ struct Response {
 async fn main() -> Result<(), Error> {
     // required to enable CloudWatch error logging by the runtime
     // can be replaced with any other method of initializing `log`
-    simple_logger::init_with_level(log::Level::Info)?;
+    SimpleLogger::new()
+        .with_level(LevelFilter::Info)
+        .init()
+        .unwrap();
 
     let func = handler_fn(my_handler);
     lambda::run(func).await?;

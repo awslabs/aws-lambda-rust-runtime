@@ -1,16 +1,14 @@
 //! Response types
 
+use crate::body::Body;
 use http::{
     header::{HeaderMap, HeaderValue, CONTENT_TYPE},
     Response,
 };
 use serde::{
     ser::{Error as SerError, SerializeMap},
-    Serializer,
+    Serialize, Serializer,
 };
-use serde_derive::Serialize;
-
-use crate::body::Body;
 
 /// Representation of API Gateway response
 #[doc(hidden)]

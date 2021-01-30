@@ -134,7 +134,7 @@ struct InitErrorRequest;
 
 impl IntoRequest for InitErrorRequest {
     fn into_req(self) -> Result<Request<Body>, Error> {
-        let uri = format!("/2018-06-01/runtime/init/error");
+        let uri = "/2018-06-01/runtime/init/error".to_string();
         let uri = Uri::from_str(&uri)?;
 
         let req = Request::builder()

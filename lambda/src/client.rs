@@ -66,9 +66,9 @@ mod endpoint_tests {
     use tokio::{
         io::{AsyncRead, AsyncWrite},
         select,
-        stream::StreamExt,
         sync::{self, oneshot},
     };
+    use tokio_stream::StreamExt;
 
     #[cfg(test)]
     async fn next_event(req: &Request<Body>) -> Result<Response<Body>, Error> {
@@ -134,7 +134,7 @@ mod endpoint_tests {
     }
 
     #[cfg(test)]
-    async fn handle<I>(io: I, rx: oneshot::Receiver<()>) -> Result<(), hyper::error::Error>
+    async fn handle<I>(io: I, rx: oneshot::Receiver<()>) -> Result<(), hyper::Error>
     where
         I: AsyncRead + AsyncWrite + Unpin + 'static,
     {

@@ -52,8 +52,8 @@ use std::{
 };
 use tokio::{
     io::{AsyncRead, AsyncWrite},
-    stream::{Stream, StreamExt},
 };
+use tokio_stream::{Stream, StreamExt};
 use tower_service::Service;
 use tracing::{error, trace};
 

@@ -26,6 +26,8 @@ futures = "0.3"
 tracing-error = "0.1.2"
 tracing = { version = "0.1", features = ["log"] }
 tracing-futures = "0.2"
+tower-service = "0.3"
+tokio-stream = "0.1.2"
 
 [dev-dependencies]
 tracing-subscriber = "0.2"

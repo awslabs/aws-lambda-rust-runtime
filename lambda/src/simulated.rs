@@ -40,7 +40,7 @@ pub struct Connector {
     pub inner: SimStream,
 }
 
-impl hyper::service::Service<Uri> for SimulatedConnector {
+impl hyper::service::Service<Uri> for Connector {
     type Response = SimStream;
     type Error = std::io::Error;
     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>;

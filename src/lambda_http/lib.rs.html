@@ -175,31 +175,6 @@
 <span id="172">172</span>
 <span id="173">173</span>
 <span id="174">174</span>
-<span id="175">175</span>
-<span id="176">176</span>
-<span id="177">177</span>
-<span id="178">178</span>
-<span id="179">179</span>
-<span id="180">180</span>
-<span id="181">181</span>
-<span id="182">182</span>
-<span id="183">183</span>
-<span id="184">184</span>
-<span id="185">185</span>
-<span id="186">186</span>
-<span id="187">187</span>
-<span id="188">188</span>
-<span id="189">189</span>
-<span id="190">190</span>
-<span id="191">191</span>
-<span id="192">192</span>
-<span id="193">193</span>
-<span id="194">194</span>
-<span id="195">195</span>
-<span id="196">196</span>
-<span id="197">197</span>
-<span id="198">198</span>
-<span id="199">199</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="attribute">#![<span class="ident">warn</span>(<span class="ident">missing_docs</span>)]</span>
 <span class="comment">//#![deny(warnings)]</span>
@@ -214,33 +189,10 @@
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## Hello World</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! `lambda_http` handlers adapt to the standard `lambda::Handler` interface using the [`handler`](fn.handler.html) function.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! The simplest case of an http handler is a function of an `http::Request` to a type that can be lifted into an `http::Response`.</span>
-<span class="doccomment">//! You can learn more about these types [here](trait.IntoResponse.html).</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Adding an `#[lambda(http)]` attribute to a `#[tokio::run]`-decorated `main` function will setup and run the Lambda function.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Note: this comes at the expense of any onetime initialization your lambda task might find value in.</span>
-<span class="doccomment">//! The full body of your `main` function will be executed on **every** invocation of your lambda task.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```rust,no_run</span>
-<span class="doccomment">//! use lambda_http::{lambda::{lambda, Context}, Request, IntoResponse};</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! type Error = Box&lt;dyn std::error::Error + Send + Sync + &#39;static&gt;;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! #[lambda(http)]</span>
-<span class="doccomment">//! #[tokio::main]</span>
-<span class="doccomment">//! async fn main(_: Request, _: Context) -&gt; Result&lt;impl IntoResponse, Error&gt; {</span>
-<span class="doccomment">//!     Ok(&quot;👋 world!&quot;)</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ## Hello World, Without Macros</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! For cases where your lambda might benfit from one time function initializiation might</span>
-<span class="doccomment">//! prefer a plain `main` function and invoke `lambda::run` explicitly in combination with the [`handler`](fn.handler.html) function.</span>
-<span class="doccomment">//! Depending on the runtime cost of your dependency bootstrapping, this can reduce the overall latency of your functions execution path.</span>
+<span class="doccomment">//! The following example is how you would structure your Lambda such that you have a `main` function where you explicitly invoke</span>
+<span class="doccomment">//! `lambda::run` in combination with the [`handler`](fn.handler.html) function. This pattern allows you to utilize global initialization</span>
+<span class="doccomment">//! of tools such as loggers, to use on warm invokes to the same Lambda function after the first request, helping to reduce the latency of</span>
+<span class="doccomment">//! your function&#39;s execution path.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ```rust,no_run</span>
 <span class="doccomment">//! use lambda_http::{handler, lambda};</span>
@@ -254,7 +206,6 @@
 <span class="doccomment">//!     lambda::run(handler(|request, context| async { Ok(&quot;👋 world!&quot;) })).await?;</span>
 <span class="doccomment">//!     Ok(())</span>
 <span class="doccomment">//! }</span>
-<span class="doccomment">//!</span>
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## Leveraging trigger provided data</span>
@@ -295,7 +246,6 @@
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">http</span>::{<span class="self">self</span>, <span class="ident">Response</span>};
 <span class="kw">use</span> <span class="ident">lambda</span>::<span class="ident">Handler</span> <span class="kw">as</span> <span class="ident">LambdaHandler</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">lambda</span>::{<span class="self">self</span>, <span class="ident">Context</span>};
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">lambda_attributes</span>::<span class="ident">lambda</span>;
 
 <span class="kw">mod</span> <span class="ident">body</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">ext</span>;

@@ -1,48 +1,13 @@
 #![deny(clippy::all, clippy::cargo)]
 #![warn(missing_docs, nonstandard_style, rust_2018_idioms)]
 
-//! The official Rust runtime for AWS Lambda.
+//! The mechanism available for defining a Lambda function is as follows:
 //!
-//! There are two mechanisms available for defining a Lambda function:
-//! 1. The `lambda` attribute maco, which generates the boilerplate to
-//!    to launch and run a Lambda function.
-//!
-//!    The [`#[lambda]`] attribute _must_ be placed on an asynchronous main function.
-//!    However, as asynchronous main functions are not legal valid Rust
-//!    this means that the main function must also be decorated using a
-//!    [`#[tokio::main]`] attribute macro. This is available from
-//!    the [Tokio] crate.
-//!
-//! 2. A type that conforms to the [`Handler`] trait. This type can then be passed
-//!    to the the `lambda::run` function, which launches and runs the Lambda runtime.
-//!
-//! An asynchronous function annotated with the `#[lambda]` attribute must
-//! accept an argument of type `A` which implements [`serde::Deserialize`], a [`lambda::Context`] and
-//! return a `Result<B, E>`, where `B` implements [`serde::Serializable`]. `E` is
-//! any type that implements `Into<Box<dyn std::error::Error + Send + Sync + 'static>>`.
-//!
-//! ```no_run
-//! use lambda::{lambda, Context};
-//! use serde_json::Value;
-//!
-//! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
-//!
-//! #[lambda]
-//! #[tokio::main]
-//! async fn main(event: Value, _: Context) -> Result<Value, Error> {
-//!     Ok(event)
-//! }
-//! ```
-//!
-//! [`Handler`]: trait.Handler.html
-//! [`lambda::Context`]: struct.Context.html
-//! [`lambda`]: attr.lambda.html
-//! [`#[tokio::main]`]: https://docs.rs/tokio/0.2.21/tokio/attr.main.html
-//! [Tokio]: https://docs.rs/tokio/
+//! Create a type that conforms to the [`Handler`] trait. This type can then be passed
+//! to the the `lambda::run` function, which launches and runs the Lambda runtime.
 pub use crate::types::Context;
 use client::Client;
 use hyper::client::{connect::Connection, HttpConnector};
-pub use lambda_attributes::lambda;
 use serde::{Deserialize, Serialize};
 use std::{
     convert::{TryFrom, TryInto},

@@ -15,9 +15,7 @@ use std::{
     future::Future,
     sync::Arc,
 };
-use tokio::{
-    io::{AsyncRead, AsyncWrite},
-};
+use tokio::io::{AsyncRead, AsyncWrite};
 use tokio_stream::{Stream, StreamExt};
 use tower_service::Service;
 use tracing::{error, trace};

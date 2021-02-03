@@ -32,10 +32,7 @@ struct Response {
 async fn main() -> Result<(), Error> {
     // required to enable CloudWatch error logging by the runtime
     // can be replaced with any other method of initializing `log`
-    SimpleLogger::new()
-        .with_level(LevelFilter::Info)
-        .init()
-        .unwrap();
+    SimpleLogger::new().with_level(LevelFilter::Info).init().unwrap();
 
     let func = handler_fn(my_handler);
     lambda::run(func).await?;

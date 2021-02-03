@@ -6,7 +6,6 @@ use serde_json::{json, Value};
 use simple_logger::SimpleLogger;
 use std::fs::File;
 
-
 /// A shorthand for `Box<dyn std::error::Error + Send + Sync + 'static>` type required by aws-lambda-rust-runtime.
 pub type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
@@ -60,10 +59,7 @@ async fn main() -> Result<(), Error> {
     // You can comment out the `simple_logger` init line and uncomment the following block to
     // use `tracing` in the handler function.
     //
-    SimpleLogger::new()
-        .with_level(LevelFilter::Info)
-        .init()
-        .unwrap();
+    SimpleLogger::new().with_level(LevelFilter::Info).init().unwrap();
     /*
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::INFO)

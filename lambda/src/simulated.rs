@@ -11,7 +11,7 @@ use std::{
 };
 use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
 
-/// Creates a pair of AsyncReadWrite data streams, where the write end of each member of the pair
+/// Creates a pair of `AsyncRead`/`AsyncWrite` data streams, where the write end of each member of the pair
 /// is the read end of the other member of the pair.  This allows us to emulate the behavior of a TcpStream
 /// but in-memory, deterministically, and with full control over failure injection.
 pub(crate) fn chan() -> (SimStream, SimStream) {
@@ -36,11 +36,11 @@ pub(crate) fn chan() -> (SimStream, SimStream) {
 }
 
 #[derive(Clone)]
-pub struct SimulatedConnector {
+pub struct Connector {
     pub inner: SimStream,
 }
 
-impl hyper::service::Service<Uri> for SimulatedConnector {
+impl hyper::service::Service<Uri> for Connector {
     type Response = SimStream;
     type Error = std::io::Error;
     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>;
@@ -103,6 +103,7 @@ pub struct BufferState {
 }
 
 impl BufferState {
+    /// Creates a new `BufferState`.
     fn new() -> Self {
         BufferState {
             buffer: VecDeque::new(),
@@ -207,7 +208,7 @@ mod tests {
         client.write_all(b"Ping").await.expect("Write should succeed");
 
         // Verify we can read it from side 2
-        let mut read_on_server = [0u8; 4];
+        let mut read_on_server = [0_u8; 4];
         server
             .read_exact(&mut read_on_server)
             .await
@@ -218,7 +219,7 @@ mod tests {
         server.write_all(b"Pong").await.expect("Write should succeed");
 
         // Verify we can read it from side 1
-        let mut read_on_client = [0u8; 4];
+        let mut read_on_client = [0_u8; 4];
         client
             .read_exact(&mut read_on_client)
             .await

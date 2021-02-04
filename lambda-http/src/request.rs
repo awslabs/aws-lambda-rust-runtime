@@ -3,16 +3,17 @@
 //! Typically these are exposed via the `request_context`
 //! request extension method provided by [lambda_http::RequestExt](../trait.RequestExt.html)
 //!
-use serde::de::{Deserialize, Deserializer, Error as DeError, MapAccess, Visitor};
-use serde_derive::Deserialize;
-use serde_json::{error::Error as JsonError, Value};
-use std::{borrow::Cow, collections::HashMap, fmt, io::Read, mem};
-
 use crate::{
     body::Body,
     ext::{PathParameters, QueryStringParameters, StageVariables},
     strmap::StrMap,
 };
+use serde::{
+    de::{Deserializer, Error as DeError, MapAccess, Visitor},
+    Deserialize,
+};
+use serde_json::{error::Error as JsonError, Value};
+use std::{borrow::Cow, collections::HashMap, fmt, io::Read, mem};
 
 /// Internal representation of an Lambda http event from
 /// ALB, API Gateway REST and HTTP API proxy event perspectives
@@ -101,42 +102,65 @@ impl LambdaRequest<'_> {
     }
 }
 
+/// See [context-variable-reference](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-mapping-template-reference.html) for more detail.
 #[derive(Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ApiGatewayV2RequestContext {
+    /// The API owner's AWS account ID.
     pub account_id: String,
+    /// The identifier API Gateway assigns to your API.
     pub api_id: String,
+    /// The stringified value of the specified key-value pair of the context map returned from an API Gateway Lambda authorizer function.
     #[serde(default)]
     pub authorizer: HashMap<String, Value>,
+    /// The full domain name used to invoke the API. This should be the same as the incoming Host header.
     pub domain_name: String,
+    /// The first label of the $context.domainName. This is often used as a caller/customer identifier.
     pub domain_prefix: String,
+    /// The HTTP method used.
     pub http: Http,
+    /// The ID that API Gateway assigns to the API request.
     pub request_id: String,
+    /// Undocumented, could be resourcePath
     pub route_key: String,
+    /// The deployment stage of the API request (for example, Beta or Prod).
     pub stage: String,
+    /// Undocumented, could be requestTime
     pub time: String,
+    /// Undocumented, could be requestTimeEpoch
     pub time_epoch: usize,
 }
 
+/// See [context-variable-reference](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-mapping-template-reference.html) for more detail.
 #[derive(Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ApiGatewayRequestContext {
-    //pub path: String,
+    /// The API owner's AWS account ID.
     pub account_id: String,
+    /// The identifier that API Gateway assigns to your resource.
     pub resource_id: String,
+    /// The deployment stage of the API request (for example, Beta or Prod).
     pub stage: String,
+    /// The ID that API Gateway assigns to the API request.
     pub request_id: String,
+    /// The path to your resource. For example, for the non-proxy request URI of `https://{rest-api-id.execute-api.{region}.amazonaws.com/{stage}/root/child`, The $context.resourcePath value is /root/child.
     pub resource_path: String,
+    /// The HTTP method used. Valid values include: DELETE, GET, HEAD, OPTIONS, PATCH, POST, and PUT.
     pub http_method: String,
+    /// The stringified value of the specified key-value pair of the context map returned from an API Gateway Lambda authorizer function.
     #[serde(default)]
     pub authorizer: HashMap<String, Value>,
+    /// The identifier API Gateway assigns to your API.
     pub api_id: String,
+    /// Cofnito identity information
     pub identity: Identity,
 }
 
+/// Elastic load balancer context information
 #[derive(Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct AlbRequestContext {
+    /// Elastic load balancer context information
     pub elb: Elb,
 }
 
@@ -166,10 +190,17 @@ pub struct Elb {
 #[serde(rename_all = "camelCase")]
 pub struct Http {
     #[serde(deserialize_with = "deserialize_method")]
+    /// The HTTP method used. Valid values include: DELETE, GET, HEAD, OPTIONS, PATCH, POST, and PUT.
     pub method: http::Method,
+    /// The request path. For example, for a non-proxy request URL of
+    /// `https://{rest-api-id.execute-api.{region}.amazonaws.com/{stage}/root/child`,
+    /// the $context.path value is `/{stage}/root/child`.
     pub path: String,
+    /// The request protocol, for example, HTTP/1.1.
     pub protocol: String,
+    /// The source IP address of the TCP connection making the request to API Gateway.
     pub source_ip: String,
+    /// The User-Agent header of the API caller.
     pub user_agent: String,
 }
 
@@ -177,17 +208,35 @@ pub struct Http {
 #[derive(Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Identity {
+    /// The source IP address of the TCP connection making the request to API Gateway.
     pub source_ip: String,
+    /// The Amazon Cognito identity ID of the caller making the request.
+    /// Available only if the request was signed with Amazon Cognito credentials.
     pub cognito_identity_id: Option<String>,
+    /// The Amazon Cognito identity pool ID of the caller making the request.
+    /// Available only if the request was signed with Amazon Cognito credentials.
     pub cognito_identity_pool_id: Option<String>,
+    /// A comma-separated list of the Amazon Cognito authentication providers used by the caller making the request.
+    /// Available only if the request was signed with Amazon Cognito credentials.
     pub cognito_authentication_provider: Option<String>,
+    /// The Amazon Cognito authentication type of the caller making the request.
+    /// Available only if the request was signed with Amazon Cognito credentials.
     pub cognito_authentication_type: Option<String>,
+    /// The AWS account ID associated with the request.
     pub account_id: Option<String>,
+    /// The principal identifier of the caller making the request.
     pub caller: Option<String>,
+    /// For API methods that require an API key, this variable is the API key associated with the method request.
+    /// For methods that don't require an API key, this variable is null.
     pub api_key: Option<String>,
+    /// Undocumented. Can be the API key ID associated with an API request that requires an API key.
+    /// The description of `api_key` and `access_key` may actually be reversed.
     pub access_key: Option<String>,
+    /// The principal identifier of the user making the request. Used in Lambda authorizers.
     pub user: Option<String>,
+    /// The User-Agent header of the API caller.
     pub user_agent: Option<String>,
+    /// The Amazon Resource Name (ARN) of the effective user identified after authentication.
     pub user_arn: Option<String>,
 }
 
@@ -358,7 +407,7 @@ impl<'a> From<LambdaRequest<'a>> for http::Request<Body> {
                     .expect("failed to build request");
 
                 // no builder method that sets headers in batch
-                mem::replace(req.headers_mut(), headers);
+                let _ = mem::replace(req.headers_mut(), headers);
 
                 req
             }
@@ -422,7 +471,7 @@ impl<'a> From<LambdaRequest<'a>> for http::Request<Body> {
                 }
 
                 // no builder method that sets headers in batch
-                mem::replace(req.headers_mut(), multi_value_headers);
+                let _ = mem::replace(req.headers_mut(), multi_value_headers);
 
                 req
             }
@@ -483,7 +532,7 @@ impl<'a> From<LambdaRequest<'a>> for http::Request<Body> {
                 }
 
                 // no builder method that sets headers in batch
-                mem::replace(req.headers_mut(), multi_value_headers);
+                let _ = mem::replace(req.headers_mut(), multi_value_headers);
 
                 req
             }

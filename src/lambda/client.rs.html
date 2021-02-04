@@ -285,126 +285,24 @@
 <span id="282">282</span>
 <span id="283">283</span>
 <span id="284">284</span>
-<span id="285">285</span>
-<span id="286">286</span>
-<span id="287">287</span>
-<span id="288">288</span>
-<span id="289">289</span>
-<span id="290">290</span>
-<span id="291">291</span>
-<span id="292">292</span>
-<span id="293">293</span>
-<span id="294">294</span>
-<span id="295">295</span>
-<span id="296">296</span>
-<span id="297">297</span>
-<span id="298">298</span>
-<span id="299">299</span>
-<span id="300">300</span>
-<span id="301">301</span>
-<span id="302">302</span>
-<span id="303">303</span>
-<span id="304">304</span>
-<span id="305">305</span>
-<span id="306">306</span>
-<span id="307">307</span>
-<span id="308">308</span>
-<span id="309">309</span>
-<span id="310">310</span>
-<span id="311">311</span>
-<span id="312">312</span>
-<span id="313">313</span>
-<span id="314">314</span>
-<span id="315">315</span>
-<span id="316">316</span>
-<span id="317">317</span>
-<span id="318">318</span>
-<span id="319">319</span>
-<span id="320">320</span>
-<span id="321">321</span>
-<span id="322">322</span>
-<span id="323">323</span>
-<span id="324">324</span>
-<span id="325">325</span>
-<span id="326">326</span>
-<span id="327">327</span>
-<span id="328">328</span>
-<span id="329">329</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">requests</span>::{<span class="ident">IntoResponse</span>, <span class="ident">NextEventResponse</span>},
-    <span class="ident">Error</span>,
-};
-<span class="kw">use</span> <span class="ident">http</span>::{
-    <span class="ident">uri</span>::{<span class="ident">PathAndQuery</span>, <span class="ident">Scheme</span>},
-    <span class="ident">HeaderValue</span>, <span class="ident">Method</span>, <span class="ident">Request</span>, <span class="ident">Response</span>, <span class="ident">StatusCode</span>, <span class="ident">Uri</span>,
-};
-<span class="kw">use</span> <span class="ident">hyper</span>::{<span class="ident">client</span>::<span class="ident">HttpConnector</span>, <span class="ident">server</span>::<span class="ident">conn</span>::<span class="ident">Http</span>, <span class="ident">service</span>::<span class="ident">service_fn</span>, <span class="ident">Body</span>};
-<span class="kw">use</span> <span class="ident">serde_json</span>::<span class="ident">json</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">TryFrom</span>;
-<span class="kw">use</span> <span class="ident">tokio</span>::{
-    <span class="ident">io</span>::{<span class="ident">AsyncRead</span>, <span class="ident">AsyncWrite</span>},
-    <span class="ident">select</span>,
-    <span class="ident">sync</span>::<span class="ident">oneshot</span>,
-};
-<span class="kw">use</span> <span class="ident">tracing</span>::{<span class="ident">error</span>, <span class="ident">info</span>, <span class="ident">instrument</span>};
-
-<span class="attribute">#[<span class="ident">instrument</span>]</span>
-<span class="ident">async</span> <span class="kw">fn</span> <span class="ident">hello</span>(<span class="ident">req</span>: <span class="ident">Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Response</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-    <span class="prelude-val">Ok</span>(<span class="ident">Response</span>::<span class="ident">new</span>(<span class="ident">Body</span>::<span class="ident">from</span>(<span class="string">&quot;hello&quot;</span>)))
-}
-
-<span class="ident">async</span> <span class="kw">fn</span> <span class="ident">handle_incoming</span>(<span class="ident">req</span>: <span class="ident">Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Response</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">path</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">req</span>
-        .<span class="ident">uri</span>()
-        .<span class="ident">path_and_query</span>()
-        .<span class="ident">unwrap</span>()
-        .<span class="ident">as_str</span>()
-        .<span class="ident">split</span>(<span class="string">&quot;/&quot;</span>)
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>();
-    <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">path</span>[<span class="number">1</span>..] {
-        [<span class="string">&quot;2018-06-01&quot;</span>, <span class="string">&quot;runtime&quot;</span>, <span class="string">&quot;invocation&quot;</span>, <span class="string">&quot;next&quot;</span>] <span class="op">=</span><span class="op">&gt;</span> <span class="ident">next_event</span>(<span class="kw-2">&amp;</span><span class="ident">req</span>).<span class="ident">await</span>,
-        [<span class="string">&quot;2018-06-01&quot;</span>, <span class="string">&quot;runtime&quot;</span>, <span class="string">&quot;invocation&quot;</span>, <span class="ident">id</span>, <span class="string">&quot;response&quot;</span>] <span class="op">=</span><span class="op">&gt;</span> <span class="ident">complete_event</span>(<span class="kw-2">&amp;</span><span class="ident">req</span>, <span class="ident">id</span>).<span class="ident">await</span>,
-        [<span class="string">&quot;2018-06-01&quot;</span>, <span class="string">&quot;runtime&quot;</span>, <span class="string">&quot;invocation&quot;</span>, <span class="ident">id</span>, <span class="string">&quot;error&quot;</span>] <span class="op">=</span><span class="op">&gt;</span> <span class="ident">event_err</span>(<span class="kw-2">&amp;</span><span class="ident">req</span>, <span class="ident">id</span>).<span class="ident">await</span>,
-        [<span class="string">&quot;2018-06-01&quot;</span>, <span class="string">&quot;runtime&quot;</span>, <span class="string">&quot;init&quot;</span>, <span class="string">&quot;error&quot;</span>] <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unimplemented</span><span class="macro">!</span>(),
-        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unimplemented</span><span class="macro">!</span>(),
-    }
-}
-
-<span class="attribute">#[<span class="ident">instrument</span>(<span class="ident">skip</span>(<span class="ident">io</span>, <span class="ident">rx</span>))]</span>
-<span class="ident">async</span> <span class="kw">fn</span> <span class="ident">handle</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span>(<span class="ident">io</span>: <span class="ident">I</span>, <span class="ident">rx</span>: <span class="ident">oneshot</span>::<span class="ident">Receiver</span><span class="op">&lt;</span>()<span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">hyper</span>::<span class="ident">Error</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">I</span>: <span class="ident">AsyncRead</span> <span class="op">+</span> <span class="ident">AsyncWrite</span> <span class="op">+</span> <span class="ident">Unpin</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
-{
-    <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">Http</span>::<span class="ident">new</span>().<span class="ident">serve_connection</span>(<span class="ident">io</span>, <span class="ident">service_fn</span>(<span class="ident">handle_incoming</span>));
-    <span class="macro">select</span><span class="macro">!</span> {
-        <span class="kw">_</span> <span class="op">=</span> <span class="ident">rx</span> <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="macro">info</span><span class="macro">!</span>(<span class="string">&quot;Received cancelation signal&quot;</span>);
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(())
-        }
-        <span class="ident">res</span> <span class="op">=</span> <span class="ident">conn</span> <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="kw">match</span> <span class="ident">res</span> {
-                <span class="prelude-val">Ok</span>(()) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Ok</span>(()),
-                <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                    <span class="macro">error</span><span class="macro">!</span>(<span class="ident">message</span> <span class="op">=</span> <span class="string">&quot;Got error serving connection&quot;</span>, <span class="ident">e</span> <span class="op">=</span> <span class="op">%</span><span class="ident">e</span>);
-                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>);
-                }
-            }
-        }
-    }
-}
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">Error</span>;
+<span class="kw">use</span> <span class="ident">http</span>::{<span class="ident">uri</span>::<span class="ident">Scheme</span>, <span class="ident">Request</span>, <span class="ident">Response</span>, <span class="ident">Uri</span>};
+<span class="kw">use</span> <span class="ident">hyper</span>::{<span class="ident">client</span>::<span class="ident">HttpConnector</span>, <span class="ident">Body</span>};
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>::<span class="ident">Debug</span>;
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">Client</span><span class="op">&lt;</span><span class="ident">C</span> <span class="op">=</span> <span class="ident">HttpConnector</span><span class="op">&gt;</span> {
-    <span class="ident">base</span>: <span class="ident">Uri</span>,
-    <span class="ident">client</span>: <span class="ident">hyper</span>::<span class="ident">Client</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">base</span>: <span class="ident">Uri</span>,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">client</span>: <span class="ident">hyper</span>::<span class="ident">Client</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span> <span class="ident">Client</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">C</span>: <span class="ident">hyper</span>::<span class="ident">client</span>::<span class="ident">connect</span>::<span class="ident">Connect</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
 {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with</span>(<span class="ident">base</span>: <span class="ident">Uri</span>, <span class="ident">client</span>: <span class="ident">hyper</span>::<span class="ident">Client</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with</span>(<span class="ident">base</span>: <span class="ident">Uri</span>, <span class="ident">connector</span>: <span class="ident">C</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="ident">hyper</span>::<span class="ident">Client</span>::<span class="ident">builder</span>().<span class="ident">build</span>(<span class="ident">connector</span>);
         <span class="self">Self</span> { <span class="ident">base</span>, <span class="ident">client</span> }
     }
 
@@ -431,104 +329,134 @@
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">call</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">req</span>: <span class="ident">Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Response</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">set_origin</span>(<span class="ident">req</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> (<span class="ident">parts</span>, <span class="ident">body</span>) <span class="op">=</span> <span class="ident">req</span>.<span class="ident">into_parts</span>();
-        <span class="kw">let</span> <span class="ident">body</span> <span class="op">=</span> <span class="ident">Body</span>::<span class="ident">from</span>(<span class="ident">body</span>);
         <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">Request</span>::<span class="ident">from_parts</span>(<span class="ident">parts</span>, <span class="ident">body</span>);
         <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">client</span>.<span class="ident">request</span>(<span class="ident">req</span>).<span class="ident">await</span><span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="ident">response</span>)
     }
 }
 
-<span class="ident">async</span> <span class="kw">fn</span> <span class="ident">next_event</span>(<span class="ident">req</span>: <span class="kw-2">&amp;</span><span class="ident">Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Response</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="string">&quot;/2018-06-01/runtime/invocation/next&quot;</span>;
-    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="ident">Method</span>::<span class="ident">GET</span>);
-    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">req</span>.<span class="ident">uri</span>().<span class="ident">path_and_query</span>().<span class="ident">unwrap</span>(), <span class="kw-2">&amp;</span><span class="ident">PathAndQuery</span>::<span class="ident">from_static</span>(<span class="ident">path</span>));
-    <span class="kw">let</span> <span class="ident">body</span> <span class="op">=</span> <span class="macro">json</span><span class="macro">!</span>({<span class="string">&quot;message&quot;</span>: <span class="string">&quot;hello&quot;</span>});
-
-    <span class="kw">let</span> <span class="ident">rsp</span> <span class="op">=</span> <span class="ident">NextEventResponse</span> {
-        <span class="ident">request_id</span>: <span class="string">&quot;8476a536-e9f4-11e8-9739-2dfe598c3fcd&quot;</span>,
-        <span class="ident">deadline</span>: <span class="number">1_542_409_706_888</span>,
-        <span class="ident">arn</span>: <span class="string">&quot;arn:aws:lambda:us-east-2:123456789012:function:custom-runtime&quot;</span>,
-        <span class="ident">trace_id</span>: <span class="string">&quot;Root=1-5bef4de7-ad49b0e87f6ef6c87fc2e700;Parent=9a9197af755a6419&quot;</span>,
-        <span class="ident">body</span>: <span class="ident">serde_json</span>::<span class="ident">to_vec</span>(<span class="kw-2">&amp;</span><span class="ident">body</span>)<span class="question-mark">?</span>,
-    };
-    <span class="ident">rsp</span>.<span class="ident">into_rsp</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">into</span>())
-}
-
-<span class="ident">async</span> <span class="kw">fn</span> <span class="ident">complete_event</span>(<span class="ident">req</span>: <span class="kw-2">&amp;</span><span class="ident">Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Response</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Method</span>::<span class="ident">POST</span>, <span class="ident">req</span>.<span class="ident">method</span>());
-    <span class="kw">let</span> <span class="ident">rsp</span> <span class="op">=</span> <span class="ident">Response</span>::<span class="ident">builder</span>()
-        .<span class="ident">status</span>(<span class="ident">StatusCode</span>::<span class="ident">ACCEPTED</span>)
-        .<span class="ident">body</span>(<span class="ident">Body</span>::<span class="ident">empty</span>())
-        .<span class="ident">expect</span>(<span class="string">&quot;Unable to construct response&quot;</span>);
-
-    <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;/2018-06-01/runtime/invocation/{}/response&quot;</span>, <span class="ident">id</span>);
-    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">expected</span>, <span class="ident">req</span>.<span class="ident">uri</span>().<span class="ident">path</span>());
-
-    <span class="prelude-val">Ok</span>(<span class="ident">rsp</span>)
-}
-
-<span class="ident">async</span> <span class="kw">fn</span> <span class="ident">event_err</span>(<span class="ident">req</span>: <span class="kw-2">&amp;</span><span class="ident">Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Response</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;/2018-06-01/runtime/invocation/{}/error&quot;</span>, <span class="ident">id</span>);
-    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">expected</span>, <span class="ident">req</span>.<span class="ident">uri</span>().<span class="ident">path</span>());
-
-    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="ident">Method</span>::<span class="ident">POST</span>);
-    <span class="kw">let</span> <span class="ident">header</span> <span class="op">=</span> <span class="string">&quot;lambda-runtime-function-error-type&quot;</span>;
-    <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="string">&quot;unhandled&quot;</span>;
-    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">req</span>.<span class="ident">headers</span>()[<span class="ident">header</span>], <span class="ident">HeaderValue</span>::<span class="ident">try_from</span>(<span class="ident">expected</span>)<span class="question-mark">?</span>);
-
-    <span class="kw">let</span> <span class="ident">rsp</span> <span class="op">=</span> <span class="ident">Response</span>::<span class="ident">builder</span>().<span class="ident">status</span>(<span class="ident">StatusCode</span>::<span class="ident">ACCEPTED</span>).<span class="ident">body</span>(<span class="ident">Body</span>::<span class="ident">empty</span>())<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(<span class="ident">rsp</span>)
-}
-
-<span class="kw">fn</span> <span class="ident">set_origin</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>(<span class="ident">base</span>: <span class="ident">Uri</span>, <span class="ident">req</span>: <span class="ident">Request</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Request</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">parts</span>, <span class="ident">body</span>) <span class="op">=</span> <span class="ident">req</span>.<span class="ident">into_parts</span>();
-    <span class="kw">let</span> (<span class="ident">scheme</span>, <span class="ident">authority</span>) <span class="op">=</span> {
-        <span class="kw">let</span> <span class="ident">scheme</span> <span class="op">=</span> <span class="ident">base</span>.<span class="ident">scheme</span>().<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span><span class="ident">Scheme</span>::<span class="ident">HTTP</span>);
-        <span class="kw">let</span> <span class="ident">authority</span> <span class="op">=</span> <span class="ident">base</span>.<span class="ident">authority</span>().<span class="ident">expect</span>(<span class="string">&quot;Authority not found&quot;</span>);
-        (<span class="ident">scheme</span>, <span class="ident">authority</span>)
-    };
-    <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">parts</span>.<span class="ident">uri</span>.<span class="ident">path_and_query</span>().<span class="ident">expect</span>(<span class="string">&quot;PathAndQuery not found&quot;</span>);
-
-    <span class="kw">let</span> <span class="ident">uri</span> <span class="op">=</span> <span class="ident">Uri</span>::<span class="ident">builder</span>()
-        .<span class="ident">scheme</span>(<span class="ident">scheme</span>.<span class="ident">clone</span>())
-        .<span class="ident">authority</span>(<span class="ident">authority</span>.<span class="ident">clone</span>())
-        .<span class="ident">path_and_query</span>(<span class="ident">path</span>.<span class="ident">clone</span>())
-        .<span class="ident">build</span>()
-        .<span class="ident">expect</span>(<span class="string">&quot;Unable to build URI&quot;</span>);
-
-    <span class="ident">parts</span>.<span class="ident">uri</span> <span class="op">=</span> <span class="ident">uri</span>;
-    <span class="prelude-val">Ok</span>(<span class="ident">Request</span>::<span class="ident">from_parts</span>(<span class="ident">parts</span>, <span class="ident">body</span>))
-}
-
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">endpoint_tests</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">handle</span>, <span class="ident">set_origin</span>};
     <span class="kw">use</span> <span class="kw">crate</span>::{
-        <span class="ident">requests</span>::{<span class="ident">EventCompletionRequest</span>, <span class="ident">EventErrorRequest</span>, <span class="ident">IntoRequest</span>, <span class="ident">NextEventRequest</span>},
-        <span class="ident">simulated</span>::<span class="ident">SimulatedConnector</span>,
+        <span class="ident">client</span>::<span class="ident">Client</span>,
+        <span class="ident">incoming</span>,
+        <span class="ident">requests</span>::{
+            <span class="ident">EventCompletionRequest</span>, <span class="ident">EventErrorRequest</span>, <span class="ident">IntoRequest</span>, <span class="ident">IntoResponse</span>, <span class="ident">NextEventRequest</span>, <span class="ident">NextEventResponse</span>,
+        },
+        <span class="ident">simulated</span>,
         <span class="ident">types</span>::<span class="ident">Diagnostic</span>,
-        <span class="ident">Error</span>,
+        <span class="ident">Error</span>, <span class="ident">Runtime</span>,
     };
-    <span class="kw">use</span> <span class="ident">http</span>::{<span class="ident">HeaderValue</span>, <span class="ident">StatusCode</span>, <span class="ident">Uri</span>};
+    <span class="kw">use</span> <span class="ident">http</span>::{<span class="ident">uri</span>::<span class="ident">PathAndQuery</span>, <span class="ident">HeaderValue</span>, <span class="ident">Method</span>, <span class="ident">Request</span>, <span class="ident">Response</span>, <span class="ident">StatusCode</span>, <span class="ident">Uri</span>};
+    <span class="kw">use</span> <span class="ident">hyper</span>::{<span class="ident">server</span>::<span class="ident">conn</span>::<span class="ident">Http</span>, <span class="ident">service</span>::<span class="ident">service_fn</span>, <span class="ident">Body</span>};
+    <span class="kw">use</span> <span class="ident">serde_json</span>::<span class="ident">json</span>;
     <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">TryFrom</span>;
-    <span class="kw">use</span> <span class="ident">tokio</span>::<span class="ident">sync</span>;
+    <span class="kw">use</span> <span class="ident">tokio</span>::{
+        <span class="ident">io</span>::{<span class="ident">AsyncRead</span>, <span class="ident">AsyncWrite</span>},
+        <span class="ident">select</span>,
+        <span class="ident">sync</span>::{<span class="self">self</span>, <span class="ident">oneshot</span>},
+    };
+    <span class="kw">use</span> <span class="ident">tokio_stream</span>::<span class="ident">StreamExt</span>;
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+    <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">next_event</span>(<span class="ident">req</span>: <span class="kw-2">&amp;</span><span class="ident">Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Response</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="string">&quot;/2018-06-01/runtime/invocation/next&quot;</span>;
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="ident">Method</span>::<span class="ident">GET</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">req</span>.<span class="ident">uri</span>().<span class="ident">path_and_query</span>().<span class="ident">unwrap</span>(), <span class="kw-2">&amp;</span><span class="ident">PathAndQuery</span>::<span class="ident">from_static</span>(<span class="ident">path</span>));
+        <span class="kw">let</span> <span class="ident">body</span> <span class="op">=</span> <span class="macro">json</span><span class="macro">!</span>({<span class="string">&quot;message&quot;</span>: <span class="string">&quot;hello&quot;</span>});
+
+        <span class="kw">let</span> <span class="ident">rsp</span> <span class="op">=</span> <span class="ident">NextEventResponse</span> {
+            <span class="ident">request_id</span>: <span class="string">&quot;8476a536-e9f4-11e8-9739-2dfe598c3fcd&quot;</span>,
+            <span class="ident">deadline</span>: <span class="number">1_542_409_706_888</span>,
+            <span class="ident">arn</span>: <span class="string">&quot;arn:aws:lambda:us-east-2:123456789012:function:custom-runtime&quot;</span>,
+            <span class="ident">trace_id</span>: <span class="string">&quot;Root=1-5bef4de7-ad49b0e87f6ef6c87fc2e700;Parent=9a9197af755a6419&quot;</span>,
+            <span class="ident">body</span>: <span class="ident">serde_json</span>::<span class="ident">to_vec</span>(<span class="kw-2">&amp;</span><span class="ident">body</span>)<span class="question-mark">?</span>,
+        };
+        <span class="ident">rsp</span>.<span class="ident">into_rsp</span>()
+    }
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+    <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">complete_event</span>(<span class="ident">req</span>: <span class="kw-2">&amp;</span><span class="ident">Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Response</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Method</span>::<span class="ident">POST</span>, <span class="ident">req</span>.<span class="ident">method</span>());
+        <span class="kw">let</span> <span class="ident">rsp</span> <span class="op">=</span> <span class="ident">Response</span>::<span class="ident">builder</span>()
+            .<span class="ident">status</span>(<span class="ident">StatusCode</span>::<span class="ident">ACCEPTED</span>)
+            .<span class="ident">body</span>(<span class="ident">Body</span>::<span class="ident">empty</span>())
+            .<span class="ident">expect</span>(<span class="string">&quot;Unable to construct response&quot;</span>);
+
+        <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;/2018-06-01/runtime/invocation/{}/response&quot;</span>, <span class="ident">id</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">expected</span>, <span class="ident">req</span>.<span class="ident">uri</span>().<span class="ident">path</span>());
+
+        <span class="prelude-val">Ok</span>(<span class="ident">rsp</span>)
+    }
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+    <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">event_err</span>(<span class="ident">req</span>: <span class="kw-2">&amp;</span><span class="ident">Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Response</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;/2018-06-01/runtime/invocation/{}/error&quot;</span>, <span class="ident">id</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">expected</span>, <span class="ident">req</span>.<span class="ident">uri</span>().<span class="ident">path</span>());
+
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="ident">Method</span>::<span class="ident">POST</span>);
+        <span class="kw">let</span> <span class="ident">header</span> <span class="op">=</span> <span class="string">&quot;lambda-runtime-function-error-type&quot;</span>;
+        <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="string">&quot;unhandled&quot;</span>;
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">req</span>.<span class="ident">headers</span>()[<span class="ident">header</span>], <span class="ident">HeaderValue</span>::<span class="ident">try_from</span>(<span class="ident">expected</span>)<span class="question-mark">?</span>);
+
+        <span class="kw">let</span> <span class="ident">rsp</span> <span class="op">=</span> <span class="ident">Response</span>::<span class="ident">builder</span>().<span class="ident">status</span>(<span class="ident">StatusCode</span>::<span class="ident">ACCEPTED</span>).<span class="ident">body</span>(<span class="ident">Body</span>::<span class="ident">empty</span>())<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(<span class="ident">rsp</span>)
+    }
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+    <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">handle_incoming</span>(<span class="ident">req</span>: <span class="ident">Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Response</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">path</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">req</span>
+            .<span class="ident">uri</span>()
+            .<span class="ident">path_and_query</span>()
+            .<span class="ident">expect</span>(<span class="string">&quot;PathAndQuery not found&quot;</span>)
+            .<span class="ident">as_str</span>()
+            .<span class="ident">split</span>(<span class="string">&#39;/&#39;</span>)
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>();
+        <span class="kw">match</span> <span class="ident">path</span>[<span class="number">1</span>..] {
+            [<span class="string">&quot;2018-06-01&quot;</span>, <span class="string">&quot;runtime&quot;</span>, <span class="string">&quot;invocation&quot;</span>, <span class="string">&quot;next&quot;</span>] <span class="op">=</span><span class="op">&gt;</span> <span class="ident">next_event</span>(<span class="kw-2">&amp;</span><span class="ident">req</span>).<span class="ident">await</span>,
+            [<span class="string">&quot;2018-06-01&quot;</span>, <span class="string">&quot;runtime&quot;</span>, <span class="string">&quot;invocation&quot;</span>, <span class="ident">id</span>, <span class="string">&quot;response&quot;</span>] <span class="op">=</span><span class="op">&gt;</span> <span class="ident">complete_event</span>(<span class="kw-2">&amp;</span><span class="ident">req</span>, <span class="ident">id</span>).<span class="ident">await</span>,
+            [<span class="string">&quot;2018-06-01&quot;</span>, <span class="string">&quot;runtime&quot;</span>, <span class="string">&quot;invocation&quot;</span>, <span class="ident">id</span>, <span class="string">&quot;error&quot;</span>] <span class="op">=</span><span class="op">&gt;</span> <span class="ident">event_err</span>(<span class="kw-2">&amp;</span><span class="ident">req</span>, <span class="ident">id</span>).<span class="ident">await</span>,
+            [<span class="string">&quot;2018-06-01&quot;</span>, <span class="string">&quot;runtime&quot;</span>, <span class="string">&quot;init&quot;</span>, <span class="string">&quot;error&quot;</span>] <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unimplemented</span><span class="macro">!</span>(),
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unimplemented</span><span class="macro">!</span>(),
+        }
+    }
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+    <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">handle</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span>(<span class="ident">io</span>: <span class="ident">I</span>, <span class="ident">rx</span>: <span class="ident">oneshot</span>::<span class="ident">Receiver</span><span class="op">&lt;</span>()<span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">hyper</span>::<span class="ident">Error</span><span class="op">&gt;</span>
+    <span class="kw">where</span>
+        <span class="ident">I</span>: <span class="ident">AsyncRead</span> <span class="op">+</span> <span class="ident">AsyncWrite</span> <span class="op">+</span> <span class="ident">Unpin</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
+    {
+        <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">Http</span>::<span class="ident">new</span>().<span class="ident">serve_connection</span>(<span class="ident">io</span>, <span class="ident">service_fn</span>(<span class="ident">handle_incoming</span>));
+        <span class="macro">select</span><span class="macro">!</span> {
+            <span class="kw">_</span> <span class="op">=</span> <span class="ident">rx</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="prelude-val">Ok</span>(())
+            }
+            <span class="ident">res</span> <span class="op">=</span> <span class="ident">conn</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">match</span> <span class="ident">res</span> {
+                    <span class="prelude-val">Ok</span>(()) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(()),
+                    <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                        <span class="prelude-val">Err</span>(<span class="ident">e</span>)
+                    }
+                }
+            }
+        }
+    }
 
     <span class="attribute">#[<span class="ident">tokio</span>::<span class="ident">test</span>]</span>
-    <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">next_event</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="ident">client</span>, <span class="ident">server</span>) <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">simulated</span>::<span class="ident">chan</span>();
+    <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">test_next_event</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">base</span> <span class="op">=</span> <span class="ident">Uri</span>::<span class="ident">from_static</span>(<span class="string">&quot;http://localhost:9001&quot;</span>);
+        <span class="kw">let</span> (<span class="ident">client</span>, <span class="ident">server</span>) <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">simulated</span>::<span class="ident">chan</span>();
 
         <span class="kw">let</span> (<span class="ident">tx</span>, <span class="ident">rx</span>) <span class="op">=</span> <span class="ident">sync</span>::<span class="ident">oneshot</span>::<span class="ident">channel</span>();
         <span class="kw">let</span> <span class="ident">server</span> <span class="op">=</span> <span class="ident">tokio</span>::<span class="ident">spawn</span>(<span class="ident">async</span> {
             <span class="ident">handle</span>(<span class="ident">server</span>, <span class="ident">rx</span>).<span class="ident">await</span>.<span class="ident">expect</span>(<span class="string">&quot;Unable to handle request&quot;</span>);
         });
 
-        <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">SimulatedConnector</span> { <span class="ident">inner</span>: <span class="ident">client</span> };
-        <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="ident">hyper</span>::<span class="ident">Client</span>::<span class="ident">builder</span>().<span class="ident">build</span>(<span class="ident">conn</span>);
+        <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">simulated</span>::<span class="ident">Connector</span> { <span class="ident">inner</span>: <span class="ident">client</span> };
+        <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="ident">Client</span>::<span class="ident">with</span>(<span class="ident">base</span>, <span class="ident">conn</span>);
 
         <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">NextEventRequest</span>.<span class="ident">into_req</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">set_origin</span>(<span class="ident">base</span>, <span class="ident">req</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">rsp</span> <span class="op">=</span> <span class="ident">client</span>.<span class="ident">request</span>(<span class="ident">req</span>).<span class="ident">await</span>.<span class="ident">expect</span>(<span class="string">&quot;Unable to send request&quot;</span>);
+        <span class="kw">let</span> <span class="ident">rsp</span> <span class="op">=</span> <span class="ident">client</span>.<span class="ident">call</span>(<span class="ident">req</span>).<span class="ident">await</span>.<span class="ident">expect</span>(<span class="string">&quot;Unable to send request&quot;</span>);
 
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">rsp</span>.<span class="ident">status</span>(), <span class="ident">StatusCode</span>::<span class="ident">OK</span>);
         <span class="kw">let</span> <span class="ident">header</span> <span class="op">=</span> <span class="string">&quot;lambda-runtime-deadline-ms&quot;</span>;
@@ -544,7 +472,7 @@
     }
 
     <span class="attribute">#[<span class="ident">tokio</span>::<span class="ident">test</span>]</span>
-    <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">ok_response</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">test_ok_response</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> (<span class="ident">client</span>, <span class="ident">server</span>) <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">simulated</span>::<span class="ident">chan</span>();
         <span class="kw">let</span> (<span class="ident">tx</span>, <span class="ident">rx</span>) <span class="op">=</span> <span class="ident">sync</span>::<span class="ident">oneshot</span>::<span class="ident">channel</span>();
         <span class="kw">let</span> <span class="ident">base</span> <span class="op">=</span> <span class="ident">Uri</span>::<span class="ident">from_static</span>(<span class="string">&quot;http://localhost:9001&quot;</span>);
@@ -553,17 +481,16 @@
             <span class="ident">handle</span>(<span class="ident">server</span>, <span class="ident">rx</span>).<span class="ident">await</span>.<span class="ident">expect</span>(<span class="string">&quot;Unable to handle request&quot;</span>);
         });
 
-        <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">SimulatedConnector</span> { <span class="ident">inner</span>: <span class="ident">client</span> };
-        <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="ident">hyper</span>::<span class="ident">Client</span>::<span class="ident">builder</span>().<span class="ident">build</span>(<span class="ident">conn</span>);
+        <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">simulated</span>::<span class="ident">Connector</span> { <span class="ident">inner</span>: <span class="ident">client</span> };
+        <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="ident">Client</span>::<span class="ident">with</span>(<span class="ident">base</span>, <span class="ident">conn</span>);
 
         <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">EventCompletionRequest</span> {
             <span class="ident">request_id</span>: <span class="string">&quot;156cb537-e2d4-11e8-9b34-d36013741fb9&quot;</span>,
             <span class="ident">body</span>: <span class="string">&quot;done&quot;</span>,
         };
         <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">into_req</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">set_origin</span>(<span class="ident">base</span>, <span class="ident">req</span>)<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">rsp</span> <span class="op">=</span> <span class="ident">client</span>.<span class="ident">request</span>(<span class="ident">req</span>).<span class="ident">await</span><span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">rsp</span> <span class="op">=</span> <span class="ident">client</span>.<span class="ident">call</span>(<span class="ident">req</span>).<span class="ident">await</span><span class="question-mark">?</span>;
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">rsp</span>.<span class="ident">status</span>(), <span class="ident">StatusCode</span>::<span class="ident">ACCEPTED</span>);
 
         <span class="comment">// shutdown server</span>
@@ -576,7 +503,7 @@
     }
 
     <span class="attribute">#[<span class="ident">tokio</span>::<span class="ident">test</span>]</span>
-    <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">error_response</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">test_error_response</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> (<span class="ident">client</span>, <span class="ident">server</span>) <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">simulated</span>::<span class="ident">chan</span>();
         <span class="kw">let</span> (<span class="ident">tx</span>, <span class="ident">rx</span>) <span class="op">=</span> <span class="ident">sync</span>::<span class="ident">oneshot</span>::<span class="ident">channel</span>();
         <span class="kw">let</span> <span class="ident">base</span> <span class="op">=</span> <span class="ident">Uri</span>::<span class="ident">from_static</span>(<span class="string">&quot;http://localhost:9001&quot;</span>);
@@ -585,8 +512,8 @@
             <span class="ident">handle</span>(<span class="ident">server</span>, <span class="ident">rx</span>).<span class="ident">await</span>.<span class="ident">expect</span>(<span class="string">&quot;Unable to handle request&quot;</span>);
         });
 
-        <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">SimulatedConnector</span> { <span class="ident">inner</span>: <span class="ident">client</span> };
-        <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="ident">hyper</span>::<span class="ident">Client</span>::<span class="ident">builder</span>().<span class="ident">build</span>(<span class="ident">conn</span>);
+        <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">simulated</span>::<span class="ident">Connector</span> { <span class="ident">inner</span>: <span class="ident">client</span> };
+        <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="ident">Client</span>::<span class="ident">with</span>(<span class="ident">base</span>, <span class="ident">conn</span>);
 
         <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">EventErrorRequest</span> {
             <span class="ident">request_id</span>: <span class="string">&quot;156cb537-e2d4-11e8-9b34-d36013741fb9&quot;</span>,
@@ -596,8 +523,7 @@
             },
         };
         <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">into_req</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">set_origin</span>(<span class="ident">base</span>, <span class="ident">req</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">rsp</span> <span class="op">=</span> <span class="ident">client</span>.<span class="ident">request</span>(<span class="ident">req</span>).<span class="ident">await</span><span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">rsp</span> <span class="op">=</span> <span class="ident">client</span>.<span class="ident">call</span>(<span class="ident">req</span>).<span class="ident">await</span><span class="question-mark">?</span>;
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">rsp</span>.<span class="ident">status</span>(), <span class="ident">StatusCode</span>::<span class="ident">ACCEPTED</span>);
 
         <span class="comment">// shutdown server</span>
@@ -609,56 +535,40 @@
         }
     }
 
-    <span class="comment">// #[tokio::test]</span>
-    <span class="comment">// async fn run_end_to_end() -&gt; Result&lt;(), Error&gt; {</span>
-    <span class="comment">//     use serde_json::Value;</span>
+    <span class="attribute">#[<span class="ident">tokio</span>::<span class="ident">test</span>]</span>
+    <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">successful_end_to_end_run</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> (<span class="ident">client</span>, <span class="ident">server</span>) <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">simulated</span>::<span class="ident">chan</span>();
+        <span class="kw">let</span> (<span class="ident">tx</span>, <span class="ident">rx</span>) <span class="op">=</span> <span class="ident">sync</span>::<span class="ident">oneshot</span>::<span class="ident">channel</span>();
+        <span class="kw">let</span> <span class="ident">base</span> <span class="op">=</span> <span class="ident">Uri</span>::<span class="ident">from_static</span>(<span class="string">&quot;http://localhost:9001&quot;</span>);
 
-    <span class="comment">//     let (client, server) = crate::simulated::chan();</span>
+        <span class="kw">let</span> <span class="ident">server</span> <span class="op">=</span> <span class="ident">tokio</span>::<span class="ident">spawn</span>(<span class="ident">async</span> {
+            <span class="ident">handle</span>(<span class="ident">server</span>, <span class="ident">rx</span>).<span class="ident">await</span>.<span class="ident">expect</span>(<span class="string">&quot;Unable to handle request&quot;</span>);
+        });
+        <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">simulated</span>::<span class="ident">Connector</span> { <span class="ident">inner</span>: <span class="ident">client</span> };
 
-    <span class="comment">//     let (tx, rx) = sync::oneshot::channel();</span>
-    <span class="comment">//     let server = tokio::spawn(async move { handle(server, rx) });</span>
+        <span class="kw">let</span> <span class="ident">runtime</span> <span class="op">=</span> <span class="ident">Runtime</span>::<span class="ident">builder</span>()
+            .<span class="ident">with_endpoint</span>(<span class="ident">base</span>)
+            .<span class="ident">with_connector</span>(<span class="ident">conn</span>)
+            .<span class="ident">build</span>()
+            .<span class="ident">expect</span>(<span class="string">&quot;Unable to build runtime&quot;</span>);
 
-    <span class="comment">//     async fn handler(s: Value) -&gt; Result&lt;Value, Error&gt; {</span>
-    <span class="comment">//         INVOCATION_CTX.with(|_ctx| {});</span>
-    <span class="comment">//         Ok(s)</span>
-    <span class="comment">//     }</span>
-    <span class="comment">//     let handler = handler_fn(handler);</span>
-    <span class="comment">//     let client = tokio::spawn(async move {</span>
-    <span class="comment">//         run_simulated(handler, &amp;url).await?;</span>
-    <span class="comment">//         Ok::&lt;(), Error&gt;(())</span>
-    <span class="comment">//     });</span>
-    <span class="comment">//     race!(client, server);</span>
-    <span class="comment">//     Ok(())</span>
-    <span class="comment">// }</span>
+        <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">func</span>(<span class="ident">event</span>: <span class="ident">serde_json</span>::<span class="ident">Value</span>, <span class="kw">_</span>: <span class="kw">crate</span>::<span class="ident">Context</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">serde_json</span>::<span class="ident">Value</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Ok</span>(<span class="ident">event</span>)
+        }
+        <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">handler_fn</span>(<span class="ident">func</span>);
 
-    <span class="comment">// #[tokio::test]</span>
-    <span class="comment">// async fn test_stream_handler() -&gt; Result&lt;(), Error&gt; {</span>
-    <span class="comment">//     let (client, server) = crate::simulated::chan();</span>
-    <span class="comment">//     let req = Request::builder()</span>
-    <span class="comment">//         .method(Method::GET)</span>
-    <span class="comment">//         .uri(&quot;http://httpbin.org&quot;)</span>
-    <span class="comment">//         .body(Body::empty())</span>
-    <span class="comment">//         .expect(&quot;Can&#39;t build request&quot;);</span>
+        <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">runtime</span>.<span class="ident">client</span>;
+        <span class="kw">let</span> <span class="ident">incoming</span> <span class="op">=</span> <span class="ident">incoming</span>(<span class="ident">client</span>).<span class="ident">take</span>(<span class="number">1</span>);
+        <span class="ident">runtime</span>.<span class="ident">run</span>(<span class="ident">incoming</span>, <span class="ident">f</span>).<span class="ident">await</span><span class="question-mark">?</span>;
 
-    <span class="comment">//     let conn = SimulatedConnector { inner: client };</span>
-    <span class="comment">//     let client = hyper::Client::builder().build(conn);</span>
-
-    <span class="comment">//     let (tx, rx) = sync::oneshot::channel();</span>
-    <span class="comment">//     let server = tokio::spawn(async {</span>
-    <span class="comment">//         handle(server, rx).await.expect(&quot;Unable to handle request&quot;);</span>
-    <span class="comment">//     });</span>
-
-    <span class="comment">//     let rsp = client.request(req).await.expect(&quot;Unable to send request&quot;);</span>
-    <span class="comment">//     assert_eq!(rsp.status(), http::StatusCode::OK);</span>
-
-    <span class="comment">//     // shutdown server</span>
-    <span class="comment">//     tx.send(()).expect(&quot;Receiver has been dropped&quot;);</span>
-    <span class="comment">//     match server.await {</span>
-    <span class="comment">//         Ok(_) =&gt; Ok(()),</span>
-    <span class="comment">//         Err(e) if e.is_panic() =&gt; return Err::&lt;(), anyhow::Error&gt;(e.into()),</span>
-    <span class="comment">//         Err(_) =&gt; unreachable!(&quot;This branch shouldn&#39;t be reachable&quot;),</span>
-    <span class="comment">//     }</span>
-    <span class="comment">// }</span>
+        <span class="comment">// shutdown server</span>
+        <span class="ident">tx</span>.<span class="ident">send</span>(()).<span class="ident">expect</span>(<span class="string">&quot;Receiver has been dropped&quot;</span>);
+        <span class="kw">match</span> <span class="ident">server</span>.<span class="ident">await</span> {
+            <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(()),
+            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="kw">if</span> <span class="ident">e</span>.<span class="ident">is_panic</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>::<span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span>(<span class="ident">e</span>.<span class="ident">into</span>()),
+            <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unreachable</span><span class="macro">!</span>(<span class="string">&quot;This branch shouldn&#39;t be reachable&quot;</span>),
+        }
+    }
 }
 </pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "lambda";</script><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>

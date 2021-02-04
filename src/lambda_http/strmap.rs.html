@@ -162,17 +162,15 @@
 <span id="159">159</span>
 <span id="160">160</span>
 <span id="161">161</span>
-<span id="162">162</span>
 </pre><div class="example-wrap"><pre class="rust ">
+<span class="kw">use</span> <span class="ident">serde</span>::{
+    <span class="ident">de</span>::{<span class="ident">MapAccess</span>, <span class="ident">Visitor</span>},
+    <span class="ident">Deserialize</span>, <span class="ident">Deserializer</span>,
+};
 <span class="kw">use</span> <span class="ident">std</span>::{
     <span class="ident">collections</span>::{<span class="ident">hash_map</span>::<span class="ident">Keys</span>, <span class="ident">HashMap</span>},
     <span class="ident">fmt</span>,
     <span class="ident">sync</span>::<span class="ident">Arc</span>,
-};
-
-<span class="kw">use</span> <span class="ident">serde</span>::{
-    <span class="ident">de</span>::{<span class="ident">MapAccess</span>, <span class="ident">Visitor</span>},
-    <span class="ident">Deserialize</span>, <span class="ident">Deserializer</span>,
 };
 
 <span class="doccomment">/// A read-only view into a map of string data which may contain multiple values</span>
@@ -242,7 +240,7 @@
 
 <span class="doccomment">/// internal type used when deserializing StrMaps from</span>
 <span class="doccomment">/// potentially one or many valued maps</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">serde_derive</span>::<span class="ident">Deserialize</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>)]</span>
 <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">untagged</span>)]</span>
 <span class="kw">enum</span> <span class="ident">OneOrMany</span> {
     <span class="ident">One</span>(<span class="ident">String</span>),

@@ -1,6 +1,6 @@
 name: Rust
 
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
@@ -68,6 +68,17 @@ jobs:
           override: true
       - name: Run fmt check
         run: cargo fmt --all -- --check
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          components: clippy
+          override: true
+      - name: Run clippy check
+        run: cargo clippy
 
   # publish rustdoc to a gh-pages branch on pushes to master
   # this can be helpful to those depending on the mainline branch

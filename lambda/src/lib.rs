@@ -156,6 +156,7 @@ where
 
             let handler = Arc::clone(&handler);
             let request_id = &ctx.request_id.clone();
+            #[allow(clippy::async_yields_async)]
             let task = tokio::spawn(async move { handler.call(body, ctx) });
 
             let req = match task.await {

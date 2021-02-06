@@ -31,11 +31,15 @@ where
             .scheme(scheme.clone())
             .authority(authority.clone())
             .path_and_query(path.clone())
-            .build()
-            .expect("Unable to build URI");
+            .build();
 
-        parts.uri = uri;
-        Ok(Request::from_parts(parts, body))
+        match uri {
+            Ok(u) => {
+                parts.uri = u;
+                Ok(Request::from_parts(parts, body))
+            }
+            Err(e) => Err(Box::new(e)),
+        }
     }
 
     pub(crate) async fn call(&self, req: Request<Body>) -> Result<Response<Body>, Error> {
@@ -178,7 +182,7 @@ mod endpoint_tests {
         tx.send(()).expect("Receiver has been dropped");
         match server.await {
             Ok(_) => Ok(()),
-            Err(e) if e.is_panic() => return Err::<(), Error>(e.into()),
+            Err(e) if e.is_panic() => Err::<(), Error>(e.into()),
             Err(_) => unreachable!("This branch shouldn't be reachable"),
         }
     }
@@ -209,7 +213,7 @@ mod endpoint_tests {
         tx.send(()).expect("Receiver has been dropped");
         match server.await {
             Ok(_) => Ok(()),
-            Err(e) if e.is_panic() => return Err::<(), Error>(e.into()),
+            Err(e) if e.is_panic() => Err::<(), Error>(e.into()),
             Err(_) => unreachable!("This branch shouldn't be reachable"),
         }
     }
@@ -242,7 +246,7 @@ mod endpoint_tests {
         tx.send(()).expect("Receiver has been dropped");
         match server.await {
             Ok(_) => Ok(()),
-            Err(e) if e.is_panic() => return Err::<(), Error>(e.into()),
+            Err(e) if e.is_panic() => Err::<(), Error>(e.into()),
             Err(_) => unreachable!("This branch shouldn't be reachable"),
         }
     }
@@ -277,7 +281,7 @@ mod endpoint_tests {
         tx.send(()).expect("Receiver has been dropped");
         match server.await {
             Ok(_) => Ok(()),
-            Err(e) if e.is_panic() => return Err::<(), Error>(e.into()),
+            Err(e) if e.is_panic() => Err::<(), Error>(e.into()),
             Err(_) => unreachable!("This branch shouldn't be reachable"),
         }
     }

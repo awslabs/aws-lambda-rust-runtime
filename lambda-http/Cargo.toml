@@ -9,6 +9,7 @@ license = "Apache-2.0"
 homepage = "https://github.com/awslabs/aws-lambda-rust-runtime"
 repository = "https://github.com/awslabs/aws-lambda-rust-runtime"
 documentation = "https://docs.rs/lambda_runtime"
+categories = ["web-programming::http-server"]
 readme = "../README.md"
 
 [badges]

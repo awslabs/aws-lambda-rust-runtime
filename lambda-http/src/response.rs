@@ -7,7 +7,7 @@ use http::{
 };
 use serde::{
     ser::{Error as SerError, SerializeMap, SerializeSeq},
-    Serialize, Serializer
+    Serialize, Serializer,
 };
 
 /// Representation of Lambda response

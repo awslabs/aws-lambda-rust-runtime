@@ -1,47 +1,67 @@
 //! Response types
 
-use crate::body::Body;
+use crate::{body::Body, request::RequestOrigin};
 use http::{
-    header::{HeaderMap, HeaderValue, CONTENT_TYPE},
+    header::{HeaderMap, HeaderValue, CONTENT_TYPE, SET_COOKIE},
     Response,
 };
 use serde::{
-    ser::{Error as SerError, SerializeMap},
+    ser::{Error as SerError, SerializeMap, SerializeSeq},
     Serialize, Serializer,
 };
 
-/// Representation of API Gateway response
+/// Representation of Lambda response
+#[doc(hidden)]
+#[derive(Serialize, Debug)]
+#[serde(untagged)]
+pub enum LambdaResponse {
+    ApiGatewayV2(ApiGatewayV2Response),
+    Alb(AlbResponse),
+    ApiGateway(ApiGatewayResponse),
+}
+
+/// Representation of API Gateway v2 lambda response
 #[doc(hidden)]
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct LambdaResponse {
-    pub status_code: u16,
-    // ALB requires a statusDescription i.e. "200 OK" field but API Gateway returns an error
-    // when one is provided. only populate this for ALB responses
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub status_description: Option<String>,
+pub struct ApiGatewayV2Response {
+    status_code: u16,
     #[serde(serialize_with = "serialize_headers")]
-    pub headers: HeaderMap<HeaderValue>,
-    #[serde(serialize_with = "serialize_multi_value_headers")]
-    pub multi_value_headers: HeaderMap<HeaderValue>,
+    headers: HeaderMap<HeaderValue>,
+    #[serde(serialize_with = "serialize_headers_slice")]
+    cookies: Vec<HeaderValue>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub body: Option<Body>,
-    // This field is optional for API Gateway but required for ALB
-    pub is_base64_encoded: bool,
+    body: Option<Body>,
+    is_base64_encoded: bool,
 }
 
-#[cfg(test)]
-impl Default for LambdaResponse {
-    fn default() -> Self {
-        Self {
-            status_code: 200,
-            status_description: Default::default(),
-            headers: Default::default(),
-            multi_value_headers: Default::default(),
-            body: Default::default(),
-            is_base64_encoded: Default::default(),
-        }
-    }
+/// Representation of ALB lambda response
+#[doc(hidden)]
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct AlbResponse {
+    status_code: u16,
+    status_description: String,
+    #[serde(serialize_with = "serialize_headers")]
+    headers: HeaderMap<HeaderValue>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    body: Option<Body>,
+    is_base64_encoded: bool,
+}
+
+/// Representation of API Gateway lambda response
+#[doc(hidden)]
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct ApiGatewayResponse {
+    status_code: u16,
+    #[serde(serialize_with = "serialize_headers")]
+    headers: HeaderMap<HeaderValue>,
+    #[serde(serialize_with = "serialize_multi_value_headers")]
+    multi_value_headers: HeaderMap<HeaderValue>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    body: Option<Body>,
+    is_base64_encoded: bool,
 }
 
 /// Serialize a http::HeaderMap into a serde str => str map
@@ -73,9 +93,21 @@ where
     map.end()
 }
 
+/// Serialize a &[HeaderValue] into a Vec<str>
+fn serialize_headers_slice<S>(headers: &[HeaderValue], serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    let mut seq = serializer.serialize_seq(Some(headers.len()))?;
+    for header in headers {
+        seq.serialize_element(header.to_str().map_err(S::Error::custom)?)?;
+    }
+    seq.end()
+}
+
 /// tranformation from http type to internal type
 impl LambdaResponse {
-    pub(crate) fn from_response<T>(is_alb: bool, value: Response<T>) -> Self
+    pub(crate) fn from_response<T>(request_origin: &RequestOrigin, value: Response<T>) -> Self
     where
         T: Into<Body>,
     {
@@ -85,21 +117,43 @@ impl LambdaResponse {
             b @ Body::Text(_) => (false, Some(b)),
             b @ Body::Binary(_) => (true, Some(b)),
         };
-        Self {
-            status_code: parts.status.as_u16(),
-            status_description: if is_alb {
-                Some(format!(
+
+        let mut headers = parts.headers;
+        let status_code = parts.status.as_u16();
+
+        match request_origin {
+            RequestOrigin::ApiGatewayV2 => {
+                // ApiGatewayV2 expects the set-cookies headers to be in the "cookies" attribute,
+                // so remove them from the headers.
+                let cookies: Vec<HeaderValue> = headers.get_all(SET_COOKIE).iter().cloned().collect();
+                headers.remove(SET_COOKIE);
+
+                LambdaResponse::ApiGatewayV2(ApiGatewayV2Response {
+                    body,
+                    status_code,
+                    is_base64_encoded,
+                    cookies,
+                    headers,
+                })
+            }
+            RequestOrigin::ApiGateway => LambdaResponse::ApiGateway(ApiGatewayResponse {
+                body,
+                status_code,
+                is_base64_encoded,
+                headers: headers.clone(),
+                multi_value_headers: headers,
+            }),
+            RequestOrigin::Alb => LambdaResponse::Alb(AlbResponse {
+                body,
+                status_code,
+                is_base64_encoded,
+                headers,
+                status_description: format!(
                     "{} {}",
-                    parts.status.as_u16(),
+                    status_code,
                     parts.status.canonical_reason().unwrap_or_default()
-                ))
-            } else {
-                None
-            },
-            body,
-            headers: parts.headers.clone(),
-            multi_value_headers: parts.headers,
-            is_base64_encoded,
+                ),
+            }),
         }
     }
 }
@@ -159,9 +213,41 @@ impl IntoResponse for serde_json::Value {
 
 #[cfg(test)]
 mod tests {
-    use super::{Body, IntoResponse, LambdaResponse};
+    use super::{
+        AlbResponse, ApiGatewayResponse, ApiGatewayV2Response, Body, IntoResponse, LambdaResponse, RequestOrigin,
+    };
     use http::{header::CONTENT_TYPE, Response};
     use serde_json::{self, json};
+
+    fn api_gateway_response() -> ApiGatewayResponse {
+        ApiGatewayResponse {
+            status_code: 200,
+            headers: Default::default(),
+            multi_value_headers: Default::default(),
+            body: Default::default(),
+            is_base64_encoded: Default::default(),
+        }
+    }
+
+    fn alb_response() -> AlbResponse {
+        AlbResponse {
+            status_code: 200,
+            status_description: "200 OK".to_string(),
+            headers: Default::default(),
+            body: Default::default(),
+            is_base64_encoded: Default::default(),
+        }
+    }
+
+    fn api_gateway_v2_response() -> ApiGatewayV2Response {
+        ApiGatewayV2Response {
+            status_code: 200,
+            headers: Default::default(),
+            body: Default::default(),
+            cookies: Default::default(),
+            is_base64_encoded: Default::default(),
+        }
+    }
 
     #[test]
     fn json_into_response() {
@@ -189,21 +275,8 @@ mod tests {
     }
 
     #[test]
-    fn default_response() {
-        assert_eq!(LambdaResponse::default().status_code, 200)
-    }
-
-    #[test]
-    fn serialize_default() {
-        assert_eq!(
-            serde_json::to_string(&LambdaResponse::default()).expect("failed to serialize response"),
-            r#"{"statusCode":200,"headers":{},"multiValueHeaders":{},"isBase64Encoded":false}"#
-        );
-    }
-
-    #[test]
-    fn serialize_body() {
-        let mut resp = LambdaResponse::default();
+    fn serialize_body_for_api_gateway() {
+        let mut resp = api_gateway_response();
         resp.body = Some("foo".into());
         assert_eq!(
             serde_json::to_string(&resp).expect("failed to serialize response"),
@@ -212,9 +285,29 @@ mod tests {
     }
 
     #[test]
+    fn serialize_body_for_alb() {
+        let mut resp = alb_response();
+        resp.body = Some("foo".into());
+        assert_eq!(
+            serde_json::to_string(&resp).expect("failed to serialize response"),
+            r#"{"statusCode":200,"statusDescription":"200 OK","headers":{},"body":"foo","isBase64Encoded":false}"#
+        );
+    }
+
+    #[test]
+    fn serialize_body_for_api_gateway_v2() {
+        let mut resp = api_gateway_v2_response();
+        resp.body = Some("foo".into());
+        assert_eq!(
+            serde_json::to_string(&resp).expect("failed to serialize response"),
+            r#"{"statusCode":200,"headers":{},"cookies":[],"body":"foo","isBase64Encoded":false}"#
+        );
+    }
+
+    #[test]
     fn serialize_multi_value_headers() {
         let res = LambdaResponse::from_response(
-            false,
+            &RequestOrigin::ApiGateway,
             Response::builder()
                 .header("multi", "a")
                 .header("multi", "b")
@@ -225,6 +318,23 @@ mod tests {
         assert_eq!(
             json,
             r#"{"statusCode":200,"headers":{"multi":"a"},"multiValueHeaders":{"multi":["a","b"]},"isBase64Encoded":false}"#
+        )
+    }
+
+    #[test]
+    fn serialize_cookies() {
+        let res = LambdaResponse::from_response(
+            &RequestOrigin::ApiGatewayV2,
+            Response::builder()
+                .header("set-cookie", "cookie1=a")
+                .header("set-cookie", "cookie2=b")
+                .body(Body::from(()))
+                .expect("failed to create response"),
+        );
+        let json = serde_json::to_string(&res).expect("failed to serialize to json");
+        assert_eq!(
+            json,
+            r#"{"statusCode":200,"headers":{},"cookies":["cookie1=a","cookie2=b"],"isBase64Encoded":false}"#
         )
     }
 }

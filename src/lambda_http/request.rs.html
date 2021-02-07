@@ -728,6 +728,19 @@
 <span id="725">725</span>
 <span id="726">726</span>
 <span id="727">727</span>
+<span id="728">728</span>
+<span id="729">729</span>
+<span id="730">730</span>
+<span id="731">731</span>
+<span id="732">732</span>
+<span id="733">733</span>
+<span id="734">734</span>
+<span id="735">735</span>
+<span id="736">736</span>
+<span id="737">737</span>
+<span id="738">738</span>
+<span id="739">739</span>
+<span id="740">740</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! ALB and API Gateway request adaptations</span>
 <span class="doccomment">//!</span>
@@ -822,15 +835,28 @@
 }
 
 <span class="kw">impl</span> <span class="ident">LambdaRequest</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Return true if this request represents an ALB event</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Alb responses have unique requirements for responses that</span>
-    <span class="doccomment">/// vary only slightly from APIGateway responses. We serialize</span>
-    <span class="doccomment">/// responses capturing a hint that the request was an alb triggered</span>
-    <span class="doccomment">/// event.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_alb</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-        <span class="macro">matches</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">LambdaRequest</span>::<span class="ident">Alb</span> { .. })
+    <span class="doccomment">/// Return the `RequestOrigin` of the request to determine where the `LambdaRequest`</span>
+    <span class="doccomment">/// originated from, so that the appropriate response can be selected based on what</span>
+    <span class="doccomment">/// type of response the request origin expects.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">request_origin</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RequestOrigin</span> {
+        <span class="kw">match</span> <span class="self">self</span> {
+            <span class="ident">LambdaRequest</span>::<span class="ident">ApiGatewayV2</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">RequestOrigin</span>::<span class="ident">ApiGatewayV2</span>,
+            <span class="ident">LambdaRequest</span>::<span class="ident">Alb</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">RequestOrigin</span>::<span class="ident">Alb</span>,
+            <span class="ident">LambdaRequest</span>::<span class="ident">ApiGateway</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">RequestOrigin</span>::<span class="ident">ApiGateway</span>,
+        }
     }
+}
+
+<span class="doccomment">/// Represents the origin from which the lambda was requested from.</span>
+<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">RequestOrigin</span> {
+    <span class="doccomment">/// API Gateway v2 request origin</span>
+    <span class="ident">ApiGatewayV2</span>,
+    <span class="doccomment">/// API Gateway request origin</span>
+    <span class="ident">ApiGateway</span>,
+    <span class="doccomment">/// ALB request origin</span>
+    <span class="ident">Alb</span>,
 }
 
 <span class="doccomment">/// See [context-variable-reference](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-mapping-template-reference.html) for more detail.</span>

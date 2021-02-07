@@ -9,10 +9,9 @@ use std::{
     sync::{Arc, Mutex},
     task::{Context, Poll, Waker},
 };
-use tokio::io::{AsyncRead, AsyncWrite};
-use tower_service::Service;
+use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
 
-/// Creates a pair of AsyncReadWrite data streams, where the write end of each member of the pair
+/// Creates a pair of `AsyncRead`/`AsyncWrite` data streams, where the write end of each member of the pair
 /// is the read end of the other member of the pair.  This allows us to emulate the behavior of a TcpStream
 /// but in-memory, deterministically, and with full control over failure injection.
 pub(crate) fn chan() -> (SimStream, SimStream) {
@@ -37,11 +36,11 @@ pub(crate) fn chan() -> (SimStream, SimStream) {
 }
 
 #[derive(Clone)]
-pub struct SimulatedConnector {
+pub struct Connector {
     pub inner: SimStream,
 }
 
-impl Service<Uri> for SimulatedConnector {
+impl hyper::service::Service<Uri> for Connector {
     type Response = SimStream;
     type Error = std::io::Error;
     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>;
@@ -89,7 +88,7 @@ impl AsyncWrite for SimStream {
 
 /// Delegates to the underlying `read` member's methods
 impl AsyncRead for SimStream {
-    fn poll_read(mut self: Pin<&mut Self>, cx: &mut Context<'_>, buf: &mut [u8]) -> Poll<IoResult<usize>> {
+    fn poll_read(mut self: Pin<&mut Self>, cx: &mut Context<'_>, buf: &mut ReadBuf<'_>) -> Poll<IoResult<()>> {
         Pin::new(&mut self.read).poll_read(cx, buf)
     }
 }
@@ -104,6 +103,7 @@ pub struct BufferState {
 }
 
 impl BufferState {
+    /// Creates a new `BufferState`.
     fn new() -> Self {
         BufferState {
             buffer: VecDeque::new(),
@@ -123,11 +123,11 @@ impl BufferState {
     }
 
     /// Read data from the end of the deque byte buffer
-    fn read(&mut self, to_buf: &mut [u8]) -> usize {
+    fn read(&mut self, to_buf: &mut ReadBuf<'_>) -> usize {
         // Read no more bytes than we have available, and no more bytes than we were asked for
-        let bytes_to_read = min(to_buf.len(), self.buffer.len());
-        for i in 0..bytes_to_read {
-            to_buf[i] = self.buffer.pop_back().unwrap();
+        let bytes_to_read = min(to_buf.remaining(), self.buffer.len());
+        for _ in 0..bytes_to_read {
+            to_buf.put_slice(&[self.buffer.pop_back().unwrap()]);
         }
 
         bytes_to_read
@@ -173,7 +173,7 @@ pub struct ReadHalf {
 }
 
 impl AsyncRead for ReadHalf {
-    fn poll_read(self: Pin<&mut Self>, cx: &mut Context<'_>, buf: &mut [u8]) -> Poll<IoResult<usize>> {
+    fn poll_read(self: Pin<&mut Self>, cx: &mut Context<'_>, buf: &mut ReadBuf<'_>) -> Poll<IoResult<()>> {
         // Acquire the lock for the buffer
         let mut read_from = self
             .buffer
@@ -186,12 +186,12 @@ impl AsyncRead for ReadHalf {
         // means that someone trying to read from a VecDeque that hasn't been written to yet
         // would get an Eof error (as I learned the hard way).  Instead we should return Poll:Pending
         // to indicate that there could be more to read in the future.
-        if (bytes_read) == 0 {
+        if bytes_read == 0 {
             read_from.read_waker = Some(cx.waker().clone());
             Poll::Pending
         } else {
             //read_from.read_waker = Some(cx.waker().clone());
-            Poll::Ready(Ok(bytes_read))
+            Poll::Ready(Ok(()))
         }
     }
 }
@@ -208,7 +208,7 @@ mod tests {
         client.write_all(b"Ping").await.expect("Write should succeed");
 
         // Verify we can read it from side 2
-        let mut read_on_server = [0u8; 4];
+        let mut read_on_server = [0_u8; 4];
         server
             .read_exact(&mut read_on_server)
             .await
@@ -219,7 +219,7 @@ mod tests {
         server.write_all(b"Pong").await.expect("Write should succeed");
 
         // Verify we can read it from side 1
-        let mut read_on_client = [0u8; 4];
+        let mut read_on_client = [0_u8; 4];
         client
             .read_exact(&mut read_on_client)
             .await

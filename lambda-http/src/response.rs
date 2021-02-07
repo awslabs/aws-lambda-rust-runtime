@@ -1,5 +1,6 @@
 //! Response types
 
+use crate::{body::Body, request::RequestOrigin};
 use http::{
     header::{HeaderMap, HeaderValue, CONTENT_TYPE, SET_COOKIE},
     Response,
@@ -9,8 +10,6 @@ use serde::{
     Serializer,
 };
 use serde_derive::Serialize;
-
-use crate::{body::Body, request::RequestOrigin};
 
 /// Representation of Lambda response
 #[doc(hidden)]

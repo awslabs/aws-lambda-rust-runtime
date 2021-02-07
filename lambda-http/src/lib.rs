@@ -11,33 +11,10 @@
 //!
 //! ## Hello World
 //!
-//! `lambda_http` handlers adapt to the standard `lambda::Handler` interface using the [`handler`](fn.handler.html) function.
-//!
-//! The simplest case of an http handler is a function of an `http::Request` to a type that can be lifted into an `http::Response`.
-//! You can learn more about these types [here](trait.IntoResponse.html).
-//!
-//! Adding an `#[lambda(http)]` attribute to a `#[tokio::run]`-decorated `main` function will setup and run the Lambda function.
-//!
-//! Note: this comes at the expense of any onetime initialization your lambda task might find value in.
-//! The full body of your `main` function will be executed on **every** invocation of your lambda task.
-//!
-//! ```rust,no_run
-//! use lambda_http::{lambda::{lambda, Context}, Request, IntoResponse};
-//!
-//! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
-//!
-//! #[lambda(http)]
-//! #[tokio::main]
-//! async fn main(_: Request, _: Context) -> Result<impl IntoResponse, Error> {
-//!     Ok("👋 world!")
-//! }
-//! ```
-//!
-//! ## Hello World, Without Macros
-//!
-//! For cases where your lambda might benfit from one time function initializiation might
-//! prefer a plain `main` function and invoke `lambda::run` explicitly in combination with the [`handler`](fn.handler.html) function.
-//! Depending on the runtime cost of your dependency bootstrapping, this can reduce the overall latency of your functions execution path.
+//! The following example is how you would structure your Lambda such that you have a `main` function where you explicitly invoke
+//! `lambda::run` in combination with the [`handler`](fn.handler.html) function. This pattern allows you to utilize global initialization
+//! of tools such as loggers, to use on warm invokes to the same Lambda function after the first request, helping to reduce the latency of
+//! your function's execution path.
 //!
 //! ```rust,no_run
 //! use lambda_http::{handler, lambda};
@@ -51,7 +28,6 @@
 //!     lambda::run(handler(|request, context| async { Ok("👋 world!") })).await?;
 //!     Ok(())
 //! }
-//!
 //! ```
 //!
 //! ## Leveraging trigger provided data
@@ -92,7 +68,6 @@ extern crate maplit;
 pub use http::{self, Response};
 use lambda::Handler as LambdaHandler;
 pub use lambda::{self, Context};
-pub use lambda_attributes::lambda;
 
 mod body;
 pub mod ext;
@@ -125,9 +100,9 @@ pub trait Handler: Sized {
     /// The type of Response this Handler will return
     type Response: IntoResponse;
     /// The type of Future this Handler will return
-    type Fut: Future<Output = Result<Self::Response, Self::Error>> + 'static;
+    type Fut: Future<Output = Result<Self::Response, Self::Error>> + Send + Sync + 'static;
     /// Function used to execute handler behavior
-    fn call(&mut self, event: Request, context: Context) -> Self::Fut;
+    fn call(&self, event: Request, context: Context) -> Self::Fut;
 }
 
 /// Adapts a [`Handler`](trait.Handler.html) to the `lambda::run` interface
@@ -138,22 +113,22 @@ pub fn handler<H: Handler>(handler: H) -> Adapter<H> {
 /// An implementation of `Handler` for a given closure return a `Future` representing the computed response
 impl<F, R, Fut> Handler for F
 where
-    F: FnMut(Request, Context) -> Fut,
+    F: Fn(Request, Context) -> Fut,
     R: IntoResponse,
-    Fut: Future<Output = Result<R, Error>> + Send + 'static,
+    Fut: Future<Output = Result<R, Error>> + Send + Sync + 'static,
 {
     type Response = R;
     type Error = Error;
     type Fut = Fut;
-    fn call(&mut self, event: Request, context: Context) -> Self::Fut {
-        (*self)(event, context)
+    fn call(&self, event: Request, context: Context) -> Self::Fut {
+        (self)(event, context)
     }
 }
 
 #[doc(hidden)]
 pub struct TransformResponse<R, E> {
     request_origin: RequestOrigin,
-    fut: Pin<Box<dyn Future<Output = Result<R, E>>>>,
+    fut: Pin<Box<dyn Future<Output = Result<R, E>> + Send + Sync>>,
 }
 
 impl<R, E> Future for TransformResponse<R, E>
@@ -186,7 +161,7 @@ impl<H: Handler> Handler for Adapter<H> {
     type Response = H::Response;
     type Error = H::Error;
     type Fut = H::Fut;
-    fn call(&mut self, event: Request, context: Context) -> Self::Fut {
+    fn call(&self, event: Request, context: Context) -> Self::Fut {
         self.handler.call(event, context)
     }
 }
@@ -194,7 +169,8 @@ impl<H: Handler> Handler for Adapter<H> {
 impl<H: Handler> LambdaHandler<LambdaRequest<'_>, LambdaResponse> for Adapter<H> {
     type Error = H::Error;
     type Fut = TransformResponse<H::Response, Self::Error>;
-    fn call(&mut self, event: LambdaRequest<'_>, context: Context) -> Self::Fut {
+
+    fn call(self, event: LambdaRequest<'_>, context: Context) -> Self::Fut {
         let request_origin = event.request_origin();
         let fut = Box::pin(self.handler.call(event.into(), context));
         TransformResponse { request_origin, fut }

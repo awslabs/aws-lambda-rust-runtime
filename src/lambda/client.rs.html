@@ -289,6 +289,7 @@
 <span id="286">286</span>
 <span id="287">287</span>
 <span id="288">288</span>
+<span id="289">289</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">Error</span>;
 <span class="kw">use</span> <span class="ident">http</span>::{<span class="ident">uri</span>::<span class="ident">Scheme</span>, <span class="ident">Request</span>, <span class="ident">Response</span>, <span class="ident">Uri</span>};
@@ -358,9 +359,10 @@
     <span class="kw">use</span> <span class="ident">http</span>::{<span class="ident">uri</span>::<span class="ident">PathAndQuery</span>, <span class="ident">HeaderValue</span>, <span class="ident">Method</span>, <span class="ident">Request</span>, <span class="ident">Response</span>, <span class="ident">StatusCode</span>, <span class="ident">Uri</span>};
     <span class="kw">use</span> <span class="ident">hyper</span>::{<span class="ident">server</span>::<span class="ident">conn</span>::<span class="ident">Http</span>, <span class="ident">service</span>::<span class="ident">service_fn</span>, <span class="ident">Body</span>};
     <span class="kw">use</span> <span class="ident">serde_json</span>::<span class="ident">json</span>;
+    <span class="kw">use</span> <span class="ident">simulated</span>::<span class="ident">DuplexStreamWrapper</span>;
     <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">TryFrom</span>;
     <span class="kw">use</span> <span class="ident">tokio</span>::{
-        <span class="ident">io</span>::{<span class="ident">AsyncRead</span>, <span class="ident">AsyncWrite</span>},
+        <span class="ident">io</span>::{<span class="self">self</span>, <span class="ident">AsyncRead</span>, <span class="ident">AsyncWrite</span>},
         <span class="ident">select</span>,
         <span class="ident">sync</span>::{<span class="self">self</span>, <span class="ident">oneshot</span>},
     };
@@ -453,14 +455,14 @@
     <span class="attribute">#[<span class="ident">tokio</span>::<span class="ident">test</span>]</span>
     <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">test_next_event</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">base</span> <span class="op">=</span> <span class="ident">Uri</span>::<span class="ident">from_static</span>(<span class="string">&quot;http://localhost:9001&quot;</span>);
-        <span class="kw">let</span> (<span class="ident">client</span>, <span class="ident">server</span>) <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">simulated</span>::<span class="ident">chan</span>();
+        <span class="kw">let</span> (<span class="ident">client</span>, <span class="ident">server</span>) <span class="op">=</span> <span class="ident">io</span>::<span class="ident">duplex</span>(<span class="number">64</span>);
 
         <span class="kw">let</span> (<span class="ident">tx</span>, <span class="ident">rx</span>) <span class="op">=</span> <span class="ident">sync</span>::<span class="ident">oneshot</span>::<span class="ident">channel</span>();
         <span class="kw">let</span> <span class="ident">server</span> <span class="op">=</span> <span class="ident">tokio</span>::<span class="ident">spawn</span>(<span class="kw">async</span> {
             <span class="ident">handle</span>(<span class="ident">server</span>, <span class="ident">rx</span>).<span class="kw">await</span>.<span class="ident">expect</span>(<span class="string">&quot;Unable to handle request&quot;</span>);
         });
 
-        <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">simulated</span>::<span class="ident">Connector</span> { <span class="ident">inner</span>: <span class="ident">client</span> };
+        <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">simulated</span>::<span class="ident">Connector</span>::<span class="ident">with</span>(<span class="ident">base</span>.<span class="ident">clone</span>(), <span class="ident">DuplexStreamWrapper</span>::<span class="ident">new</span>(<span class="ident">client</span>))<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="ident">Client</span>::<span class="ident">with</span>(<span class="ident">base</span>, <span class="ident">conn</span>);
 
         <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">NextEventRequest</span>.<span class="ident">into_req</span>()<span class="question-mark">?</span>;
@@ -481,7 +483,7 @@
 
     <span class="attribute">#[<span class="ident">tokio</span>::<span class="ident">test</span>]</span>
     <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">test_ok_response</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="ident">client</span>, <span class="ident">server</span>) <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">simulated</span>::<span class="ident">chan</span>();
+        <span class="kw">let</span> (<span class="ident">client</span>, <span class="ident">server</span>) <span class="op">=</span> <span class="ident">io</span>::<span class="ident">duplex</span>(<span class="number">64</span>);
         <span class="kw">let</span> (<span class="ident">tx</span>, <span class="ident">rx</span>) <span class="op">=</span> <span class="ident">sync</span>::<span class="ident">oneshot</span>::<span class="ident">channel</span>();
         <span class="kw">let</span> <span class="ident">base</span> <span class="op">=</span> <span class="ident">Uri</span>::<span class="ident">from_static</span>(<span class="string">&quot;http://localhost:9001&quot;</span>);
 
@@ -489,7 +491,7 @@
             <span class="ident">handle</span>(<span class="ident">server</span>, <span class="ident">rx</span>).<span class="kw">await</span>.<span class="ident">expect</span>(<span class="string">&quot;Unable to handle request&quot;</span>);
         });
 
-        <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">simulated</span>::<span class="ident">Connector</span> { <span class="ident">inner</span>: <span class="ident">client</span> };
+        <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">simulated</span>::<span class="ident">Connector</span>::<span class="ident">with</span>(<span class="ident">base</span>.<span class="ident">clone</span>(), <span class="ident">DuplexStreamWrapper</span>::<span class="ident">new</span>(<span class="ident">client</span>))<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="ident">Client</span>::<span class="ident">with</span>(<span class="ident">base</span>, <span class="ident">conn</span>);
 
         <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">EventCompletionRequest</span> {
@@ -512,7 +514,7 @@
 
     <span class="attribute">#[<span class="ident">tokio</span>::<span class="ident">test</span>]</span>
     <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">test_error_response</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="ident">client</span>, <span class="ident">server</span>) <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">simulated</span>::<span class="ident">chan</span>();
+        <span class="kw">let</span> (<span class="ident">client</span>, <span class="ident">server</span>) <span class="op">=</span> <span class="ident">io</span>::<span class="ident">duplex</span>(<span class="number">200</span>);
         <span class="kw">let</span> (<span class="ident">tx</span>, <span class="ident">rx</span>) <span class="op">=</span> <span class="ident">sync</span>::<span class="ident">oneshot</span>::<span class="ident">channel</span>();
         <span class="kw">let</span> <span class="ident">base</span> <span class="op">=</span> <span class="ident">Uri</span>::<span class="ident">from_static</span>(<span class="string">&quot;http://localhost:9001&quot;</span>);
 
@@ -520,7 +522,7 @@
             <span class="ident">handle</span>(<span class="ident">server</span>, <span class="ident">rx</span>).<span class="kw">await</span>.<span class="ident">expect</span>(<span class="string">&quot;Unable to handle request&quot;</span>);
         });
 
-        <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">simulated</span>::<span class="ident">Connector</span> { <span class="ident">inner</span>: <span class="ident">client</span> };
+        <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">simulated</span>::<span class="ident">Connector</span>::<span class="ident">with</span>(<span class="ident">base</span>.<span class="ident">clone</span>(), <span class="ident">DuplexStreamWrapper</span>::<span class="ident">new</span>(<span class="ident">client</span>))<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="ident">Client</span>::<span class="ident">with</span>(<span class="ident">base</span>, <span class="ident">conn</span>);
 
         <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">EventErrorRequest</span> {
@@ -545,14 +547,14 @@
 
     <span class="attribute">#[<span class="ident">tokio</span>::<span class="ident">test</span>]</span>
     <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">successful_end_to_end_run</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="ident">client</span>, <span class="ident">server</span>) <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">simulated</span>::<span class="ident">chan</span>();
+        <span class="kw">let</span> (<span class="ident">client</span>, <span class="ident">server</span>) <span class="op">=</span> <span class="ident">io</span>::<span class="ident">duplex</span>(<span class="number">64</span>);
         <span class="kw">let</span> (<span class="ident">tx</span>, <span class="ident">rx</span>) <span class="op">=</span> <span class="ident">sync</span>::<span class="ident">oneshot</span>::<span class="ident">channel</span>();
         <span class="kw">let</span> <span class="ident">base</span> <span class="op">=</span> <span class="ident">Uri</span>::<span class="ident">from_static</span>(<span class="string">&quot;http://localhost:9001&quot;</span>);
 
         <span class="kw">let</span> <span class="ident">server</span> <span class="op">=</span> <span class="ident">tokio</span>::<span class="ident">spawn</span>(<span class="kw">async</span> {
             <span class="ident">handle</span>(<span class="ident">server</span>, <span class="ident">rx</span>).<span class="kw">await</span>.<span class="ident">expect</span>(<span class="string">&quot;Unable to handle request&quot;</span>);
         });
-        <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">simulated</span>::<span class="ident">Connector</span> { <span class="ident">inner</span>: <span class="ident">client</span> };
+        <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">simulated</span>::<span class="ident">Connector</span>::<span class="ident">with</span>(<span class="ident">base</span>.<span class="ident">clone</span>(), <span class="ident">DuplexStreamWrapper</span>::<span class="ident">new</span>(<span class="ident">client</span>))<span class="question-mark">?</span>;
 
         <span class="kw">let</span> <span class="ident">runtime</span> <span class="op">=</span> <span class="ident">Runtime</span>::<span class="ident">builder</span>()
             .<span class="ident">with_endpoint</span>(<span class="ident">base</span>)

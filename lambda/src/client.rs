@@ -66,9 +66,10 @@ mod endpoint_tests {
     use http::{uri::PathAndQuery, HeaderValue, Method, Request, Response, StatusCode, Uri};
     use hyper::{server::conn::Http, service::service_fn, Body};
     use serde_json::json;
+    use simulated::DuplexStreamWrapper;
     use std::convert::TryFrom;
     use tokio::{
-        io::{AsyncRead, AsyncWrite},
+        io::{self, AsyncRead, AsyncWrite},
         select,
         sync::{self, oneshot},
     };
@@ -161,14 +162,14 @@ mod endpoint_tests {
     #[tokio::test]
     async fn test_next_event() -> Result<(), Error> {
         let base = Uri::from_static("http://localhost:9001");
-        let (client, server) = crate::simulated::chan();
+        let (client, server) = io::duplex(64);
 
         let (tx, rx) = sync::oneshot::channel();
         let server = tokio::spawn(async {
             handle(server, rx).await.expect("Unable to handle request");
         });
 
-        let conn = simulated::Connector { inner: client };
+        let conn = simulated::Connector::with(base.clone(), DuplexStreamWrapper::new(client))?;
         let client = Client::with(base, conn);
 
         let req = NextEventRequest.into_req()?;
@@ -189,7 +190,7 @@ mod endpoint_tests {
 
     #[tokio::test]
     async fn test_ok_response() -> Result<(), Error> {
-        let (client, server) = crate::simulated::chan();
+        let (client, server) = io::duplex(64);
         let (tx, rx) = sync::oneshot::channel();
         let base = Uri::from_static("http://localhost:9001");
 
@@ -197,7 +198,7 @@ mod endpoint_tests {
             handle(server, rx).await.expect("Unable to handle request");
         });
 
-        let conn = simulated::Connector { inner: client };
+        let conn = simulated::Connector::with(base.clone(), DuplexStreamWrapper::new(client))?;
         let client = Client::with(base, conn);
 
         let req = EventCompletionRequest {
@@ -220,7 +221,7 @@ mod endpoint_tests {
 
     #[tokio::test]
     async fn test_error_response() -> Result<(), Error> {
-        let (client, server) = crate::simulated::chan();
+        let (client, server) = io::duplex(200);
         let (tx, rx) = sync::oneshot::channel();
         let base = Uri::from_static("http://localhost:9001");
 
@@ -228,7 +229,7 @@ mod endpoint_tests {
             handle(server, rx).await.expect("Unable to handle request");
         });
 
-        let conn = simulated::Connector { inner: client };
+        let conn = simulated::Connector::with(base.clone(), DuplexStreamWrapper::new(client))?;
         let client = Client::with(base, conn);
 
         let req = EventErrorRequest {
@@ -253,14 +254,14 @@ mod endpoint_tests {
 
     #[tokio::test]
     async fn successful_end_to_end_run() -> Result<(), Error> {
-        let (client, server) = crate::simulated::chan();
+        let (client, server) = io::duplex(64);
         let (tx, rx) = sync::oneshot::channel();
         let base = Uri::from_static("http://localhost:9001");
 
         let server = tokio::spawn(async {
             handle(server, rx).await.expect("Unable to handle request");
         });
-        let conn = simulated::Connector { inner: client };
+        let conn = simulated::Connector::with(base.clone(), DuplexStreamWrapper::new(client))?;
 
         let runtime = Runtime::builder()
             .with_endpoint(base)

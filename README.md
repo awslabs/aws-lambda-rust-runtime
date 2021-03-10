@@ -4,7 +4,7 @@
 
 This package makes it easy to run AWS Lambda Functions written in Rust. This workspace includes multiple crates:
 
-- [![Docs](https://docs.rs/lambda/badge.svg)](https://docs.rs/lambda) **`lambda`** is a library that provides a Lambda runtime for applications written in Rust.
+- [![Docs](https://docs.rs/lambda_runtime/badge.svg)](https://docs.rs/lambda_runtime) **`lambda-runtime`** is a library that provides a Lambda runtime for applications written in Rust.
 - [![Docs](https://docs.rs/lambda_http/badge.svg)](https://docs.rs/lambda_http) **`lambda-http`** is a library that makes it easy to write API Gateway proxy event focused Lambda functions in Rust.
 
 ## Example function
@@ -12,7 +12,7 @@ This package makes it easy to run AWS Lambda Functions written in Rust. This wor
 The code below creates a simple function that receives an event with a `firstName` field and returns a message to the caller. Notice: this crate is tested against latest stable Rust.
 
 ```rust,no_run
-use lambda::{handler_fn, Context};
+use lambda_runtime::{handler_fn, Context};
 use serde_json::{json, Value};
 
 type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
@@ -20,7 +20,7 @@ type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     let func = handler_fn(func);
-    lambda::run(func).await?;
+    lambda_runtime::run(func).await?;
     Ok(())
 }
 
@@ -31,7 +31,7 @@ async fn func(event: Value, _: Context) -> Result<Value, Error> {
 }
 ```
 
-The code above is the same as the [basic example](https://github.com/awslabs/aws-lambda-rust-runtime/blob/master/lambda/examples/hello-without-macro.rs) in the `lambda` crate.
+The code above is the same as the [basic example](https://github.com/awslabs/aws-lambda-rust-runtime/blob/master/lambda/examples/hello-without-macro.rs) in the `lambda_runtime` crate.
 
 ### Deployment
 
@@ -56,13 +56,13 @@ $ echo $'[target.x86_64-unknown-linux-musl]\nlinker = "x86_64-linux-musl-gcc"' >
 
 Compile one of the examples as a _release_ with a specific _target_ for deployment to AWS:
 ```bash
-$ cargo build -p lambda --example basic --release --target x86_64-unknown-linux-musl
+$ cargo build -p lambda_runtime --example basic --release --target x86_64-unknown-linux-musl
 ```
 
 For [a custom runtime](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-custom.html), AWS Lambda looks for an executable called `bootstrap` in the deployment package zip. Rename the generated `basic` executable to `bootstrap` and add it to a zip archive.
 
 ```bash
-$ cp ./target/release/examples/hello ./bootstrap && zip lambda.zip bootstrap && rm bootstrap
+$ cp ./target/x86_64-unknown-linux-musl/release/examples/hello ./bootstrap && zip lambda.zip bootstrap && rm bootstrap
 ```
 
 Now that we have a deployment package (`lambda.zip`), we can use the [AWS CLI](https://aws.amazon.com/cli/) to create a new Lambda function. Make sure to replace the execution role with an existing role in your account!
@@ -127,7 +127,7 @@ $ npx serverless invoke -f hello -d '{"foo":"bar"}'
 
 Alternatively, you can build a Rust-based Lambda function in a [docker mirror of the AWS Lambda provided runtime with the Rust toolchain preinstalled](https://github.com/softprops/lambda-rust).
 
-Running the following command will start a ephemeral docker container which will build your Rust application and produce a zip file containing its binary auto-renamed to `bootstrap` to meet the AWS Lambda's expectations for binaries under `target/lambda/release/{your-binary-name}.zip`, typically this is just the name of your crate if you are using the cargo default binary (i.e. `main.rs`)
+Running the following command will start a ephemeral docker container which will build your Rust application and produce a zip file containing its binary auto-renamed to `bootstrap` to meet the AWS Lambda's expectations for binaries under `target/lambda_runtime/release/{your-binary-name}.zip`, typically this is just the name of your crate if you are using the cargo default binary (i.e. `main.rs`)
 
 ```bash
 # build and package deploy-ready artifact
@@ -159,12 +159,12 @@ $ unzip -o \
 
 ## `lambda`
 
-`lambda` is a library for authoring reliable and performant Rust-based AWS Lambda functions. At a high level, it provides a few major components:
+`lambda_runtime` is a library for authoring reliable and performant Rust-based AWS Lambda functions. At a high level, it provides a few major components:
 
 - `Handler`, a trait that defines interactions between customer-authored code and this library.
-- `lambda::run`, function that runs an `Handler`.
+- `lambda_runtime::run`, function that runs an `Handler`.
 
-The function `handler_fn` converts a rust function or closure to `Handler`, which can then be run by `lambda::run`.
+The function `handler_fn` converts a rust function or closure to `Handler`, which can then be run by `lambda_runtime::run`.
 
 ## AWS event objects
 

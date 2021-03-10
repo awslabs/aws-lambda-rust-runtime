@@ -63,10 +63,6 @@ Runtime.ExitError
 
  See _error-handling.rs_ example for more error handling options.
 
-## macro.rs
-
-The most basic example using `#[lambda]` macro to reduce the amount of boilerplate code.
-
 **Deployment**:
 ```bash
 cp ./target/x86_64-unknown-linux-musl/release/examples/macro ./bootstrap && zip lambda.zip bootstrap && rm bootstrap

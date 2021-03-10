@@ -12,12 +12,12 @@
 //! ## Hello World
 //!
 //! The following example is how you would structure your Lambda such that you have a `main` function where you explicitly invoke
-//! `lambda::run` in combination with the [`handler`](fn.handler.html) function. This pattern allows you to utilize global initialization
+//! `lambda_runtime::run` in combination with the [`handler`](fn.handler.html) function. This pattern allows you to utilize global initialization
 //! of tools such as loggers, to use on warm invokes to the same Lambda function after the first request, helping to reduce the latency of
 //! your function's execution path.
 //!
 //! ```rust,no_run
-//! use lambda_http::{handler, lambda};
+//! use lambda_http::{handler, lambda_runtime};
 //!
 //! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 //!
@@ -25,7 +25,7 @@
 //! async fn main() -> Result<(), Error> {
 //!     // initialize dependencies once here for the lifetime of your
 //!     // lambda task
-//!     lambda::run(handler(|request, context| async { Ok("👋 world!") })).await?;
+//!     lambda_runtime::run(handler(|request, context| async { Ok("👋 world!") })).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -36,13 +36,13 @@
 //! with the [`RequestExt`](trait.RequestExt.html) trait.
 //!
 //! ```rust,no_run
-//! use lambda_http::{handler, lambda::{self, Context}, IntoResponse, Request, RequestExt};
+//! use lambda_http::{handler, lambda_runtime::{self, Context}, IntoResponse, Request, RequestExt};
 //!
 //! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Error> {
-//!     lambda::run(handler(hello)).await?;
+//!     lambda_runtime::run(handler(hello)).await?;
 //!     Ok(())
 //! }
 //!
@@ -66,8 +66,8 @@
 extern crate maplit;
 
 pub use http::{self, Response};
-use lambda::Handler as LambdaHandler;
-pub use lambda::{self, Context};
+use lambda_runtime::Handler as LambdaHandler;
+pub use lambda_runtime::{self, Context};
 
 mod body;
 pub mod ext;
@@ -93,7 +93,7 @@ pub type Request = http::Request<Body>;
 
 /// Functions serving as ALB and API Gateway REST and HTTP API handlers must conform to this type.
 ///
-/// This can be viewed as a `lambda::Handler` constrained to `http` crate `Request` and `Response` types
+/// This can be viewed as a `lambda_runtime::Handler` constrained to `http` crate `Request` and `Response` types
 pub trait Handler: Sized {
     /// The type of Error that this Handler will return
     type Error;
@@ -105,7 +105,7 @@ pub trait Handler: Sized {
     fn call(&self, event: Request, context: Context) -> Self::Fut;
 }
 
-/// Adapts a [`Handler`](trait.Handler.html) to the `lambda::run` interface
+/// Adapts a [`Handler`](trait.Handler.html) to the `lambda_runtime::run` interface
 pub fn handler<H: Handler>(handler: H) -> Adapter<H> {
     Adapter { handler }
 }
@@ -146,7 +146,7 @@ where
     }
 }
 
-/// Exists only to satisfy the trait cover rule for `lambda::Handler` impl
+/// Exists only to satisfy the trait cover rule for `lambda_runtime::Handler` impl
 ///
 /// User code should never need to interact with this type directly. Since `Adapter` implements `Handler`
 /// It serves as a opaque trait covering type.

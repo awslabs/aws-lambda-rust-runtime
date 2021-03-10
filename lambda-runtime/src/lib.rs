@@ -4,7 +4,7 @@
 //! The mechanism available for defining a Lambda function is as follows:
 //!
 //! Create a type that conforms to the [`Handler`] trait. This type can then be passed
-//! to the the `lambda::run` function, which launches and runs the Lambda runtime.
+//! to the the `lambda_runtime::run` function, which launches and runs the Lambda runtime.
 pub use crate::types::Context;
 use client::Client;
 use hyper::client::{connect::Connection, HttpConnector};
@@ -273,7 +273,7 @@ where
 ///
 /// # Example
 /// ```no_run
-/// use lambda::{handler_fn, Context};
+/// use lambda_runtime::{handler_fn, Context};
 /// use serde_json::Value;
 ///
 /// type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
@@ -281,7 +281,7 @@ where
 /// #[tokio::main]
 /// async fn main() -> Result<(), Error> {
 ///     let func = handler_fn(func);
-///     lambda::run(func).await?;
+///     lambda_runtime::run(func).await?;
 ///     Ok(())
 /// }
 ///

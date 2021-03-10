@@ -1,5 +1,5 @@
 /// See https://github.com/awslabs/aws-lambda-rust-runtime for more info on Rust runtime for AWS Lambda
-use lambda::handler_fn;
+use lambda_runtime::handler_fn;
 use log::LevelFilter;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -73,12 +73,12 @@ async fn main() -> Result<(), Error> {
 
     // call the actual handler of the request
     let func = handler_fn(func);
-    lambda::run(func).await?;
+    lambda_runtime::run(func).await?;
     Ok(())
 }
 
 /// The actual handler of the Lambda request.
-pub(crate) async fn func(event: Value, ctx: lambda::Context) -> Result<Value, Error> {
+pub(crate) async fn func(event: Value, ctx: lambda_runtime::Context) -> Result<Value, Error> {
     // check what action was requested
     match serde_json::from_value::<Request>(event)?.event_type {
         EventType::SimpleError => {

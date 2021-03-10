@@ -1,6 +1,6 @@
 use lambda_http::{
     handler,
-    lambda::{self, Context},
+    lambda_runtime::{self, Context},
     IntoResponse, Request, RequestExt, Response,
 };
 
@@ -8,7 +8,7 @@ type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    lambda::run(handler(func)).await?;
+    lambda_runtime::run(handler(func)).await?;
     Ok(())
 }
 

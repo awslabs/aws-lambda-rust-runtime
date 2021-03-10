@@ -17,7 +17,7 @@
 //! your function's execution path.
 //!
 //! ```rust,no_run
-//! use lambda_http::{handler, lambda};
+//! use lambda_http::{handler, lambda_runtime};
 //!
 //! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 //!

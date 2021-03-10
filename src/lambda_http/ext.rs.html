@@ -456,7 +456,7 @@
 <span class="doccomment">/// as well as `{&quot;x&quot;:1, &quot;y&quot;:2}` respectively.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ```rust,no_run</span>
-<span class="doccomment">/// use lambda_http::{handler, lambda::{self, Context}, Body, IntoResponse, Request, Response, RequestExt};</span>
+<span class="doccomment">/// use lambda_http::{handler, lambda_runtime::{self, Context}, Body, IntoResponse, Request, Response, RequestExt};</span>
 <span class="doccomment">/// use serde::Deserialize;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// type Error = Box&lt;dyn std::error::Error + Send + Sync + &#39;static&gt;;</span>
@@ -471,7 +471,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// #[tokio::main]</span>
 <span class="doccomment">/// async fn main() -&gt; Result&lt;(), Error&gt; {</span>
-<span class="doccomment">///   lambda::run(handler(add)).await?;</span>
+<span class="doccomment">///   lambda_runtime::run(handler(add)).await?;</span>
 <span class="doccomment">///   Ok(())</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">///</span>

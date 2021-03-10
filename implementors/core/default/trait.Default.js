@@ -1,4 +1,4 @@
 (function() {var implementors = {};
-implementors["lambda"] = [{"text":"impl Default for Context","synthetic":false,"types":[]},{"text":"impl Default for Config","synthetic":false,"types":[]}];
 implementors["lambda_http"] = [{"text":"impl Default for Body","synthetic":false,"types":[]},{"text":"impl Default for Elb","synthetic":false,"types":[]},{"text":"impl Default for Http","synthetic":false,"types":[]},{"text":"impl Default for Identity","synthetic":false,"types":[]},{"text":"impl Default for StrMap","synthetic":false,"types":[]}];
+implementors["lambda_runtime"] = [{"text":"impl Default for Context","synthetic":false,"types":[]},{"text":"impl Default for Config","synthetic":false,"types":[]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

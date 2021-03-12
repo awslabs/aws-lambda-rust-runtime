@@ -6,9 +6,6 @@ use serde_json::{json, Value};
 use simple_logger::SimpleLogger;
 use std::fs::File;
 
-/// A shorthand for `Box<dyn std::error::Error + Send + Sync + 'static>` type required by aws-lambda-rust-runtime.
-pub type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
-
 /// A simple Lambda request structure with just one field
 /// that tells the Lambda what is expected of it.
 #[derive(Deserialize)]
@@ -53,7 +50,7 @@ impl std::fmt::Display for CustomError {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Error> {
+async fn main() -> Result<(), lambda_runtime::Error> {
     // The runtime logging can be enabled here by initializing `log` with `simple_logger`
     // or another compatible crate. The runtime is using `tracing` internally.
     // You can comment out the `simple_logger` init line and uncomment the following block to
@@ -78,7 +75,7 @@ async fn main() -> Result<(), Error> {
 }
 
 /// The actual handler of the Lambda request.
-pub(crate) async fn func(event: Value, ctx: lambda_runtime::Context) -> Result<Value, Error> {
+pub(crate) async fn func(event: Value, ctx: lambda_runtime::Context) -> Result<Value, lambda_runtime::Error> {
     // check what action was requested
     match serde_json::from_value::<Request>(event)?.event_type {
         EventType::SimpleError => {

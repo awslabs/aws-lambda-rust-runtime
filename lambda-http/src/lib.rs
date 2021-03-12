@@ -62,9 +62,8 @@
 extern crate maplit;
 
 pub use http::{self, Response};
-use lambda_runtime::Handler as LambdaHandler;
-use lambda_runtime::Error as Error;
 pub use lambda_runtime::{self, Context};
+use lambda_runtime::{Error, Handler as LambdaHandler};
 
 mod body;
 pub mod ext;

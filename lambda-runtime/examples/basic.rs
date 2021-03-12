@@ -35,7 +35,7 @@ async fn main() -> Result<(), lambda_runtime::Error> {
     Ok(())
 }
 
-pub(crate) async fn my_handler(event: Request, ctx: Context) -> Result<Response, Error> {
+pub(crate) async fn my_handler(event: Request, ctx: Context) -> Result<Response, lambda_runtime::Error> {
     // extract some useful info from the request
     let command = event.command;
 

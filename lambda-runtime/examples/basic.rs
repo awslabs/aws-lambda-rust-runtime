@@ -1,14 +1,10 @@
 // This example requires the following input to succeed:
 // { "command": "do something" }
 
-use lambda_runtime::{handler_fn, Context};
+use lambda_runtime::{handler_fn, Context, Error};
 use log::LevelFilter;
 use serde::{Deserialize, Serialize};
 use simple_logger::SimpleLogger;
-
-/// A shorthand for `Box<dyn std::error::Error + Send + Sync + 'static>`
-/// type required by aws-lambda-rust-runtime.
-pub type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
 /// This is also a made-up example. Requests come into the runtime as unicode
 /// strings in json format, which can map to any structure that implements `serde::Deserialize`

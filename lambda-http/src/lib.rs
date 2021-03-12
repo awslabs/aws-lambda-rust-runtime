@@ -17,9 +17,7 @@
 //! your function's execution path.
 //!
 //! ```rust,no_run
-//! use lambda_http::{handler, lambda_runtime};
-//!
-//! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
+//! use lambda_http::{handler, lambda_runtime::{self, Error}};
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Error> {
@@ -36,9 +34,7 @@
 //! with the [`RequestExt`](trait.RequestExt.html) trait.
 //!
 //! ```rust,no_run
-//! use lambda_http::{handler, lambda_runtime::{self, Context}, IntoResponse, Request, RequestExt};
-//!
-//! type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
+//! use lambda_http::{handler, lambda_runtime::{self, Context, Error}, IntoResponse, Request, RequestExt};
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Error> {
@@ -66,8 +62,8 @@
 extern crate maplit;
 
 pub use http::{self, Response};
-use lambda_runtime::Handler as LambdaHandler;
 pub use lambda_runtime::{self, Context};
+use lambda_runtime::{Error, Handler as LambdaHandler};
 
 mod body;
 pub mod ext;
@@ -84,9 +80,6 @@ use std::{
     pin::Pin,
     task::{Context as TaskContext, Poll},
 };
-
-/// Error type that lambdas may result in
-pub(crate) type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
 /// Type alias for `http::Request`s with a fixed [`Body`](enum.Body.html) type
 pub type Request = http::Request<Body>;

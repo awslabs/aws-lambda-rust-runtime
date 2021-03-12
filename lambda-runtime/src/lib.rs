@@ -31,7 +31,7 @@ use requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEvent
 use types::Diagnostic;
 
 /// Error type that lambdas may result in
-pub(crate) type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
+pub type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
 /// Configuration derived from environment variables.
 #[derive(Debug, Default, Clone, PartialEq)]

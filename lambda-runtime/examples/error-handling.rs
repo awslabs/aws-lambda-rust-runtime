@@ -1,13 +1,10 @@
 /// See https://github.com/awslabs/aws-lambda-rust-runtime for more info on Rust runtime for AWS Lambda
-use lambda_runtime::handler_fn;
+use lambda_runtime::{handler_fn, Error};
 use log::LevelFilter;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use simple_logger::SimpleLogger;
 use std::fs::File;
-
-/// A shorthand for `Box<dyn std::error::Error + Send + Sync + 'static>` type required by aws-lambda-rust-runtime.
-pub type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
 /// A simple Lambda request structure with just one field
 /// that tells the Lambda what is expected of it.

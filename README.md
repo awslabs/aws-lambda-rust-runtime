@@ -12,10 +12,8 @@ This package makes it easy to run AWS Lambda Functions written in Rust. This wor
 The code below creates a simple function that receives an event with a `firstName` field and returns a message to the caller. Notice: this crate is tested against latest stable Rust.
 
 ```rust,no_run
-use lambda_runtime::{handler_fn, Context};
+use lambda_runtime::{handler_fn, Context, Error};
 use serde_json::{json, Value};
-
-type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -31,7 +29,7 @@ async fn func(event: Value, _: Context) -> Result<Value, Error> {
 }
 ```
 
-The code above is the same as the [basic example](https://github.com/awslabs/aws-lambda-rust-runtime/blob/master/lambda/examples/hello-without-macro.rs) in the `lambda_runtime` crate.
+The code above is the same as the [basic example](https://github.com/awslabs/aws-lambda-rust-runtime/blob/master/lambda-runtime/examples/basic.rs) in the `lambda_runtime` crate.
 
 ### Deployment
 

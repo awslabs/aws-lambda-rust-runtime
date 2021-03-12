@@ -1,5 +1,5 @@
 /// See https://github.com/awslabs/aws-lambda-rust-runtime for more info on Rust runtime for AWS Lambda
-use lambda_runtime::handler_fn;
+use lambda_runtime::{handler_fn, Error};
 use log::LevelFilter;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -50,7 +50,7 @@ impl std::fmt::Display for CustomError {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), lambda_runtime::Error> {
+async fn main() -> Result<(), Error> {
     // The runtime logging can be enabled here by initializing `log` with `simple_logger`
     // or another compatible crate. The runtime is using `tracing` internally.
     // You can comment out the `simple_logger` init line and uncomment the following block to
@@ -75,7 +75,7 @@ async fn main() -> Result<(), lambda_runtime::Error> {
 }
 
 /// The actual handler of the Lambda request.
-pub(crate) async fn func(event: Value, ctx: lambda_runtime::Context) -> Result<Value, lambda_runtime::Error> {
+pub(crate) async fn func(event: Value, ctx: lambda_runtime::Context) -> Result<Value, Error> {
     // check what action was requested
     match serde_json::from_value::<Request>(event)?.event_type {
         EventType::SimpleError => {

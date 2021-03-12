@@ -1,7 +1,7 @@
 // This example requires the following input to succeed:
 // { "command": "do something" }
 
-use lambda_runtime::{handler_fn, Context};
+use lambda_runtime::{handler_fn, Context, Error};
 use log::LevelFilter;
 use serde::{Deserialize, Serialize};
 use simple_logger::SimpleLogger;
@@ -25,7 +25,7 @@ struct Response {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), lambda_runtime::Error> {
+async fn main() -> Result<(), Error> {
     // required to enable CloudWatch error logging by the runtime
     // can be replaced with any other method of initializing `log`
     SimpleLogger::new().with_level(LevelFilter::Info).init().unwrap();
@@ -35,7 +35,7 @@ async fn main() -> Result<(), lambda_runtime::Error> {
     Ok(())
 }
 
-pub(crate) async fn my_handler(event: Request, ctx: Context) -> Result<Response, lambda_runtime::Error> {
+pub(crate) async fn my_handler(event: Request, ctx: Context) -> Result<Response, Error> {
     // extract some useful info from the request
     let command = event.command;
 

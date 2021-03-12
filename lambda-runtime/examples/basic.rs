@@ -6,10 +6,6 @@ use log::LevelFilter;
 use serde::{Deserialize, Serialize};
 use simple_logger::SimpleLogger;
 
-/// A shorthand for `Box<dyn std::error::Error + Send + Sync + 'static>`
-/// type required by aws-lambda-rust-runtime.
-pub type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
-
 /// This is also a made-up example. Requests come into the runtime as unicode
 /// strings in json format, which can map to any structure that implements `serde::Deserialize`
 /// The runtime pays no attention to the contents of the request payload.
@@ -29,7 +25,7 @@ struct Response {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Error> {
+async fn main() -> Result<(), lambda_runtime::Error> {
     // required to enable CloudWatch error logging by the runtime
     // can be replaced with any other method of initializing `log`
     SimpleLogger::new().with_level(LevelFilter::Info).init().unwrap();

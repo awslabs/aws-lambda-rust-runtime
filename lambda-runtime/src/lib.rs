@@ -54,12 +54,15 @@ impl Config {
     /// Attempts to read configuration from environment variables.
     pub fn from_env() -> Result<Self, Error> {
         let conf = Config {
-            endpoint: env::var("AWS_LAMBDA_RUNTIME_API")?,
-            function_name: env::var("AWS_LAMBDA_FUNCTION_NAME")?,
-            memory: env::var("AWS_LAMBDA_FUNCTION_MEMORY_SIZE")?.parse::<i32>()?,
-            version: env::var("AWS_LAMBDA_FUNCTION_VERSION")?,
-            log_stream: env::var("AWS_LAMBDA_LOG_STREAM_NAME")?,
-            log_group: env::var("AWS_LAMBDA_LOG_GROUP_NAME")?,
+            endpoint: env::var("AWS_LAMBDA_RUNTIME_API").expect("Missing AWS_LAMBDA_RUNTIME_API env var"),
+            function_name: env::var("AWS_LAMBDA_FUNCTION_NAME").expect("Missing AWS_LAMBDA_FUNCTION_NAME env var"),
+            memory: env::var("AWS_LAMBDA_FUNCTION_MEMORY_SIZE")
+                .expect("Missing AWS_LAMBDA_FUNCTION_MEMORY_SIZE env var")
+                .parse::<i32>()
+                .expect("AWS_LAMBDA_FUNCTION_MEMORY_SIZE env var is not <i32>"),
+            version: env::var("AWS_LAMBDA_FUNCTION_VERSION").expect("Missing AWS_LAMBDA_FUNCTION_VERSION env var"),
+            log_stream: env::var("AWS_LAMBDA_LOG_STREAM_NAME").expect("Missing AWS_LAMBDA_LOG_STREAM_NAME env var"),
+            log_group: env::var("AWS_LAMBDA_LOG_GROUP_NAME").expect("Missing AWS_LAMBDA_LOG_GROUP_NAME env var"),
         };
         Ok(conf)
     }

@@ -68,6 +68,7 @@ mod endpoint_tests {
     use serde_json::json;
     use simulated::DuplexStreamWrapper;
     use std::convert::TryFrom;
+    use std::env;
     use tokio::{
         io::{self, AsyncRead, AsyncWrite},
         select,
@@ -273,7 +274,28 @@ mod endpoint_tests {
             Ok(event)
         }
         let f = crate::handler_fn(func);
-        let config = crate::Config::from_env()?;
+
+        // set env vars needed to init Config if they are not already set in the environment
+        if env::var("AWS_LAMBDA_RUNTIME_API").is_err() {
+            env::set_var("AWS_LAMBDA_RUNTIME_API", "http://localhost:9001");
+        }
+        if env::var("AWS_LAMBDA_FUNCTION_NAME").is_err() {
+            env::set_var("AWS_LAMBDA_FUNCTION_NAME", "test_fn");
+        }
+        if env::var("AWS_LAMBDA_FUNCTION_MEMORY_SIZE").is_err() {
+            env::set_var("AWS_LAMBDA_FUNCTION_MEMORY_SIZE", "128");
+        }
+        if env::var("AWS_LAMBDA_FUNCTION_VERSION").is_err() {
+            env::set_var("AWS_LAMBDA_FUNCTION_VERSION", "1");
+        }
+        if env::var("AWS_LAMBDA_LOG_STREAM_NAME").is_err() {
+            env::set_var("AWS_LAMBDA_LOG_STREAM_NAME", "test_stream");
+        }
+        if env::var("AWS_LAMBDA_LOG_GROUP_NAME").is_err() {
+            env::set_var("AWS_LAMBDA_LOG_GROUP_NAME", "test_log");
+        }
+        let config = crate::Config::from_env().expect("Failed to read env vars");
+
         let client = &runtime.client;
         let incoming = incoming(client).take(1);
         runtime.run(incoming, f, &config).await?;

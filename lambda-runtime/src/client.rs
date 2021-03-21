@@ -67,8 +67,7 @@ mod endpoint_tests {
     use hyper::{server::conn::Http, service::service_fn, Body};
     use serde_json::json;
     use simulated::DuplexStreamWrapper;
-    use std::convert::TryFrom;
-    use std::env;
+    use std::{convert::TryFrom, env};
     use tokio::{
         io::{self, AsyncRead, AsyncWrite},
         select,

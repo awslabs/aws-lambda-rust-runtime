@@ -34,7 +34,7 @@ use types::Diagnostic;
 pub type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
 /// Configuration derived from environment variables.
-#[derive(Debug, Default, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Config {
     /// The host and port of the [runtime API](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html).
     pub endpoint: String,
@@ -133,6 +133,7 @@ where
         &self,
         incoming: impl Stream<Item = Result<http::Response<hyper::Body>, Error>> + Send,
         handler: F,
+        config: &Config,
     ) -> Result<(), Error>
     where
         F: Handler<A, B> + Send + Sync + 'static,
@@ -150,6 +151,7 @@ where
             let (parts, body) = event.into_parts();
 
             let ctx: Context = Context::try_from(parts.headers)?;
+            let ctx: Context = ctx.with_config(config);
             let body = hyper::body::to_bytes(body).await?;
             trace!("{}", std::str::from_utf8(&body)?); // this may be very verbose
             let body = serde_json::from_slice(&body)?;
@@ -299,16 +301,16 @@ where
 {
     trace!("Loading config from env");
     let config = Config::from_env()?;
-    let uri = config.endpoint.try_into().expect("Unable to convert to URL");
+    let uri = config.endpoint.clone().try_into().expect("Unable to convert to URL");
     let runtime = Runtime::builder()
         .with_connector(HttpConnector::new())
         .with_endpoint(uri)
         .build()
-        .expect("Unable create runtime");
+        .expect("Unable to create a runtime");
 
     let client = &runtime.client;
     let incoming = incoming(client);
-    runtime.run(incoming, handler).await
+    runtime.run(incoming, handler, &config).await
 }
 
 fn type_name_of_val<T>(_: T) -> &'static str {

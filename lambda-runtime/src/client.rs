@@ -273,10 +273,10 @@ mod endpoint_tests {
             Ok(event)
         }
         let f = crate::handler_fn(func);
-
+        let config = crate::Config::from_env()?;
         let client = &runtime.client;
         let incoming = incoming(client).take(1);
-        runtime.run(incoming, f).await?;
+        runtime.run(incoming, f, &config).await?;
 
         // shutdown server
         tx.send(()).expect("Receiver has been dropped");

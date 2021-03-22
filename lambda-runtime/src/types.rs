@@ -118,22 +118,22 @@ pub struct Context {
 
 impl TryFrom<HeaderMap> for Context {
     type Error = Error;
-    fn try_from(headers: HeaderMap) -> Result<Self, Self::Error> {
-        println!("{:?}", headers);
+    fn try_from(input_headers: HeaderMap) -> Result<Self, Self::Error> {
+        println!("{:?}", input_headers);
         let ctx = Context {
-            request_id: headers["lambda-runtime-aws-request-id"]
+            request_id: input_headers["lambda-runtime-aws-request-id"]
                 .to_str()
                 .expect("Missing Request ID")
                 .to_owned(),
-            deadline: headers["lambda-runtime-deadline-ms"]
+            deadline: input_headers["lambda-runtime-deadline-ms"]
                 .to_str()?
                 .parse()
-                .expect("Missing Deadline")
-            invoked_function_arn: headers["lambda-runtime-invoked-function-arn"]
+                .expect("Missing deadline"),
+            invoked_function_arn: input_headers["lambda-runtime-invoked-function-arn"]
                 .to_str()
-                .unwrap_or("arn:test-instance")
                 .expect("Missing arn; this is a bug")
-            xray_trace_id: headers["lambda-runtime-trace-id"]
+                .to_owned(),
+            xray_trace_id: input_headers["lambda-runtime-trace-id"]
                 .to_str()
                 .expect("Invalid XRayTraceID sent by Lambda; this is a bug")
                 .to_owned(),
@@ -142,4 +142,3 @@ impl TryFrom<HeaderMap> for Context {
         Ok(ctx)
     }
 }
-

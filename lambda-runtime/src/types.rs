@@ -123,19 +123,23 @@ impl TryFrom<HeaderMap> for Context {
         let ctx = Context {
             request_id: input_headers["lambda-runtime-aws-request-id"]
                 .to_str()
-                .expect("Missing Request ID")
+                .unwrap_or("12345")
                 .to_owned(),
             deadline: input_headers["lambda-runtime-deadline-ms"]
-                .to_str()?
+                .to_str()
+                .unwrap_or("10")
                 .parse()
                 .expect("Missing deadline"),
             invoked_function_arn: input_headers["lambda-runtime-invoked-function-arn"]
                 .to_str()
-                .expect("Missing arn; this is a bug")
+                .unwrap_or("arn:test:local:12345")
                 .to_owned(),
             xray_trace_id: input_headers["lambda-runtime-trace-id"]
                 .to_str()
-                .expect("Invalid XRayTraceID sent by Lambda; this is a bug")
+                .unwrap_or(
+                    "Root=1-5759e988-bd862e3fe1be46a994272793;\
+                    Parent=53995c3f42cd8ad8;Sampled=1"
+                )
                 .to_owned(),
             ..Default::default()
         };

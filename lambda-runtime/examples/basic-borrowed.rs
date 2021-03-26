@@ -1,7 +1,7 @@
 // This example requires the following input to succeed:
 // { "command": "do something" }
 
-use lambda_runtime::{handler_fn, Context, Error};
+use lambda_runtime::{handler_fn, Context, Deserializable, Error};
 use log::LevelFilter;
 use serde::{Deserialize, Serialize};
 use simple_logger::SimpleLogger;
@@ -10,8 +10,8 @@ use simple_logger::SimpleLogger;
 /// strings in json format, which can map to any structure that implements `serde::Deserialize`
 /// The runtime pays no attention to the contents of the request payload.
 #[derive(Deserialize)]
-struct Request {
-    command: String,
+struct Request<'a> {
+    command: &'a str,
 }
 
 /// This is a made-up example of what a response structure may look like.
@@ -31,14 +31,17 @@ async fn main() -> Result<(), Error> {
     SimpleLogger::new().with_level(LevelFilter::Info).init().unwrap();
 
     let func = handler_fn(my_handler);
-    lambda_runtime::run::<Request, _, _>(func).await?;
+    struct BorrowedRequest {}
+    impl<'de> Deserializable<'de> for BorrowedRequest {
+        type Deserialize = Request<'de>;
+    }
+    lambda_runtime::run::<BorrowedRequest, _, _>(func).await?;
     Ok(())
 }
 
-pub(crate) async fn my_handler(event: Request, ctx: Context) -> Result<Response, Error> {
+pub(crate) async fn my_handler(event: Request<'_>, ctx: Context) -> Result<Response, Error> {
     // extract some useful info from the request
     let command = event.command;
-
     // prepare the response
     let resp = Response {
         req_id: ctx.request_id,

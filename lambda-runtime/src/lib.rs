@@ -8,7 +8,7 @@
 pub use crate::types::Context;
 use client::Client;
 use hyper::client::{connect::Connection, HttpConnector};
-use serde::{Deserialize, Serialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::{
     convert::{TryFrom, TryInto},
     env, fmt,
@@ -68,9 +68,9 @@ impl Config {
 /// A trait describing an asynchronous function `A` to `B`.
 pub trait Handler<A, B> {
     /// Errors returned by this handler.
-    type Error;
+    type Error: fmt::Display + Send + Sync;
     /// Response of this handler.
-    type Fut: Future<Output = Result<B, Self::Error>>;
+    type Fut: Future<Output = Result<B, Self::Error>> + Send + Sync;
     /// Handle the incoming event.
     fn call(&self, event: A, context: Context) -> Self::Fut;
 }
@@ -93,8 +93,8 @@ pub struct HandlerFn<F> {
 impl<F, A, B, Error, Fut> Handler<A, B> for HandlerFn<F>
 where
     F: Fn(A, Context) -> Fut,
-    Fut: Future<Output = Result<B, Error>> + Send,
-    Error: Into<Box<dyn std::error::Error + Send + Sync + 'static>> + fmt::Display,
+    Fut: Future<Output = Result<B, Error>> + Send + Sync,
+    Error: Into<Box<dyn std::error::Error + Send + Sync + 'static>> + fmt::Display + Send + Sync,
 {
     type Error = Error;
     type Fut = Fut;
@@ -107,6 +107,16 @@ where
 #[derive(Debug, PartialEq)]
 enum BuilderError {
     UnsetUri,
+}
+
+/// A helper trait implemented by an event type that is deserialized with a 'de lifetime.
+pub trait Deserializable<'de> {
+    /// The associated type that is the concrete event type.
+    type Deserialize: Deserialize<'de> + Send;
+}
+
+impl<T: Send + DeserializeOwned> Deserializable<'_> for T {
+    type Deserialize = T;
 }
 
 struct Runtime<C: Service<http::Uri> = HttpConnector> {
@@ -135,10 +145,8 @@ where
         handler: F,
     ) -> Result<(), Error>
     where
-        F: Handler<A, B> + Send + Sync + 'static,
-        <F as Handler<A, B>>::Fut: Future<Output = Result<B, <F as Handler<A, B>>::Error>> + Send + 'static,
-        <F as Handler<A, B>>::Error: fmt::Display + Send + Sync + 'static,
-        A: for<'de> Deserialize<'de> + Send + Sync + 'static,
+        F: for<'de> Handler<<A as Deserializable<'de>>::Deserialize, B> + Send + Sync + 'static,
+        A: for<'de> Deserializable<'de> + 'static,
         B: Serialize + Send + Sync + 'static,
     {
         let client = &self.client;
@@ -152,27 +160,39 @@ where
             let ctx: Context = Context::try_from(parts.headers)?;
             let body = hyper::body::to_bytes(body).await?;
             trace!("{}", std::str::from_utf8(&body)?); // this may be very verbose
-            let body = serde_json::from_slice(&body)?;
 
             let handler = Arc::clone(&handler);
-            let request_id = &ctx.request_id.clone();
-            #[allow(clippy::async_yields_async)]
-            let task = tokio::spawn(async move { handler.call(body, ctx) });
-
-            let req = match task.await {
-                Ok(response) => match response.await {
-                    Ok(response) => {
-                        trace!("Ok response from handler (run loop)");
-                        EventCompletionRequest {
-                            request_id,
-                            body: response,
+            let request_id = ctx.request_id.clone();
+            let request_id_for_panic = ctx.request_id.clone();
+            let task = tokio::spawn(async move {
+                let b = body;
+                let res = serde_json::from_slice(&b);
+                match res {
+                    Ok(body) => match handler.call(body, ctx).await {
+                        Ok(response) => {
+                            trace!("Ok response from handler (run loop)");
+                            EventCompletionRequest {
+                                request_id: &request_id,
+                                body: response,
+                            }
+                            .into_req()
                         }
-                        .into_req()
-                    }
+                        Err(err) => {
+                            error!("{}", err); // logs the error in CloudWatch
+                            EventErrorRequest {
+                                request_id: &request_id,
+                                diagnostic: Diagnostic {
+                                    error_type: type_name_of_val(&err).to_owned(),
+                                    error_message: format!("{}", err), // returns the error to the caller via Lambda API
+                                },
+                            }
+                            .into_req()
+                        }
+                    },
                     Err(err) => {
                         error!("{}", err); // logs the error in CloudWatch
                         EventErrorRequest {
-                            request_id,
+                            request_id: &request_id,
                             diagnostic: Diagnostic {
                                 error_type: type_name_of_val(&err).to_owned(),
                                 error_message: format!("{}", err), // returns the error to the caller via Lambda API
@@ -180,11 +200,14 @@ where
                         }
                         .into_req()
                     }
-                },
+                }
+            });
+            let req = match task.await {
+                Ok(req) => req,
                 Err(err) if err.is_panic() => {
                     error!("{:?}", err); // inconsistent with other log record formats - to be reviewed
                     EventErrorRequest {
-                        request_id,
+                        request_id: &request_id_for_panic,
                         diagnostic: Diagnostic {
                             error_type: type_name_of_val(&err).to_owned(),
                             error_message: format!("Lambda panicked: {}", err),
@@ -193,8 +216,7 @@ where
                     .into_req()
                 }
                 Err(_) => unreachable!("tokio::task should not be canceled"),
-            };
-            let req = req?;
+            }?;
             client.call(req).await.expect("Unable to send response to Runtime APIs");
         }
         Ok(())
@@ -291,10 +313,8 @@ where
 /// ```
 pub async fn run<A, B, F>(handler: F) -> Result<(), Error>
 where
-    F: Handler<A, B> + Send + Sync + 'static,
-    <F as Handler<A, B>>::Fut: Future<Output = Result<B, <F as Handler<A, B>>::Error>> + Send + 'static,
-    <F as Handler<A, B>>::Error: fmt::Display + Send + Sync + 'static,
-    A: for<'de> Deserialize<'de> + Send + Sync + 'static,
+    F: for<'de> Handler<<A as Deserializable<'de>>::Deserialize, B> + Send + Sync + 'static,
+    A: for<'de> Deserializable<'de> + 'static,
     B: Serialize + Send + Sync + 'static,
 {
     trace!("Loading config from env");

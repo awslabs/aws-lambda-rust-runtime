@@ -70,7 +70,7 @@ async fn main() -> Result<(), Error> {
 
     // call the actual handler of the request
     let func = handler_fn(func);
-    lambda_runtime::run(func).await?;
+    lambda_runtime::run::<Value, _, _>(func).await?;
     Ok(())
 }
 

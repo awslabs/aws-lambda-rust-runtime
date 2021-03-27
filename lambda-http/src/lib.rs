@@ -17,13 +17,13 @@
 //! your function's execution path.
 //!
 //! ```rust,no_run
-//! use lambda_http::{handler, lambda_runtime::{self, Error}};
+//! use lambda_http::{handler, lambda_runtime::Error};
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Error> {
 //!     // initialize dependencies once here for the lifetime of your
 //!     // lambda task
-//!     lambda_runtime::run(handler(|request, context| async { Ok("👋 world!") })).await?;
+//!     lambda_http::run(handler(|request, context| async { Ok("👋 world!") })).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -34,11 +34,11 @@
 //! with the [`RequestExt`](trait.RequestExt.html) trait.
 //!
 //! ```rust,no_run
-//! use lambda_http::{handler, lambda_runtime::{self, Context, Error}, IntoResponse, Request, RequestExt};
+//! use lambda_http::{handler, lambda_runtime::{Context, Error}, IntoResponse, Request, RequestExt};
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Error> {
-//!     lambda_runtime::run(handler(hello)).await?;
+//!     lambda_http::run(handler(hello)).await?;
 //!     Ok(())
 //! }
 //!
@@ -183,7 +183,7 @@ where
 ///
 /// # Example
 /// ```no_run
-/// use lambda_http::{run, Context};
+/// use lambda_http::{handler, Context, IntoResponse, Request, RequestExt};
 /// use serde_json::Value;
 ///
 /// type Error = Box<dyn std::error::Error + Send + Sync + 'static>;

@@ -53,6 +53,7 @@ where
 
 #[cfg(test)]
 mod endpoint_tests {
+    use crate::Handler;
     use crate::{
         client::Client,
         incoming,
@@ -252,6 +253,15 @@ mod endpoint_tests {
         }
     }
 
+    async fn do_run<F>(runtime: Runtime<simulated::Connector>, handler: F) -> Result<(), Error>
+    where
+        F: for<'de> Handler<'de, serde_json::Value, serde_json::Value> + Send + Sync + 'static,
+    {
+        let client = &runtime.client;
+        let incoming = incoming(client).take(1);
+        Ok(runtime.run(incoming, handler).await?)
+    }
+
     #[tokio::test]
     async fn successful_end_to_end_run() -> Result<(), Error> {
         let (client, server) = io::duplex(64);
@@ -272,11 +282,7 @@ mod endpoint_tests {
         async fn func(event: serde_json::Value, _: crate::Context) -> Result<serde_json::Value, Error> {
             Ok(event)
         }
-        let f = crate::handler_fn(func);
-
-        let client = &runtime.client;
-        let incoming = incoming(client).take(1);
-        runtime.run(incoming, f).await?;
+        do_run(runtime, crate::handler_fn(func)).await?;
 
         // shutdown server
         tx.send(()).expect("Receiver has been dropped");

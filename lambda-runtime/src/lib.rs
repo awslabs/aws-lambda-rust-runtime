@@ -305,7 +305,7 @@ where
 /// #[tokio::main]
 /// async fn main() -> Result<(), Error> {
 ///     let func = handler_fn(func);
-///     lambda_runtime::run(func).await?;
+///     lambda_runtime::run::<Value, _, _>(func).await?;
 ///     Ok(())
 /// }
 ///

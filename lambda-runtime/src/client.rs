@@ -53,7 +53,6 @@ where
 
 #[cfg(test)]
 mod endpoint_tests {
-    use crate::Handler;
     use crate::{
         client::Client,
         incoming,
@@ -62,7 +61,7 @@ mod endpoint_tests {
         },
         simulated,
         types::Diagnostic,
-        Error, Runtime,
+        Error, Handler, Runtime,
     };
     use http::{uri::PathAndQuery, HeaderValue, Method, Request, Response, StatusCode, Uri};
     use hyper::{server::conn::Http, service::service_fn, Body};

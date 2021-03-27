@@ -62,7 +62,7 @@
 extern crate maplit;
 
 pub use http::{self, Response};
-pub use lambda_runtime::{self, Context};
+pub use lambda_runtime::{self, Context, Deserializable};
 use lambda_runtime::{Error, Handler as LambdaHandler};
 
 mod body;
@@ -76,6 +76,7 @@ use crate::{
     response::LambdaResponse,
 };
 use std::{
+    fmt,
     future::Future,
     pin::Pin,
     task::{Context as TaskContext, Poll},
@@ -89,9 +90,9 @@ pub type Request = http::Request<Body>;
 /// This can be viewed as a `lambda_runtime::Handler` constrained to `http` crate `Request` and `Response` types
 pub trait Handler: Sized {
     /// The type of Error that this Handler will return
-    type Error;
+    type Error: fmt::Display + Send + Sync;
     /// The type of Response this Handler will return
-    type Response: IntoResponse;
+    type Response: IntoResponse + Send + Sync;
     /// The type of Future this Handler will return
     type Fut: Future<Output = Result<Self::Response, Self::Error>> + Send + 'static;
     /// Function used to execute handler behavior
@@ -107,7 +108,7 @@ pub fn handler<H: Handler>(handler: H) -> Adapter<H> {
 impl<F, R, Fut> Handler for F
 where
     F: Fn(Request, Context) -> Fut,
-    R: IntoResponse,
+    R: IntoResponse + Send + Sync,
     Fut: Future<Output = Result<R, Error>> + Send + 'static,
 {
     type Response = R;
@@ -126,7 +127,8 @@ pub struct TransformResponse<R, E> {
 
 impl<R, E> Future for TransformResponse<R, E>
 where
-    R: IntoResponse,
+    R: IntoResponse + Send + Sync,
+    E: Send + Sync,
 {
     type Output = Result<LambdaResponse, E>;
     fn poll(mut self: Pin<&mut Self>, cx: &mut TaskContext) -> Poll<Self::Output> {
@@ -159,13 +161,51 @@ impl<H: Handler> Handler for Adapter<H> {
     }
 }
 
-impl<H: Handler> LambdaHandler<LambdaRequest<'_>, LambdaResponse> for Adapter<H> {
+impl<'de, H, A> LambdaHandler<'de, A, LambdaResponse> for Adapter<H>
+where
+    A: Deserializable<'de, Deserialize = LambdaRequest<'de>>,
+    H: Handler + Send + Sync + 'static,
+    <H as Handler>::Error: fmt::Display + Send + Sync,
+    H::Response: Send + Sync,
+{
     type Error = H::Error;
-    type Fut = TransformResponse<H::Response, Self::Error>;
+    type Fut = TransformResponse<H::Response, H::Error>;
 
-    fn call(&self, event: LambdaRequest<'_>, context: Context) -> Self::Fut {
+    fn call(&self, event: LambdaRequest<'de>, context: Context) -> Self::Fut {
         let request_origin = event.request_origin();
         let fut = Box::pin(self.handler.call(event.into(), context));
         TransformResponse { request_origin, fut }
     }
+}
+
+/// Starts the Lambda Rust runtime and begins polling for events on the [Lambda
+/// Runtime APIs](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html).
+///
+/// # Example
+/// ```no_run
+/// use lambda_http::{run, Context};
+/// use serde_json::Value;
+///
+/// type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
+///
+/// #[tokio::main]
+/// async fn main() -> Result<(), Error> {
+///     lambda_http::run(handler(func)).await?;
+///     Ok(())
+/// }
+///
+/// async fn func(event: Request, _: Context) -> Result<impl IntoResponse, Error> {
+///     Ok(format!("Hello, {}!", event.query_string_parameters().get("first_name").unwrap()).into_response())
+/// }
+/// ```
+pub async fn run<H>(adapter: Adapter<H>) -> Result<(), Error>
+where
+    H: Handler + Send + Sync + 'static,
+    <H as Handler>::Error: std::fmt::Display + Send,
+{
+    struct LambdaRequestBorrowed {}
+    impl<'de> Deserializable<'de> for LambdaRequestBorrowed {
+        type Deserialize = LambdaRequest<'de>;
+    }
+    lambda_runtime::run::<LambdaRequestBorrowed, _, _>(adapter).await
 }

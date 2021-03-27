@@ -65,14 +65,24 @@ impl Config {
     }
 }
 
+/// A helper trait implemented by an event type that is deserialized with a 'de lifetime.
+pub trait Deserializable<'de> {
+    /// The associated type that is the concrete event type.
+    type Deserialize: Deserialize<'de> + Send;
+}
+
+impl<T: Send + DeserializeOwned> Deserializable<'_> for T {
+    type Deserialize = T;
+}
+
 /// A trait describing an asynchronous function `A` to `B`.
-pub trait Handler<A, B> {
+pub trait Handler<'de, A: Deserializable<'de>, B: Send> {
     /// Errors returned by this handler.
     type Error: fmt::Display + Send + Sync;
     /// Response of this handler.
-    type Fut: Future<Output = Result<B, Self::Error>> + Send + Sync;
+    type Fut: Future<Output = Result<B, Self::Error>> + Send;
     /// Handle the incoming event.
-    fn call(&self, event: A, context: Context) -> Self::Fut;
+    fn call(&self, event: <A as Deserializable<'de>>::Deserialize, context: Context) -> Self::Fut;
 }
 
 /// Returns a new [`HandlerFn`] with the given closure.
@@ -90,15 +100,17 @@ pub struct HandlerFn<F> {
     f: F,
 }
 
-impl<F, A, B, Error, Fut> Handler<A, B> for HandlerFn<F>
+impl<'de, F, A, B, Error, Fut> Handler<'de, A, B> for HandlerFn<F>
 where
-    F: Fn(A, Context) -> Fut,
-    Fut: Future<Output = Result<B, Error>> + Send + Sync,
+    A: Deserializable<'de>,
+    B: Send,
+    F: Fn(<A as Deserializable<'de>>::Deserialize, Context) -> Fut,
+    Fut: Future<Output = Result<B, Error>> + Send,
     Error: Into<Box<dyn std::error::Error + Send + Sync + 'static>> + fmt::Display + Send + Sync,
 {
     type Error = Error;
     type Fut = Fut;
-    fn call(&self, req: A, ctx: Context) -> Self::Fut {
+    fn call(&self, req: <A as Deserializable<'de>>::Deserialize, ctx: Context) -> Self::Fut {
         (self.f)(req, ctx)
     }
 }
@@ -107,16 +119,6 @@ where
 #[derive(Debug, PartialEq)]
 enum BuilderError {
     UnsetUri,
-}
-
-/// A helper trait implemented by an event type that is deserialized with a 'de lifetime.
-pub trait Deserializable<'de> {
-    /// The associated type that is the concrete event type.
-    type Deserialize: Deserialize<'de> + Send;
-}
-
-impl<T: Send + DeserializeOwned> Deserializable<'_> for T {
-    type Deserialize = T;
 }
 
 struct Runtime<C: Service<http::Uri> = HttpConnector> {
@@ -145,7 +147,7 @@ where
         handler: F,
     ) -> Result<(), Error>
     where
-        F: for<'de> Handler<<A as Deserializable<'de>>::Deserialize, B> + Send + Sync + 'static,
+        F: for<'de> Handler<'de, A, B> + Send + Sync + 'static,
         A: for<'de> Deserializable<'de> + 'static,
         B: Serialize + Send + Sync + 'static,
     {
@@ -313,7 +315,7 @@ where
 /// ```
 pub async fn run<A, B, F>(handler: F) -> Result<(), Error>
 where
-    F: for<'de> Handler<<A as Deserializable<'de>>::Deserialize, B> + Send + Sync + 'static,
+    F: for<'de> Handler<'de, A, B> + Send + Sync + 'static,
     A: for<'de> Deserializable<'de> + 'static,
     B: Serialize + Send + Sync + 'static,
 {

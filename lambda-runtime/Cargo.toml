@@ -1,6 +1,6 @@
 [package]
 name = "lambda_runtime"
-version = "0.3.1"
+version = "0.3.0"
 authors = ["David Barsky <dbarsky@amazon.com>"]
 description = "AWS Lambda Runtime"
 edition = "2018"

@@ -114,7 +114,7 @@ enum BuilderError {
 }
 
 struct Runtime<C: Service<http::Uri> = HttpConnector> {
-    client: Client<C>,
+    client: Arc<Client<C>>,
 }
 
 impl Runtime {
@@ -146,7 +146,6 @@ where
         A: for<'de> Deserialize<'de> + Send + Sync + 'static,
         B: Serialize + Send + Sync + 'static,
     {
-        let client = Arc::new(self.client.clone());
         let handler = Arc::new(handler);
         let mut tasks = FuturesUnordered::new();
 
@@ -165,7 +164,7 @@ where
             let handler = Arc::clone(&handler);
             let request_id = ctx.request_id.clone();
 
-            let client = client.clone();
+            let client = self.client.clone();
             let task = tokio::spawn(async move {
                 let req = handler.call(body, ctx).await;
 
@@ -237,7 +236,7 @@ where
             Some(uri) => uri,
             None => return Err(BuilderError::UnsetUri),
         };
-        let client = Client::with(uri, self.connector);
+        let client = Arc::new(Client::with(uri, self.connector));
 
         Ok(Runtime { client })
     }

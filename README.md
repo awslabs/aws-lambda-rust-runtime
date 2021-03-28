@@ -157,7 +157,7 @@ $ unzip -o \
 
 ### Debugging
 
-Lambdas can be run and debugged locally using a special [Lambda debug proxy](https://github.com/rimutaka/lambda-debug-proxy), which is a Lambda function that forwards incoming requests to one AWS SQS queue and reads responses from another queue. A local proxy running on your development computer reads the queue, calls your lambda locally and sends back the response. This approach allows debugging of Lambda functions locally while being part of your AWS workflow. The lambda handler code does not need to be modified between the local and AWS versions.
+Lambdas can be run and debugged locally using a special [Lambda debug proxy](https://github.com/rimutaka/lambda-debug-proxy) (a non-AWS repo maintained by @rimutaka), which is a Lambda function that forwards incoming requests to one AWS SQS queue and reads responses from another queue. A local proxy running on your development computer reads the queue, calls your lambda locally and sends back the response. This approach allows debugging of Lambda functions locally while being part of your AWS workflow. The lambda handler code does not need to be modified between the local and AWS versions.
 
 ## `lambda`
 

@@ -3,7 +3,7 @@ use http::{uri::Scheme, Request, Response, Uri};
 use hyper::{client::HttpConnector, Body};
 use std::fmt::Debug;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct Client<C = HttpConnector> {
     pub(crate) base: Uri,
     pub(crate) client: hyper::Client<C>,

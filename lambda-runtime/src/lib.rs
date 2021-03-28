@@ -7,6 +7,7 @@
 //! to the the `lambda_runtime::run` function, which launches and runs the Lambda runtime.
 pub use crate::types::Context;
 use client::Client;
+use futures::stream::FuturesUnordered;
 use hyper::client::{connect::Connection, HttpConnector};
 use serde::{Deserialize, Serialize};
 use std::{
@@ -145,8 +146,10 @@ where
         A: for<'de> Deserialize<'de> + Send + Sync + 'static,
         B: Serialize + Send + Sync + 'static,
     {
-        let client = &self.client;
+        let client = Arc::new(self.client.clone());
         let handler = Arc::new(handler);
+        let mut tasks = FuturesUnordered::new();
+
         tokio::pin!(incoming);
         while let Some(event) = incoming.next().await {
             trace!("New event arrived (run loop)");
@@ -160,16 +163,17 @@ where
             let body = serde_json::from_slice(&body)?;
 
             let handler = Arc::clone(&handler);
-            let request_id = &ctx.request_id.clone();
-            #[allow(clippy::async_yields_async)]
-            let task = tokio::spawn(async move { handler.call(body, ctx) });
+            let request_id = ctx.request_id.clone();
 
-            let req = match task.await {
-                Ok(response) => match response.await {
+            let client = client.clone();
+            let task = tokio::spawn(async move {
+                let req = handler.call(body, ctx).await;
+
+                let req = match req {
                     Ok(response) => {
                         trace!("Ok response from handler (run loop)");
                         EventCompletionRequest {
-                            request_id,
+                            request_id: &request_id,
                             body: response,
                         }
                         .into_req()
@@ -177,7 +181,7 @@ where
                     Err(err) => {
                         error!("{}", err); // logs the error in CloudWatch
                         EventErrorRequest {
-                            request_id,
+                            request_id: &request_id,
                             diagnostic: Diagnostic {
                                 error_type: type_name_of_val(&err).to_owned(),
                                 error_message: format!("{}", err), // returns the error to the caller via Lambda API
@@ -185,23 +189,16 @@ where
                         }
                         .into_req()
                     }
-                },
-                Err(err) if err.is_panic() => {
-                    error!("{:?}", err); // inconsistent with other log record formats - to be reviewed
-                    EventErrorRequest {
-                        request_id,
-                        diagnostic: Diagnostic {
-                            error_type: type_name_of_val(&err).to_owned(),
-                            error_message: format!("Lambda panicked: {}", err),
-                        },
-                    }
-                    .into_req()
-                }
-                Err(_) => unreachable!("tokio::task should not be canceled"),
-            };
-            let req = req?;
-            client.call(req).await.expect("Unable to send response to Runtime APIs");
+                };
+                let req = req.expect("Unable to process request");
+
+                client.call(req).await.expect("Unable to send response to Runtime APIs");
+            });
+
+            tasks.push(task);
         }
+
+        while tasks.next().await.is_some() {}
         Ok(())
     }
 }

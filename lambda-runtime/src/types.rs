@@ -121,22 +121,22 @@ impl TryFrom<HeaderMap> for Context {
     fn try_from(headers: HeaderMap) -> Result<Self, Self::Error> {
         let ctx = Context {
             request_id: headers.get("lambda-runtime-aws-request-id")
-                .unwrap_or(&HeaderValue::from_str("8476a536-e9f4-11e8-9739-2dfe598c3fcd").unwrap())
+                .unwrap_or(&HeaderValue::from_str("8476a536-e9f4-11e8-9739-2dfe598c3fcd")?)
                 .to_str()
                 .expect("Missing Request ID")
                 .to_owned(),
             deadline: headers.get("lambda-runtime-deadline-ms")
-                .unwrap_or(&HeaderValue::from_str("1542409706888").unwrap())
+                .unwrap_or(&HeaderValue::from_str("1542409706888")?)
                 .to_str()?
                 .parse()
                 .expect("Missing deadline"),
             invoked_function_arn: headers.get("lambda-runtime-invoked-function-arn")
-                .unwrap_or(&HeaderValue::from_str("arn:aws:lambda:us-east-2:123456789012:function:custom-runtime").unwrap())
+                .unwrap_or(&HeaderValue::from_str("arn:aws:lambda:us-east-2:123456789012:function:custom-runtime")?)
                 .to_str()
                 .expect("Missing arn; this is a bug")
                 .to_owned(),
             xray_trace_id: headers.get("lambda-runtime-trace-id")
-                .unwrap_or(&HeaderValue::from_str("Root=1-5bef4de7-ad49b0e87f6ef6c87fc2e700;Parent=9a9197af755a6419;Sampled=1").unwrap())
+                .unwrap_or(&HeaderValue::from_str("Root=1-5bef4de7-ad49b0e87f6ef6c87fc2e700;Parent=9a9197af755a6419;Sampled=1")?)
                 .to_str()
                 .expect("Invalid XRayTraceID sent by Lambda; this is a bug")
                 .to_owned(),

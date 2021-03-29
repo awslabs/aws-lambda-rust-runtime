@@ -126,7 +126,7 @@ impl TryFrom<HeaderMap> for Context {
                 .expect("Missing Request ID")
                 .to_owned(),
             deadline: input_headers.get("lambda-runtime-deadline-ms")
-                .unwrap_or(&HeaderValue::from_str("").unwrap())
+                .unwrap_or(&HeaderValue::from_str("100").unwrap())
                 .to_str()?
                 .parse()
                 .expect("Missing deadline"),

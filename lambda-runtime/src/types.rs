@@ -136,10 +136,7 @@ impl TryFrom<HeaderMap> for Context {
                 .expect("Missing arn; this is a bug")
                 .to_owned(),
             xray_trace_id: input_headers.get("lambda-runtime-trace-id")
-                .unwrap_or(&HeaderValue::from_str(
-                    "Root=1-5759e988-bd862e3fe1be46a994272793;
-                     Parent=53995c3f42cd8ad8;Sampled=1"
-                ).unwrap())
+                .unwrap_or(&HeaderValue::from_str("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1").unwrap())
                 .to_str()
                 .expect("Invalid XRayTraceID sent by Lambda; this is a bug")
                 .to_owned(),

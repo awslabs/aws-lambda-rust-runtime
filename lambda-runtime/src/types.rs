@@ -1,5 +1,5 @@
 use crate::{Config, Error};
-use http::HeaderMap;
+use http::{HeaderMap, HeaderValue};
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, convert::TryFrom};
 
@@ -123,23 +123,24 @@ impl TryFrom<HeaderMap> for Context {
         let ctx = Context {
             request_id: input_headers["lambda-runtime-aws-request-id"]
                 .to_str()
-                .unwrap_or("12345")
+                .expect("Missing Request ID")
                 .to_owned(),
             deadline: input_headers["lambda-runtime-deadline-ms"]
-                .to_str()
-                .unwrap_or("10")
+                .to_str()?
                 .parse()
                 .expect("Missing deadline"),
-            invoked_function_arn: input_headers["lambda-runtime-invoked-function-arn"]
+            invoked_function_arn: input_headers.get("lambda-runtime-invoked-function-arn")
+                .unwrap_or(&HeaderValue::from_str("arn:test:12345").unwrap())
                 .to_str()
-                .unwrap_or("arn:test:local:12345")
+                .expect("Missing arn; this is a bug")
                 .to_owned(),
-            xray_trace_id: input_headers["lambda-runtime-trace-id"]
+            xray_trace_id: input_headers.get("lambda-runtime-trace-id")
+                .unwrap_or(&HeaderValue::from_str(
+                    "Root=1-5759e988-bd862e3fe1be46a994272793;
+                     Parent=53995c3f42cd8ad8;Sampled=1"
+                ).unwrap())
                 .to_str()
-                .unwrap_or(
-                    "Root=1-5759e988-bd862e3fe1be46a994272793;\
-                    Parent=53995c3f42cd8ad8;Sampled=1"
-                )
+                .expect("Invalid XRayTraceID sent by Lambda; this is a bug")
                 .to_owned(),
             ..Default::default()
         };

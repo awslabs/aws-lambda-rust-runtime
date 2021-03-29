@@ -120,21 +120,23 @@ impl TryFrom<HeaderMap> for Context {
     type Error = Error;
     fn try_from(input_headers: HeaderMap) -> Result<Self, Self::Error> {
         let ctx = Context {
-            request_id: input_headers["lambda-runtime-aws-request-id"]
+            request_id: input_headers.get("lambda-runtime-aws-request-id")
+                .unwrap_or(&HeaderValue::from_str("").unwrap())
                 .to_str()
                 .expect("Missing Request ID")
                 .to_owned(),
-            deadline: input_headers["lambda-runtime-deadline-ms"]
+            deadline: input_headers.get("lambda-runtime-deadline-ms")
+                .unwrap_or(&HeaderValue::from_str("").unwrap())
                 .to_str()?
                 .parse()
                 .expect("Missing deadline"),
             invoked_function_arn: input_headers.get("lambda-runtime-invoked-function-arn")
-                .unwrap_or(&HeaderValue::from_str("arn:test:12345").unwrap())
+                .unwrap_or(&HeaderValue::from_str("").unwrap())
                 .to_str()
                 .expect("Missing arn; this is a bug")
                 .to_owned(),
             xray_trace_id: input_headers.get("lambda-runtime-trace-id")
-                .unwrap_or(&HeaderValue::from_str("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1").unwrap())
+                .unwrap_or(&HeaderValue::from_str("").unwrap())
                 .to_str()
                 .expect("Invalid XRayTraceID sent by Lambda; this is a bug")
                 .to_owned(),

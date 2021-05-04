@@ -107,7 +107,7 @@ where
 
 /// tranformation from http type to internal type
 impl LambdaResponse {
-    pub(crate) fn from_response<T>(request_origin: &RequestOrigin, value: Response<T>) -> Self
+    pub fn from_response<T>(request_origin: &RequestOrigin, value: Response<T>) -> Self
     where
         T: Into<Body>,
     {

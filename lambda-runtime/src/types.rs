@@ -3,11 +3,12 @@ use http::HeaderMap;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, convert::TryFrom};
 
+#[doc(hidden)]
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct Diagnostic {
-    pub(crate) error_type: String,
-    pub(crate) error_message: String,
+pub struct Diagnostic {
+    pub error_type: String,
+    pub error_message: String,
 }
 
 #[test]

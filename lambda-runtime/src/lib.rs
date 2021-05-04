@@ -20,15 +20,17 @@ use tokio_stream::{Stream, StreamExt};
 use tower_service::Service;
 use tracing::{error, trace};
 
+#[doc(hidden)]
+pub mod requests;
+
 mod client;
-mod requests;
 #[cfg(test)]
 mod simulated;
 /// Types available to a Lambda function.
 mod types;
 
 use requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest};
-use types::Diagnostic;
+pub use types::Diagnostic;
 
 /// Error type that lambdas may result in
 pub type Error = Box<dyn std::error::Error + Send + Sync + 'static>;

@@ -4,7 +4,8 @@ use hyper::Body;
 use serde::Serialize;
 use std::str::FromStr;
 
-pub(crate) trait IntoRequest {
+#[doc(hidden)]
+pub trait IntoRequest {
     fn into_req(self) -> Result<Request<Body>, Error>;
 }
 

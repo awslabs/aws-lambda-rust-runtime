@@ -68,7 +68,8 @@ use lambda_runtime::{Error, Handler as LambdaHandler};
 mod body;
 pub mod ext;
 pub mod request;
-mod response;
+#[doc(hidden)]
+pub mod response;
 mod strmap;
 pub use crate::{body::Body, ext::RequestExt, response::IntoResponse, strmap::StrMap};
 use crate::{

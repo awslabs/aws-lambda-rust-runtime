@@ -33,9 +33,7 @@ struct SharedClient {
 
 impl SharedClient {
     fn new(name: &'static str) -> Self {
-        Self {
-            name
-        }
+        Self { name }
     }
 
     fn response(&self, req_id: String, command: String) -> Response {

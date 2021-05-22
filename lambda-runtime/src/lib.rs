@@ -13,7 +13,7 @@ use std::{
     convert::{TryFrom, TryInto},
     env, fmt,
     future::Future,
-    sync::Arc,
+    panic,
 };
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio_stream::{Stream, StreamExt};
@@ -96,7 +96,7 @@ pub struct HandlerFn<F> {
 impl<F, A, B, Error, Fut> Handler<A, B> for HandlerFn<F>
 where
     F: Fn(A, Context) -> Fut,
-    Fut: Future<Output = Result<B, Error>> + Send,
+    Fut: Future<Output = Result<B, Error>>,
     Error: Into<Box<dyn std::error::Error + Send + Sync + 'static>> + fmt::Display,
 {
     type Error = Error;
@@ -139,14 +139,13 @@ where
         config: &Config,
     ) -> Result<(), Error>
     where
-        F: Handler<A, B> + Send + Sync + 'static,
-        <F as Handler<A, B>>::Fut: Future<Output = Result<B, <F as Handler<A, B>>::Error>> + Send + 'static,
-        <F as Handler<A, B>>::Error: fmt::Display + Send + Sync + 'static,
-        A: for<'de> Deserialize<'de> + Send + Sync + 'static,
-        B: Serialize + Send + Sync + 'static,
+        F: Handler<A, B>,
+        <F as Handler<A, B>>::Fut: Future<Output = Result<B, <F as Handler<A, B>>::Error>>,
+        <F as Handler<A, B>>::Error: fmt::Display,
+        A: for<'de> Deserialize<'de>,
+        B: Serialize,
     {
         let client = &self.client;
-        let handler = Arc::new(handler);
         tokio::pin!(incoming);
         while let Some(event) = incoming.next().await {
             trace!("New event arrived (run loop)");
@@ -159,12 +158,10 @@ where
             trace!("{}", std::str::from_utf8(&body)?); // this may be very verbose
             let body = serde_json::from_slice(&body)?;
 
-            let handler = Arc::clone(&handler);
             let request_id = &ctx.request_id.clone();
-            #[allow(clippy::async_yields_async)]
-            let task = tokio::spawn(async move { handler.call(body, ctx) });
+            let task = panic::catch_unwind(panic::AssertUnwindSafe(|| handler.call(body, ctx)));
 
-            let req = match task.await {
+            let req = match task {
                 Ok(response) => match response.await {
                     Ok(response) => {
                         trace!("Ok response from handler (run loop)");
@@ -186,18 +183,21 @@ where
                         .into_req()
                     }
                 },
-                Err(err) if err.is_panic() => {
+                Err(err) => {
                     error!("{:?}", err); // inconsistent with other log record formats - to be reviewed
                     EventErrorRequest {
                         request_id,
                         diagnostic: Diagnostic {
                             error_type: type_name_of_val(&err).to_owned(),
-                            error_message: format!("Lambda panicked: {}", err),
+                            error_message: if let Some(msg) = err.downcast_ref::<&str>() {
+                                format!("Lambda panicked: {}", msg)
+                            } else {
+                                "Lambda panicked".to_string()
+                            },
                         },
                     }
                     .into_req()
                 }
-                Err(_) => unreachable!("tokio::task should not be canceled"),
             };
             let req = req?;
             client.call(req).await.expect("Unable to send response to Runtime APIs");
@@ -296,11 +296,11 @@ where
 /// ```
 pub async fn run<A, B, F>(handler: F) -> Result<(), Error>
 where
-    F: Handler<A, B> + Send + Sync + 'static,
-    <F as Handler<A, B>>::Fut: Future<Output = Result<B, <F as Handler<A, B>>::Error>> + Send + 'static,
-    <F as Handler<A, B>>::Error: fmt::Display + Send + Sync + 'static,
-    A: for<'de> Deserialize<'de> + Send + Sync + 'static,
-    B: Serialize + Send + Sync + 'static,
+    F: Handler<A, B>,
+    <F as Handler<A, B>>::Fut: Future<Output = Result<B, <F as Handler<A, B>>::Error>>,
+    <F as Handler<A, B>>::Error: fmt::Display,
+    A: for<'de> Deserialize<'de>,
+    B: Serialize,
 {
     trace!("Loading config from env");
     let config = Config::from_env()?;

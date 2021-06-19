@@ -1,5 +1,5 @@
 use crate::{Config, Error};
-use http::HeaderMap;
+use http::{HeaderMap, HeaderValue};
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, convert::TryFrom};
 
@@ -120,25 +120,104 @@ impl TryFrom<HeaderMap> for Context {
     type Error = Error;
     fn try_from(headers: HeaderMap) -> Result<Self, Self::Error> {
         let ctx = Context {
-            request_id: headers["lambda-runtime-aws-request-id"]
-                .to_str()
-                .expect("Missing Request ID")
-                .to_owned(),
-            deadline: headers["lambda-runtime-deadline-ms"]
+            request_id: headers
+                .get("lambda-runtime-aws-request-id")
+                .expect("missing lambda-runtime-aws-request-id header")
                 .to_str()?
-                .parse()
-                .expect("Missing deadline"),
-            invoked_function_arn: headers["lambda-runtime-invoked-function-arn"]
-                .to_str()
-                .expect("Missing arn; this is a bug")
                 .to_owned(),
-            xray_trace_id: headers["lambda-runtime-trace-id"]
-                .to_str()
-                .expect("Invalid XRayTraceID sent by Lambda; this is a bug")
+            deadline: headers
+                .get("lambda-runtime-deadline-ms")
+                .expect("missing lambda-runtime-deadline-ms header")
+                .to_str()?
+                .parse::<u64>()?,
+            invoked_function_arn: headers
+                .get("lambda-runtime-invoked-function-arn")
+                .unwrap_or(&HeaderValue::from_static(
+                    "No header lambda-runtime-invoked-function-arn found.",
+                ))
+                .to_str()?
+                .to_owned(),
+            xray_trace_id: headers
+                .get("lambda-runtime-trace-id")
+                .unwrap_or(&HeaderValue::from_static("No header lambda-runtime-trace-id found."))
+                .to_str()?
                 .to_owned(),
             ..Default::default()
         };
         Ok(ctx)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn context_with_expected_values_and_types_resolves() {
+        let mut headers = HeaderMap::new();
+        headers.insert("lambda-runtime-aws-request-id", HeaderValue::from_static("my-id"));
+        headers.insert("lambda-runtime-deadline-ms", HeaderValue::from_static("123"));
+        headers.insert(
+            "lambda-runtime-invoked-function-arn",
+            HeaderValue::from_static("arn::myarn"),
+        );
+        headers.insert("lambda-runtime-trace-id", HeaderValue::from_static("arn::myarn"));
+        let tried = Context::try_from(headers);
+        assert!(tried.is_ok());
+    }
+
+    #[test]
+    fn context_with_certain_missing_headers_still_resolves() {
+        let mut headers = HeaderMap::new();
+        headers.insert("lambda-runtime-aws-request-id", HeaderValue::from_static("my-id"));
+        headers.insert("lambda-runtime-deadline-ms", HeaderValue::from_static("123"));
+        let tried = Context::try_from(headers);
+        assert!(tried.is_ok());
+    }
+
+    #[test]
+    fn context_with_bad_deadline_type_is_err() {
+        let mut headers = HeaderMap::new();
+        headers.insert("lambda-runtime-aws-request-id", HeaderValue::from_static("my-id"));
+        headers.insert(
+            "lambda-runtime-deadline-ms",
+            HeaderValue::from_static("BAD-Type,not <u64>"),
+        );
+        headers.insert(
+            "lambda-runtime-invoked-function-arn",
+            HeaderValue::from_static("arn::myarn"),
+        );
+        headers.insert("lambda-runtime-trace-id", HeaderValue::from_static("arn::myarn"));
+        let tried = Context::try_from(headers);
+        assert!(tried.is_err());
+    }
+
+    #[test]
+    #[should_panic]
+    #[allow(unused_must_use)]
+    fn context_with_missing_request_id_should_panic() {
+        let mut headers = HeaderMap::new();
+        headers.insert("lambda-runtime-aws-request-id", HeaderValue::from_static("my-id"));
+        headers.insert(
+            "lambda-runtime-invoked-function-arn",
+            HeaderValue::from_static("arn::myarn"),
+        );
+        headers.insert("lambda-runtime-trace-id", HeaderValue::from_static("arn::myarn"));
+        Context::try_from(headers);
+    }
+
+    #[test]
+    #[should_panic]
+    #[allow(unused_must_use)]
+    fn context_with_missing_deadline_should_panic() {
+        let mut headers = HeaderMap::new();
+        headers.insert("lambda-runtime-deadline-ms", HeaderValue::from_static("123"));
+        headers.insert(
+            "lambda-runtime-invoked-function-arn",
+            HeaderValue::from_static("arn::myarn"),
+        );
+        headers.insert("lambda-runtime-trace-id", HeaderValue::from_static("arn::myarn"));
+        Context::try_from(headers);
     }
 }
 

@@ -16,9 +16,10 @@ impl SharedClient {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-
     // Create the "client" and a reference to it, so that we can pass this into the handler closure below.
-    let shared_client = SharedClient { name: "random_client_name_1" };
+    let shared_client = SharedClient {
+        name: "random_client_name_1",
+    };
     let shared_client_ref = &shared_client;
 
     // Define a closure here that makes use of the shared client.

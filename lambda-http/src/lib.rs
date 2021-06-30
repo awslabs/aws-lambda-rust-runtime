@@ -75,7 +75,12 @@ use crate::{
     request::{LambdaRequest, RequestOrigin},
     response::LambdaResponse,
 };
-use std::{future::Future, marker::PhantomData, pin::Pin, task::{Context as TaskContext, Poll}};
+use std::{
+    future::Future,
+    marker::PhantomData,
+    pin::Pin,
+    task::{Context as TaskContext, Poll},
+};
 
 /// Type alias for `http::Request`s with a fixed [`Body`](enum.Body.html) type
 pub type Request = http::Request<Body>;
@@ -96,7 +101,10 @@ pub trait Handler<'a>: Sized {
 
 /// Adapts a [`Handler`](trait.Handler.html) to the `lambda_runtime::run` interface
 pub fn handler<'a, H: Handler<'a>>(handler: H) -> Adapter<'a, H> {
-    Adapter { handler, _pd: PhantomData }
+    Adapter {
+        handler,
+        _pd: PhantomData,
+    }
 }
 
 /// An implementation of `Handler` for a given closure return a `Future` representing the computed response
@@ -144,7 +152,7 @@ where
 /// for a larger explaination of why this is nessessary
 pub struct Adapter<'a, H: Handler<'a>> {
     handler: H,
-    _pd: PhantomData<&'a H>
+    _pd: PhantomData<&'a H>,
 }
 
 impl<'a, H: Handler<'a>> Handler<'a> for Adapter<'a, H> {

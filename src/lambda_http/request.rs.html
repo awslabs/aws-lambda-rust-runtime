@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lambda-http/src/request.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>request.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../lambda_http/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
+<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../lambda_http/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
                 <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
@@ -748,16 +748,16 @@
 <span class="doccomment">//! request extension method provided by [lambda_http::RequestExt](../trait.RequestExt.html)</span>
 <span class="doccomment">//!</span>
 <span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">body</span>::<span class="ident">Body</span>,
+    <span class="ident">body::Body</span>,
     <span class="ident">ext</span>::{<span class="ident">PathParameters</span>, <span class="ident">QueryStringParameters</span>, <span class="ident">StageVariables</span>},
-    <span class="ident">strmap</span>::<span class="ident">StrMap</span>,
+    <span class="ident">strmap::StrMap</span>,
 };
 <span class="kw">use</span> <span class="ident">serde</span>::{
     <span class="ident">de</span>::{<span class="ident">Deserializer</span>, <span class="ident">Error</span> <span class="kw">as</span> <span class="ident">DeError</span>, <span class="ident">MapAccess</span>, <span class="ident">Visitor</span>},
     <span class="ident">Deserialize</span>,
 };
-<span class="kw">use</span> <span class="ident">serde_json</span>::{<span class="ident">error</span>::<span class="ident">Error</span> <span class="kw">as</span> <span class="ident">JsonError</span>, <span class="ident">Value</span>};
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">borrow</span>::<span class="ident">Cow</span>, <span class="ident">collections</span>::<span class="ident">HashMap</span>, <span class="ident">fmt</span>, <span class="ident">io</span>::<span class="ident">Read</span>, <span class="ident">mem</span>};
+<span class="kw">use</span> <span class="ident">serde_json</span>::{<span class="ident">error::Error</span> <span class="kw">as</span> <span class="ident">JsonError</span>, <span class="ident">Value</span>};
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">borrow::Cow</span>, <span class="ident">collections::HashMap</span>, <span class="ident">fmt</span>, <span class="ident">io::Read</span>, <span class="ident">mem</span>};
 
 <span class="doccomment">/// Internal representation of an Lambda http event from</span>
 <span class="doccomment">/// ALB, API Gateway REST and HTTP API proxy event perspectives</span>
@@ -776,7 +776,7 @@
         <span class="ident">raw_query_string</span>: <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">str</span><span class="op">&gt;</span>,
         <span class="ident">cookies</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>,
         <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">deserialize_with</span> <span class="op">=</span> <span class="string">&quot;deserialize_headers&quot;</span>)]</span>
-        <span class="ident">headers</span>: <span class="ident">http</span>::<span class="ident">HeaderMap</span>,
+        <span class="ident">headers</span>: <span class="ident">http::HeaderMap</span>,
         <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
         <span class="ident">query_string_parameters</span>: <span class="ident">StrMap</span>,
         <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
@@ -792,13 +792,13 @@
     <span class="ident">Alb</span> {
         <span class="ident">path</span>: <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">str</span><span class="op">&gt;</span>,
         <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">deserialize_with</span> <span class="op">=</span> <span class="string">&quot;deserialize_method&quot;</span>)]</span>
-        <span class="ident">http_method</span>: <span class="ident">http</span>::<span class="ident">Method</span>,
+        <span class="ident">http_method</span>: <span class="ident">http::Method</span>,
         <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">deserialize_with</span> <span class="op">=</span> <span class="string">&quot;deserialize_headers&quot;</span>)]</span>
-        <span class="ident">headers</span>: <span class="ident">http</span>::<span class="ident">HeaderMap</span>,
+        <span class="ident">headers</span>: <span class="ident">http::HeaderMap</span>,
         <span class="doccomment">/// For alb events these are only present when</span>
         <span class="doccomment">/// the `lambda.multi_value_headers.enabled` target group setting turned on</span>
         <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>, <span class="ident">deserialize_with</span> <span class="op">=</span> <span class="string">&quot;deserialize_multi_value_headers&quot;</span>)]</span>
-        <span class="ident">multi_value_headers</span>: <span class="ident">http</span>::<span class="ident">HeaderMap</span>,
+        <span class="ident">multi_value_headers</span>: <span class="ident">http::HeaderMap</span>,
         <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">deserialize_with</span> <span class="op">=</span> <span class="string">&quot;nullable_default&quot;</span>)]</span>
         <span class="ident">query_string_parameters</span>: <span class="ident">StrMap</span>,
         <span class="doccomment">/// For alb events these are only present when</span>
@@ -814,11 +814,11 @@
     <span class="ident">ApiGateway</span> {
         <span class="ident">path</span>: <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">str</span><span class="op">&gt;</span>,
         <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">deserialize_with</span> <span class="op">=</span> <span class="string">&quot;deserialize_method&quot;</span>)]</span>
-        <span class="ident">http_method</span>: <span class="ident">http</span>::<span class="ident">Method</span>,
+        <span class="ident">http_method</span>: <span class="ident">http::Method</span>,
         <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">deserialize_with</span> <span class="op">=</span> <span class="string">&quot;deserialize_headers&quot;</span>)]</span>
-        <span class="ident">headers</span>: <span class="ident">http</span>::<span class="ident">HeaderMap</span>,
+        <span class="ident">headers</span>: <span class="ident">http::HeaderMap</span>,
         <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>, <span class="ident">deserialize_with</span> <span class="op">=</span> <span class="string">&quot;deserialize_multi_value_headers&quot;</span>)]</span>
-        <span class="ident">multi_value_headers</span>: <span class="ident">http</span>::<span class="ident">HeaderMap</span>,
+        <span class="ident">multi_value_headers</span>: <span class="ident">http::HeaderMap</span>,
         <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">deserialize_with</span> <span class="op">=</span> <span class="string">&quot;nullable_default&quot;</span>)]</span>
         <span class="ident">query_string_parameters</span>: <span class="ident">StrMap</span>,
         <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>, <span class="ident">deserialize_with</span> <span class="op">=</span> <span class="string">&quot;nullable_default&quot;</span>)]</span>
@@ -840,9 +840,9 @@
     <span class="doccomment">/// type of response the request origin expects.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">request_origin</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RequestOrigin</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">LambdaRequest</span>::<span class="ident">ApiGatewayV2</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">RequestOrigin</span>::<span class="ident">ApiGatewayV2</span>,
-            <span class="ident">LambdaRequest</span>::<span class="ident">Alb</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">RequestOrigin</span>::<span class="ident">Alb</span>,
-            <span class="ident">LambdaRequest</span>::<span class="ident">ApiGateway</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">RequestOrigin</span>::<span class="ident">ApiGateway</span>,
+            <span class="ident">LambdaRequest::ApiGatewayV2</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">RequestOrigin::ApiGatewayV2</span>,
+            <span class="ident">LambdaRequest::Alb</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">RequestOrigin::Alb</span>,
+            <span class="ident">LambdaRequest::ApiGateway</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">RequestOrigin::ApiGateway</span>,
         }
     }
 }
@@ -948,7 +948,7 @@
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Http</span> {
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">deserialize_with</span> <span class="op">=</span> <span class="string">&quot;deserialize_method&quot;</span>)]</span>
     <span class="doccomment">/// The HTTP method used. Valid values include: DELETE, GET, HEAD, OPTIONS, PATCH, POST, and PUT.</span>
-    <span class="kw">pub</span> <span class="ident">method</span>: <span class="ident">http</span>::<span class="ident">Method</span>,
+    <span class="kw">pub</span> <span class="ident">method</span>: <span class="ident">http::Method</span>,
     <span class="doccomment">/// The request path. For example, for a non-proxy request URL of</span>
     <span class="doccomment">/// `https://{rest-api-id.execute-api.{region}.amazonaws.com/{stage}/root/child`,</span>
     <span class="doccomment">/// the $context.path value is `/{stage}/root/child`.</span>
@@ -998,24 +998,24 @@
 }
 
 <span class="doccomment">/// Deserialize a str into an http::Method</span>
-<span class="kw">fn</span> <span class="ident">deserialize_method</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span>, <span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">deserializer</span>: <span class="ident">D</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">http</span>::<span class="ident">Method</span>, <span class="ident">D</span>::<span class="ident">Error</span><span class="op">&gt;</span>
+<span class="kw">fn</span> <span class="ident">deserialize_method</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span>, <span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">deserializer</span>: <span class="ident">D</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">http::Method</span>, <span class="ident">D::Error</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Deserializer</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
 {
     <span class="kw">struct</span> <span class="ident">MethodVisitor</span>;
 
     <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">Visitor</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">MethodVisitor</span> {
-        <span class="kw">type</span> <span class="ident">Value</span> <span class="op">=</span> <span class="ident">http</span>::<span class="ident">Method</span>;
+        <span class="kw">type</span> <span class="ident">Value</span> <span class="op">=</span> <span class="ident">http::Method</span>;
 
-        <span class="kw">fn</span> <span class="ident">expecting</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">formatter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
-            <span class="macro">write</span><span class="macro">!</span>(<span class="ident">formatter</span>, <span class="string">&quot;a Method&quot;</span>)
+        <span class="kw">fn</span> <span class="ident">expecting</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">formatter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt::Result</span> {
+            <span class="macro">write!</span>(<span class="ident">formatter</span>, <span class="string">&quot;a Method&quot;</span>)
         }
 
-        <span class="kw">fn</span> <span class="ident">visit_str</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">v</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Value</span>, <span class="ident">E</span><span class="op">&gt;</span>
+        <span class="kw">fn</span> <span class="ident">visit_str</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">v</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::Value</span>, <span class="ident">E</span><span class="op">&gt;</span>
         <span class="kw">where</span>
             <span class="ident">E</span>: <span class="ident">DeError</span>,
         {
-            <span class="ident">v</span>.<span class="ident">parse</span>().<span class="ident">map_err</span>(<span class="ident">E</span>::<span class="ident">custom</span>)
+            <span class="ident">v</span>.<span class="ident">parse</span>().<span class="ident">map_err</span>(<span class="ident">E::custom</span>)
         }
     }
 
@@ -1023,36 +1023,36 @@
 }
 
 <span class="doccomment">/// Deserialize a map of Cow&lt;&#39;_, str&gt; =&gt; Vec&lt;Cow&lt;&#39;_, str&gt;&gt; into an http::HeaderMap</span>
-<span class="kw">fn</span> <span class="ident">deserialize_multi_value_headers</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span>, <span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">deserializer</span>: <span class="ident">D</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">http</span>::<span class="ident">HeaderMap</span>, <span class="ident">D</span>::<span class="ident">Error</span><span class="op">&gt;</span>
+<span class="kw">fn</span> <span class="ident">deserialize_multi_value_headers</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span>, <span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">deserializer</span>: <span class="ident">D</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">http::HeaderMap</span>, <span class="ident">D::Error</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Deserializer</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
 {
     <span class="kw">struct</span> <span class="ident">HeaderVisitor</span>;
 
     <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">Visitor</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">HeaderVisitor</span> {
-        <span class="kw">type</span> <span class="ident">Value</span> <span class="op">=</span> <span class="ident">http</span>::<span class="ident">HeaderMap</span>;
+        <span class="kw">type</span> <span class="ident">Value</span> <span class="op">=</span> <span class="ident">http::HeaderMap</span>;
 
-        <span class="kw">fn</span> <span class="ident">expecting</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">formatter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
-            <span class="macro">write</span><span class="macro">!</span>(<span class="ident">formatter</span>, <span class="string">&quot;a multi valued HeaderMap&lt;HeaderValue&gt;&quot;</span>)
+        <span class="kw">fn</span> <span class="ident">expecting</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">formatter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt::Result</span> {
+            <span class="macro">write!</span>(<span class="ident">formatter</span>, <span class="string">&quot;a multi valued HeaderMap&lt;HeaderValue&gt;&quot;</span>)
         }
 
-        <span class="kw">fn</span> <span class="ident">visit_map</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">map</span>: <span class="ident">A</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Value</span>, <span class="ident">A</span>::<span class="ident">Error</span><span class="op">&gt;</span>
+        <span class="kw">fn</span> <span class="ident">visit_map</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">map</span>: <span class="ident">A</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::Value</span>, <span class="ident">A::Error</span><span class="op">&gt;</span>
         <span class="kw">where</span>
             <span class="ident">A</span>: <span class="ident">MapAccess</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
         {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">map</span>
                 .<span class="ident">size_hint</span>()
-                .<span class="ident">map</span>(<span class="ident">http</span>::<span class="ident">HeaderMap</span>::<span class="ident">with_capacity</span>)
-                .<span class="ident">unwrap_or_else</span>(<span class="ident">http</span>::<span class="ident">HeaderMap</span>::<span class="ident">new</span>);
+                .<span class="ident">map</span>(<span class="ident">http::HeaderMap::with_capacity</span>)
+                .<span class="ident">unwrap_or_else</span>(<span class="ident">http::HeaderMap::new</span>);
             <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">key</span>, <span class="ident">values</span>)) <span class="op">=</span> <span class="ident">map</span>.<span class="ident">next_entry</span>::<span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span> {
                 <span class="comment">// note the aws docs for multi value headers include an empty key. I&#39;m not sure if this is a doc bug</span>
                 <span class="comment">// or not by the http crate doesn&#39;t handle it</span>
                 <span class="comment">// https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format</span>
                 <span class="kw">if</span> <span class="op">!</span><span class="ident">key</span>.<span class="ident">is_empty</span>() {
                     <span class="kw">for</span> <span class="ident">value</span> <span class="kw">in</span> <span class="ident">values</span> {
-                        <span class="kw">let</span> <span class="ident">header_name</span> <span class="op">=</span> <span class="ident">key</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">http</span>::<span class="ident">header</span>::<span class="ident">HeaderName</span><span class="op">&gt;</span>().<span class="ident">map_err</span>(<span class="ident">A</span>::<span class="ident">Error</span>::<span class="ident">custom</span>)<span class="question-mark">?</span>;
-                        <span class="kw">let</span> <span class="ident">header_value</span> <span class="op">=</span> <span class="ident">http</span>::<span class="ident">header</span>::<span class="ident">HeaderValue</span>::<span class="ident">from_maybe_shared</span>(<span class="ident">value</span>.<span class="ident">into_owned</span>())
-                            .<span class="ident">map_err</span>(<span class="ident">A</span>::<span class="ident">Error</span>::<span class="ident">custom</span>)<span class="question-mark">?</span>;
+                        <span class="kw">let</span> <span class="ident">header_name</span> <span class="op">=</span> <span class="ident">key</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">http::header::HeaderName</span><span class="op">&gt;</span>().<span class="ident">map_err</span>(<span class="ident">A::Error::custom</span>)<span class="question-mark">?</span>;
+                        <span class="kw">let</span> <span class="ident">header_value</span> <span class="op">=</span> <span class="ident">http::header::HeaderValue::from_maybe_shared</span>(<span class="ident">value</span>.<span class="ident">into_owned</span>())
+                            .<span class="ident">map_err</span>(<span class="ident">A::Error::custom</span>)<span class="question-mark">?</span>;
                         <span class="ident">headers</span>.<span class="ident">append</span>(<span class="ident">header_name</span>, <span class="ident">header_value</span>);
                     }
                 }
@@ -1065,31 +1065,31 @@
 }
 
 <span class="doccomment">/// Deserialize a map of Cow&lt;&#39;_, str&gt; =&gt; Cow&lt;&#39;_, str&gt; into an http::HeaderMap</span>
-<span class="kw">fn</span> <span class="ident">deserialize_headers</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span>, <span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">deserializer</span>: <span class="ident">D</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">http</span>::<span class="ident">HeaderMap</span>, <span class="ident">D</span>::<span class="ident">Error</span><span class="op">&gt;</span>
+<span class="kw">fn</span> <span class="ident">deserialize_headers</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span>, <span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">deserializer</span>: <span class="ident">D</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">http::HeaderMap</span>, <span class="ident">D::Error</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Deserializer</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
 {
     <span class="kw">struct</span> <span class="ident">HeaderVisitor</span>;
 
     <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">Visitor</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">HeaderVisitor</span> {
-        <span class="kw">type</span> <span class="ident">Value</span> <span class="op">=</span> <span class="ident">http</span>::<span class="ident">HeaderMap</span>;
+        <span class="kw">type</span> <span class="ident">Value</span> <span class="op">=</span> <span class="ident">http::HeaderMap</span>;
 
-        <span class="kw">fn</span> <span class="ident">expecting</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">formatter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
-            <span class="macro">write</span><span class="macro">!</span>(<span class="ident">formatter</span>, <span class="string">&quot;a HeaderMap&lt;HeaderValue&gt;&quot;</span>)
+        <span class="kw">fn</span> <span class="ident">expecting</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">formatter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt::Result</span> {
+            <span class="macro">write!</span>(<span class="ident">formatter</span>, <span class="string">&quot;a HeaderMap&lt;HeaderValue&gt;&quot;</span>)
         }
 
-        <span class="kw">fn</span> <span class="ident">visit_map</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">map</span>: <span class="ident">A</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Value</span>, <span class="ident">A</span>::<span class="ident">Error</span><span class="op">&gt;</span>
+        <span class="kw">fn</span> <span class="ident">visit_map</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">map</span>: <span class="ident">A</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="ident">::Value</span>, <span class="ident">A::Error</span><span class="op">&gt;</span>
         <span class="kw">where</span>
             <span class="ident">A</span>: <span class="ident">MapAccess</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
         {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">map</span>
                 .<span class="ident">size_hint</span>()
-                .<span class="ident">map</span>(<span class="ident">http</span>::<span class="ident">HeaderMap</span>::<span class="ident">with_capacity</span>)
-                .<span class="ident">unwrap_or_else</span>(<span class="ident">http</span>::<span class="ident">HeaderMap</span>::<span class="ident">new</span>);
+                .<span class="ident">map</span>(<span class="ident">http::HeaderMap::with_capacity</span>)
+                .<span class="ident">unwrap_or_else</span>(<span class="ident">http::HeaderMap::new</span>);
             <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">key</span>, <span class="ident">value</span>)) <span class="op">=</span> <span class="ident">map</span>.<span class="ident">next_entry</span>::<span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span> {
-                <span class="kw">let</span> <span class="ident">header_name</span> <span class="op">=</span> <span class="ident">key</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">http</span>::<span class="ident">header</span>::<span class="ident">HeaderName</span><span class="op">&gt;</span>().<span class="ident">map_err</span>(<span class="ident">A</span>::<span class="ident">Error</span>::<span class="ident">custom</span>)<span class="question-mark">?</span>;
+                <span class="kw">let</span> <span class="ident">header_name</span> <span class="op">=</span> <span class="ident">key</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">http::header::HeaderName</span><span class="op">&gt;</span>().<span class="ident">map_err</span>(<span class="ident">A::Error::custom</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">header_value</span> <span class="op">=</span>
-                    <span class="ident">http</span>::<span class="ident">header</span>::<span class="ident">HeaderValue</span>::<span class="ident">from_maybe_shared</span>(<span class="ident">value</span>.<span class="ident">into_owned</span>()).<span class="ident">map_err</span>(<span class="ident">A</span>::<span class="ident">Error</span>::<span class="ident">custom</span>)<span class="question-mark">?</span>;
+                    <span class="ident">http::header::HeaderValue::from_maybe_shared</span>(<span class="ident">value</span>.<span class="ident">into_owned</span>()).<span class="ident">map_err</span>(<span class="ident">A::Error::custom</span>)<span class="question-mark">?</span>;
                 <span class="ident">headers</span>.<span class="ident">append</span>(<span class="ident">header_name</span>, <span class="ident">header_value</span>);
             }
             <span class="prelude-val">Ok</span>(<span class="ident">headers</span>)
@@ -1101,20 +1101,20 @@
 
 <span class="doccomment">/// deserializes (json) null values to their default values</span>
 <span class="comment">// https://github.com/serde-rs/serde/issues/1098</span>
-<span class="kw">fn</span> <span class="ident">nullable_default</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span>, <span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">deserializer</span>: <span class="ident">D</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span>::<span class="ident">Error</span><span class="op">&gt;</span>
+<span class="kw">fn</span> <span class="ident">nullable_default</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span>, <span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">deserializer</span>: <span class="ident">D</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D::Error</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Deserializer</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
     <span class="ident">T</span>: <span class="ident">Default</span> <span class="op">+</span> <span class="ident">Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
 {
-    <span class="kw">let</span> <span class="ident">opt</span> <span class="op">=</span> <span class="prelude-ty">Option</span>::<span class="ident">deserialize</span>(<span class="ident">deserializer</span>)<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(<span class="ident">opt</span>.<span class="ident">unwrap_or_else</span>(<span class="ident">T</span>::<span class="ident">default</span>))
+    <span class="kw">let</span> <span class="ident">opt</span> <span class="op">=</span> <span class="ident">Option::deserialize</span>(<span class="ident">deserializer</span>)<span class="question-mark">?</span>;
+    <span class="prelude-val">Ok</span>(<span class="ident">opt</span>.<span class="ident">unwrap_or_else</span>(<span class="ident">T::default</span>))
 }
 
 <span class="doccomment">/// Converts LambdaRequest types into `http::Request&lt;Body&gt;` types</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">LambdaRequest</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">http</span>::<span class="ident">Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">LambdaRequest</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">http::Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">value</span>: <span class="ident">LambdaRequest</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="kw">match</span> <span class="ident">value</span> {
-            <span class="ident">LambdaRequest</span>::<span class="ident">ApiGatewayV2</span> {
+            <span class="ident">LambdaRequest::ApiGatewayV2</span> {
                 <span class="ident">raw_path</span>,
                 <span class="ident">raw_query_string</span>,
                 <span class="kw-2">mut</span> <span class="ident">headers</span>,
@@ -1128,22 +1128,22 @@
                 ..
             } <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">cookies</span>) <span class="op">=</span> <span class="ident">cookies</span> {
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">header_value</span>) <span class="op">=</span> <span class="ident">http</span>::<span class="ident">header</span>::<span class="ident">HeaderValue</span>::<span class="ident">from_str</span>(<span class="kw-2">&amp;</span><span class="ident">cookies</span>.<span class="ident">join</span>(<span class="string">&quot;;&quot;</span>)) {
-                        <span class="ident">headers</span>.<span class="ident">append</span>(<span class="ident">http</span>::<span class="ident">header</span>::<span class="ident">COOKIE</span>, <span class="ident">header_value</span>);
+                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">header_value</span>) <span class="op">=</span> <span class="ident">http::header::HeaderValue::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">cookies</span>.<span class="ident">join</span>(<span class="string">&quot;;&quot;</span>)) {
+                        <span class="ident">headers</span>.<span class="ident">append</span>(<span class="ident">http::header::COOKIE</span>, <span class="ident">header_value</span>);
                     }
                 }
 
-                <span class="kw">let</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">http</span>::<span class="ident">Request</span>::<span class="ident">builder</span>()
+                <span class="kw">let</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">http::Request::builder</span>()
                     .<span class="ident">method</span>(<span class="ident">request_context</span>.<span class="ident">http</span>.<span class="ident">method</span>.<span class="ident">as_ref</span>())
                     .<span class="ident">uri</span>({
-                        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">url</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(
+                        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">url</span> <span class="op">=</span> <span class="macro">format!</span>(
                             <span class="string">&quot;{}://{}{}&quot;</span>,
                             <span class="ident">headers</span>
                                 .<span class="ident">get</span>(<span class="string">&quot;X-Forwarded-Proto&quot;</span>)
                                 .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">to_str</span>().<span class="ident">ok</span>())
                                 .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;https&quot;</span>),
                             <span class="ident">headers</span>
-                                .<span class="ident">get</span>(<span class="ident">http</span>::<span class="ident">header</span>::<span class="ident">HOST</span>)
+                                .<span class="ident">get</span>(<span class="ident">http::header::HOST</span>)
                                 .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">to_str</span>().<span class="ident">ok</span>())
                                 .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">request_context</span>.<span class="ident">domain_name</span>.<span class="ident">as_ref</span>()),
                             <span class="ident">raw_path</span>
@@ -1157,18 +1157,18 @@
                     .<span class="ident">extension</span>(<span class="ident">QueryStringParameters</span>(<span class="ident">query_string_parameters</span>))
                     .<span class="ident">extension</span>(<span class="ident">PathParameters</span>(<span class="ident">path_parameters</span>))
                     .<span class="ident">extension</span>(<span class="ident">StageVariables</span>(<span class="ident">stage_variables</span>))
-                    .<span class="ident">extension</span>(<span class="ident">RequestContext</span>::<span class="ident">ApiGatewayV2</span>(<span class="ident">request_context</span>));
+                    .<span class="ident">extension</span>(<span class="ident">RequestContext::ApiGatewayV2</span>(<span class="ident">request_context</span>));
 
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">builder</span>
-                    .<span class="ident">body</span>(<span class="ident">body</span>.<span class="ident">map_or_else</span>(<span class="ident">Body</span>::<span class="ident">default</span>, <span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="ident">Body</span>::<span class="ident">from_maybe_encoded</span>(<span class="ident">is_base64_encoded</span>, <span class="ident">b</span>)))
+                    .<span class="ident">body</span>(<span class="ident">body</span>.<span class="ident">map_or_else</span>(<span class="ident">Body::default</span>, <span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="ident">Body::from_maybe_encoded</span>(<span class="ident">is_base64_encoded</span>, <span class="ident">b</span>)))
                     .<span class="ident">expect</span>(<span class="string">&quot;failed to build request&quot;</span>);
 
                 <span class="comment">// no builder method that sets headers in batch</span>
-                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">mem</span>::<span class="ident">replace</span>(<span class="ident">req</span>.<span class="ident">headers_mut</span>(), <span class="ident">headers</span>);
+                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">mem::replace</span>(<span class="ident">req</span>.<span class="ident">headers_mut</span>(), <span class="ident">headers</span>);
 
                 <span class="ident">req</span>
             }
-            <span class="ident">LambdaRequest</span>::<span class="ident">ApiGateway</span> {
+            <span class="ident">LambdaRequest::ApiGateway</span> {
                 <span class="ident">path</span>,
                 <span class="ident">http_method</span>,
                 <span class="ident">headers</span>,
@@ -1181,17 +1181,17 @@
                 <span class="ident">is_base64_encoded</span>,
                 <span class="ident">request_context</span>,
             } <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">http</span>::<span class="ident">Request</span>::<span class="ident">builder</span>()
+                <span class="kw">let</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">http::Request::builder</span>()
                     .<span class="ident">method</span>(<span class="ident">http_method</span>)
                     .<span class="ident">uri</span>({
-                        <span class="macro">format</span><span class="macro">!</span>(
+                        <span class="macro">format!</span>(
                             <span class="string">&quot;{}://{}{}&quot;</span>,
                             <span class="ident">headers</span>
                                 .<span class="ident">get</span>(<span class="string">&quot;X-Forwarded-Proto&quot;</span>)
                                 .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">to_str</span>().<span class="ident">ok</span>())
                                 .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;https&quot;</span>),
                             <span class="ident">headers</span>
-                                .<span class="ident">get</span>(<span class="ident">http</span>::<span class="ident">header</span>::<span class="ident">HOST</span>)
+                                .<span class="ident">get</span>(<span class="ident">http::header::HOST</span>)
                                 .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">to_str</span>().<span class="ident">ok</span>())
                                 .<span class="ident">unwrap_or_default</span>(),
                             <span class="ident">path</span>
@@ -1209,10 +1209,10 @@
                     ))
                     .<span class="ident">extension</span>(<span class="ident">PathParameters</span>(<span class="ident">path_parameters</span>))
                     .<span class="ident">extension</span>(<span class="ident">StageVariables</span>(<span class="ident">stage_variables</span>))
-                    .<span class="ident">extension</span>(<span class="ident">RequestContext</span>::<span class="ident">ApiGateway</span>(<span class="ident">request_context</span>));
+                    .<span class="ident">extension</span>(<span class="ident">RequestContext::ApiGateway</span>(<span class="ident">request_context</span>));
 
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">builder</span>
-                    .<span class="ident">body</span>(<span class="ident">body</span>.<span class="ident">map_or_else</span>(<span class="ident">Body</span>::<span class="ident">default</span>, <span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="ident">Body</span>::<span class="ident">from_maybe_encoded</span>(<span class="ident">is_base64_encoded</span>, <span class="ident">b</span>)))
+                    .<span class="ident">body</span>(<span class="ident">body</span>.<span class="ident">map_or_else</span>(<span class="ident">Body::default</span>, <span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="ident">Body::from_maybe_encoded</span>(<span class="ident">is_base64_encoded</span>, <span class="ident">b</span>)))
                     .<span class="ident">expect</span>(<span class="string">&quot;failed to build request&quot;</span>);
 
                 <span class="comment">// merge headers into multi_value_headers and make</span>
@@ -1228,11 +1228,11 @@
                 }
 
                 <span class="comment">// no builder method that sets headers in batch</span>
-                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">mem</span>::<span class="ident">replace</span>(<span class="ident">req</span>.<span class="ident">headers_mut</span>(), <span class="ident">multi_value_headers</span>);
+                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">mem::replace</span>(<span class="ident">req</span>.<span class="ident">headers_mut</span>(), <span class="ident">multi_value_headers</span>);
 
                 <span class="ident">req</span>
             }
-            <span class="ident">LambdaRequest</span>::<span class="ident">Alb</span> {
+            <span class="ident">LambdaRequest::Alb</span> {
                 <span class="ident">path</span>,
                 <span class="ident">http_method</span>,
                 <span class="ident">headers</span>,
@@ -1244,17 +1244,17 @@
                 <span class="ident">request_context</span>,
             } <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="comment">// build an http::Request&lt;lambda_http::Body&gt; from a lambda_http::LambdaRequest</span>
-                <span class="kw">let</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">http</span>::<span class="ident">Request</span>::<span class="ident">builder</span>()
+                <span class="kw">let</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">http::Request::builder</span>()
                     .<span class="ident">method</span>(<span class="ident">http_method</span>)
                     .<span class="ident">uri</span>({
-                        <span class="macro">format</span><span class="macro">!</span>(
+                        <span class="macro">format!</span>(
                             <span class="string">&quot;{}://{}{}&quot;</span>,
                             <span class="ident">headers</span>
                                 .<span class="ident">get</span>(<span class="string">&quot;X-Forwarded-Proto&quot;</span>)
                                 .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">to_str</span>().<span class="ident">ok</span>())
                                 .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;https&quot;</span>),
                             <span class="ident">headers</span>
-                                .<span class="ident">get</span>(<span class="ident">http</span>::<span class="ident">header</span>::<span class="ident">HOST</span>)
+                                .<span class="ident">get</span>(<span class="ident">http::header::HOST</span>)
                                 .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">to_str</span>().<span class="ident">ok</span>())
                                 .<span class="ident">unwrap_or_default</span>(),
                             <span class="ident">path</span>
@@ -1270,10 +1270,10 @@
                             <span class="ident">multi_value_query_string_parameters</span>
                         },
                     ))
-                    .<span class="ident">extension</span>(<span class="ident">RequestContext</span>::<span class="ident">Alb</span>(<span class="ident">request_context</span>));
+                    .<span class="ident">extension</span>(<span class="ident">RequestContext::Alb</span>(<span class="ident">request_context</span>));
 
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">builder</span>
-                    .<span class="ident">body</span>(<span class="ident">body</span>.<span class="ident">map_or_else</span>(<span class="ident">Body</span>::<span class="ident">default</span>, <span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="ident">Body</span>::<span class="ident">from_maybe_encoded</span>(<span class="ident">is_base64_encoded</span>, <span class="ident">b</span>)))
+                    .<span class="ident">body</span>(<span class="ident">body</span>.<span class="ident">map_or_else</span>(<span class="ident">Body::default</span>, <span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="ident">Body::from_maybe_encoded</span>(<span class="ident">is_base64_encoded</span>, <span class="ident">b</span>)))
                     .<span class="ident">expect</span>(<span class="string">&quot;failed to build request&quot;</span>);
 
                 <span class="comment">// merge headers into multi_value_headers and make</span>
@@ -1289,7 +1289,7 @@
                 }
 
                 <span class="comment">// no builder method that sets headers in batch</span>
-                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">mem</span>::<span class="ident">replace</span>(<span class="ident">req</span>.<span class="ident">headers_mut</span>(), <span class="ident">multi_value_headers</span>);
+                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">mem::replace</span>(<span class="ident">req</span>.<span class="ident">headers_mut</span>(), <span class="ident">multi_value_headers</span>);
 
                 <span class="ident">req</span>
             }
@@ -1313,11 +1313,11 @@
 <span class="doccomment">///     Ok(println!(&quot;{:#?}&quot;, request))</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_reader</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">rdr</span>: <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">crate</span>::<span class="ident">Request</span>, <span class="ident">JsonError</span><span class="op">&gt;</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_reader</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">rdr</span>: <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">crate</span><span class="ident">::Request</span>, <span class="ident">JsonError</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">R</span>: <span class="ident">Read</span>,
 {
-    <span class="ident">serde_json</span>::<span class="ident">from_reader</span>(<span class="ident">rdr</span>).<span class="ident">map</span>(<span class="ident">LambdaRequest</span>::<span class="ident">into</span>)
+    <span class="ident">serde_json::from_reader</span>(<span class="ident">rdr</span>).<span class="ident">map</span>(<span class="ident">LambdaRequest::into</span>)
 }
 
 <span class="doccomment">/// Deserializes a `Request` from a string of JSON text.</span>
@@ -1336,61 +1336,61 @@
 <span class="doccomment">///     Ok(println!(&quot;{:#?}&quot;, request))</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">crate</span>::<span class="ident">Request</span>, <span class="ident">JsonError</span><span class="op">&gt;</span> {
-    <span class="ident">serde_json</span>::<span class="ident">from_str</span>(<span class="ident">s</span>).<span class="ident">map</span>(<span class="ident">LambdaRequest</span>::<span class="ident">into</span>)
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">crate</span><span class="ident">::Request</span>, <span class="ident">JsonError</span><span class="op">&gt;</span> {
+    <span class="ident">serde_json::from_str</span>(<span class="ident">s</span>).<span class="ident">map</span>(<span class="ident">LambdaRequest::into</span>)
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">RequestExt</span>;
+    <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::RequestExt</span>;
     <span class="kw">use</span> <span class="ident">serde_json</span>;
-    <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">collections</span>::<span class="ident">HashMap</span>, <span class="ident">fs</span>::<span class="ident">File</span>};
+    <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">collections::HashMap</span>, <span class="ident">fs::File</span>};
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">deserializes_apigw_request_events_from_readables</span>() {
         <span class="comment">// from the docs</span>
         <span class="comment">// https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request</span>
         <span class="comment">// note: file paths are relative to the directory of the crate at runtime</span>
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_reader</span>(<span class="ident">File</span>::<span class="ident">open</span>(<span class="string">&quot;tests/data/apigw_proxy_request.json&quot;</span>).<span class="ident">expect</span>(<span class="string">&quot;expected file&quot;</span>));
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">is_ok</span>(), <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;event was not parsed as expected {:?}&quot;</span>, <span class="ident">result</span>));
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_reader</span>(<span class="ident">File::open</span>(<span class="string">&quot;tests/data/apigw_proxy_request.json&quot;</span>).<span class="ident">expect</span>(<span class="string">&quot;expected file&quot;</span>));
+        <span class="macro">assert!</span>(<span class="ident">result</span>.<span class="ident">is_ok</span>(), <span class="macro">format!</span>(<span class="string">&quot;event was not parsed as expected {:?}&quot;</span>, <span class="ident">result</span>));
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">deserializes_minimal_apigw_v2_request_events</span>() {
         <span class="comment">// from the docs</span>
         <span class="comment">// https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request</span>
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">include_str</span><span class="macro">!</span>(<span class="string">&quot;../tests/data/apigw_v2_proxy_request_minimal.json&quot;</span>);
+        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/apigw_v2_proxy_request_minimal.json&quot;</span>);
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_str</span>(<span class="ident">input</span>);
-        <span class="macro">assert</span><span class="macro">!</span>(
+        <span class="macro">assert!</span>(
             <span class="ident">result</span>.<span class="ident">is_ok</span>(),
-            <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>, <span class="ident">result</span>, <span class="ident">input</span>)
+            <span class="macro">format!</span>(<span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>, <span class="ident">result</span>, <span class="ident">input</span>)
         );
         <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">expect</span>(<span class="string">&quot;failed to parse request&quot;</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="string">&quot;GET&quot;</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">req</span>.<span class="ident">uri</span>(), <span class="string">&quot;https://xxx.execute-api.us-east-1.amazonaws.com/&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="string">&quot;GET&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">uri</span>(), <span class="string">&quot;https://xxx.execute-api.us-east-1.amazonaws.com/&quot;</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">deserializes_apigw_v2_request_events</span>() {
         <span class="comment">// from the docs</span>
         <span class="comment">// https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request</span>
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">include_str</span><span class="macro">!</span>(<span class="string">&quot;../tests/data/apigw_v2_proxy_request.json&quot;</span>);
+        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/apigw_v2_proxy_request.json&quot;</span>);
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_str</span>(<span class="ident">input</span>);
-        <span class="macro">assert</span><span class="macro">!</span>(
+        <span class="macro">assert!</span>(
             <span class="ident">result</span>.<span class="ident">is_ok</span>(),
-            <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>, <span class="ident">result</span>, <span class="ident">input</span>)
+            <span class="macro">format!</span>(<span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>, <span class="ident">result</span>, <span class="ident">input</span>)
         );
         <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">expect</span>(<span class="string">&quot;failed to parse request&quot;</span>);
         <span class="kw">let</span> <span class="ident">cookie_header</span> <span class="op">=</span> <span class="ident">req</span>
             .<span class="ident">headers</span>()
-            .<span class="ident">get</span>(<span class="ident">http</span>::<span class="ident">header</span>::<span class="ident">COOKIE</span>)
+            .<span class="ident">get</span>(<span class="ident">http::header::COOKIE</span>)
             .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;Cookie header not found&quot;</span>.<span class="ident">to_string</span>())
             .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">to_str</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">to_string</span>()));
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="string">&quot;POST&quot;</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">req</span>.<span class="ident">uri</span>(), <span class="string">&quot;https://id.execute-api.us-east-1.amazonaws.com/my/path?parameter1=value1&amp;parameter1=value2&amp;parameter2=value&quot;</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">cookie_header</span>, <span class="prelude-val">Ok</span>(<span class="string">&quot;cookie1=value1;cookie2=value2&quot;</span>));
+        <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="string">&quot;POST&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">uri</span>(), <span class="string">&quot;https://id.execute-api.us-east-1.amazonaws.com/my/path?parameter1=value1&amp;parameter1=value2&amp;parameter2=value&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">cookie_header</span>, <span class="prelude-val">Ok</span>(<span class="string">&quot;cookie1=value1;cookie2=value2&quot;</span>));
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -1398,15 +1398,15 @@
         <span class="comment">// from the docs</span>
         <span class="comment">// https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format</span>
         <span class="comment">// https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html</span>
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">include_str</span><span class="macro">!</span>(<span class="string">&quot;../tests/data/apigw_proxy_request.json&quot;</span>);
+        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/apigw_proxy_request.json&quot;</span>);
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_str</span>(<span class="ident">input</span>);
-        <span class="macro">assert</span><span class="macro">!</span>(
+        <span class="macro">assert!</span>(
             <span class="ident">result</span>.<span class="ident">is_ok</span>(),
-            <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>, <span class="ident">result</span>, <span class="ident">input</span>)
+            <span class="macro">format!</span>(<span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>, <span class="ident">result</span>, <span class="ident">input</span>)
         );
         <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">expect</span>(<span class="string">&quot;failed to parse request&quot;</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="string">&quot;GET&quot;</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="string">&quot;GET&quot;</span>);
+        <span class="macro">assert_eq!</span>(
             <span class="ident">req</span>.<span class="ident">uri</span>(),
             <span class="string">&quot;https://wt6mne2s9k.execute-api.us-west-2.amazonaws.com/test/hello&quot;</span>
         );
@@ -1416,35 +1416,35 @@
     <span class="kw">fn</span> <span class="ident">deserializes_alb_request_events</span>() {
         <span class="comment">// from the docs</span>
         <span class="comment">// https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html#multi-value-headers</span>
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">include_str</span><span class="macro">!</span>(<span class="string">&quot;../tests/data/alb_request.json&quot;</span>);
+        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/alb_request.json&quot;</span>);
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_str</span>(<span class="ident">input</span>);
-        <span class="macro">assert</span><span class="macro">!</span>(
+        <span class="macro">assert!</span>(
             <span class="ident">result</span>.<span class="ident">is_ok</span>(),
-            <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>, <span class="ident">result</span>, <span class="ident">input</span>)
+            <span class="macro">format!</span>(<span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>, <span class="ident">result</span>, <span class="ident">input</span>)
         );
         <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">expect</span>(<span class="string">&quot;failed to parse request&quot;</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="string">&quot;GET&quot;</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">req</span>.<span class="ident">uri</span>(), <span class="string">&quot;https://lambda-846800462-us-east-2.elb.amazonaws.com/&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="string">&quot;GET&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">uri</span>(), <span class="string">&quot;https://lambda-846800462-us-east-2.elb.amazonaws.com/&quot;</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">deserializes_apigw_multi_value_request_events</span>() {
         <span class="comment">// from docs</span>
         <span class="comment">// https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format</span>
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">include_str</span><span class="macro">!</span>(<span class="string">&quot;../tests/data/apigw_multi_value_proxy_request.json&quot;</span>);
+        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/apigw_multi_value_proxy_request.json&quot;</span>);
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_str</span>(<span class="ident">input</span>);
-        <span class="macro">assert</span><span class="macro">!</span>(
+        <span class="macro">assert!</span>(
             <span class="ident">result</span>.<span class="ident">is_ok</span>(),
-            <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;event is was not parsed as expected {:?} given {}&quot;</span>, <span class="ident">result</span>, <span class="ident">input</span>)
+            <span class="macro">format!</span>(<span class="string">&quot;event is was not parsed as expected {:?} given {}&quot;</span>, <span class="ident">result</span>, <span class="ident">input</span>)
         );
         <span class="kw">let</span> <span class="ident">request</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">expect</span>(<span class="string">&quot;failed to parse request&quot;</span>);
 
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">request</span>.<span class="ident">query_string_parameters</span>().<span class="ident">is_empty</span>());
+        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">request</span>.<span class="ident">query_string_parameters</span>().<span class="ident">is_empty</span>());
 
         <span class="comment">// test RequestExt#query_string_parameters does the right thing</span>
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">request</span>.<span class="ident">query_string_parameters</span>().<span class="ident">get_all</span>(<span class="string">&quot;multivalueName&quot;</span>),
-            <span class="prelude-val">Some</span>(<span class="macro">vec</span><span class="macro">!</span>[<span class="string">&quot;you&quot;</span>, <span class="string">&quot;me&quot;</span>])
+            <span class="prelude-val">Some</span>(<span class="macro">vec!</span>[<span class="string">&quot;you&quot;</span>, <span class="string">&quot;me&quot;</span>])
         );
     }
 
@@ -1452,19 +1452,19 @@
     <span class="kw">fn</span> <span class="ident">deserializes_alb_multi_value_request_events</span>() {
         <span class="comment">// from docs</span>
         <span class="comment">// https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format</span>
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">include_str</span><span class="macro">!</span>(<span class="string">&quot;../tests/data/alb_multi_value_request.json&quot;</span>);
+        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/alb_multi_value_request.json&quot;</span>);
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_str</span>(<span class="ident">input</span>);
-        <span class="macro">assert</span><span class="macro">!</span>(
+        <span class="macro">assert!</span>(
             <span class="ident">result</span>.<span class="ident">is_ok</span>(),
-            <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;event is was not parsed as expected {:?} given {}&quot;</span>, <span class="ident">result</span>, <span class="ident">input</span>)
+            <span class="macro">format!</span>(<span class="string">&quot;event is was not parsed as expected {:?} given {}&quot;</span>, <span class="ident">result</span>, <span class="ident">input</span>)
         );
         <span class="kw">let</span> <span class="ident">request</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">expect</span>(<span class="string">&quot;failed to parse request&quot;</span>);
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">request</span>.<span class="ident">query_string_parameters</span>().<span class="ident">is_empty</span>());
+        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">request</span>.<span class="ident">query_string_parameters</span>().<span class="ident">is_empty</span>());
 
         <span class="comment">// test RequestExt#query_string_parameters does the right thing</span>
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">request</span>.<span class="ident">query_string_parameters</span>().<span class="ident">get_all</span>(<span class="string">&quot;myKey&quot;</span>),
-            <span class="prelude-val">Some</span>(<span class="macro">vec</span><span class="macro">!</span>[<span class="string">&quot;val1&quot;</span>, <span class="string">&quot;val2&quot;</span>])
+            <span class="prelude-val">Some</span>(<span class="macro">vec!</span>[<span class="string">&quot;val1&quot;</span>, <span class="string">&quot;val2&quot;</span>])
         );
     }
 
@@ -1476,12 +1476,12 @@
             <span class="ident">foo</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span>,
         }
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="ident">serde_json</span>::<span class="ident">from_str</span>::<span class="op">&lt;</span><span class="ident">Test</span><span class="op">&gt;</span>(<span class="string">r#&quot;{&quot;foo&quot;:null}&quot;#</span>).<span class="ident">expect</span>(<span class="string">&quot;failed to deserialize&quot;</span>),
-            <span class="ident">Test</span> { <span class="ident">foo</span>: <span class="ident">HashMap</span>::<span class="ident">new</span>() }
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">serde_json::from_str</span>::<span class="op">&lt;</span><span class="ident">Test</span><span class="op">&gt;</span>(<span class="string">r#&quot;{&quot;foo&quot;:null}&quot;#</span>).<span class="ident">expect</span>(<span class="string">&quot;failed to deserialize&quot;</span>),
+            <span class="ident">Test</span> { <span class="ident">foo</span>: <span class="ident">HashMap::new</span>() }
         )
     }
 }
 </pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lambda_http" data-search-js="../../search-index.js"></div>
+</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lambda_http" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
     <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script></body></html>

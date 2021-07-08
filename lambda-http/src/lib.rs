@@ -77,6 +77,7 @@ use crate::{
 };
 use std::{
     future::Future,
+    marker::PhantomData,
     pin::Pin,
     task::{Context as TaskContext, Poll},
 };
@@ -87,28 +88,31 @@ pub type Request = http::Request<Body>;
 /// Functions serving as ALB and API Gateway REST and HTTP API handlers must conform to this type.
 ///
 /// This can be viewed as a `lambda_runtime::Handler` constrained to `http` crate `Request` and `Response` types
-pub trait Handler: Sized {
+pub trait Handler<'a>: Sized {
     /// The type of Error that this Handler will return
     type Error;
     /// The type of Response this Handler will return
     type Response: IntoResponse;
     /// The type of Future this Handler will return
-    type Fut: Future<Output = Result<Self::Response, Self::Error>> + Send + 'static;
+    type Fut: Future<Output = Result<Self::Response, Self::Error>> + Send + 'a;
     /// Function used to execute handler behavior
     fn call(&self, event: Request, context: Context) -> Self::Fut;
 }
 
 /// Adapts a [`Handler`](trait.Handler.html) to the `lambda_runtime::run` interface
-pub fn handler<H: Handler>(handler: H) -> Adapter<H> {
-    Adapter { handler }
+pub fn handler<'a, H: Handler<'a>>(handler: H) -> Adapter<'a, H> {
+    Adapter {
+        handler,
+        _pd: PhantomData,
+    }
 }
 
 /// An implementation of `Handler` for a given closure return a `Future` representing the computed response
-impl<F, R, Fut> Handler for F
+impl<'a, F, R, Fut> Handler<'a> for F
 where
     F: Fn(Request, Context) -> Fut,
     R: IntoResponse,
-    Fut: Future<Output = Result<R, Error>> + Send + 'static,
+    Fut: Future<Output = Result<R, Error>> + Send + 'a,
 {
     type Response = R;
     type Error = Error;
@@ -119,12 +123,12 @@ where
 }
 
 #[doc(hidden)]
-pub struct TransformResponse<R, E> {
+pub struct TransformResponse<'a, R, E> {
     request_origin: RequestOrigin,
-    fut: Pin<Box<dyn Future<Output = Result<R, E>> + Send>>,
+    fut: Pin<Box<dyn Future<Output = Result<R, E>> + Send + 'a>>,
 }
 
-impl<R, E> Future for TransformResponse<R, E>
+impl<'a, R, E> Future for TransformResponse<'a, R, E>
 where
     R: IntoResponse,
 {
@@ -146,11 +150,12 @@ where
 ///
 /// See [this article](http://smallcultfollowing.com/babysteps/blog/2015/01/14/little-orphan-impls/)
 /// for a larger explaination of why this is nessessary
-pub struct Adapter<H: Handler> {
+pub struct Adapter<'a, H: Handler<'a>> {
     handler: H,
+    _pd: PhantomData<&'a H>,
 }
 
-impl<H: Handler> Handler for Adapter<H> {
+impl<'a, H: Handler<'a>> Handler<'a> for Adapter<'a, H> {
     type Response = H::Response;
     type Error = H::Error;
     type Fut = H::Fut;
@@ -159,9 +164,9 @@ impl<H: Handler> Handler for Adapter<H> {
     }
 }
 
-impl<H: Handler> LambdaHandler<LambdaRequest<'_>, LambdaResponse> for Adapter<H> {
+impl<'a, H: Handler<'a>> LambdaHandler<LambdaRequest<'a>, LambdaResponse> for Adapter<'a, H> {
     type Error = H::Error;
-    type Fut = TransformResponse<H::Response, Self::Error>;
+    type Fut = TransformResponse<'a, H::Response, Self::Error>;
 
     fn call(&self, event: LambdaRequest<'_>, context: Context) -> Self::Fut {
         let request_origin = event.request_origin();

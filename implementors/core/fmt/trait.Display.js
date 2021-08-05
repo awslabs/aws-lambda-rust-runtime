@@ -1,3 +1,3 @@
 (function() {var implementors = {};
-implementors["lambda_http"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html\" title=\"trait core::fmt::Display\">Display</a> for <a class=\"enum\" href=\"lambda_http/ext/enum.PayloadError.html\" title=\"enum lambda_http::ext::PayloadError\">PayloadError</a>","synthetic":false,"types":["lambda_http::ext::PayloadError"]}];
+implementors["lambda_http"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.54.0/core/fmt/trait.Display.html\" title=\"trait core::fmt::Display\">Display</a> for <a class=\"enum\" href=\"lambda_http/ext/enum.PayloadError.html\" title=\"enum lambda_http::ext::PayloadError\">PayloadError</a>","synthetic":false,"types":["lambda_http::ext::PayloadError"]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

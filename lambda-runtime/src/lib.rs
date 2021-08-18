@@ -152,6 +152,12 @@ where
             let event = event?;
             let (parts, body) = event.into_parts();
 
+            if let Some(xray_trace_id) = parts.headers.get("lambda-runtime-trace-id") {
+                env::set_var("_X_AMZN_TRACE_ID", xray_trace_id.to_str()?);
+            } else {
+                env::remove_var("_X_AMZN_TRACE_ID");
+            }
+
             let ctx: Context = Context::try_from(parts.headers)?;
             let ctx: Context = ctx.with_config(config);
             let body = hyper::body::to_bytes(body).await?;

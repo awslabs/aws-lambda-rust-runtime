@@ -139,7 +139,7 @@ impl TryFrom<HeaderMap> for Context {
                 .to_owned(),
             xray_trace_id: headers
                 .get("lambda-runtime-trace-id")
-                .unwrap_or(&HeaderValue::from_static("No header lambda-runtime-trace-id found."))
+                .unwrap_or(&HeaderValue::from_static(""))
                 .to_str()?
                 .to_owned(),
             ..Default::default()

@@ -374,7 +374,7 @@
                 .<span class="ident">to_owned</span>(),
             <span class="ident">xray_trace_id</span>: <span class="ident">headers</span>
                 .<span class="ident">get</span>(<span class="string">&quot;lambda-runtime-trace-id&quot;</span>)
-                .<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span><span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;No header lambda-runtime-trace-id found.&quot;</span>))
+                .<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span><span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;&quot;</span>))
                 .<span class="ident">to_str</span>()<span class="question-mark">?</span>
                 .<span class="ident">to_owned</span>(),
             ..<span class="ident">Default::default</span>()

@@ -152,17 +152,14 @@ where
             let event = event?;
             let (parts, body) = event.into_parts();
 
-            if let Some(xray_trace_id) = parts.headers.get("lambda-runtime-trace-id") {
-                env::set_var("_X_AMZN_TRACE_ID", xray_trace_id.to_str()?);
-            } else {
-                env::remove_var("_X_AMZN_TRACE_ID");
-            }
-
             let ctx: Context = Context::try_from(parts.headers)?;
             let ctx: Context = ctx.with_config(config);
             let body = hyper::body::to_bytes(body).await?;
             trace!("{}", std::str::from_utf8(&body)?); // this may be very verbose
             let body = serde_json::from_slice(&body)?;
+
+            let xray_trace_id = &ctx.xray_trace_id.clone();
+            env::set_var("_X_AMZN_TRACE_ID", xray_trace_id);
 
             let request_id = &ctx.request_id.clone();
             let task = panic::catch_unwind(panic::AssertUnwindSafe(|| handler.call(body, ctx)));

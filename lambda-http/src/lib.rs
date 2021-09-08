@@ -94,7 +94,7 @@ pub trait Handler<'a>: Sized {
     /// The type of Response this Handler will return
     type Response: IntoResponse;
     /// The type of Future this Handler will return
-    type Fut: Future<Output = Result<Self::Response, Self::Error>> + Send + 'a;
+    type Fut: Future<Output = Result<Self::Response, Self::Error>> + 'a;
     /// Function used to execute handler behavior
     fn call(&self, event: Request, context: Context) -> Self::Fut;
 }
@@ -112,7 +112,7 @@ impl<'a, F, R, Fut> Handler<'a> for F
 where
     F: Fn(Request, Context) -> Fut,
     R: IntoResponse,
-    Fut: Future<Output = Result<R, Error>> + Send + 'a,
+    Fut: Future<Output = Result<R, Error>> + 'a,
 {
     type Response = R;
     type Error = Error;
@@ -125,7 +125,7 @@ where
 #[doc(hidden)]
 pub struct TransformResponse<'a, R, E> {
     request_origin: RequestOrigin,
-    fut: Pin<Box<dyn Future<Output = Result<R, E>> + Send + 'a>>,
+    fut: Pin<Box<dyn Future<Output = Result<R, E>> + 'a>>,
 }
 
 impl<'a, R, E> Future for TransformResponse<'a, R, E>

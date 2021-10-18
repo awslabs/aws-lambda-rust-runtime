@@ -44,8 +44,6 @@ where
 
     pub(crate) async fn call(&self, req: Request<Body>) -> Result<Response<Body>, Error> {
         let req = self.set_origin(req)?;
-        let (parts, body) = req.into_parts();
-        let req = Request::from_parts(parts, body);
         let response = self.client.request(req).await?;
         Ok(response)
     }

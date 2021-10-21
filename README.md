@@ -60,7 +60,7 @@ $ cargo build -p lambda_runtime --example basic --release --target x86_64-unknow
 For [a custom runtime](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-custom.html), AWS Lambda looks for an executable called `bootstrap` in the deployment package zip. Rename the generated `basic` executable to `bootstrap` and add it to a zip archive.
 
 ```bash
-$ cp ./target/x86_64-unknown-linux-musl/release/examples/hello ./bootstrap && zip lambda.zip bootstrap && rm bootstrap
+$ cp ./target/x86_64-unknown-linux-musl/release/examples/basic ./bootstrap && zip lambda.zip bootstrap && rm bootstrap
 ```
 
 Now that we have a deployment package (`lambda.zip`), we can use the [AWS CLI](https://aws.amazon.com/cli/) to create a new Lambda function. Make sure to replace the execution role with an existing role in your account!

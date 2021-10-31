@@ -620,7 +620,9 @@ mod tests {
         let result = from_str(input);
         assert!(
             result.is_ok(),
-            "event was not parsed as expected {:?} given {}", result, input
+            "event was not parsed as expected {:?} given {}",
+            result,
+            input
         );
         let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "GET");
@@ -635,7 +637,9 @@ mod tests {
         let result = from_str(input);
         assert!(
             result.is_ok(),
-            "event was not parsed as expected {:?} given {}", result, input
+            "event was not parsed as expected {:?} given {}",
+            result,
+            input
         );
         let req = result.expect("failed to parse request");
         let cookie_header = req
@@ -658,7 +662,9 @@ mod tests {
         let result = from_str(input);
         assert!(
             result.is_ok(),
-            "event was not parsed as expected {:?} given {}", result, input
+            "event was not parsed as expected {:?} given {}",
+            result,
+            input
         );
         let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "GET");
@@ -676,7 +682,9 @@ mod tests {
         let result = from_str(input);
         assert!(
             result.is_ok(),
-            "event was not parsed as expected {:?} given {}", result, input
+            "event was not parsed as expected {:?} given {}",
+            result,
+            input
         );
         let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "GET");
@@ -691,7 +699,9 @@ mod tests {
         let result = from_str(input);
         assert!(
             result.is_ok(),
-            "event is was not parsed as expected {:?} given {}", result, input
+            "event is was not parsed as expected {:?} given {}",
+            result,
+            input
         );
         let request = result.expect("failed to parse request");
 
@@ -712,7 +722,9 @@ mod tests {
         let result = from_str(input);
         assert!(
             result.is_ok(),
-            "event is was not parsed as expected {:?} given {}", result, input
+            "event is was not parsed as expected {:?} given {}",
+            result,
+            input
         );
         let request = result.expect("failed to parse request");
         assert!(!request.query_string_parameters().is_empty());

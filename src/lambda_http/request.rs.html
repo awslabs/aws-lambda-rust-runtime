@@ -738,6 +738,18 @@
 <span id="738">738</span>
 <span id="739">739</span>
 <span id="740">740</span>
+<span id="741">741</span>
+<span id="742">742</span>
+<span id="743">743</span>
+<span id="744">744</span>
+<span id="745">745</span>
+<span id="746">746</span>
+<span id="747">747</span>
+<span id="748">748</span>
+<span id="749">749</span>
+<span id="750">750</span>
+<span id="751">751</span>
+<span id="752">752</span>
 </pre><pre class="rust"><code><span class="doccomment">//! ALB and API Gateway request adaptations</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! Typically these are exposed via the `request_context`</span>
@@ -1103,7 +1115,7 @@
     <span class="ident">T</span>: <span class="ident">Default</span> <span class="op">+</span> <span class="ident">Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
 {
     <span class="kw">let</span> <span class="ident">opt</span> <span class="op">=</span> <span class="ident">Option::deserialize</span>(<span class="ident">deserializer</span>)<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(<span class="ident">opt</span>.<span class="ident">unwrap_or_else</span>(<span class="ident">T::default</span>))
+    <span class="prelude-val">Ok</span>(<span class="ident">opt</span>.<span class="ident">unwrap_or_default</span>())
 }
 
 <span class="doccomment">/// Converts LambdaRequest types into `http::Request&lt;Body&gt;` types</span>
@@ -1137,7 +1149,7 @@
                             <span class="ident">headers</span>
                                 .<span class="ident">get</span>(<span class="string">&quot;X-Forwarded-Proto&quot;</span>)
                                 .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">to_str</span>().<span class="ident">ok</span>())
-                                .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;https&quot;</span>),
+                                .<span class="ident">unwrap_or</span>(<span class="string">&quot;https&quot;</span>),
                             <span class="ident">headers</span>
                                 .<span class="ident">get</span>(<span class="ident">http::header::HOST</span>)
                                 .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">to_str</span>().<span class="ident">ok</span>())
@@ -1185,7 +1197,7 @@
                             <span class="ident">headers</span>
                                 .<span class="ident">get</span>(<span class="string">&quot;X-Forwarded-Proto&quot;</span>)
                                 .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">to_str</span>().<span class="ident">ok</span>())
-                                .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;https&quot;</span>),
+                                .<span class="ident">unwrap_or</span>(<span class="string">&quot;https&quot;</span>),
                             <span class="ident">headers</span>
                                 .<span class="ident">get</span>(<span class="ident">http::header::HOST</span>)
                                 .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">to_str</span>().<span class="ident">ok</span>())
@@ -1248,7 +1260,7 @@
                             <span class="ident">headers</span>
                                 .<span class="ident">get</span>(<span class="string">&quot;X-Forwarded-Proto&quot;</span>)
                                 .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">to_str</span>().<span class="ident">ok</span>())
-                                .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;https&quot;</span>),
+                                .<span class="ident">unwrap_or</span>(<span class="string">&quot;https&quot;</span>),
                             <span class="ident">headers</span>
                                 .<span class="ident">get</span>(<span class="ident">http::header::HOST</span>)
                                 .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">to_str</span>().<span class="ident">ok</span>())
@@ -1349,7 +1361,7 @@
         <span class="comment">// https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request</span>
         <span class="comment">// note: file paths are relative to the directory of the crate at runtime</span>
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_reader</span>(<span class="ident">File::open</span>(<span class="string">&quot;tests/data/apigw_proxy_request.json&quot;</span>).<span class="ident">expect</span>(<span class="string">&quot;expected file&quot;</span>));
-        <span class="macro">assert!</span>(<span class="ident">result</span>.<span class="ident">is_ok</span>(), <span class="macro">format!</span>(<span class="string">&quot;event was not parsed as expected {:?}&quot;</span>, <span class="ident">result</span>));
+        <span class="macro">assert!</span>(<span class="ident">result</span>.<span class="ident">is_ok</span>(), <span class="string">&quot;event was not parsed as expected {:?}&quot;</span>, <span class="ident">result</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -1360,7 +1372,9 @@
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_str</span>(<span class="ident">input</span>);
         <span class="macro">assert!</span>(
             <span class="ident">result</span>.<span class="ident">is_ok</span>(),
-            <span class="macro">format!</span>(<span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>, <span class="ident">result</span>, <span class="ident">input</span>)
+            <span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>,
+            <span class="ident">result</span>,
+            <span class="ident">input</span>
         );
         <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">expect</span>(<span class="string">&quot;failed to parse request&quot;</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="string">&quot;GET&quot;</span>);
@@ -1375,7 +1389,9 @@
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_str</span>(<span class="ident">input</span>);
         <span class="macro">assert!</span>(
             <span class="ident">result</span>.<span class="ident">is_ok</span>(),
-            <span class="macro">format!</span>(<span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>, <span class="ident">result</span>, <span class="ident">input</span>)
+            <span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>,
+            <span class="ident">result</span>,
+            <span class="ident">input</span>
         );
         <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">expect</span>(<span class="string">&quot;failed to parse request&quot;</span>);
         <span class="kw">let</span> <span class="ident">cookie_header</span> <span class="op">=</span> <span class="ident">req</span>
@@ -1398,7 +1414,9 @@
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_str</span>(<span class="ident">input</span>);
         <span class="macro">assert!</span>(
             <span class="ident">result</span>.<span class="ident">is_ok</span>(),
-            <span class="macro">format!</span>(<span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>, <span class="ident">result</span>, <span class="ident">input</span>)
+            <span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>,
+            <span class="ident">result</span>,
+            <span class="ident">input</span>
         );
         <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">expect</span>(<span class="string">&quot;failed to parse request&quot;</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="string">&quot;GET&quot;</span>);
@@ -1416,7 +1434,9 @@
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_str</span>(<span class="ident">input</span>);
         <span class="macro">assert!</span>(
             <span class="ident">result</span>.<span class="ident">is_ok</span>(),
-            <span class="macro">format!</span>(<span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>, <span class="ident">result</span>, <span class="ident">input</span>)
+            <span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>,
+            <span class="ident">result</span>,
+            <span class="ident">input</span>
         );
         <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">expect</span>(<span class="string">&quot;failed to parse request&quot;</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="string">&quot;GET&quot;</span>);
@@ -1431,7 +1451,9 @@
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_str</span>(<span class="ident">input</span>);
         <span class="macro">assert!</span>(
             <span class="ident">result</span>.<span class="ident">is_ok</span>(),
-            <span class="macro">format!</span>(<span class="string">&quot;event is was not parsed as expected {:?} given {}&quot;</span>, <span class="ident">result</span>, <span class="ident">input</span>)
+            <span class="string">&quot;event is was not parsed as expected {:?} given {}&quot;</span>,
+            <span class="ident">result</span>,
+            <span class="ident">input</span>
         );
         <span class="kw">let</span> <span class="ident">request</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">expect</span>(<span class="string">&quot;failed to parse request&quot;</span>);
 
@@ -1452,7 +1474,9 @@
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_str</span>(<span class="ident">input</span>);
         <span class="macro">assert!</span>(
             <span class="ident">result</span>.<span class="ident">is_ok</span>(),
-            <span class="macro">format!</span>(<span class="string">&quot;event is was not parsed as expected {:?} given {}&quot;</span>, <span class="ident">result</span>, <span class="ident">input</span>)
+            <span class="string">&quot;event is was not parsed as expected {:?} given {}&quot;</span>,
+            <span class="ident">result</span>,
+            <span class="ident">input</span>
         );
         <span class="kw">let</span> <span class="ident">request</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">expect</span>(<span class="string">&quot;failed to parse request&quot;</span>);
         <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">request</span>.<span class="ident">query_string_parameters</span>().<span class="ident">is_empty</span>());

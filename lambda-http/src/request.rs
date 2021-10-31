@@ -363,7 +363,7 @@ where
     T: Default + Deserialize<'de>,
 {
     let opt = Option::deserialize(deserializer)?;
-    Ok(opt.unwrap_or_else(T::default))
+    Ok(opt.unwrap_or_default())
 }
 
 /// Converts LambdaRequest types into `http::Request<Body>` types
@@ -397,7 +397,7 @@ impl<'a> From<LambdaRequest<'a>> for http::Request<Body> {
                             headers
                                 .get("X-Forwarded-Proto")
                                 .and_then(|val| val.to_str().ok())
-                                .unwrap_or_else(|| "https"),
+                                .unwrap_or("https"),
                             headers
                                 .get(http::header::HOST)
                                 .and_then(|val| val.to_str().ok())
@@ -445,7 +445,7 @@ impl<'a> From<LambdaRequest<'a>> for http::Request<Body> {
                             headers
                                 .get("X-Forwarded-Proto")
                                 .and_then(|val| val.to_str().ok())
-                                .unwrap_or_else(|| "https"),
+                                .unwrap_or("https"),
                             headers
                                 .get(http::header::HOST)
                                 .and_then(|val| val.to_str().ok())
@@ -508,7 +508,7 @@ impl<'a> From<LambdaRequest<'a>> for http::Request<Body> {
                             headers
                                 .get("X-Forwarded-Proto")
                                 .and_then(|val| val.to_str().ok())
-                                .unwrap_or_else(|| "https"),
+                                .unwrap_or("https"),
                             headers
                                 .get(http::header::HOST)
                                 .and_then(|val| val.to_str().ok())
@@ -609,7 +609,7 @@ mod tests {
         // https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request
         // note: file paths are relative to the directory of the crate at runtime
         let result = from_reader(File::open("tests/data/apigw_proxy_request.json").expect("expected file"));
-        assert!(result.is_ok(), format!("event was not parsed as expected {:?}", result));
+        assert!(result.is_ok(), "event was not parsed as expected {:?}", result);
     }
 
     #[test]
@@ -620,7 +620,9 @@ mod tests {
         let result = from_str(input);
         assert!(
             result.is_ok(),
-            format!("event was not parsed as expected {:?} given {}", result, input)
+            "event was not parsed as expected {:?} given {}",
+            result,
+            input
         );
         let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "GET");
@@ -635,7 +637,9 @@ mod tests {
         let result = from_str(input);
         assert!(
             result.is_ok(),
-            format!("event was not parsed as expected {:?} given {}", result, input)
+            "event was not parsed as expected {:?} given {}",
+            result,
+            input
         );
         let req = result.expect("failed to parse request");
         let cookie_header = req
@@ -658,7 +662,9 @@ mod tests {
         let result = from_str(input);
         assert!(
             result.is_ok(),
-            format!("event was not parsed as expected {:?} given {}", result, input)
+            "event was not parsed as expected {:?} given {}",
+            result,
+            input
         );
         let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "GET");
@@ -676,7 +682,9 @@ mod tests {
         let result = from_str(input);
         assert!(
             result.is_ok(),
-            format!("event was not parsed as expected {:?} given {}", result, input)
+            "event was not parsed as expected {:?} given {}",
+            result,
+            input
         );
         let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "GET");
@@ -691,7 +699,9 @@ mod tests {
         let result = from_str(input);
         assert!(
             result.is_ok(),
-            format!("event is was not parsed as expected {:?} given {}", result, input)
+            "event is was not parsed as expected {:?} given {}",
+            result,
+            input
         );
         let request = result.expect("failed to parse request");
 
@@ -712,7 +722,9 @@ mod tests {
         let result = from_str(input);
         assert!(
             result.is_ok(),
-            format!("event is was not parsed as expected {:?} given {}", result, input)
+            "event is was not parsed as expected {:?} given {}",
+            result,
+            input
         );
         let request = result.expect("failed to parse request");
         assert!(!request.query_string_parameters().is_empty());

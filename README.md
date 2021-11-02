@@ -104,7 +104,7 @@ $ cargo build -p lambda_runtime --example basic --release --target x86_64-unknow
 
 For [a custom runtime](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-custom.html), AWS Lambda looks for an executable called `bootstrap` in the deployment package zip. Rename the generated `basic` executable to `bootstrap` and add it to a zip archive.
 
-NOTE: Depending on the target you used above, you'll find the provided basic under the corresponding directory. In the following example, we've compiled for x86_64-unknown-linux-musl.
+NOTE: Depending on the target you used above, you'll find the provided basic under the corresponding directory. In the following example, we've compiled for x86_64-unknown-linux-gnu.
 
 ```bash
 $ cp ./target/x86_64-unknown-linux-gnu/release/examples/basic ./bootstrap && zip lambda.zip bootstrap && rm bootstrap
@@ -116,7 +116,7 @@ Now that we have a deployment package (`lambda.zip`), we can use the [AWS CLI](h
 $ aws lambda create-function --function-name rustTest \
   --handler doesnt.matter \
   --zip-file fileb://./lambda.zip \
-  --runtime provided \
+  --runtime provided.al2 \ # Change this to provided.al if you would like to use Amazon Linux 1.
   --role arn:aws:iam::XXXXXXXXXXXXX:role/your_lambda_execution_role \
   --environment Variables={RUST_BACKTRACE=1} \
   --tracing-config Mode=Active

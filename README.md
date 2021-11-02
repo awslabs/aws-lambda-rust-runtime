@@ -29,23 +29,66 @@ async fn func(event: Value, _: Context) -> Result<Value, Error> {
 }
 ```
 
-The code above is the same as the [basic example](https://github.com/awslabs/aws-lambda-rust-runtime/blob/master/lambda-runtime/examples/basic.rs) in the `lambda_runtime` crate.
-
 ### Deployment
 
 There are currently multiple ways of building this package: manually with the AWS CLI, and with the [Serverless framework](https://serverless.com/framework/).
 
 #### AWS CLI
 
-To deploy the basic sample as a Lambda function using the [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html), we first need to manually build it with [`cargo`](https://doc.rust-lang.org/cargo/). Since Lambda uses Amazon Linux, you'll need to target your executable for an `x86_64-unknown-linux-musl` platform.
+To deploy the basic sample as a Lambda function using the [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html), we first need to manually build it with [`cargo`](https://doc.rust-lang.org/cargo/). Due to a few differences in dependencies, the process for building for Amazon Linux 2 is slightly different than building for Amazon Linux.
+
+**Building for Amazon Linux 2**
+
+Decide which target you'd like to use. For ARM Lambda Functions you'll want to use `aarch64-unknown-linux-gnu` and for x86 Lambda Functions you'll want to use `x86_64-unknown-linux-gnu`.
+
+Run this script once to add your desired target, in this example we'll use x86:
+
+```bash
+$ rustup target add x86_64-unknown-linux-gnu
+```
+
+Compile one of the examples as a _release_ with a specific _target_ for deployment to AWS:
+
+```bash
+$ cargo build -p lambda_runtime --example basic --release --target x86_64-unknown-linux-gnu
+```
+
+_Building on MacOS Using Docker_
+
+At the time of writing, the ability to cross compile to x86 or aarch64 AL2 on MacOS is limited. The most robust way we've found is using Docker to produce the artifacts for you. This guide will work for both Intel and Apple Silicon MacOS and requires that you have set up Docker correctly for either architecture. [See here for a guide on how to do this.](https://docs.docker.com/desktop/mac/install/)
+
+The following command will pull the [official Rust Docker Image](https://hub.docker.com/_/rust) for a given architecture you plan to use in Lambda and use it to run any cargo commands you need, such as build.
+
+```bash
+$ LAMBDA_ARCH="linux/arm64" # set this to either linux/arm64 for ARM functions, or linux/amd64 for x86 functions.
+$ RUST_TARGET="aarch64-unknown-linux-gnu" # corresponding with the above, set this to aarch64 or x86_64 -unknown-linux-gnu for ARM or x86 functions.
+$ RUST_VERSION="latest" # Set this to a specific version of rust you want to compile for, or to latest if you want the latest stable version.
+$ docker run \
+  --platform ${LAMBDA_ARCH} \
+  --rm --user "$(id -u)":"$(id -g)" \
+  -v "${PWD}":/usr/src/myapp -w /usr/src/myapp rust:${RUST_VERSION} \
+  cargo build -p lambda_runtime --example basic --release --target ${RUST_TARGET} # This line can be any cargo command
+```
+
+In short, the above command does the following:
+
+1. Gives the current user ownership of the artifacts produced by the cargo run.
+2. Mounts the current working directory as a volume within the pulled Docker image.
+3. Pulls a given Rust Docker image for a given platform.
+4. Executes the command on the line beginning with `cargo` within the project directory within the image.
+
+It is important to note that build artifacts produced from the above command can be found under the expected `target/` directory in the project after build.
+
+**Building for Amazon Linux 1**
 
 Run this script once to add the new target:
 ```bash
 $ rustup target add x86_64-unknown-linux-musl
 ```
 
+* **Note:** If you are running on Mac OS you'll need to install the linker for the target platform. You do this using the `musl-cross` tap from [Homebrew](https://brew.sh/) which provides a complete cross-compilation toolchain for Mac OS. Once `musl-cross` is installed we will also need to inform cargo of the newly installed linker when building for the `x86_64-unknown-linux-musl` platform.
 
-  * **Note:** If you are running on Mac OS you'll need to install the linker for the target platform. You do this using the `musl-cross` tap from [Homebrew](https://brew.sh/) which provides a complete cross-compilation toolchain for Mac OS. Once `musl-cross` is installed we will also need to inform cargo of the newly installed linker when building for the `x86_64-unknown-linux-musl` platform.
+
 ```bash
 $ brew install filosottile/musl-cross/musl-cross
 $ mkdir .cargo
@@ -57,10 +100,14 @@ Compile one of the examples as a _release_ with a specific _target_ for deployme
 $ cargo build -p lambda_runtime --example basic --release --target x86_64-unknown-linux-musl
 ```
 
+**Uploading the Resulting Binary to Lambda**
+
 For [a custom runtime](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-custom.html), AWS Lambda looks for an executable called `bootstrap` in the deployment package zip. Rename the generated `basic` executable to `bootstrap` and add it to a zip archive.
 
+NOTE: Depending on the target you used above, you'll find the provided basic under the corresponding directory. In the following example, we've compiled for x86_64-unknown-linux-musl.
+
 ```bash
-$ cp ./target/x86_64-unknown-linux-musl/release/examples/basic ./bootstrap && zip lambda.zip bootstrap && rm bootstrap
+$ cp ./target/x86_64-unknown-linux-gnu/release/examples/basic ./bootstrap && zip lambda.zip bootstrap && rm bootstrap
 ```
 
 Now that we have a deployment package (`lambda.zip`), we can use the [AWS CLI](https://aws.amazon.com/cli/) to create a new Lambda function. Make sure to replace the execution role with an existing role in your account!
@@ -79,9 +126,9 @@ You can now test the function using the AWS CLI or the AWS Lambda console
 
 ```bash
 $ aws lambda invoke --function-name rustTest \
-  --payload '{"firstName": "world"}' \
+  --payload '{"command": "Say Hi!"}' \
   output.json
-$ cat output.json  # Prints: {"message": "Hello, world!"}
+$ cat output.json  # Prints: {"msg": "Command Say Hi! executed."}
 ```
 
 **Note:** `--cli-binary-format raw-in-base64-out` is a required

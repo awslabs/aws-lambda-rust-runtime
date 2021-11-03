@@ -75,7 +75,7 @@ pub trait Handler<A, B> {
     /// Response of this handler.
     type Fut: Future<Output = Result<B, Self::Error>>;
     /// Handle the incoming event.
-    fn call(&self, event: A, context: Context) -> Self::Fut;
+    fn call(&mut self, event: A, context: Context) -> Self::Fut;
 }
 
 /// Returns a new [`HandlerFn`] with the given closure.
@@ -101,7 +101,7 @@ where
 {
     type Error = Error;
     type Fut = Fut;
-    fn call(&self, req: A, ctx: Context) -> Self::Fut {
+    fn call(&mut self, req: A, ctx: Context) -> Self::Fut {
         (self.f)(req, ctx)
     }
 }
@@ -135,7 +135,7 @@ where
     pub async fn run<F, A, B>(
         &self,
         incoming: impl Stream<Item = Result<http::Response<hyper::Body>, Error>> + Send,
-        handler: F,
+        mut handler: F,
         config: &Config,
     ) -> Result<(), Error>
     where

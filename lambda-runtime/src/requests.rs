@@ -4,6 +4,8 @@ use hyper::Body;
 use serde::Serialize;
 use std::str::FromStr;
 
+const USER_AGENT: &str = concat!("aws-lambda-rust/", env!("CARGO_PKG_VERSION"));
+
 pub(crate) trait IntoRequest {
     fn into_req(self) -> Result<Request<Body>, Error>;
 }
@@ -20,7 +22,7 @@ impl IntoRequest for NextEventRequest {
     fn into_req(self) -> Result<Request<Body>, Error> {
         let req = Request::builder()
             .method(Method::GET)
-            .header("User-Agent", ["aws-lambda-rust/", env!("CARGO_PKG_VERSION")].concat())
+            .header("User-Agent", USER_AGENT)
             .uri(Uri::from_static("/2018-06-01/runtime/invocation/next"))
             .body(Body::empty())?;
         Ok(req)
@@ -59,7 +61,7 @@ fn test_next_event_request() {
     assert_eq!(req.method(), Method::GET);
     assert_eq!(req.uri(), &Uri::from_static("/2018-06-01/runtime/invocation/next"));
     assert!(match req.headers().get("User-Agent") {
-        Some(header) => header.to_str().unwrap() == ["aws-lambda-rust/", env!("CARGO_PKG_VERSION")].concat(),
+        Some(header) => header.to_str().unwrap().starts_with("aws-lambda-rust/"),
         None => false,
     });
 }
@@ -81,7 +83,7 @@ where
         let body = Body::from(body);
 
         let req = Request::builder()
-            .header("User-Agent", ["aws-lambda-rust/", env!("CARGO_PKG_VERSION")].concat())
+            .header("User-Agent", USER_AGENT)
             .method(Method::POST)
             .uri(uri)
             .body(body)?;
@@ -100,7 +102,7 @@ fn test_event_completion_request() {
     assert_eq!(req.method(), Method::POST);
     assert_eq!(req.uri(), &expected);
     assert!(match req.headers().get("User-Agent") {
-        Some(header) => header.to_str().unwrap() == ["aws-lambda-rust/", env!("CARGO_PKG_VERSION")].concat(),
+        Some(header) => header.to_str().unwrap().starts_with("aws-lambda-rust/"),
         None => false,
     });
 }
@@ -121,7 +123,7 @@ impl<'a> IntoRequest for EventErrorRequest<'a> {
         let req = Request::builder()
             .method(Method::POST)
             .uri(uri)
-            .header("User-Agent", ["aws-lambda-rust/", env!("CARGO_PKG_VERSION")].concat())
+            .header("User-Agent", USER_AGENT)
             .header("lambda-runtime-function-error-type", "unhandled")
             .body(body)?;
         Ok(req)
@@ -142,7 +144,7 @@ fn test_event_error_request() {
     assert_eq!(req.method(), Method::POST);
     assert_eq!(req.uri(), &expected);
     assert!(match req.headers().get("User-Agent") {
-        Some(header) => header.to_str().unwrap() == ["aws-lambda-rust/", env!("CARGO_PKG_VERSION")].concat(),
+        Some(header) => header.to_str().unwrap().starts_with("aws-lambda-rust/"),
         None => false,
     });
 }
@@ -158,7 +160,7 @@ impl IntoRequest for InitErrorRequest {
         let req = Request::builder()
             .method(Method::POST)
             .uri(uri)
-            .header("User-Agent", ["aws-lambda-rust/", env!("CARGO_PKG_VERSION")].concat())
+            .header("User-Agent", USER_AGENT)
             .header("lambda-runtime-function-error-type", "unhandled")
             .body(Body::empty())?;
         Ok(req)
@@ -173,7 +175,7 @@ fn test_init_error_request() {
     assert_eq!(req.method(), Method::POST);
     assert_eq!(req.uri(), &expected);
     assert!(match req.headers().get("User-Agent") {
-        Some(header) => header.to_str().unwrap() == ["aws-lambda-rust/", env!("CARGO_PKG_VERSION")].concat(),
+        Some(header) => header.to_str().unwrap().starts_with("aws-lambda-rust/"),
         None => false,
     });
 }

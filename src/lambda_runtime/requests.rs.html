@@ -154,11 +154,38 @@
 <span id="154">154</span>
 <span id="155">155</span>
 <span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">types::Diagnostic</span>, <span class="ident">Error</span>};
 <span class="kw">use</span> <span class="ident">http</span>::{<span class="ident">Method</span>, <span class="ident">Request</span>, <span class="ident">Response</span>, <span class="ident">Uri</span>};
 <span class="kw">use</span> <span class="ident">hyper::Body</span>;
 <span class="kw">use</span> <span class="ident">serde::Serialize</span>;
 <span class="kw">use</span> <span class="ident">std::str::FromStr</span>;
+
+<span class="kw">const</span> <span class="ident">USER_AGENT</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="macro">concat!</span>(<span class="string">&quot;aws-lambda-rust/&quot;</span>, <span class="macro">env!</span>(<span class="string">&quot;CARGO_PKG_VERSION&quot;</span>));
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">trait</span> <span class="ident">IntoRequest</span> {
     <span class="kw">fn</span> <span class="ident">into_req</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span>;
@@ -176,6 +203,7 @@
     <span class="kw">fn</span> <span class="ident">into_req</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">Request::builder</span>()
             .<span class="ident">method</span>(<span class="ident">Method::GET</span>)
+            .<span class="ident">header</span>(<span class="string">&quot;User-Agent&quot;</span>, <span class="ident">USER_AGENT</span>)
             .<span class="ident">uri</span>(<span class="ident">Uri::from_static</span>(<span class="string">&quot;/2018-06-01/runtime/invocation/next&quot;</span>))
             .<span class="ident">body</span>(<span class="ident">Body::empty</span>())<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="ident">req</span>)
@@ -213,6 +241,10 @@
     <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">into_req</span>().<span class="ident">unwrap</span>();
     <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="ident">Method::GET</span>);
     <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">uri</span>(), <span class="kw-2">&amp;</span><span class="ident">Uri::from_static</span>(<span class="string">&quot;/2018-06-01/runtime/invocation/next&quot;</span>));
+    <span class="macro">assert!</span>(<span class="kw">match</span> <span class="ident">req</span>.<span class="ident">headers</span>().<span class="ident">get</span>(<span class="string">&quot;User-Agent&quot;</span>) {
+        <span class="prelude-val">Some</span>(<span class="ident">header</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">header</span>.<span class="ident">to_str</span>().<span class="ident">unwrap</span>().<span class="ident">starts_with</span>(<span class="string">&quot;aws-lambda-rust/&quot;</span>),
+        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
+    });
 }
 
 <span class="comment">// /runtime/invocation/{AwsRequestId}/response</span>
@@ -231,7 +263,11 @@
         <span class="kw">let</span> <span class="ident">body</span> <span class="op">=</span> <span class="ident">serde_json::to_vec</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">body</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">body</span> <span class="op">=</span> <span class="ident">Body::from</span>(<span class="ident">body</span>);
 
-        <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">Request::builder</span>().<span class="ident">method</span>(<span class="ident">Method::POST</span>).<span class="ident">uri</span>(<span class="ident">uri</span>).<span class="ident">body</span>(<span class="ident">body</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">Request::builder</span>()
+            .<span class="ident">header</span>(<span class="string">&quot;User-Agent&quot;</span>, <span class="ident">USER_AGENT</span>)
+            .<span class="ident">method</span>(<span class="ident">Method::POST</span>)
+            .<span class="ident">uri</span>(<span class="ident">uri</span>)
+            .<span class="ident">body</span>(<span class="ident">body</span>)<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="ident">req</span>)
     }
 }
@@ -246,6 +282,10 @@
     <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="ident">Uri::from_static</span>(<span class="string">&quot;/2018-06-01/runtime/invocation/id/response&quot;</span>);
     <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="ident">Method::POST</span>);
     <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">uri</span>(), <span class="kw-2">&amp;</span><span class="ident">expected</span>);
+    <span class="macro">assert!</span>(<span class="kw">match</span> <span class="ident">req</span>.<span class="ident">headers</span>().<span class="ident">get</span>(<span class="string">&quot;User-Agent&quot;</span>) {
+        <span class="prelude-val">Some</span>(<span class="ident">header</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">header</span>.<span class="ident">to_str</span>().<span class="ident">unwrap</span>().<span class="ident">starts_with</span>(<span class="string">&quot;aws-lambda-rust/&quot;</span>),
+        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
+    });
 }
 
 <span class="comment">// /runtime/invocation/{AwsRequestId}/error</span>
@@ -264,6 +304,7 @@
         <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">Request::builder</span>()
             .<span class="ident">method</span>(<span class="ident">Method::POST</span>)
             .<span class="ident">uri</span>(<span class="ident">uri</span>)
+            .<span class="ident">header</span>(<span class="string">&quot;User-Agent&quot;</span>, <span class="ident">USER_AGENT</span>)
             .<span class="ident">header</span>(<span class="string">&quot;lambda-runtime-function-error-type&quot;</span>, <span class="string">&quot;unhandled&quot;</span>)
             .<span class="ident">body</span>(<span class="ident">body</span>)<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="ident">req</span>)
@@ -283,6 +324,10 @@
     <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="ident">Uri::from_static</span>(<span class="string">&quot;/2018-06-01/runtime/invocation/id/error&quot;</span>);
     <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="ident">Method::POST</span>);
     <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">uri</span>(), <span class="kw-2">&amp;</span><span class="ident">expected</span>);
+    <span class="macro">assert!</span>(<span class="kw">match</span> <span class="ident">req</span>.<span class="ident">headers</span>().<span class="ident">get</span>(<span class="string">&quot;User-Agent&quot;</span>) {
+        <span class="prelude-val">Some</span>(<span class="ident">header</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">header</span>.<span class="ident">to_str</span>().<span class="ident">unwrap</span>().<span class="ident">starts_with</span>(<span class="string">&quot;aws-lambda-rust/&quot;</span>),
+        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
+    });
 }
 
 <span class="comment">// /runtime/init/error</span>
@@ -296,6 +341,7 @@
         <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">Request::builder</span>()
             .<span class="ident">method</span>(<span class="ident">Method::POST</span>)
             .<span class="ident">uri</span>(<span class="ident">uri</span>)
+            .<span class="ident">header</span>(<span class="string">&quot;User-Agent&quot;</span>, <span class="ident">USER_AGENT</span>)
             .<span class="ident">header</span>(<span class="string">&quot;lambda-runtime-function-error-type&quot;</span>, <span class="string">&quot;unhandled&quot;</span>)
             .<span class="ident">body</span>(<span class="ident">Body::empty</span>())<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="ident">req</span>)
@@ -309,6 +355,10 @@
     <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="ident">Uri::from_static</span>(<span class="string">&quot;/2018-06-01/runtime/init/error&quot;</span>);
     <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="ident">Method::POST</span>);
     <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">uri</span>(), <span class="kw-2">&amp;</span><span class="ident">expected</span>);
+    <span class="macro">assert!</span>(<span class="kw">match</span> <span class="ident">req</span>.<span class="ident">headers</span>().<span class="ident">get</span>(<span class="string">&quot;User-Agent&quot;</span>) {
+        <span class="prelude-val">Some</span>(<span class="ident">header</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">header</span>.<span class="ident">to_str</span>().<span class="ident">unwrap</span>().<span class="ident">starts_with</span>(<span class="string">&quot;aws-lambda-rust/&quot;</span>),
+        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
+    });
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lambda_runtime" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>

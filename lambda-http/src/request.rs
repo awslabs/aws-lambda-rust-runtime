@@ -37,7 +37,7 @@ pub enum LambdaRequest<'a> {
         query_string_parameters: StrMap,
         #[serde(default)]
         path_parameters: StrMap,
-        #[serde(default)]
+        #[serde(default, deserialize_with = "nullable_default")]
         stage_variables: StrMap,
         body: Option<Cow<'a, str>>,
         #[serde(default)]
@@ -737,6 +737,29 @@ mod tests {
     }
 
     #[test]
+    fn deserialize_apigw_v2_sam_local() {
+        // manually generated from AWS SAM CLI
+        // Steps to recreate:
+        // * sam init
+        // * Use, Zip Python 3.9, and Hello World example
+        // * Change the template to use HttpApi instead of Api
+        // * Change the function code to return the Lambda event serialized
+        // * sam local start-api
+        // * Invoke the API
+        let input = include_str!("../tests/data/apigw_v2_sam_local.json");
+        let result = from_str(input);
+        assert!(
+            result.is_ok(),
+            "event was not parsed as expected {:?} given {}",
+            result,
+            input
+        );
+        let req = result.expect("failed to parse request");
+        assert_eq!(req.method(), "GET");
+        assert_eq!(req.uri(), "http://127.0.0.1:3000/hello");
+    }
+
+    #[test]
     fn deserialize_with_null() {
         #[derive(Debug, PartialEq, Deserialize)]
         struct Test {
@@ -746,6 +769,20 @@ mod tests {
 
         assert_eq!(
             serde_json::from_str::<Test>(r#"{"foo":null}"#).expect("failed to deserialize"),
+            Test { foo: HashMap::new() }
+        )
+    }
+
+    #[test]
+    fn deserialize_with_missing() {
+        #[derive(Debug, PartialEq, Deserialize)]
+        struct Test {
+            #[serde(default, deserialize_with = "nullable_default")]
+            foo: HashMap<String, String>,
+        }
+
+        assert_eq!(
+            serde_json::from_str::<Test>(r#"{}"#).expect("failed to deserialize"),
             Test { foo: HashMap::new() }
         )
     }

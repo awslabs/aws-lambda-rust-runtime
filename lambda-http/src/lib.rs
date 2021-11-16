@@ -5,7 +5,7 @@
 //!
 //! This crate abstracts over all of these trigger events using standard [`http`](https://github.com/hyperium/http) types minimizing the mental overhead
 //! of understanding the nuances and variation between trigger details allowing you to focus more on your application while also giving you to the maximum flexibility to
-//! transparently use whichever lambda trigger suits your application and cost optimiztions best.
+//! transparently use whichever lambda trigger suits your application and cost optimizations best.
 //!
 //! # Examples
 //!
@@ -149,7 +149,7 @@ where
 /// It serves as a opaque trait covering type.
 ///
 /// See [this article](http://smallcultfollowing.com/babysteps/blog/2015/01/14/little-orphan-impls/)
-/// for a larger explaination of why this is nessessary
+/// for a larger explanation of why this is necessary
 pub struct Adapter<'a, H: Handler<'a>> {
     handler: H,
     _pd: PhantomData<&'a H>,
@@ -164,7 +164,7 @@ impl<'a, H: Handler<'a>> Handler<'a> for Adapter<'a, H> {
     }
 }
 
-impl<'a, H: Handler<'a>> LambdaHandler<LambdaRequest<'a>, LambdaResponse> for Adapter<'a, H> {
+impl<'a, 'b, H: Handler<'a>> LambdaHandler<LambdaRequest<'b>, LambdaResponse> for Adapter<'a, H> {
     type Error = H::Error;
     type Fut = TransformResponse<'a, H::Response, Self::Error>;
 

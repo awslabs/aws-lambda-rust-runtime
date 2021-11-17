@@ -750,6 +750,43 @@
 <span id="750">750</span>
 <span id="751">751</span>
 <span id="752">752</span>
+<span id="753">753</span>
+<span id="754">754</span>
+<span id="755">755</span>
+<span id="756">756</span>
+<span id="757">757</span>
+<span id="758">758</span>
+<span id="759">759</span>
+<span id="760">760</span>
+<span id="761">761</span>
+<span id="762">762</span>
+<span id="763">763</span>
+<span id="764">764</span>
+<span id="765">765</span>
+<span id="766">766</span>
+<span id="767">767</span>
+<span id="768">768</span>
+<span id="769">769</span>
+<span id="770">770</span>
+<span id="771">771</span>
+<span id="772">772</span>
+<span id="773">773</span>
+<span id="774">774</span>
+<span id="775">775</span>
+<span id="776">776</span>
+<span id="777">777</span>
+<span id="778">778</span>
+<span id="779">779</span>
+<span id="780">780</span>
+<span id="781">781</span>
+<span id="782">782</span>
+<span id="783">783</span>
+<span id="784">784</span>
+<span id="785">785</span>
+<span id="786">786</span>
+<span id="787">787</span>
+<span id="788">788</span>
+<span id="789">789</span>
 </pre><pre class="rust"><code><span class="doccomment">//! ALB and API Gateway request adaptations</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! Typically these are exposed via the `request_context`</span>
@@ -785,11 +822,11 @@
         <span class="ident">cookies</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>,
         <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">deserialize_with</span> <span class="op">=</span> <span class="string">&quot;deserialize_headers&quot;</span>)]</span>
         <span class="ident">headers</span>: <span class="ident">http::HeaderMap</span>,
-        <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
+        <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>, <span class="ident">deserialize_with</span> <span class="op">=</span> <span class="string">&quot;nullable_default&quot;</span>)]</span>
         <span class="ident">query_string_parameters</span>: <span class="ident">StrMap</span>,
-        <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
+        <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>, <span class="ident">deserialize_with</span> <span class="op">=</span> <span class="string">&quot;nullable_default&quot;</span>)]</span>
         <span class="ident">path_parameters</span>: <span class="ident">StrMap</span>,
-        <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
+        <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>, <span class="ident">deserialize_with</span> <span class="op">=</span> <span class="string">&quot;nullable_default&quot;</span>)]</span>
         <span class="ident">stage_variables</span>: <span class="ident">StrMap</span>,
         <span class="ident">body</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>,
         <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
@@ -807,7 +844,7 @@
         <span class="doccomment">/// the `lambda.multi_value_headers.enabled` target group setting turned on</span>
         <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>, <span class="ident">deserialize_with</span> <span class="op">=</span> <span class="string">&quot;deserialize_multi_value_headers&quot;</span>)]</span>
         <span class="ident">multi_value_headers</span>: <span class="ident">http::HeaderMap</span>,
-        <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">deserialize_with</span> <span class="op">=</span> <span class="string">&quot;nullable_default&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>, <span class="ident">deserialize_with</span> <span class="op">=</span> <span class="string">&quot;nullable_default&quot;</span>)]</span>
         <span class="ident">query_string_parameters</span>: <span class="ident">StrMap</span>,
         <span class="doccomment">/// For alb events these are only present when</span>
         <span class="doccomment">/// the `lambda.multi_value_headers.enabled` target group setting turned on</span>
@@ -827,7 +864,7 @@
         <span class="ident">headers</span>: <span class="ident">http::HeaderMap</span>,
         <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>, <span class="ident">deserialize_with</span> <span class="op">=</span> <span class="string">&quot;deserialize_multi_value_headers&quot;</span>)]</span>
         <span class="ident">multi_value_headers</span>: <span class="ident">http::HeaderMap</span>,
-        <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">deserialize_with</span> <span class="op">=</span> <span class="string">&quot;nullable_default&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>, <span class="ident">deserialize_with</span> <span class="op">=</span> <span class="string">&quot;nullable_default&quot;</span>)]</span>
         <span class="ident">query_string_parameters</span>: <span class="ident">StrMap</span>,
         <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>, <span class="ident">deserialize_with</span> <span class="op">=</span> <span class="string">&quot;nullable_default&quot;</span>)]</span>
         <span class="ident">multi_value_query_string_parameters</span>: <span class="ident">StrMap</span>,
@@ -1489,6 +1526,29 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">deserialize_apigw_v2_sam_local</span>() {
+        <span class="comment">// manually generated from AWS SAM CLI</span>
+        <span class="comment">// Steps to recreate:</span>
+        <span class="comment">// * sam init</span>
+        <span class="comment">// * Use, Zip Python 3.9, and Hello World example</span>
+        <span class="comment">// * Change the template to use HttpApi instead of Api</span>
+        <span class="comment">// * Change the function code to return the Lambda event serialized</span>
+        <span class="comment">// * sam local start-api</span>
+        <span class="comment">// * Invoke the API</span>
+        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/apigw_v2_sam_local.json&quot;</span>);
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_str</span>(<span class="ident">input</span>);
+        <span class="macro">assert!</span>(
+            <span class="ident">result</span>.<span class="ident">is_ok</span>(),
+            <span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>,
+            <span class="ident">result</span>,
+            <span class="ident">input</span>
+        );
+        <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">expect</span>(<span class="string">&quot;failed to parse request&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="string">&quot;GET&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">uri</span>(), <span class="string">&quot;http://127.0.0.1:3000/hello&quot;</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">deserialize_with_null</span>() {
         <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Deserialize</span>)]</span>
         <span class="kw">struct</span> <span class="ident">Test</span> {
@@ -1498,6 +1558,20 @@
 
         <span class="macro">assert_eq!</span>(
             <span class="ident">serde_json::from_str</span>::<span class="op">&lt;</span><span class="ident">Test</span><span class="op">&gt;</span>(<span class="string">r#&quot;{&quot;foo&quot;:null}&quot;#</span>).<span class="ident">expect</span>(<span class="string">&quot;failed to deserialize&quot;</span>),
+            <span class="ident">Test</span> { <span class="ident">foo</span>: <span class="ident">HashMap::new</span>() }
+        )
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">deserialize_with_missing</span>() {
+        <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Deserialize</span>)]</span>
+        <span class="kw">struct</span> <span class="ident">Test</span> {
+            <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>, <span class="ident">deserialize_with</span> <span class="op">=</span> <span class="string">&quot;nullable_default&quot;</span>)]</span>
+            <span class="ident">foo</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span>,
+        }
+
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">serde_json::from_str</span>::<span class="op">&lt;</span><span class="ident">Test</span><span class="op">&gt;</span>(<span class="string">r#&quot;{}&quot;#</span>).<span class="ident">expect</span>(<span class="string">&quot;failed to deserialize&quot;</span>),
             <span class="ident">Test</span> { <span class="ident">foo</span>: <span class="ident">HashMap::new</span>() }
         )
     }

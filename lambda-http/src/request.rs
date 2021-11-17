@@ -33,9 +33,9 @@ pub enum LambdaRequest<'a> {
         cookies: Option<Vec<Cow<'a, str>>>,
         #[serde(deserialize_with = "deserialize_headers")]
         headers: http::HeaderMap,
-        #[serde(default)]
+        #[serde(default, deserialize_with = "nullable_default")]
         query_string_parameters: StrMap,
-        #[serde(default)]
+        #[serde(default, deserialize_with = "nullable_default")]
         path_parameters: StrMap,
         #[serde(default, deserialize_with = "nullable_default")]
         stage_variables: StrMap,
@@ -55,7 +55,7 @@ pub enum LambdaRequest<'a> {
         /// the `lambda.multi_value_headers.enabled` target group setting turned on
         #[serde(default, deserialize_with = "deserialize_multi_value_headers")]
         multi_value_headers: http::HeaderMap,
-        #[serde(deserialize_with = "nullable_default")]
+        #[serde(default, deserialize_with = "nullable_default")]
         query_string_parameters: StrMap,
         /// For alb events these are only present when
         /// the `lambda.multi_value_headers.enabled` target group setting turned on
@@ -75,7 +75,7 @@ pub enum LambdaRequest<'a> {
         headers: http::HeaderMap,
         #[serde(default, deserialize_with = "deserialize_multi_value_headers")]
         multi_value_headers: http::HeaderMap,
-        #[serde(deserialize_with = "nullable_default")]
+        #[serde(default, deserialize_with = "nullable_default")]
         query_string_parameters: StrMap,
         #[serde(default, deserialize_with = "nullable_default")]
         multi_value_query_string_parameters: StrMap,

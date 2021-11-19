@@ -440,9 +440,7 @@ impl<'a> From<LambdaRequest<'a>> for http::Request<Body> {
                 let builder = http::Request::builder()
                     .method(http_method)
                     .uri({
-                        let host = headers
-                            .get(http::header::HOST)
-                            .and_then(|val| val.to_str().ok());
+                        let host = headers.get(http::header::HOST).and_then(|val| val.to_str().ok());
                         match host {
                             Some(host) => {
                                 format!(
@@ -508,9 +506,7 @@ impl<'a> From<LambdaRequest<'a>> for http::Request<Body> {
                 let builder = http::Request::builder()
                     .method(http_method)
                     .uri({
-                        let host = headers
-                            .get(http::header::HOST)
-                            .and_then(|val| val.to_str().ok());
+                        let host = headers.get(http::header::HOST).and_then(|val| val.to_str().ok());
                         match host {
                             Some(host) => {
                                 format!(

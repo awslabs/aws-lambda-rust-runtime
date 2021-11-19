@@ -440,18 +440,23 @@ impl<'a> From<LambdaRequest<'a>> for http::Request<Body> {
                 let builder = http::Request::builder()
                     .method(http_method)
                     .uri({
-                        format!(
-                            "{}://{}{}",
-                            headers
-                                .get("X-Forwarded-Proto")
-                                .and_then(|val| val.to_str().ok())
-                                .unwrap_or("https"),
-                            headers
-                                .get(http::header::HOST)
-                                .and_then(|val| val.to_str().ok())
-                                .unwrap_or_default(),
-                            path
-                        )
+                        let host = headers
+                            .get(http::header::HOST)
+                            .and_then(|val| val.to_str().ok());
+                        match host {
+                            Some(host) => {
+                                format!(
+                                    "{}://{}{}",
+                                    headers
+                                        .get("X-Forwarded-Proto")
+                                        .and_then(|val| val.to_str().ok())
+                                        .unwrap_or("https"),
+                                    host,
+                                    path
+                                )
+                            }
+                            None => path.to_string(),
+                        }
                     })
                     // multi-valued query string parameters are always a super
                     // set of singly valued query string parameters,
@@ -503,18 +508,23 @@ impl<'a> From<LambdaRequest<'a>> for http::Request<Body> {
                 let builder = http::Request::builder()
                     .method(http_method)
                     .uri({
-                        format!(
-                            "{}://{}{}",
-                            headers
-                                .get("X-Forwarded-Proto")
-                                .and_then(|val| val.to_str().ok())
-                                .unwrap_or("https"),
-                            headers
-                                .get(http::header::HOST)
-                                .and_then(|val| val.to_str().ok())
-                                .unwrap_or_default(),
-                            path
-                        )
+                        let host = headers
+                            .get(http::header::HOST)
+                            .and_then(|val| val.to_str().ok());
+                        match host {
+                            Some(host) => {
+                                format!(
+                                    "{}://{}{}",
+                                    headers
+                                        .get("X-Forwarded-Proto")
+                                        .and_then(|val| val.to_str().ok())
+                                        .unwrap_or("https"),
+                                    host,
+                                    path
+                                )
+                            }
+                            None => path.to_string(),
+                        }
                     })
                     // multi valued query string parameters are always a super
                     // set of singly valued query string parameters,
@@ -757,6 +767,22 @@ mod tests {
         let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "GET");
         assert_eq!(req.uri(), "http://127.0.0.1:3000/hello");
+    }
+
+    #[test]
+    fn deserialize_apigw_no_host() {
+        // generated from the 'apigateway-aws-proxy' test event template in the Lambda console
+        let input = include_str!("../tests/data/apigw_no_host.json");
+        let result = from_str(input);
+        assert!(
+            result.is_ok(),
+            "event was not parsed as expected {:?} given {}",
+            result,
+            input
+        );
+        let req = result.expect("failed to parse request");
+        assert_eq!(req.method(), "GET");
+        assert_eq!(req.uri(), "/test/hello");
     }
 
     #[test]

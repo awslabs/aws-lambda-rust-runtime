@@ -281,10 +281,8 @@ where
 ///
 /// # Example
 /// ```no_run
-/// use lambda_runtime::{handler_fn, Context};
+/// use lambda_runtime::{Error, handler_fn, Context};
 /// use serde_json::Value;
-///
-/// type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 ///
 /// #[tokio::main]
 /// async fn main() -> Result<(), Error> {

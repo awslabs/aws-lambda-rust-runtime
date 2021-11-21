@@ -352,7 +352,7 @@ where
         }
     }
 
-    deserializer.deserialize_map(HeaderVisitor)
+    Ok(deserializer.deserialize_map(HeaderVisitor).unwrap_or_default())
 }
 
 /// deserializes (json) null values to their default values
@@ -633,6 +633,17 @@ mod tests {
         let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "GET");
         assert_eq!(req.uri(), "https://xxx.execute-api.us-east-1.amazonaws.com/");
+
+        // Ensure this is an APIGWv2 request
+        let req_context = req.request_context();
+        assert!(
+            match req_context {
+                RequestContext::ApiGatewayV2(_) => true,
+                _ => false,
+            },
+            "expected ApiGatewayV2 context, got {:?}",
+            req_context
+        );
     }
 
     #[test]
@@ -657,6 +668,17 @@ mod tests {
         assert_eq!(req.method(), "POST");
         assert_eq!(req.uri(), "https://id.execute-api.us-east-1.amazonaws.com/my/path?parameter1=value1&parameter1=value2&parameter2=value");
         assert_eq!(cookie_header, Ok("cookie1=value1;cookie2=value2"));
+
+        // Ensure this is an APIGWv2 request
+        let req_context = req.request_context();
+        assert!(
+            match req_context {
+                RequestContext::ApiGatewayV2(_) => true,
+                _ => false,
+            },
+            "expected ApiGatewayV2 context, got {:?}",
+            req_context
+        );
     }
 
     #[test]
@@ -678,6 +700,17 @@ mod tests {
             req.uri(),
             "https://wt6mne2s9k.execute-api.us-west-2.amazonaws.com/test/hello"
         );
+
+        // Ensure this is an APIGW request
+        let req_context = req.request_context();
+        assert!(
+            match req_context {
+                RequestContext::ApiGateway(_) => true,
+                _ => false,
+            },
+            "expected ApiGateway context, got {:?}",
+            req_context
+        );
     }
 
     #[test]
@@ -695,6 +728,17 @@ mod tests {
         let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "GET");
         assert_eq!(req.uri(), "https://lambda-846800462-us-east-2.elb.amazonaws.com/");
+
+        // Ensure this is an ALB request
+        let req_context = req.request_context();
+        assert!(
+            match req_context {
+                RequestContext::Alb(_) => true,
+                _ => false,
+            },
+            "expected Alb context, got {:?}",
+            req_context
+        );
     }
 
     #[test]
@@ -806,6 +850,22 @@ mod tests {
         assert_eq!(
             serde_json::from_str::<Test>(r#"{}"#).expect("failed to deserialize"),
             Test { foo: HashMap::new() }
+        )
+    }
+
+    #[test]
+    fn deserialize_null_headers() {
+        #[derive(Debug, PartialEq, Deserialize)]
+        struct Test {
+            #[serde(deserialize_with = "deserialize_headers")]
+            headers: http::HeaderMap,
+        }
+
+        assert_eq!(
+            serde_json::from_str::<Test>(r#"{"headers":null}"#).expect("failed to deserialize"),
+            Test {
+                headers: http::HeaderMap::new()
+            }
         )
     }
 }

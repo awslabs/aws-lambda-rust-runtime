@@ -382,8 +382,6 @@
 <span id="382">382</span>
 <span id="383">383</span>
 <span id="384">384</span>
-<span id="385">385</span>
-<span id="386">386</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Extension methods for `http::Request` types</span>
 
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">request::RequestContext</span>, <span class="ident">strmap::StrMap</span>, <span class="ident">Body</span>};
@@ -452,10 +450,8 @@
 <span class="doccomment">/// as well as `{&quot;x&quot;:1, &quot;y&quot;:2}` respectively.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ```rust,no_run</span>
-<span class="doccomment">/// use lambda_http::{handler, lambda_runtime::{self, Context}, Body, IntoResponse, Request, Response, RequestExt};</span>
+<span class="doccomment">/// use lambda_http::{handler, lambda_runtime::{self, Error, Context}, Body, IntoResponse, Request, Response, RequestExt};</span>
 <span class="doccomment">/// use serde::Deserialize;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// type Error = Box&lt;dyn std::error::Error + Send + Sync + &#39;static&gt;;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// #[derive(Debug,Deserialize,Default)]</span>
 <span class="doccomment">/// struct Args {</span>

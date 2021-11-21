@@ -320,8 +320,6 @@
 <span id="320">320</span>
 <span id="321">321</span>
 <span id="322">322</span>
-<span id="323">323</span>
-<span id="324">324</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">deny</span>(<span class="ident">clippy::all</span>, <span class="ident">clippy::cargo</span>)]</span>
 <span class="attribute">#![<span class="ident">warn</span>(<span class="ident">missing_docs</span>, <span class="ident">nonstandard_style</span>, <span class="ident">rust_2018_idioms</span>)]</span>
 
@@ -605,10 +603,8 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Example</span>
 <span class="doccomment">/// ```no_run</span>
-<span class="doccomment">/// use lambda_runtime::{handler_fn, Context};</span>
+<span class="doccomment">/// use lambda_runtime::{Error, handler_fn, Context};</span>
 <span class="doccomment">/// use serde_json::Value;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// type Error = Box&lt;dyn std::error::Error + Send + Sync + &#39;static&gt;;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// #[tokio::main]</span>
 <span class="doccomment">/// async fn main() -&gt; Result&lt;(), Error&gt; {</span>

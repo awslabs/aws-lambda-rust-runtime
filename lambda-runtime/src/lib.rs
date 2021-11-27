@@ -17,7 +17,7 @@ use std::{
 };
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio_stream::{Stream, StreamExt};
-use tower_service::Service;
+pub use tower_service::Service;
 use tracing::{error, trace};
 
 mod client;
@@ -29,6 +29,8 @@ mod types;
 
 use requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest};
 use types::Diagnostic;
+
+pub use types::LambdaRequest;
 
 /// Error type that lambdas may result in
 pub type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
@@ -68,42 +70,34 @@ impl Config {
     }
 }
 
-/// A trait describing an asynchronous function `A` to `B`.
-pub trait Handler<A, B> {
-    /// Errors returned by this handler.
-    type Error;
-    /// Response of this handler.
-    type Fut: Future<Output = Result<B, Self::Error>>;
-    /// Handle the incoming event.
-    fn call(&mut self, event: A, context: Context) -> Self::Fut;
-}
-
-/// Returns a new [`HandlerFn`] with the given closure.
-///
-/// [`HandlerFn`]: struct.HandlerFn.html
-pub fn handler_fn<F>(f: F) -> HandlerFn<F> {
-    HandlerFn { f }
-}
-
-/// A [`Handler`] implemented by a closure.
-///
-/// [`Handler`]: trait.Handler.html
+/// A [`tower::Service`] implemented by a closure.
 #[derive(Clone, Debug)]
 pub struct HandlerFn<F> {
     f: F,
 }
 
-impl<F, A, B, Error, Fut> Handler<A, B> for HandlerFn<F>
+impl<F, A, B, Error, Fut> Service<LambdaRequest<A>> for HandlerFn<F>
 where
     F: Fn(A, Context) -> Fut,
     Fut: Future<Output = Result<B, Error>>,
     Error: Into<Box<dyn std::error::Error + Send + Sync + 'static>> + fmt::Display,
 {
+    type Response = B;
     type Error = Error;
-    type Fut = Fut;
-    fn call(&mut self, req: A, ctx: Context) -> Self::Fut {
-        (self.f)(req, ctx)
+    type Future = Fut;
+
+    fn poll_ready(&mut self, _cx: &mut core::task::Context<'_>) -> core::task::Poll<Result<(), Self::Error>> {
+        core::task::Poll::Ready(Ok(()))
     }
+
+    fn call(&mut self, req: LambdaRequest<A>) -> Self::Future {
+        (self.f)(req.event, req.context)
+    }
+}
+
+/// Returns a new [`HandlerFn`] with the given closure.
+pub fn handler_fn<F>(f: F) -> HandlerFn<F> {
+    HandlerFn { f }
 }
 
 #[non_exhaustive]
@@ -139,9 +133,9 @@ where
         config: &Config,
     ) -> Result<(), Error>
     where
-        F: Handler<A, B>,
-        <F as Handler<A, B>>::Fut: Future<Output = Result<B, <F as Handler<A, B>>::Error>>,
-        <F as Handler<A, B>>::Error: fmt::Display,
+        F: Service<LambdaRequest<A>>,
+        <F as Service<LambdaRequest<A>>>::Future: Future<Output = Result<B, <F as Service<LambdaRequest<A>>>::Error>>,
+        <F as Service<LambdaRequest<A>>>::Error: fmt::Display,
         A: for<'de> Deserialize<'de>,
         B: Serialize,
     {
@@ -162,7 +156,12 @@ where
             env::set_var("_X_AMZN_TRACE_ID", xray_trace_id);
 
             let request_id = &ctx.request_id.clone();
-            let task = panic::catch_unwind(panic::AssertUnwindSafe(|| handler.call(body, ctx)));
+            let task = panic::catch_unwind(panic::AssertUnwindSafe(|| {
+                handler.call(LambdaRequest {
+                    event: body,
+                    context: ctx,
+                })
+            }));
 
             let req = match task {
                 Ok(response) => match response.await {
@@ -297,9 +296,9 @@ where
 /// ```
 pub async fn run<A, B, F>(handler: F) -> Result<(), Error>
 where
-    F: Handler<A, B>,
-    <F as Handler<A, B>>::Fut: Future<Output = Result<B, <F as Handler<A, B>>::Error>>,
-    <F as Handler<A, B>>::Error: fmt::Display,
+    F: Service<LambdaRequest<A>>,
+    <F as Service<LambdaRequest<A>>>::Future: Future<Output = Result<B, <F as Service<LambdaRequest<A>>>::Error>>,
+    <F as Service<LambdaRequest<A>>>::Error: fmt::Display,
     A: for<'de> Deserialize<'de>,
     B: Serialize,
 {

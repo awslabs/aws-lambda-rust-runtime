@@ -25,7 +25,7 @@ async-stream = "0.3"
 futures = "0.3"
 tracing-error = "0.2"
 tracing = { version = "0.1", features = ["log"] }
-tower-service = "0.3"
+tower = { version = "0.4", features = ["util"] }
 tokio-stream = "0.1.2"
 
 [dev-dependencies]

@@ -63,7 +63,7 @@ extern crate maplit;
 
 pub use http::{self, Response};
 pub use lambda_runtime::{self, Context};
-use lambda_runtime::{Error, LambdaRequest as RuntimeRequest, Service};
+use lambda_runtime::{tower::Service, Error, LambdaRequest as RuntimeRequest};
 
 mod body;
 pub mod ext;

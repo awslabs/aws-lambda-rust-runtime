@@ -17,8 +17,10 @@ use std::{
 };
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio_stream::{Stream, StreamExt};
-pub use tower_service::Service;
+pub use tower;
 use tracing::{error, trace};
+
+use tower::{service_fn, util::ServiceFn, Service};
 
 mod client;
 mod requests;
@@ -70,34 +72,17 @@ impl Config {
     }
 }
 
-/// A [`tower::Service`] implemented by a closure.
-#[derive(Clone, Debug)]
-pub struct HandlerFn<F> {
-    f: F,
+/// Wraps a function that takes 2 arguments into one that only takes a [`LambdaRequest`].
+fn handler_wrapper<A, Fut>(f: impl Fn(A, Context) -> Fut) -> impl Fn(LambdaRequest<A>) -> Fut {
+    move |req| f(req.event, req.context)
 }
 
-impl<F, A, B, Error, Fut> Service<LambdaRequest<A>> for HandlerFn<F>
+/// Return a new [`ServiceFn`] with a closure that takes an event and context as separate arguments.
+pub fn handler_fn<A, F, Fut>(f: F) -> ServiceFn<impl Fn(LambdaRequest<A>) -> Fut>
 where
     F: Fn(A, Context) -> Fut,
-    Fut: Future<Output = Result<B, Error>>,
-    Error: Into<Box<dyn std::error::Error + Send + Sync + 'static>> + fmt::Display,
 {
-    type Response = B;
-    type Error = Error;
-    type Future = Fut;
-
-    fn poll_ready(&mut self, _cx: &mut core::task::Context<'_>) -> core::task::Poll<Result<(), Self::Error>> {
-        core::task::Poll::Ready(Ok(()))
-    }
-
-    fn call(&mut self, req: LambdaRequest<A>) -> Self::Future {
-        (self.f)(req.event, req.context)
-    }
-}
-
-/// Returns a new [`HandlerFn`] with the given closure.
-pub fn handler_fn<F>(f: F) -> HandlerFn<F> {
-    HandlerFn { f }
+    service_fn(handler_wrapper(f))
 }
 
 #[non_exhaustive]

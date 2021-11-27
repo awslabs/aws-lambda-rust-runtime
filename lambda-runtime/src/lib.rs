@@ -107,9 +107,9 @@ impl Runtime {
 impl<C> Runtime<C>
 where
     C: Service<http::Uri> + Clone + Send + Sync + Unpin + 'static,
-    <C as Service<http::Uri>>::Future: Unpin + Send,
-    <C as Service<http::Uri>>::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
-    <C as Service<http::Uri>>::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
+    C::Future: Unpin + Send,
+    C::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
+    C::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
 {
     pub async fn run<F, A, B>(
         &self,
@@ -119,8 +119,8 @@ where
     ) -> Result<(), Error>
     where
         F: Service<LambdaRequest<A>>,
-        <F as Service<LambdaRequest<A>>>::Future: Future<Output = Result<B, <F as Service<LambdaRequest<A>>>::Error>>,
-        <F as Service<LambdaRequest<A>>>::Error: fmt::Display,
+        F::Future: Future<Output = Result<B, F::Error>>,
+        F::Error: fmt::Display,
         A: for<'de> Deserialize<'de>,
         B: Serialize,
     {
@@ -201,16 +201,16 @@ struct RuntimeBuilder<C: Service<http::Uri> = hyper::client::HttpConnector> {
 impl<C> RuntimeBuilder<C>
 where
     C: Service<http::Uri> + Clone + Send + Sync + Unpin + 'static,
-    <C as Service<http::Uri>>::Future: Unpin + Send,
-    <C as Service<http::Uri>>::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
-    <C as Service<http::Uri>>::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
+    C::Future: Unpin + Send,
+    C::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
+    C::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
 {
     pub fn with_connector<C2>(self, connector: C2) -> RuntimeBuilder<C2>
     where
         C2: Service<http::Uri> + Clone + Send + Sync + Unpin + 'static,
-        <C2 as Service<http::Uri>>::Future: Unpin + Send,
-        <C2 as Service<http::Uri>>::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
-        <C2 as Service<http::Uri>>::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
+        C2::Future: Unpin + Send,
+        C2::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
+        C2::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
     {
         RuntimeBuilder {
             connector,
@@ -246,9 +246,9 @@ fn test_builder() {
 fn incoming<C>(client: &Client<C>) -> impl Stream<Item = Result<http::Response<hyper::Body>, Error>> + Send + '_
 where
     C: Service<http::Uri> + Clone + Send + Sync + Unpin + 'static,
-    <C as Service<http::Uri>>::Future: Unpin + Send,
-    <C as Service<http::Uri>>::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
-    <C as Service<http::Uri>>::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
+    C::Future: Unpin + Send,
+    C::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
+    C::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
 {
     async_stream::stream! {
         loop {
@@ -282,8 +282,8 @@ where
 pub async fn run<A, B, F>(handler: F) -> Result<(), Error>
 where
     F: Service<LambdaRequest<A>>,
-    <F as Service<LambdaRequest<A>>>::Future: Future<Output = Result<B, <F as Service<LambdaRequest<A>>>::Error>>,
-    <F as Service<LambdaRequest<A>>>::Error: fmt::Display,
+    F::Future: Future<Output = Result<B, F::Error>>,
+    F::Error: fmt::Display,
     A: for<'de> Deserialize<'de>,
     B: Serialize,
 {

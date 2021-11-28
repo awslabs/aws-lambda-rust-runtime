@@ -809,6 +809,66 @@
 <span id="809">809</span>
 <span id="810">810</span>
 <span id="811">811</span>
+<span id="812">812</span>
+<span id="813">813</span>
+<span id="814">814</span>
+<span id="815">815</span>
+<span id="816">816</span>
+<span id="817">817</span>
+<span id="818">818</span>
+<span id="819">819</span>
+<span id="820">820</span>
+<span id="821">821</span>
+<span id="822">822</span>
+<span id="823">823</span>
+<span id="824">824</span>
+<span id="825">825</span>
+<span id="826">826</span>
+<span id="827">827</span>
+<span id="828">828</span>
+<span id="829">829</span>
+<span id="830">830</span>
+<span id="831">831</span>
+<span id="832">832</span>
+<span id="833">833</span>
+<span id="834">834</span>
+<span id="835">835</span>
+<span id="836">836</span>
+<span id="837">837</span>
+<span id="838">838</span>
+<span id="839">839</span>
+<span id="840">840</span>
+<span id="841">841</span>
+<span id="842">842</span>
+<span id="843">843</span>
+<span id="844">844</span>
+<span id="845">845</span>
+<span id="846">846</span>
+<span id="847">847</span>
+<span id="848">848</span>
+<span id="849">849</span>
+<span id="850">850</span>
+<span id="851">851</span>
+<span id="852">852</span>
+<span id="853">853</span>
+<span id="854">854</span>
+<span id="855">855</span>
+<span id="856">856</span>
+<span id="857">857</span>
+<span id="858">858</span>
+<span id="859">859</span>
+<span id="860">860</span>
+<span id="861">861</span>
+<span id="862">862</span>
+<span id="863">863</span>
+<span id="864">864</span>
+<span id="865">865</span>
+<span id="866">866</span>
+<span id="867">867</span>
+<span id="868">868</span>
+<span id="869">869</span>
+<span id="870">870</span>
+<span id="871">871</span>
 </pre><pre class="rust"><code><span class="doccomment">//! ALB and API Gateway request adaptations</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! Typically these are exposed via the `request_context`</span>
@@ -1163,7 +1223,7 @@
         }
     }
 
-    <span class="ident">deserializer</span>.<span class="ident">deserialize_map</span>(<span class="ident">HeaderVisitor</span>)
+    <span class="prelude-val">Ok</span>(<span class="ident">deserializer</span>.<span class="ident">deserialize_map</span>(<span class="ident">HeaderVisitor</span>).<span class="ident">unwrap_or_default</span>())
 }
 
 <span class="doccomment">/// deserializes (json) null values to their default values</span>
@@ -1444,6 +1504,17 @@
         <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">expect</span>(<span class="string">&quot;failed to parse request&quot;</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="string">&quot;GET&quot;</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">uri</span>(), <span class="string">&quot;https://xxx.execute-api.us-east-1.amazonaws.com/&quot;</span>);
+
+        <span class="comment">// Ensure this is an APIGWv2 request</span>
+        <span class="kw">let</span> <span class="ident">req_context</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">request_context</span>();
+        <span class="macro">assert!</span>(
+            <span class="kw">match</span> <span class="ident">req_context</span> {
+                <span class="ident">RequestContext::ApiGatewayV2</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
+                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
+            },
+            <span class="string">&quot;expected ApiGatewayV2 context, got {:?}&quot;</span>,
+            <span class="ident">req_context</span>
+        );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -1468,6 +1539,17 @@
         <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="string">&quot;POST&quot;</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">uri</span>(), <span class="string">&quot;https://id.execute-api.us-east-1.amazonaws.com/my/path?parameter1=value1&amp;parameter1=value2&amp;parameter2=value&quot;</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">cookie_header</span>, <span class="prelude-val">Ok</span>(<span class="string">&quot;cookie1=value1;cookie2=value2&quot;</span>));
+
+        <span class="comment">// Ensure this is an APIGWv2 request</span>
+        <span class="kw">let</span> <span class="ident">req_context</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">request_context</span>();
+        <span class="macro">assert!</span>(
+            <span class="kw">match</span> <span class="ident">req_context</span> {
+                <span class="ident">RequestContext::ApiGatewayV2</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
+                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
+            },
+            <span class="string">&quot;expected ApiGatewayV2 context, got {:?}&quot;</span>,
+            <span class="ident">req_context</span>
+        );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -1489,6 +1571,17 @@
             <span class="ident">req</span>.<span class="ident">uri</span>(),
             <span class="string">&quot;https://wt6mne2s9k.execute-api.us-west-2.amazonaws.com/test/hello&quot;</span>
         );
+
+        <span class="comment">// Ensure this is an APIGW request</span>
+        <span class="kw">let</span> <span class="ident">req_context</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">request_context</span>();
+        <span class="macro">assert!</span>(
+            <span class="kw">match</span> <span class="ident">req_context</span> {
+                <span class="ident">RequestContext::ApiGateway</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
+                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
+            },
+            <span class="string">&quot;expected ApiGateway context, got {:?}&quot;</span>,
+            <span class="ident">req_context</span>
+        );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -1506,6 +1599,17 @@
         <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">expect</span>(<span class="string">&quot;failed to parse request&quot;</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="string">&quot;GET&quot;</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">uri</span>(), <span class="string">&quot;https://lambda-846800462-us-east-2.elb.amazonaws.com/&quot;</span>);
+
+        <span class="comment">// Ensure this is an ALB request</span>
+        <span class="kw">let</span> <span class="ident">req_context</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">request_context</span>();
+        <span class="macro">assert!</span>(
+            <span class="kw">match</span> <span class="ident">req_context</span> {
+                <span class="ident">RequestContext::Alb</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
+                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
+            },
+            <span class="string">&quot;expected Alb context, got {:?}&quot;</span>,
+            <span class="ident">req_context</span>
+        );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -1617,6 +1721,22 @@
         <span class="macro">assert_eq!</span>(
             <span class="ident">serde_json::from_str</span>::<span class="op">&lt;</span><span class="ident">Test</span><span class="op">&gt;</span>(<span class="string">r#&quot;{}&quot;#</span>).<span class="ident">expect</span>(<span class="string">&quot;failed to deserialize&quot;</span>),
             <span class="ident">Test</span> { <span class="ident">foo</span>: <span class="ident">HashMap::new</span>() }
+        )
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">deserialize_null_headers</span>() {
+        <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Deserialize</span>)]</span>
+        <span class="kw">struct</span> <span class="ident">Test</span> {
+            <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">deserialize_with</span> <span class="op">=</span> <span class="string">&quot;deserialize_headers&quot;</span>)]</span>
+            <span class="ident">headers</span>: <span class="ident">http::HeaderMap</span>,
+        }
+
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">serde_json::from_str</span>::<span class="op">&lt;</span><span class="ident">Test</span><span class="op">&gt;</span>(<span class="string">r#&quot;{&quot;headers&quot;:null}&quot;#</span>).<span class="ident">expect</span>(<span class="string">&quot;failed to deserialize&quot;</span>),
+            <span class="ident">Test</span> {
+                <span class="ident">headers</span>: <span class="ident">http::HeaderMap::new</span>()
+            }
         )
     }
 }

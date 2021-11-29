@@ -1,0 +1,35 @@
+[package]
+name = "lambda_extension"
+version = "0.1.0"
+edition = "2021"
+authors = ["David Calavera <david.calavera@gmail.com>"]
+description = "AWS Lambda Extension API"
+license = "Apache-2.0"
+repository = "https://github.com/awslabs/aws-lambda-rust-runtime"
+categories = ["web-programming::http-server"]
+keywords = ["AWS", "Lambda", "API"]
+readme = "../README.md"
+
+[dependencies]
+anyhow = "1.0.48"
+async-trait = "0.1.51"
+tokio = { version = "1.0", features = ["macros", "io-util", "sync", "rt-multi-thread"] }
+hyper = { version = "0.14", features = ["http1", "client", "server", "stream", "runtime"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "^1"
+bytes = "1.0"
+http = "0.2"
+async-stream = "0.3"
+futures = "0.3"
+tracing-error = "0.2"
+tracing = { version = "0.1", features = ["log"] }
+tower-service = "0.3"
+tokio-stream = "0.1.2"
+lambda_runtime_client = { version = "*", path = "../lambda-runtime-client" }
+
+[dev-dependencies]
+tracing-subscriber = "0.3"
+once_cell = "1.4.0"
+simple_logger = "1.6.0"
+log = "^0.4"
+simple-error = "0.2"

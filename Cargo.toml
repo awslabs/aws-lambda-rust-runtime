@@ -3,4 +3,5 @@ members = [
     "lambda-http",
     "lambda-runtime-client",
     "lambda-runtime",
+    "lambda-extension"
 ]

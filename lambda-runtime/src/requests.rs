@@ -1,10 +1,9 @@
 use crate::{types::Diagnostic, Error};
 use http::{Method, Request, Response, Uri};
 use hyper::Body;
+use lambda_runtime_client::build_request;
 use serde::Serialize;
 use std::str::FromStr;
-
-const USER_AGENT: &str = concat!("aws-lambda-rust/", env!("CARGO_PKG_VERSION"));
 
 pub(crate) trait IntoRequest {
     fn into_req(self) -> Result<Request<Body>, Error>;
@@ -20,9 +19,8 @@ pub(crate) struct NextEventRequest;
 
 impl IntoRequest for NextEventRequest {
     fn into_req(self) -> Result<Request<Body>, Error> {
-        let req = Request::builder()
+        let req = build_request()
             .method(Method::GET)
-            .header("User-Agent", USER_AGENT)
             .uri(Uri::from_static("/2018-06-01/runtime/invocation/next"))
             .body(Body::empty())?;
         Ok(req)
@@ -82,11 +80,7 @@ where
         let body = serde_json::to_vec(&self.body)?;
         let body = Body::from(body);
 
-        let req = Request::builder()
-            .header("User-Agent", USER_AGENT)
-            .method(Method::POST)
-            .uri(uri)
-            .body(body)?;
+        let req = build_request().method(Method::POST).uri(uri).body(body)?;
         Ok(req)
     }
 }
@@ -120,10 +114,9 @@ impl<'a> IntoRequest for EventErrorRequest<'a> {
         let body = serde_json::to_vec(&self.diagnostic)?;
         let body = Body::from(body);
 
-        let req = Request::builder()
+        let req = build_request()
             .method(Method::POST)
             .uri(uri)
-            .header("User-Agent", USER_AGENT)
             .header("lambda-runtime-function-error-type", "unhandled")
             .body(body)?;
         Ok(req)
@@ -157,10 +150,9 @@ impl IntoRequest for InitErrorRequest {
         let uri = "/2018-06-01/runtime/init/error".to_string();
         let uri = Uri::from_str(&uri)?;
 
-        let req = Request::builder()
+        let req = build_request()
             .method(Method::POST)
             .uri(uri)
-            .header("User-Agent", USER_AGENT)
             .header("lambda-runtime-function-error-type", "unhandled")
             .body(Body::empty())?;
         Ok(req)

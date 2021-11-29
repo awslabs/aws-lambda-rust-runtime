@@ -27,6 +27,7 @@ tracing-error = "0.2"
 tracing = { version = "0.1", features = ["log"] }
 tower-service = "0.3"
 tokio-stream = "0.1.2"
+lambda_runtime_client = { version = "*", path = "../lambda-runtime-client" }
 
 [dev-dependencies]
 tracing-subscriber = "0.3"

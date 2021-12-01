@@ -7,7 +7,7 @@
 //! to the the `lambda_runtime::run` function, which launches and runs the Lambda runtime.
 pub use crate::types::Context;
 use hyper::client::{connect::Connection, HttpConnector};
-use lambda_runtime_client::Client;
+use lambda_runtime_api_client::Client;
 use serde::{Deserialize, Serialize};
 use std::{convert::TryFrom, env, fmt, future::Future, panic};
 use tokio::io::{AsyncRead, AsyncWrite};
@@ -24,7 +24,7 @@ mod types;
 use requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest};
 use types::Diagnostic;
 
-pub type Error = lambda_runtime_client::Error;
+pub type Error = lambda_runtime_api_client::Error;
 
 /// Configuration derived from environment variables.
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
@@ -244,7 +244,7 @@ fn type_name_of_val<T>(_: T) -> &'static str {
 
 #[cfg(test)]
 mod endpoint_tests {
-    use lambda_runtime_client::Client;
+    use lambda_runtime_api_client::Client;
     use crate::{
         incoming,
         requests::{

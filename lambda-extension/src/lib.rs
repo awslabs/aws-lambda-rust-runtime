@@ -3,7 +3,7 @@
 
 use async_trait::async_trait;
 use hyper::client::{connect::Connection, HttpConnector};
-use lambda_runtime_client::Client;
+use lambda_runtime_api_client::Client;
 use serde::Deserialize;
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio_stream::{StreamExt};
@@ -12,7 +12,7 @@ use tracing::trace;
 
 pub mod requests;
 
-pub type Error = lambda_runtime_client::Error;
+pub type Error = lambda_runtime_api_client::Error;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]

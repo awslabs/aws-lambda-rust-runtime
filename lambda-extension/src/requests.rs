@@ -1,7 +1,7 @@
 use crate::Error;
 use http::{Method, Request};
 use hyper::Body;
-use lambda_runtime_client::build_request;
+use lambda_runtime_api_client::build_request;
 use serde::Serialize;
 
 const EXTENSION_NAME_HEADER: &str = "Lambda-Extension-Name";

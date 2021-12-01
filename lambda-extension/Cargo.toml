@@ -11,7 +11,6 @@ keywords = ["AWS", "Lambda", "API"]
 readme = "../README.md"
 
 [dependencies]
-anyhow = "1.0.48"
 async-trait = "0.1.51"
 tokio = { version = "1.0", features = ["macros", "io-util", "sync", "rt-multi-thread"] }
 hyper = { version = "0.14", features = ["http1", "client", "server", "stream", "runtime"] }
@@ -25,7 +24,7 @@ tracing-error = "0.2"
 tracing = { version = "0.1", features = ["log"] }
 tower-service = "0.3"
 tokio-stream = "0.1.2"
-lambda_runtime_client = { version = "*", path = "../lambda-runtime-client" }
+lambda_runtime_api_client = { version = "0.4", path = "../lambda-runtime-api-client" }
 
 [dev-dependencies]
 tracing-subscriber = "0.3"

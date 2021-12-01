@@ -1,7 +1,7 @@
 use crate::{types::Diagnostic, Error};
 use http::{Method, Request, Response, Uri};
 use hyper::Body;
-use lambda_runtime_client::build_request;
+use lambda_runtime_api_client::build_request;
 use serde::Serialize;
 use std::str::FromStr;
 

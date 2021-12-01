@@ -1,5 +1,5 @@
 use lambda_extension::{run, Error, Extension, InvokeEvent, ShutdownEvent, requests::exit_error, requests::init_error};
-use lambda_runtime_client::Client;
+use lambda_runtime_api_client::Client;
 use log::LevelFilter;
 use simple_logger::SimpleLogger;
 

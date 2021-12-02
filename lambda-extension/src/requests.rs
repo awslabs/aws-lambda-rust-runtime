@@ -17,10 +17,8 @@ pub(crate) fn next_event_request(extension_id: &str) -> Result<Request<Body>, Er
     Ok(req)
 }
 
-pub(crate) fn register_request(extension_name: &str) -> Result<Request<Body>, Error> {
-    let events = serde_json::json!({
-        "events": ["INVOKE", "SHUTDOWN"]
-    });
+pub(crate) fn register_request(extension_name: &str, events: &[&str]) -> Result<Request<Body>, Error> {
+    let events = serde_json::json!({ "events": events });
 
     let req = build_request()
         .method(Method::POST)

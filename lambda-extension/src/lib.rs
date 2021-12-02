@@ -1,18 +1,19 @@
 // #![deny(clippy::all, clippy::cargo)]
 // #![warn(missing_docs,? nonstandard_style, rust_2018_idioms)]
 
-use async_trait::async_trait;
 use hyper::client::{connect::Connection, HttpConnector};
 use lambda_runtime_api_client::Client;
 use serde::Deserialize;
+use std::future::Future;
 use tokio::io::{AsyncRead, AsyncWrite};
-use tokio_stream::{StreamExt};
+use tokio_stream::StreamExt;
 use tower_service::Service;
 use tracing::trace;
 
 pub mod requests;
 
 pub type Error = lambda_runtime_api_client::Error;
+pub type ExtensionId = String;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -44,19 +45,61 @@ pub enum NextEvent {
     Shutdown(ShutdownEvent),
 }
 
-/// A trait describing an asynchronous extension.
-#[async_trait]
-pub trait Extension {
-    async fn on_invoke(&self, extension_id: &str, event: InvokeEvent) -> Result<(), Error>;
-    async fn on_shutdown(&self, extension_id: &str, event: ShutdownEvent) -> Result<(), Error>;
+impl NextEvent {
+    fn is_invoke(&self) -> bool {
+        match self {
+            NextEvent::Invoke(_) => true,
+            _ => false,
+        }
+    }
 }
 
-struct Runtime<'a, C: Service<http::Uri> = HttpConnector> {
-    extension_id: &'a str,
+/// A trait describing an asynchronous extension.
+pub trait Extension {
+    /// Response of this Extension.
+    type Fut: Future<Output = Result<(), Error>>;
+    /// Handle the incoming event.
+    fn call(&self, extension_id: ExtensionId, event: NextEvent) -> Self::Fut;
+}
+
+/// Returns a new [`ExtensionFn`] with the given closure.
+///
+/// [`ExtensionFn`]: struct.ExtensionFn.html
+pub fn extension_fn<F>(f: F) -> ExtensionFn<F> {
+    ExtensionFn { f }
+}
+
+/// An [`Extension`] implemented by a closure.
+///
+/// [`Extension`]: trait.Extension.html
+#[derive(Clone, Debug)]
+pub struct ExtensionFn<F> {
+    f: F,
+}
+
+impl<F, Fut> Extension for ExtensionFn<F>
+where
+    F: Fn(ExtensionId, NextEvent) -> Fut,
+    Fut: Future<Output = Result<(), Error>>,
+{
+    type Fut = Fut;
+    fn call(&self, extension_id: ExtensionId, event: NextEvent) -> Self::Fut {
+        (self.f)(extension_id, event)
+    }
+}
+
+pub struct Runtime<C: Service<http::Uri> = HttpConnector> {
+    extension_id: ExtensionId,
     client: Client<C>,
 }
 
-impl<'a, C> Runtime<'a, C>
+impl Runtime {
+    pub fn builder<'a>() -> RuntimeBuilder<'a> {
+        RuntimeBuilder::default()
+    }
+}
+
+impl<C> Runtime<C>
 where
     C: Service<http::Uri> + Clone + Send + Sync + Unpin + 'static,
     <C as Service<http::Uri>>::Future: Unpin + Send,
@@ -65,12 +108,11 @@ where
 {
     pub async fn run(&self, extension: impl Extension) -> Result<(), Error> {
         let client = &self.client;
-        let extension_id = self.extension_id;
 
         let incoming = async_stream::stream! {
             loop {
                 trace!("Waiting for next event (incoming loop)");
-                let req = requests::next_event_request(extension_id)?;
+                let req = requests::next_event_request(&self.extension_id)?;
                 let res = client.call(req).await;
                 yield res;
             }
@@ -85,45 +127,77 @@ where
             let body = hyper::body::to_bytes(body).await?;
             trace!("{}", std::str::from_utf8(&body)?); // this may be very verbose
             let event: NextEvent = serde_json::from_slice(&body)?;
+            let is_invoke = event.is_invoke();
 
-            match event {
-                NextEvent::Invoke(event) => {
-                    extension.on_invoke(extension_id, event).await?;
-                }
-                NextEvent::Shutdown(event) => {
-                    extension.on_shutdown(extension_id, event).await?;
-                }
-            };
+            let res = extension.call(self.extension_id.clone(), event).await;
+            if let Err(error) = res {
+                let req = if is_invoke {
+                    requests::init_error(&self.extension_id, &error.to_string(), None)?
+                } else {
+                    requests::exit_error(&self.extension_id, &error.to_string(), None)?
+                };
+
+                self.client.call(req).await?;
+                return Err(error);
+            }
         }
 
         Ok(())
     }
 }
 
-async fn register<C>(client: &Client<C>, extension_name: &str) -> Result<String, Error>
-where
-    C: Service<http::Uri> + Clone + Send + Sync + Unpin + 'static,
-    <C as Service<http::Uri>>::Future: Unpin + Send,
-    <C as Service<http::Uri>>::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
-    <C as Service<http::Uri>>::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
-{
-    let req = requests::register_request(extension_name)?;
-    let res = client.call(req).await?;
-    // ensure!(res.status() == http::StatusCode::OK, "Unable to register extension",);
-
-    let ext_id = res.headers().get(requests::EXTENSION_ID_HEADER).unwrap().to_str()?;
-    Ok(ext_id.into())
+#[derive(Default)]
+pub struct RuntimeBuilder<'a> {
+    extension_name: Option<&'a str>,
+    events: Option<&'a [&'a str]>,
 }
 
-pub async fn run(extension: impl Extension) -> Result<(), Error> {
-    let args: Vec<String> = std::env::args().collect();
+impl<'a> RuntimeBuilder<'a> {
+    pub fn with_extension_name(self, extension_name: &'a str) -> Self {
+        RuntimeBuilder {
+            extension_name: Some(extension_name),
+            ..self
+        }
+    }
 
-    let client = Client::builder().build().expect("Unable to create a runtime client");
-    let extension_id = register(&client, &args[0]).await?;
-    let runtime = Runtime {
-        extension_id: &extension_id,
-        client,
-    };
+    pub fn with_events(self, events: &'a [&'a str]) -> Self {
+        RuntimeBuilder {
+            events: Some(events),
+            ..self
+        }
+    }
 
-    runtime.run(extension).await
+    pub async fn register(&self) -> Result<Runtime, Error> {
+        let name = match self.extension_name {
+            Some(name) => name.into(),
+            None => {
+                let args: Vec<String> = std::env::args().collect();
+                args[0].clone()
+            }
+        };
+
+        let events = match self.events {
+            Some(events) => events,
+            None => &["INVOKE", "SHUTDOWN"],
+        };
+
+        let client = Client::builder().build()?;
+
+        let req = requests::register_request(&name, events)?;
+        let res = client.call(req).await?;
+        // ensure!(res.status() == http::StatusCode::OK, "Unable to register extension",);
+
+        let extension_id = res.headers().get(requests::EXTENSION_ID_HEADER).unwrap().to_str()?;
+        Ok(Runtime {
+            extension_id: extension_id.into(),
+            client: client,
+        })
+    }
+}
+
+pub async fn run<Ex>(extension: Ex) -> Result<(), Error>
+where
+    Ex: Extension,
+{
+    Runtime::builder().register().await?.run(extension).await
 }

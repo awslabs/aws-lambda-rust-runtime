@@ -1,4 +1,4 @@
-use lambda_extension::{extension_fn, Error, ExtensionId, NextEvent};
+use lambda_extension::{extension_fn, Error, ExtensionId, NextEvent, Runtime};
 use log::LevelFilter;
 use simple_logger::SimpleLogger;
 
@@ -7,8 +7,10 @@ async fn my_extension(_extension_id: ExtensionId, event: NextEvent) -> Result<()
         NextEvent::Shutdown(_e) => {
             // do something with the shutdown event
         }
-        NextEvent::Invoke(_e) => {
-            // do something with the invoke event
+        _ => {
+            // ignore any other event
+            // because we've registered the extension
+            // only to receive SHUTDOWN events
         }
     }
     Ok(())
@@ -21,5 +23,8 @@ async fn main() -> Result<(), Error> {
     SimpleLogger::new().with_level(LevelFilter::Info).init().unwrap();
 
     let func = extension_fn(my_extension);
-    lambda_extension::run(func).await
+
+    let runtime = Runtime::builder().with_events(&["SHUTDOWN"]).register().await?;
+
+    runtime.run(func).await
 }

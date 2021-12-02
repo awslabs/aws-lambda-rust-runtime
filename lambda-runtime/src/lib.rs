@@ -244,7 +244,6 @@ fn type_name_of_val<T>(_: T) -> &'static str {
 
 #[cfg(test)]
 mod endpoint_tests {
-    use lambda_runtime_api_client::Client;
     use crate::{
         incoming,
         requests::{
@@ -256,6 +255,7 @@ mod endpoint_tests {
     };
     use http::{uri::PathAndQuery, HeaderValue, Method, Request, Response, StatusCode, Uri};
     use hyper::{server::conn::Http, service::service_fn, Body};
+    use lambda_runtime_api_client::Client;
     use serde_json::json;
     use simulated::DuplexStreamWrapper;
     use std::{convert::TryFrom, env};

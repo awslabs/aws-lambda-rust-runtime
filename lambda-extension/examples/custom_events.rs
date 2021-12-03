@@ -1,8 +1,8 @@
-use lambda_extension::{extension_fn, Error, ExtensionId, NextEvent, Runtime};
+use lambda_extension::{extension_fn, Error, NextEvent, Runtime};
 use log::LevelFilter;
 use simple_logger::SimpleLogger;
 
-async fn my_extension(_extension_id: ExtensionId, event: NextEvent) -> Result<(), Error> {
+async fn my_extension(event: NextEvent) -> Result<(), Error> {
     match event {
         NextEvent::Shutdown(_e) => {
             // do something with the shutdown event

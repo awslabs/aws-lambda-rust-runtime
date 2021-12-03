@@ -13,7 +13,6 @@ use tracing::trace;
 pub mod requests;
 
 pub type Error = lambda_runtime_api_client::Error;
-pub type ExtensionId = String;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -59,7 +58,7 @@ pub trait Extension {
     /// Response of this Extension.
     type Fut: Future<Output = Result<(), Error>>;
     /// Handle the incoming event.
-    fn call(&self, extension_id: ExtensionId, event: NextEvent) -> Self::Fut;
+    fn call(&mut self, event: NextEvent) -> Self::Fut;
 }
 
 /// Returns a new [`ExtensionFn`] with the given closure.
@@ -79,17 +78,17 @@ pub struct ExtensionFn<F> {
 
 impl<F, Fut> Extension for ExtensionFn<F>
 where
-    F: Fn(ExtensionId, NextEvent) -> Fut,
+    F: Fn(NextEvent) -> Fut,
     Fut: Future<Output = Result<(), Error>>,
 {
     type Fut = Fut;
-    fn call(&self, extension_id: ExtensionId, event: NextEvent) -> Self::Fut {
-        (self.f)(extension_id, event)
+    fn call(&mut self, event: NextEvent) -> Self::Fut {
+        (self.f)(event)
     }
 }
 
 pub struct Runtime<C: Service<http::Uri> = HttpConnector> {
-    extension_id: ExtensionId,
+    extension_id: String,
     client: Client<C>,
 }
 
@@ -106,7 +105,7 @@ where
     <C as Service<http::Uri>>::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
     <C as Service<http::Uri>>::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
 {
-    pub async fn run(&self, extension: impl Extension) -> Result<(), Error> {
+    pub async fn run(&self, mut extension: impl Extension) -> Result<(), Error> {
         let client = &self.client;
 
         let incoming = async_stream::stream! {
@@ -129,7 +128,7 @@ where
             let event: NextEvent = serde_json::from_slice(&body)?;
             let is_invoke = event.is_invoke();
 
-            let res = extension.call(self.extension_id.clone(), event).await;
+            let res = extension.call(event).await;
             if let Err(error) = res {
                 let req = if is_invoke {
                     requests::init_error(&self.extension_id, &error.to_string(), None)?

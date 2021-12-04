@@ -4,8 +4,10 @@
 //! This crate includes a base HTTP client to interact with
 //! the AWS Lambda Runtime API.
 use http::{uri::Scheme, Request, Response, Uri};
-use hyper::client::{connect::Connection, HttpConnector};
-use hyper::Body;
+use hyper::{
+    client::{connect::Connection, HttpConnector},
+    Body,
+};
 use std::fmt::Debug;
 use tokio::io::{AsyncRead, AsyncWrite};
 use tower_service::Service;

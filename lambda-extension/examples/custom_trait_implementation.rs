@@ -1,8 +1,10 @@
 use lambda_extension::{run, Error, Extension, InvokeEvent, NextEvent};
 use log::LevelFilter;
 use simple_logger::SimpleLogger;
-use std::future::{ready, Future};
-use std::pin::Pin;
+use std::{
+    future::{ready, Future},
+    pin::Pin,
+};
 
 #[derive(Default)]
 struct MyExtension {

@@ -29,14 +29,19 @@ pub(crate) fn register_request(extension_name: &str, events: &[&str]) -> Result<
     Ok(req)
 }
 
+/// Payload to send error information to the Extensions API.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ErrorRequest<'a> {
-    error_message: &'a str,
-    error_type: &'a str,
-    stack_trace: Vec<&'a str>,
+    /// Human readable error description
+    pub error_message: &'a str,
+    /// The type of error to categorize
+    pub error_type: &'a str,
+    /// The error backtrace
+    pub stack_trace: Vec<&'a str>,
 }
 
+/// Create a new init error request to send to the Extensions API
 pub fn init_error<'a>(
     extension_id: &str,
     error_type: &str,
@@ -45,6 +50,7 @@ pub fn init_error<'a>(
     error_request("init", extension_id, error_type, request)
 }
 
+/// Create a new exit error request to send to the Extensions API
 pub fn exit_error<'a>(
     extension_id: &str,
     error_type: &str,

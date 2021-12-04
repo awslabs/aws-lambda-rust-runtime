@@ -1,13 +1,12 @@
-use lambda_extension::{run, Error, NextEvent, Extension};
+use lambda_extension::{run, Error, Extension, NextEvent};
 use log::LevelFilter;
 use simple_logger::SimpleLogger;
-use std::future::{Future, ready};
+use std::future::{ready, Future};
 use std::pin::Pin;
 
 struct MyExtension {}
 
-impl Extension for MyExtension
-{
+impl Extension for MyExtension {
     type Fut = Pin<Box<dyn Future<Output = Result<(), Error>>>>;
     fn call(&mut self, event: NextEvent) -> Self::Fut {
         match event {

@@ -11,7 +11,6 @@ keywords = ["AWS", "Lambda", "API"]
 readme = "../README.md"
 
 [dependencies]
-async-trait = "0.1.51"
 tokio = { version = "1.0", features = ["macros", "io-util", "sync", "rt-multi-thread"] }
 hyper = { version = "0.14", features = ["http1", "client", "server", "stream", "runtime"] }
 serde = { version = "1", features = ["derive"] }
@@ -19,8 +18,6 @@ serde_json = "^1"
 bytes = "1.0"
 http = "0.2"
 async-stream = "0.3"
-futures = "0.3"
-tracing-error = "0.2"
 tracing = { version = "0.1", features = ["log"] }
 tower-service = "0.3"
 tokio-stream = "0.1.2"

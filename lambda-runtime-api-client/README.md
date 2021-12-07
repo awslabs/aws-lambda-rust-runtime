@@ -4,7 +4,7 @@
 
 **`lambda-runtime-api-client`** is a library to interact with the AWS Lambda Runtime API.
 
-This crate provides simple building blocks to send REST request to this API.
+This crate provides simple building blocks to send REST request to this API. You probably don't need to use this crate directly, look at [lambda_runtime](https://docs.rs/lambda_runtime) and [lambda_extension](https://docs.rs/lambda_extension) instead.
 
 ## Example
 

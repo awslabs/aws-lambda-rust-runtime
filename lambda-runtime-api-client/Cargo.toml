@@ -8,7 +8,7 @@ license = "Apache-2.0"
 repository = "https://github.com/awslabs/aws-lambda-rust-runtime"
 categories = ["web-programming::http-server"]
 keywords = ["AWS", "Lambda", "API"]
-readme = "../README.md"
+readme = "README.md"
 
 [dependencies]
 http = "0.2"

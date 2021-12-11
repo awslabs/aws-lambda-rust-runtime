@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["build_request","Create a request builder. This builder uses `aws-lambda-rust/CRATE_VERSION` as the default User-Agent."]],"struct":[["Client","API client to interact with the AWS Lambda Runtime API."],["ClientBuilder","Builder implementation to construct any Runtime API clients."]],"type":[["Error","Error type that lambdas may result in"]]});

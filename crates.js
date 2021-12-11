@@ -1,1 +1,1 @@
-window.ALL_CRATES = ["lambda_http","lambda_runtime"];
+window.ALL_CRATES = ["lambda_extension","lambda_http","lambda_runtime","lambda_runtime_api_client"];

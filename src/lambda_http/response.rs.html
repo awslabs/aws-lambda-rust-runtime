@@ -405,7 +405,7 @@
 }
 
 <span class="doccomment">/// Serialize a http::HeaderMap into a serde str =&gt; str map</span>
-<span class="kw">fn</span> <span class="ident">serialize_multi_value_headers</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">headers</span>: <span class="kw-2">&amp;</span><span class="ident">HeaderMap</span><span class="op">&lt;</span><span class="ident">HeaderValue</span><span class="op">&gt;</span>, <span class="ident">serializer</span>: <span class="ident">S</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S::Ok</span>, <span class="ident">S::Error</span><span class="op">&gt;</span>
+<span class="kw">fn</span> <span class="ident">serialize_multi_value_headers</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">headers</span>: <span class="kw-2">&amp;</span><span class="ident">HeaderMap</span><span class="op">&lt;</span><span class="ident">HeaderValue</span><span class="op">&gt;</span>, <span class="ident">serializer</span>: <span class="ident">S</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S::Ok</span>, <span class="ident">S::Error</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">S</span>: <span class="ident">Serializer</span>,
 {
@@ -421,7 +421,7 @@
 }
 
 <span class="doccomment">/// Serialize a http::HeaderMap into a serde str =&gt; Vec&lt;str&gt; map</span>
-<span class="kw">fn</span> <span class="ident">serialize_headers</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">headers</span>: <span class="kw-2">&amp;</span><span class="ident">HeaderMap</span><span class="op">&lt;</span><span class="ident">HeaderValue</span><span class="op">&gt;</span>, <span class="ident">serializer</span>: <span class="ident">S</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S::Ok</span>, <span class="ident">S::Error</span><span class="op">&gt;</span>
+<span class="kw">fn</span> <span class="ident">serialize_headers</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">headers</span>: <span class="kw-2">&amp;</span><span class="ident">HeaderMap</span><span class="op">&lt;</span><span class="ident">HeaderValue</span><span class="op">&gt;</span>, <span class="ident">serializer</span>: <span class="ident">S</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S::Ok</span>, <span class="ident">S::Error</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">S</span>: <span class="ident">Serializer</span>,
 {
@@ -434,7 +434,7 @@
 }
 
 <span class="doccomment">/// Serialize a &amp;[HeaderValue] into a Vec&lt;str&gt;</span>
-<span class="kw">fn</span> <span class="ident">serialize_headers_slice</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">headers</span>: <span class="kw-2">&amp;</span>[<span class="ident">HeaderValue</span>], <span class="ident">serializer</span>: <span class="ident">S</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S::Ok</span>, <span class="ident">S::Error</span><span class="op">&gt;</span>
+<span class="kw">fn</span> <span class="ident">serialize_headers_slice</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">headers</span>: <span class="kw-2">&amp;</span>[<span class="ident">HeaderValue</span>], <span class="ident">serializer</span>: <span class="ident">S</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S::Ok</span>, <span class="ident">S::Error</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">S</span>: <span class="ident">Serializer</span>,
 {
@@ -447,22 +447,22 @@
 
 <span class="doccomment">/// tranformation from http type to internal type</span>
 <span class="kw">impl</span> <span class="ident">LambdaResponse</span> {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">from_response</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">request_origin</span>: <span class="kw-2">&amp;</span><span class="ident">RequestOrigin</span>, <span class="ident">value</span>: <span class="ident">Response</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">from_response</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">request_origin</span>: <span class="kw-2">&amp;</span><span class="ident">RequestOrigin</span>, <span class="ident">value</span>: <span class="ident">Response</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>,
     {
         <span class="kw">let</span> (<span class="ident">parts</span>, <span class="ident">bod</span>) <span class="op">=</span> <span class="ident">value</span>.<span class="ident">into_parts</span>();
         <span class="kw">let</span> (<span class="ident">is_base64_encoded</span>, <span class="ident">body</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">bod</span>.<span class="ident">into</span>() {
-            <span class="ident">Body::Empty</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="bool-val">false</span>, <span class="prelude-val">None</span>),
-            <span class="ident">b</span> @ <span class="ident">Body::Text</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="bool-val">false</span>, <span class="prelude-val">Some</span>(<span class="ident">b</span>)),
-            <span class="ident">b</span> @ <span class="ident">Body::Binary</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="bool-val">true</span>, <span class="prelude-val">Some</span>(<span class="ident">b</span>)),
+            <span class="ident">Body::Empty</span> =&gt; (<span class="bool-val">false</span>, <span class="prelude-val">None</span>),
+            <span class="ident">b</span> @ <span class="ident">Body::Text</span>(<span class="kw">_</span>) =&gt; (<span class="bool-val">false</span>, <span class="prelude-val">Some</span>(<span class="ident">b</span>)),
+            <span class="ident">b</span> @ <span class="ident">Body::Binary</span>(<span class="kw">_</span>) =&gt; (<span class="bool-val">true</span>, <span class="prelude-val">Some</span>(<span class="ident">b</span>)),
         };
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">parts</span>.<span class="ident">headers</span>;
         <span class="kw">let</span> <span class="ident">status_code</span> <span class="op">=</span> <span class="ident">parts</span>.<span class="ident">status</span>.<span class="ident">as_u16</span>();
 
         <span class="kw">match</span> <span class="ident">request_origin</span> {
-            <span class="ident">RequestOrigin::ApiGatewayV2</span> <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">RequestOrigin::ApiGatewayV2</span> =&gt; {
                 <span class="comment">// ApiGatewayV2 expects the set-cookies headers to be in the &quot;cookies&quot; attribute,</span>
                 <span class="comment">// so remove them from the headers.</span>
                 <span class="kw">let</span> <span class="ident">cookies</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">HeaderValue</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">headers</span>.<span class="ident">get_all</span>(<span class="ident">SET_COOKIE</span>).<span class="ident">iter</span>().<span class="ident">cloned</span>().<span class="ident">collect</span>();
@@ -476,14 +476,14 @@
                     <span class="ident">headers</span>,
                 })
             }
-            <span class="ident">RequestOrigin::ApiGateway</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">LambdaResponse::ApiGateway</span>(<span class="ident">ApiGatewayResponse</span> {
+            <span class="ident">RequestOrigin::ApiGateway</span> =&gt; <span class="ident">LambdaResponse::ApiGateway</span>(<span class="ident">ApiGatewayResponse</span> {
                 <span class="ident">body</span>,
                 <span class="ident">status_code</span>,
                 <span class="ident">is_base64_encoded</span>,
                 <span class="ident">headers</span>: <span class="ident">headers</span>.<span class="ident">clone</span>(),
                 <span class="ident">multi_value_headers</span>: <span class="ident">headers</span>,
             }),
-            <span class="ident">RequestOrigin::Alb</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">LambdaResponse::Alb</span>(<span class="ident">AlbResponse</span> {
+            <span class="ident">RequestOrigin::Alb</span> =&gt; <span class="ident">LambdaResponse::Alb</span>(<span class="ident">AlbResponse</span> {
                 <span class="ident">body</span>,
                 <span class="ident">status_code</span>,
                 <span class="ident">is_base64_encoded</span>,
@@ -516,14 +516,14 @@
 <span class="doccomment">/// ```</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">IntoResponse</span> {
     <span class="doccomment">/// Return a translation of `self` into a `Response&lt;Body&gt;`</span>
-    <span class="kw">fn</span> <span class="ident">into_response</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Response</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">into_response</span>(<span class="self">self</span>) -&gt; <span class="ident">Response</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>;
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span> <span class="ident">IntoResponse</span> <span class="kw">for</span> <span class="ident">Response</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">B</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>,
 {
-    <span class="kw">fn</span> <span class="ident">into_response</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Response</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">into_response</span>(<span class="self">self</span>) -&gt; <span class="ident">Response</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span> {
         <span class="kw">let</span> (<span class="ident">parts</span>, <span class="ident">body</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">into_parts</span>();
         <span class="ident">Response::from_parts</span>(<span class="ident">parts</span>, <span class="ident">body</span>.<span class="ident">into</span>())
     }
@@ -533,13 +533,13 @@
 <span class="kw">where</span>
     <span class="ident">B</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>,
 {
-    <span class="kw">fn</span> <span class="ident">into_response</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Response</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">into_response</span>(<span class="self">self</span>) -&gt; <span class="ident">Response</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span> {
         <span class="ident">Response::new</span>(<span class="self">self</span>.<span class="ident">into</span>())
     }
 }
 
 <span class="kw">impl</span> <span class="ident">IntoResponse</span> <span class="kw">for</span> <span class="ident">serde_json::Value</span> {
-    <span class="kw">fn</span> <span class="ident">into_response</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Response</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">into_response</span>(<span class="self">self</span>) -&gt; <span class="ident">Response</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span> {
         <span class="ident">Response::builder</span>()
             .<span class="ident">header</span>(<span class="ident">CONTENT_TYPE</span>, <span class="string">&quot;application/json&quot;</span>)
             .<span class="ident">body</span>(
@@ -559,7 +559,7 @@
     <span class="kw">use</span> <span class="ident">http</span>::{<span class="ident">header::CONTENT_TYPE</span>, <span class="ident">Response</span>};
     <span class="kw">use</span> <span class="ident">serde_json</span>::{<span class="self">self</span>, <span class="ident">json</span>};
 
-    <span class="kw">fn</span> <span class="ident">api_gateway_response</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ApiGatewayResponse</span> {
+    <span class="kw">fn</span> <span class="ident">api_gateway_response</span>() -&gt; <span class="ident">ApiGatewayResponse</span> {
         <span class="ident">ApiGatewayResponse</span> {
             <span class="ident">status_code</span>: <span class="number">200</span>,
             <span class="ident">headers</span>: <span class="ident">Default::default</span>(),
@@ -569,7 +569,7 @@
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">alb_response</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">AlbResponse</span> {
+    <span class="kw">fn</span> <span class="ident">alb_response</span>() -&gt; <span class="ident">AlbResponse</span> {
         <span class="ident">AlbResponse</span> {
             <span class="ident">status_code</span>: <span class="number">200</span>,
             <span class="ident">status_description</span>: <span class="string">&quot;200 OK&quot;</span>.<span class="ident">to_string</span>(),
@@ -579,7 +579,7 @@
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">api_gateway_v2_response</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ApiGatewayV2Response</span> {
+    <span class="kw">fn</span> <span class="ident">api_gateway_v2_response</span>() -&gt; <span class="ident">ApiGatewayV2Response</span> {
         <span class="ident">ApiGatewayV2Response</span> {
             <span class="ident">status_code</span>: <span class="number">200</span>,
             <span class="ident">headers</span>: <span class="ident">Default::default</span>(),
@@ -593,8 +593,8 @@
     <span class="kw">fn</span> <span class="ident">json_into_response</span>() {
         <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="macro">json!</span>({ <span class="string">&quot;hello&quot;</span>: <span class="string">&quot;lambda&quot;</span>}).<span class="ident">into_response</span>();
         <span class="kw">match</span> <span class="ident">response</span>.<span class="ident">body</span>() {
-            <span class="ident">Body::Text</span>(<span class="ident">json</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">assert_eq!</span>(<span class="ident">json</span>, <span class="string">r#&quot;{&quot;hello&quot;:&quot;lambda&quot;}&quot;#</span>),
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;invalid body&quot;</span>),
+            <span class="ident">Body::Text</span>(<span class="ident">json</span>) =&gt; <span class="macro">assert_eq!</span>(<span class="ident">json</span>, <span class="string">r#&quot;{&quot;hello&quot;:&quot;lambda&quot;}&quot;#</span>),
+            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;invalid body&quot;</span>),
         }
         <span class="macro">assert_eq!</span>(
             <span class="ident">response</span>
@@ -609,8 +609,8 @@
     <span class="kw">fn</span> <span class="ident">text_into_response</span>() {
         <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="string">&quot;text&quot;</span>.<span class="ident">into_response</span>();
         <span class="kw">match</span> <span class="ident">response</span>.<span class="ident">body</span>() {
-            <span class="ident">Body::Text</span>(<span class="ident">text</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">assert_eq!</span>(<span class="ident">text</span>, <span class="string">&quot;text&quot;</span>),
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;invalid body&quot;</span>),
+            <span class="ident">Body::Text</span>(<span class="ident">text</span>) =&gt; <span class="macro">assert_eq!</span>(<span class="ident">text</span>, <span class="string">&quot;text&quot;</span>),
+            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;invalid body&quot;</span>),
         }
     }
 

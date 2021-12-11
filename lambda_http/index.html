@@ -3,7 +3,7 @@ types targeting AWS <a href="https://docs.aws.amazon.com/elasticloadbalancing/la
 <p>This crate abstracts over all of these trigger events using standard <a href="https://github.com/hyperium/http"><code>http</code></a> types minimizing the mental overhead
 of understanding the nuances and variation between trigger details allowing you to focus more on your application while also giving you to the maximum flexibility to
 transparently use whichever lambda trigger suits your application and cost optimizations best.</p>
-<h1 id="examples" class="section-header"><a href="#examples">Examples</a></h1><h2 id="hello-world" class="section-header"><a href="#hello-world">Hello World</a></h2>
+<h2 id="examples" class="section-header"><a href="#examples">Examples</a></h2><h3 id="hello-world" class="section-header"><a href="#hello-world">Hello World</a></h3>
 <p>The following example is how you would structure your Lambda such that you have a <code>main</code> function where you explicitly invoke
 <code>lambda_runtime::run</code> in combination with the <a href="fn.handler.html"><code>handler</code></a> function. This pattern allows you to utilize global initialization
 of tools such as loggers, to use on warm invokes to the same Lambda function after the first request, helping to reduce the latency of
@@ -12,20 +12,20 @@ your function’s execution path.</p>
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">lambda_http</span>::{<span class="ident">handler</span>, <span class="ident">lambda_runtime</span>::{<span class="self">self</span>, <span class="ident">Error</span>}};
 
 <span class="attribute">#[<span class="ident">tokio::main</span>]</span>
-<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">main</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">main</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
     <span class="comment">// initialize dependencies once here for the lifetime of your</span>
     <span class="comment">// lambda task</span>
     <span class="ident">lambda_runtime::run</span>(<span class="ident">handler</span>(<span class="op">|</span><span class="ident">request</span>, <span class="ident">context</span><span class="op">|</span> <span class="kw">async</span> { <span class="prelude-val">Ok</span>(<span class="string">&quot;👋 world!&quot;</span>) })).<span class="kw">await</span><span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(())
 }</code></pre></div>
-<h2 id="leveraging-trigger-provided-data" class="section-header"><a href="#leveraging-trigger-provided-data">Leveraging trigger provided data</a></h2>
+<h3 id="leveraging-trigger-provided-data" class="section-header"><a href="#leveraging-trigger-provided-data">Leveraging trigger provided data</a></h3>
 <p>You can also access information provided directly from the underlying trigger events, like query string parameters,
 with the <a href="trait.RequestExt.html"><code>RequestExt</code></a> trait.</p>
 
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">lambda_http</span>::{<span class="ident">handler</span>, <span class="ident">lambda_runtime</span>::{<span class="self">self</span>, <span class="ident">Context</span>, <span class="ident">Error</span>}, <span class="ident">IntoResponse</span>, <span class="ident">Request</span>, <span class="ident">RequestExt</span>};
 
 <span class="attribute">#[<span class="ident">tokio::main</span>]</span>
-<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">main</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">main</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
     <span class="ident">lambda_runtime::run</span>(<span class="ident">handler</span>(<span class="ident">hello</span>)).<span class="kw">await</span><span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(())
 }
@@ -33,7 +33,7 @@ with the <a href="trait.RequestExt.html"><code>RequestExt</code></a> trait.</p>
 <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">hello</span>(
     <span class="ident">request</span>: <span class="ident">Request</span>,
     <span class="kw">_</span>: <span class="ident">Context</span>
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">IntoResponse</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">IntoResponse</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
     <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
         <span class="string">&quot;hello {}&quot;</span>,
         <span class="ident">request</span>
@@ -43,26 +43,26 @@ with the <a href="trait.RequestExt.html"><code>RequestExt</code></a> trait.</p>
     ))
 }</code></pre></div>
 </div></details><h2 id="reexports" class="section-header"><a href="#reexports">Re-exports</a></h2>
-<div class="item-table"><div class="item-left import-item"><code>pub use <a class="mod" href="https://docs.rs/http/0.2.5/http/index.html" title="mod http">http</a>;</code></div><div class="item-right docblock-short"></div><div class="item-left import-item"><code>pub use lambda_runtime;</code></div><div class="item-right docblock-short"></div><div class="item-left import-item"><code>pub use crate::ext::<a class="trait" href="ext/trait.RequestExt.html" title="trait lambda_http::ext::RequestExt">RequestExt</a>;</code></div><div class="item-right docblock-short"></div></div><h2 id="modules" class="section-header"><a href="#modules">Modules</a></h2>
-<div class="item-table"><div class="item-left module-item"><a class="mod" href="ext/index.html" title="lambda_http::ext mod">ext</a></div><div class="item-right docblock-short"><p>Extension methods for <code>http::Request</code> types</p>
-</div><div class="item-left module-item"><a class="mod" href="request/index.html" title="lambda_http::request mod">request</a></div><div class="item-right docblock-short"><p>ALB and API Gateway request adaptations</p>
-</div></div><h2 id="structs" class="section-header"><a href="#structs">Structs</a></h2>
-<div class="item-table"><div class="item-left module-item"><a class="struct" href="struct.Adapter.html" title="lambda_http::Adapter struct">Adapter</a></div><div class="item-right docblock-short"><p>Exists only to satisfy the trait cover rule for <code>lambda_runtime::Handler</code> impl</p>
-</div><div class="item-left module-item"><a class="struct" href="struct.Context.html" title="lambda_http::Context struct">Context</a></div><div class="item-right docblock-short"><p>The Lambda function execution context. The values in this struct
+<div class="item-table"><div class="item-row"><div class="item-left import-item"><code>pub use <a class="mod" href="https://docs.rs/http/0.2.5/http/index.html" title="mod http">http</a>;</code></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left import-item"><code>pub use <a class="mod" href="../lambda_runtime/index.html" title="mod lambda_runtime">lambda_runtime</a>;</code></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left import-item"><code>pub use crate::ext::<a class="trait" href="ext/trait.RequestExt.html" title="trait lambda_http::ext::RequestExt">RequestExt</a>;</code></div><div class="item-right docblock-short"></div></div></div><h2 id="modules" class="section-header"><a href="#modules">Modules</a></h2>
+<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="mod" href="ext/index.html" title="lambda_http::ext mod">ext</a></div><div class="item-right docblock-short"><p>Extension methods for <code>http::Request</code> types</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="request/index.html" title="lambda_http::request mod">request</a></div><div class="item-right docblock-short"><p>ALB and API Gateway request adaptations</p>
+</div></div></div><h2 id="structs" class="section-header"><a href="#structs">Structs</a></h2>
+<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Adapter.html" title="lambda_http::Adapter struct">Adapter</a></div><div class="item-right docblock-short"><p>Exists only to satisfy the trait cover rule for <code>lambda_runtime::Handler</code> impl</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Context.html" title="lambda_http::Context struct">Context</a></div><div class="item-right docblock-short"><p>The Lambda function execution context. The values in this struct
 are populated using the <a href="https://docs.aws.amazon.com/lambda/latest/dg/current-supported-versions.html">Lambda environment variables</a>
 and the headers returned by the poll request to the Runtime APIs.</p>
-</div><div class="item-left module-item"><a class="struct" href="struct.Response.html" title="lambda_http::Response struct">Response</a></div><div class="item-right docblock-short"><p>Represents an HTTP response</p>
-</div><div class="item-left module-item"><a class="struct" href="struct.StrMap.html" title="lambda_http::StrMap struct">StrMap</a></div><div class="item-right docblock-short"><p>A read-only view into a map of string data which may contain multiple values</p>
-</div></div><h2 id="enums" class="section-header"><a href="#enums">Enums</a></h2>
-<div class="item-table"><div class="item-left module-item"><a class="enum" href="enum.Body.html" title="lambda_http::Body enum">Body</a></div><div class="item-right docblock-short"><p>Representation of http request and response bodies as supported
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Response.html" title="lambda_http::Response struct">Response</a></div><div class="item-right docblock-short"><p>Represents an HTTP response</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.StrMap.html" title="lambda_http::StrMap struct">StrMap</a></div><div class="item-right docblock-short"><p>A read-only view into a map of string data which may contain multiple values</p>
+</div></div></div><h2 id="enums" class="section-header"><a href="#enums">Enums</a></h2>
+<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.Body.html" title="lambda_http::Body enum">Body</a></div><div class="item-right docblock-short"><p>Representation of http request and response bodies as supported
 by API Gateway and ALBs.</p>
-</div></div><h2 id="traits" class="section-header"><a href="#traits">Traits</a></h2>
-<div class="item-table"><div class="item-left module-item"><a class="trait" href="trait.Handler.html" title="lambda_http::Handler trait">Handler</a></div><div class="item-right docblock-short"><p>Functions serving as ALB and API Gateway REST and HTTP API handlers must conform to this type.</p>
-</div><div class="item-left module-item"><a class="trait" href="trait.IntoResponse.html" title="lambda_http::IntoResponse trait">IntoResponse</a></div><div class="item-right docblock-short"><p>A conversion of self into a <code>Response&lt;Body&gt;</code> for various types.</p>
-</div></div><h2 id="functions" class="section-header"><a href="#functions">Functions</a></h2>
-<div class="item-table"><div class="item-left module-item"><a class="fn" href="fn.handler.html" title="lambda_http::handler fn">handler</a></div><div class="item-right docblock-short"><p>Adapts a <a href="trait.Handler.html"><code>Handler</code></a> to the <code>lambda_runtime::run</code> interface</p>
-</div></div><h2 id="types" class="section-header"><a href="#types">Type Definitions</a></h2>
-<div class="item-table"><div class="item-left module-item"><a class="type" href="type.Request.html" title="lambda_http::Request type">Request</a></div><div class="item-right docblock-short"><p>Type alias for <code>http::Request</code>s with a fixed <a href="enum.Body.html"><code>Body</code></a> type</p>
-</div></div></section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../" data-current-crate="lambda_http" data-search-index-js="../search-index.js" data-search-js="../search.js"></div>
+</div></div></div><h2 id="traits" class="section-header"><a href="#traits">Traits</a></h2>
+<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.Handler.html" title="lambda_http::Handler trait">Handler</a></div><div class="item-right docblock-short"><p>Functions serving as ALB and API Gateway REST and HTTP API handlers must conform to this type.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.IntoResponse.html" title="lambda_http::IntoResponse trait">IntoResponse</a></div><div class="item-right docblock-short"><p>A conversion of self into a <code>Response&lt;Body&gt;</code> for various types.</p>
+</div></div></div><h2 id="functions" class="section-header"><a href="#functions">Functions</a></h2>
+<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.handler.html" title="lambda_http::handler fn">handler</a></div><div class="item-right docblock-short"><p>Adapts a <a href="trait.Handler.html"><code>Handler</code></a> to the <code>lambda_runtime::run</code> interface</p>
+</div></div></div><h2 id="types" class="section-header"><a href="#types">Type Definitions</a></h2>
+<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="type" href="type.Request.html" title="lambda_http::Request type">Request</a></div><div class="item-right docblock-short"><p>Type alias for <code>http::Request</code>s with a fixed <a href="enum.Body.html"><code>Body</code></a> type</p>
+</div></div></div></section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../" data-current-crate="lambda_http" data-search-index-js="../search-index.js" data-search-js="../search.js"></div>
     <script src="../main.js"></script>
 </body></html>

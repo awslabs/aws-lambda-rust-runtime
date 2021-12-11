@@ -965,11 +965,11 @@
     <span class="doccomment">/// Return the `RequestOrigin` of the request to determine where the `LambdaRequest`</span>
     <span class="doccomment">/// originated from, so that the appropriate response can be selected based on what</span>
     <span class="doccomment">/// type of response the request origin expects.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">request_origin</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RequestOrigin</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">request_origin</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">RequestOrigin</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">LambdaRequest::ApiGatewayV2</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">RequestOrigin::ApiGatewayV2</span>,
-            <span class="ident">LambdaRequest::Alb</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">RequestOrigin::Alb</span>,
-            <span class="ident">LambdaRequest::ApiGateway</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">RequestOrigin::ApiGateway</span>,
+            <span class="ident">LambdaRequest::ApiGatewayV2</span> { .. } =&gt; <span class="ident">RequestOrigin::ApiGatewayV2</span>,
+            <span class="ident">LambdaRequest::Alb</span> { .. } =&gt; <span class="ident">RequestOrigin::Alb</span>,
+            <span class="ident">LambdaRequest::ApiGateway</span> { .. } =&gt; <span class="ident">RequestOrigin::ApiGateway</span>,
         }
     }
 }
@@ -1125,7 +1125,7 @@
 }
 
 <span class="doccomment">/// Deserialize a str into an http::Method</span>
-<span class="kw">fn</span> <span class="ident">deserialize_method</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span>, <span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">deserializer</span>: <span class="ident">D</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">http::Method</span>, <span class="ident">D::Error</span><span class="op">&gt;</span>
+<span class="kw">fn</span> <span class="ident">deserialize_method</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span>, <span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">deserializer</span>: <span class="ident">D</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">http::Method</span>, <span class="ident">D::Error</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Deserializer</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
 {
@@ -1134,11 +1134,11 @@
     <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">Visitor</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">MethodVisitor</span> {
         <span class="kw">type</span> <span class="ident">Value</span> <span class="op">=</span> <span class="ident">http::Method</span>;
 
-        <span class="kw">fn</span> <span class="ident">expecting</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">formatter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt::Result</span> {
+        <span class="kw">fn</span> <span class="ident">expecting</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">formatter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">fmt::Result</span> {
             <span class="macro">write!</span>(<span class="ident">formatter</span>, <span class="string">&quot;a Method&quot;</span>)
         }
 
-        <span class="kw">fn</span> <span class="ident">visit_str</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">v</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Value</span>, <span class="ident">E</span><span class="op">&gt;</span>
+        <span class="kw">fn</span> <span class="ident">visit_str</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">v</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Value</span>, <span class="ident">E</span><span class="op">&gt;</span>
         <span class="kw">where</span>
             <span class="ident">E</span>: <span class="ident">DeError</span>,
         {
@@ -1150,7 +1150,7 @@
 }
 
 <span class="doccomment">/// Deserialize a map of Cow&lt;&#39;_, str&gt; =&gt; Vec&lt;Cow&lt;&#39;_, str&gt;&gt; into an http::HeaderMap</span>
-<span class="kw">fn</span> <span class="ident">deserialize_multi_value_headers</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span>, <span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">deserializer</span>: <span class="ident">D</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">http::HeaderMap</span>, <span class="ident">D::Error</span><span class="op">&gt;</span>
+<span class="kw">fn</span> <span class="ident">deserialize_multi_value_headers</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span>, <span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">deserializer</span>: <span class="ident">D</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">http::HeaderMap</span>, <span class="ident">D::Error</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Deserializer</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
 {
@@ -1159,11 +1159,11 @@
     <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">Visitor</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">HeaderVisitor</span> {
         <span class="kw">type</span> <span class="ident">Value</span> <span class="op">=</span> <span class="ident">http::HeaderMap</span>;
 
-        <span class="kw">fn</span> <span class="ident">expecting</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">formatter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt::Result</span> {
+        <span class="kw">fn</span> <span class="ident">expecting</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">formatter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">fmt::Result</span> {
             <span class="macro">write!</span>(<span class="ident">formatter</span>, <span class="string">&quot;a multi valued HeaderMap&lt;HeaderValue&gt;&quot;</span>)
         }
 
-        <span class="kw">fn</span> <span class="ident">visit_map</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">map</span>: <span class="ident">A</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Value</span>, <span class="ident">A::Error</span><span class="op">&gt;</span>
+        <span class="kw">fn</span> <span class="ident">visit_map</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">map</span>: <span class="ident">A</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Value</span>, <span class="ident">A::Error</span><span class="op">&gt;</span>
         <span class="kw">where</span>
             <span class="ident">A</span>: <span class="ident">MapAccess</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
         {
@@ -1192,7 +1192,7 @@
 }
 
 <span class="doccomment">/// Deserialize a map of Cow&lt;&#39;_, str&gt; =&gt; Cow&lt;&#39;_, str&gt; into an http::HeaderMap</span>
-<span class="kw">fn</span> <span class="ident">deserialize_headers</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span>, <span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">deserializer</span>: <span class="ident">D</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">http::HeaderMap</span>, <span class="ident">D::Error</span><span class="op">&gt;</span>
+<span class="kw">fn</span> <span class="ident">deserialize_headers</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span>, <span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">deserializer</span>: <span class="ident">D</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">http::HeaderMap</span>, <span class="ident">D::Error</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Deserializer</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
 {
@@ -1201,11 +1201,11 @@
     <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">Visitor</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">HeaderVisitor</span> {
         <span class="kw">type</span> <span class="ident">Value</span> <span class="op">=</span> <span class="ident">http::HeaderMap</span>;
 
-        <span class="kw">fn</span> <span class="ident">expecting</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">formatter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt::Result</span> {
+        <span class="kw">fn</span> <span class="ident">expecting</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">formatter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">fmt::Result</span> {
             <span class="macro">write!</span>(<span class="ident">formatter</span>, <span class="string">&quot;a HeaderMap&lt;HeaderValue&gt;&quot;</span>)
         }
 
-        <span class="kw">fn</span> <span class="ident">visit_map</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">map</span>: <span class="ident">A</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Value</span>, <span class="ident">A::Error</span><span class="op">&gt;</span>
+        <span class="kw">fn</span> <span class="ident">visit_map</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">map</span>: <span class="ident">A</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Value</span>, <span class="ident">A::Error</span><span class="op">&gt;</span>
         <span class="kw">where</span>
             <span class="ident">A</span>: <span class="ident">MapAccess</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
         {
@@ -1228,7 +1228,7 @@
 
 <span class="doccomment">/// deserializes (json) null values to their default values</span>
 <span class="comment">// https://github.com/serde-rs/serde/issues/1098</span>
-<span class="kw">fn</span> <span class="ident">nullable_default</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span>, <span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">deserializer</span>: <span class="ident">D</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D::Error</span><span class="op">&gt;</span>
+<span class="kw">fn</span> <span class="ident">nullable_default</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span>, <span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">deserializer</span>: <span class="ident">D</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D::Error</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Deserializer</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
     <span class="ident">T</span>: <span class="ident">Default</span> <span class="op">+</span> <span class="ident">Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
@@ -1239,7 +1239,7 @@
 
 <span class="doccomment">/// Converts LambdaRequest types into `http::Request&lt;Body&gt;` types</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">LambdaRequest</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">http::Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">value</span>: <span class="ident">LambdaRequest</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">value</span>: <span class="ident">LambdaRequest</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
         <span class="kw">match</span> <span class="ident">value</span> {
             <span class="ident">LambdaRequest::ApiGatewayV2</span> {
                 <span class="ident">raw_path</span>,
@@ -1253,7 +1253,7 @@
                 <span class="ident">request_context</span>,
                 <span class="ident">cookies</span>,
                 ..
-            } <span class="op">=</span><span class="op">&gt;</span> {
+            } =&gt; {
                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">cookies</span>) <span class="op">=</span> <span class="ident">cookies</span> {
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">header_value</span>) <span class="op">=</span> <span class="ident">http::header::HeaderValue::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">cookies</span>.<span class="ident">join</span>(<span class="string">&quot;;&quot;</span>)) {
                         <span class="ident">headers</span>.<span class="ident">append</span>(<span class="ident">http::header::COOKIE</span>, <span class="ident">header_value</span>);
@@ -1307,13 +1307,13 @@
                 <span class="ident">body</span>,
                 <span class="ident">is_base64_encoded</span>,
                 <span class="ident">request_context</span>,
-            } <span class="op">=</span><span class="op">&gt;</span> {
+            } =&gt; {
                 <span class="kw">let</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">http::Request::builder</span>()
                     .<span class="ident">method</span>(<span class="ident">http_method</span>)
                     .<span class="ident">uri</span>({
                         <span class="kw">let</span> <span class="ident">host</span> <span class="op">=</span> <span class="ident">headers</span>.<span class="ident">get</span>(<span class="ident">http::header::HOST</span>).<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">to_str</span>().<span class="ident">ok</span>());
                         <span class="kw">match</span> <span class="ident">host</span> {
-                            <span class="prelude-val">Some</span>(<span class="ident">host</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                            <span class="prelude-val">Some</span>(<span class="ident">host</span>) =&gt; {
                                 <span class="macro">format!</span>(
                                     <span class="string">&quot;{}://{}{}&quot;</span>,
                                     <span class="ident">headers</span>
@@ -1324,7 +1324,7 @@
                                     <span class="ident">path</span>
                                 )
                             }
-                            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">path</span>.<span class="ident">to_string</span>(),
+                            <span class="prelude-val">None</span> =&gt; <span class="ident">path</span>.<span class="ident">to_string</span>(),
                         }
                     })
                     <span class="comment">// multi-valued query string parameters are always a super</span>
@@ -1372,14 +1372,14 @@
                 <span class="ident">body</span>,
                 <span class="ident">is_base64_encoded</span>,
                 <span class="ident">request_context</span>,
-            } <span class="op">=</span><span class="op">&gt;</span> {
+            } =&gt; {
                 <span class="comment">// build an http::Request&lt;lambda_http::Body&gt; from a lambda_http::LambdaRequest</span>
                 <span class="kw">let</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">http::Request::builder</span>()
                     .<span class="ident">method</span>(<span class="ident">http_method</span>)
                     .<span class="ident">uri</span>({
                         <span class="kw">let</span> <span class="ident">host</span> <span class="op">=</span> <span class="ident">headers</span>.<span class="ident">get</span>(<span class="ident">http::header::HOST</span>).<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">to_str</span>().<span class="ident">ok</span>());
                         <span class="kw">match</span> <span class="ident">host</span> {
-                            <span class="prelude-val">Some</span>(<span class="ident">host</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                            <span class="prelude-val">Some</span>(<span class="ident">host</span>) =&gt; {
                                 <span class="macro">format!</span>(
                                     <span class="string">&quot;{}://{}{}&quot;</span>,
                                     <span class="ident">headers</span>
@@ -1390,7 +1390,7 @@
                                     <span class="ident">path</span>
                                 )
                             }
-                            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">path</span>.<span class="ident">to_string</span>(),
+                            <span class="prelude-val">None</span> =&gt; <span class="ident">path</span>.<span class="ident">to_string</span>(),
                         }
                     })
                     <span class="comment">// multi valued query string parameters are always a super</span>
@@ -1446,7 +1446,7 @@
 <span class="doccomment">///     Ok(println!(&quot;{:#?}&quot;, request))</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_reader</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">rdr</span>: <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="kw">crate</span>::Request</span>, <span class="ident">JsonError</span><span class="op">&gt;</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_reader</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">rdr</span>: <span class="ident">R</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="kw">crate</span>::Request</span>, <span class="ident">JsonError</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">R</span>: <span class="ident">Read</span>,
 {
@@ -1469,7 +1469,7 @@
 <span class="doccomment">///     Ok(println!(&quot;{:#?}&quot;, request))</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="kw">crate</span>::Request</span>, <span class="ident">JsonError</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="kw">crate</span>::Request</span>, <span class="ident">JsonError</span><span class="op">&gt;</span> {
     <span class="ident">serde_json::from_str</span>(<span class="ident">s</span>).<span class="ident">map</span>(<span class="ident">LambdaRequest::into</span>)
 }
 
@@ -1509,8 +1509,8 @@
         <span class="kw">let</span> <span class="ident">req_context</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">request_context</span>();
         <span class="macro">assert!</span>(
             <span class="kw">match</span> <span class="ident">req_context</span> {
-                <span class="ident">RequestContext::ApiGatewayV2</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
+                <span class="ident">RequestContext::ApiGatewayV2</span>(<span class="kw">_</span>) =&gt; <span class="bool-val">true</span>,
+                <span class="kw">_</span> =&gt; <span class="bool-val">false</span>,
             },
             <span class="string">&quot;expected ApiGatewayV2 context, got {:?}&quot;</span>,
             <span class="ident">req_context</span>
@@ -1544,8 +1544,8 @@
         <span class="kw">let</span> <span class="ident">req_context</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">request_context</span>();
         <span class="macro">assert!</span>(
             <span class="kw">match</span> <span class="ident">req_context</span> {
-                <span class="ident">RequestContext::ApiGatewayV2</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
+                <span class="ident">RequestContext::ApiGatewayV2</span>(<span class="kw">_</span>) =&gt; <span class="bool-val">true</span>,
+                <span class="kw">_</span> =&gt; <span class="bool-val">false</span>,
             },
             <span class="string">&quot;expected ApiGatewayV2 context, got {:?}&quot;</span>,
             <span class="ident">req_context</span>
@@ -1576,8 +1576,8 @@
         <span class="kw">let</span> <span class="ident">req_context</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">request_context</span>();
         <span class="macro">assert!</span>(
             <span class="kw">match</span> <span class="ident">req_context</span> {
-                <span class="ident">RequestContext::ApiGateway</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
+                <span class="ident">RequestContext::ApiGateway</span>(<span class="kw">_</span>) =&gt; <span class="bool-val">true</span>,
+                <span class="kw">_</span> =&gt; <span class="bool-val">false</span>,
             },
             <span class="string">&quot;expected ApiGateway context, got {:?}&quot;</span>,
             <span class="ident">req_context</span>
@@ -1604,8 +1604,8 @@
         <span class="kw">let</span> <span class="ident">req_context</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">request_context</span>();
         <span class="macro">assert!</span>(
             <span class="kw">match</span> <span class="ident">req_context</span> {
-                <span class="ident">RequestContext::Alb</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
+                <span class="ident">RequestContext::Alb</span>(<span class="kw">_</span>) =&gt; <span class="bool-val">true</span>,
+                <span class="kw">_</span> =&gt; <span class="bool-val">false</span>,
             },
             <span class="string">&quot;expected Alb context, got {:?}&quot;</span>,
             <span class="ident">req_context</span>

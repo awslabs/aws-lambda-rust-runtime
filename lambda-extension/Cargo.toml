@@ -1,18 +1,14 @@
 [package]
-name = "lambda_runtime"
-version = "0.4.1"
-authors = ["David Barsky <dbarsky@amazon.com>"]
-description = "AWS Lambda Runtime"
-edition = "2018"
+name = "lambda_extension"
+version = "0.1.0"
+edition = "2021"
+authors = ["David Calavera <david.calavera@gmail.com>"]
+description = "AWS Lambda Extension API"
 license = "Apache-2.0"
 repository = "https://github.com/awslabs/aws-lambda-rust-runtime"
 categories = ["web-programming::http-server"]
 keywords = ["AWS", "Lambda", "API"]
-readme = "../README.md"
-
-[features]
-default = ["simulated"]
-simulated = []
+readme = "README.md"
 
 [dependencies]
 tokio = { version = "1.0", features = ["macros", "io-util", "sync", "rt-multi-thread"] }
@@ -22,8 +18,6 @@ serde_json = "^1"
 bytes = "1.0"
 http = "0.2"
 async-stream = "0.3"
-futures = "0.3"
-tracing-error = "0.2"
 tracing = { version = "0.1", features = ["log"] }
 tower-service = "0.3"
 tokio-stream = "0.1.2"

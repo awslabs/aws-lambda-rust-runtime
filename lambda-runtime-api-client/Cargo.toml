@@ -1,0 +1,22 @@
+[package]
+name = "lambda_runtime_api_client"
+version = "0.4.1"
+edition = "2021"
+authors = ["David Calavera <david.calavera@gmail.com>"]
+description = "AWS Lambda Runtime interaction API"
+license = "Apache-2.0"
+repository = "https://github.com/awslabs/aws-lambda-rust-runtime"
+categories = ["web-programming::http-server"]
+keywords = ["AWS", "Lambda", "API"]
+readme = "README.md"
+
+[dependencies]
+http = "0.2"
+hyper = { version = "0.14", features = ["http1", "client", "server", "stream", "runtime"] }
+tower-service = "0.3"
+tokio = { version = "1.0", features = ["io-util"] }
+
+[dev-dependencies]
+serde_json = "^1"
+async-stream = "0.3"
+tokio-stream = "0.1.2"

@@ -1,5 +1,7 @@
 [workspace]
 members = [
     "lambda-http",
-    "lambda-runtime"
+    "lambda-runtime-api-client",
+    "lambda-runtime",
+    "lambda-extension"
 ]

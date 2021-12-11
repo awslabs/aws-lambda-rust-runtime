@@ -9,6 +9,7 @@ use hyper::client::{connect::Connection, HttpConnector};
 use lambda_runtime_api_client::Client;
 use serde::Deserialize;
 use std::future::Future;
+use std::path::PathBuf;
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio_stream::StreamExt;
 use tower_service::Service;
@@ -220,7 +221,12 @@ impl<'a> RuntimeBuilder<'a> {
             Some(name) => name.into(),
             None => {
                 let args: Vec<String> = std::env::args().collect();
-                args[0].clone()
+                PathBuf::from(args[0].clone())
+                    .file_name()
+                    .expect("unexpected executable name")
+                    .to_str()
+                    .expect("unexpect executable name")
+                    .to_string()
             }
         };
 

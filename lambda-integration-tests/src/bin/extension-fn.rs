@@ -6,10 +6,10 @@ async fn my_extension(event: NextEvent) -> Result<(), Error> {
     match event {
         NextEvent::Shutdown(e) => {
             info!("[extension-fn] Shutdown event received: {:?}", e);
-        },
+        }
         NextEvent::Invoke(e) => {
             info!("[extension-fn] Request event received: {:?}", e);
-        },
+        }
     }
 
     Ok(())

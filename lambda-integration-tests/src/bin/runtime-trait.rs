@@ -1,6 +1,6 @@
-use lambda_runtime::{Context, Handler, Error};
+use lambda_runtime::{Context, Error, Handler};
 use log::{info, LevelFilter};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use simple_logger::SimpleLogger;
 use std::{
     future::{ready, Future},
@@ -34,11 +34,9 @@ impl Handler<Request, Response> for MyHandler {
     fn call(&mut self, event: Request, _context: Context) -> Self::Fut {
         self.invoke_count += 1;
         info!("[handler] Received event {}: {:?}", self.invoke_count, event);
-        Box::pin(ready(
-            Ok(Response {
-                message: event.command.to_uppercase(),
-            }))
-        )
+        Box::pin(ready(Ok(Response {
+            message: event.command.to_uppercase(),
+        })))
     }
 }
 

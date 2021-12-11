@@ -1,6 +1,6 @@
 use lambda_runtime::{handler_fn, Context, Error};
 use log::{info, LevelFilter};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use simple_logger::SimpleLogger;
 
 #[derive(Deserialize, Debug)]

@@ -254,7 +254,6 @@
 <span id="254">254</span>
 <span id="255">255</span>
 <span id="256">256</span>
-<span id="257">257</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">deny</span>(<span class="ident">clippy::all</span>, <span class="ident">clippy::cargo</span>)]</span>
 <span class="attribute">#![<span class="ident">warn</span>(<span class="ident">missing_docs</span>, <span class="ident">nonstandard_style</span>, <span class="ident">rust_2018_idioms</span>)]</span>
 
@@ -265,8 +264,7 @@
 <span class="kw">use</span> <span class="ident">hyper::client</span>::{<span class="ident">connect::Connection</span>, <span class="ident">HttpConnector</span>};
 <span class="kw">use</span> <span class="ident">lambda_runtime_api_client::Client</span>;
 <span class="kw">use</span> <span class="ident">serde::Deserialize</span>;
-<span class="kw">use</span> <span class="ident">std::future::Future</span>;
-<span class="kw">use</span> <span class="ident">std::path::PathBuf</span>;
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">future::Future</span>, <span class="ident">path::PathBuf</span>};
 <span class="kw">use</span> <span class="ident">tokio::io</span>::{<span class="ident">AsyncRead</span>, <span class="ident">AsyncWrite</span>};
 <span class="kw">use</span> <span class="ident">tokio_stream::StreamExt</span>;
 <span class="kw">use</span> <span class="ident">tower_service::Service</span>;

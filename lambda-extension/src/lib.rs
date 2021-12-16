@@ -8,8 +8,7 @@
 use hyper::client::{connect::Connection, HttpConnector};
 use lambda_runtime_api_client::Client;
 use serde::Deserialize;
-use std::future::Future;
-use std::path::PathBuf;
+use std::{future::Future, path::PathBuf};
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio_stream::StreamExt;
 use tower_service::Service;

@@ -1,4 +1,5 @@
 #![deny(clippy::all, clippy::cargo)]
+#![allow(clippy::multiple_crate_versions)]
 #![warn(missing_docs, nonstandard_style, rust_2018_idioms)]
 
 //! This module includes utilities to create Lambda Runtime Extensions.

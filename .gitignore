@@ -1,6 +1,7 @@
 /target
 /.cargo
 lambda-runtime/libtest.rmeta
+lambda-integration-tests/target
 Cargo.lock
 
 # Built AWS Lambda zipfile
@@ -8,3 +9,6 @@ lambda.zip
 
 # output.json from example docs
 output.json
+
+.aws-sam
+build

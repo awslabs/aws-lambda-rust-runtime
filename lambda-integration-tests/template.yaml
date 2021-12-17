@@ -1,0 +1,162 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Globals:
+  Function:
+    MemorySize: 128
+    Handler: bootstrap
+    Timeout: 5
+
+Resources:
+  # Rust function using runtime_fn running on AL2
+  RuntimeFnAl2:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../build/runtime-fn/
+      Runtime: provided.al2
+      Layers:
+        - !Ref ExtensionFn
+        - !Ref ExtensionTrait
+  
+  # Rust function using runtime_fn running on AL1
+  RuntimeFn:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../build/runtime-fn/
+      Runtime: provided
+      Layers:
+        - !Ref ExtensionFn
+        - !Ref ExtensionTrait
+
+  # Rust function using a Handler implementation running on AL2
+  RuntimeTraitAl2:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../build/runtime-trait/
+      Runtime: provided.al2
+      Layers:
+        - !Ref ExtensionFn
+        - !Ref ExtensionTrait
+  
+  # Rust function using a Handler implementation running on AL1
+  RuntimeTrait:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../build/runtime-trait/
+      Runtime: provided
+      Layers:
+        - !Ref ExtensionFn
+        - !Ref ExtensionTrait
+  
+  # Rust function using lambda_http::runtime running on AL2
+  HttpFnAl2:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../build/http-fn/
+      Runtime: provided.al2
+      Events:
+        ApiGet:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /al2/get
+        ApiPost:
+          Type: Api
+          Properties:
+            Method: POST
+            Path: /al2/post
+        ApiV2Get:
+          Type: HttpApi
+          Properties:
+            Method: GET
+            Path: /al2/get
+        ApiV2Post:
+          Type: HttpApi
+          Properties:
+            Method: POST
+            Path: /al2/post
+      Layers:
+        - !Ref ExtensionFn
+        - !Ref ExtensionTrait
+
+  # Rust function using lambda_http::runtime running on AL1
+  HttpFn:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../build/http-fn/
+      Runtime: provided
+      Events:
+        ApiGet:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /get
+        ApiPost:
+          Type: Api
+          Properties:
+            Method: POST
+            Path: /post
+        ApiV2Get:
+          Type: HttpApi
+          Properties:
+            Method: GET
+            Path: /get
+        ApiV2Post:
+          Type: HttpApi
+          Properties:
+            Method: POST
+            Path: /post
+      Layers:
+        - !Ref ExtensionFn
+        - !Ref ExtensionTrait
+
+  # Python function running on AL2
+  PythonAl2:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./python/
+      Handler: main.handler
+      Runtime: python3.9
+      Layers:
+        - !Ref ExtensionFn
+        - !Ref ExtensionTrait
+
+  # Python function running on AL1
+  Python:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./python/
+      Handler: main.handler
+      Runtime: python3.7
+      Layers:
+        - !Ref ExtensionFn
+        - !Ref ExtensionTrait
+
+  ExtensionFn:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      ContentUri: ../build/extension-fn/
+  
+  ExtensionTrait:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      ContentUri: ../build/extension-trait/
+
+Outputs:
+  RuntimeFnAl2:
+    Value: !GetAtt RuntimeFnAl2.Arn
+  RuntimeFn:
+    Value: !GetAtt RuntimeFn.Arn
+  RuntimeTraitAl2:
+    Value: !GetAtt RuntimeTraitAl2.Arn
+  RuntimeTrait:
+    Value: !GetAtt RuntimeTrait.Arn
+  PythonAl2:
+    Value: !GetAtt PythonAl2.Arn
+  Python:
+    Value: !GetAtt Python.Arn
+
+  RestApiUrl:
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
+  HttpApiUrl:
+    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com"

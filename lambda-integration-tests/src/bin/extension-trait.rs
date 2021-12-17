@@ -6,14 +6,9 @@ use std::{
     pin::Pin,
 };
 
+#[derive(Default)]
 struct MyExtension {
     invoke_count: usize,
-}
-
-impl Default for MyExtension {
-    fn default() -> Self {
-        Self { invoke_count: 0 }
-    }
 }
 
 impl Extension for MyExtension {

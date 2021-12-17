@@ -17,14 +17,9 @@ struct Response {
     message: String,
 }
 
+#[derive(Default)]
 struct MyHandler {
     invoke_count: usize,
-}
-
-impl Default for MyHandler {
-    fn default() -> Self {
-        Self { invoke_count: 0 }
-    }
 }
 
 impl Handler<Request, Response> for MyHandler {

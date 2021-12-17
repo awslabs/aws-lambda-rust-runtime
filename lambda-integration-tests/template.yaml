@@ -48,6 +48,68 @@ Resources:
         - !Ref ExtensionFn
         - !Ref ExtensionTrait
   
+  # Rust function using lambda_http::runtime running on AL2
+  HttpFnAl2:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../build/http-fn/
+      Runtime: provided.al2
+      Events:
+        ApiGet:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /al2/get
+        ApiPost:
+          Type: Api
+          Properties:
+            Method: POST
+            Path: /al2/post
+        ApiV2Get:
+          Type: HttpApi
+          Properties:
+            Method: GET
+            Path: /al2/get
+        ApiV2Post:
+          Type: HttpApi
+          Properties:
+            Method: POST
+            Path: /al2/post
+      Layers:
+        - !Ref ExtensionFn
+        - !Ref ExtensionTrait
+
+  # Rust function using lambda_http::runtime running on AL1
+  HttpFn:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../build/http-fn/
+      Runtime: provided
+      Events:
+        ApiGet:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /get
+        ApiPost:
+          Type: Api
+          Properties:
+            Method: POST
+            Path: /post
+        ApiV2Get:
+          Type: HttpApi
+          Properties:
+            Method: GET
+            Path: /get
+        ApiV2Post:
+          Type: HttpApi
+          Properties:
+            Method: POST
+            Path: /post
+      Layers:
+        - !Ref ExtensionFn
+        - !Ref ExtensionTrait
+
   # Python function running on AL2
   PythonAl2:
     Type: AWS::Serverless::Function
@@ -93,3 +155,8 @@ Outputs:
     Value: !GetAtt PythonAl2.Arn
   Python:
     Value: !GetAtt Python.Arn
+
+  RestApiUrl:
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
+  HttpApiUrl:
+    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com"

@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["main",""],["my_extension",""]]});

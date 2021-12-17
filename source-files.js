@@ -1,6 +1,11 @@
 var N = null;var sourcesIndex = {};
+sourcesIndex["extension_fn"] = {"name":"","files":["extension-fn.rs"]};
+sourcesIndex["extension_trait"] = {"name":"","files":["extension-trait.rs"]};
+sourcesIndex["http_fn"] = {"name":"","files":["http-fn.rs"]};
 sourcesIndex["lambda_extension"] = {"name":"","files":["lib.rs","requests.rs"]};
 sourcesIndex["lambda_http"] = {"name":"","files":["body.rs","ext.rs","lib.rs","request.rs","response.rs","strmap.rs"]};
 sourcesIndex["lambda_runtime"] = {"name":"","files":["lib.rs","requests.rs","types.rs"]};
 sourcesIndex["lambda_runtime_api_client"] = {"name":"","files":["lib.rs"]};
+sourcesIndex["runtime_fn"] = {"name":"","files":["runtime-fn.rs"]};
+sourcesIndex["runtime_trait"] = {"name":"","files":["runtime-trait.rs"]};
 createSourceSidebar();

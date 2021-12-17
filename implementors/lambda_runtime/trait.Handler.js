@@ -1,3 +1,4 @@
 (function() {var implementors = {};
 implementors["lambda_runtime"] = [];
+implementors["runtime_trait"] = [{"text":"impl <a class=\"trait\" href=\"lambda_runtime/trait.Handler.html\" title=\"trait lambda_runtime::Handler\">Handler</a>&lt;<a class=\"struct\" href=\"runtime_trait/struct.Request.html\" title=\"struct runtime_trait::Request\">Request</a>, <a class=\"struct\" href=\"runtime_trait/struct.Response.html\" title=\"struct runtime_trait::Response\">Response</a>&gt; for <a class=\"struct\" href=\"runtime_trait/struct.MyHandler.html\" title=\"struct runtime_trait::MyHandler\">MyHandler</a>","synthetic":false,"types":["runtime_trait::MyHandler"]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

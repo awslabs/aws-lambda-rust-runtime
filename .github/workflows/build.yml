@@ -12,6 +12,7 @@ jobs:
           - ubuntu-latest
           - macOS-latest
         rust:
+          - "1.54.0" # Current MSRV
           - stable
           - beta
           - nightly
@@ -21,24 +22,24 @@ jobs:
         include:
           - rust: nightly
             allow_failure: true
-        exclude:
-          - os: macOS-latest
-            target: x86_64-unknown-linux-musl
-          - os: ubuntu-latest
-            rust: 1.40.0
-            target: x86_64-unknown-linux-musl
-          - os: ubuntu-latest
-            rust: beta
-            target: x86_64-unknown-linux-musl
-          - os: ubuntu-latest
-            rust: nightly
-            target: x86_64-unknown-linux-musl
-          - os: macOS-latest
-            rust: 1.40.0
-          - os: macOS-latest
-            rust: beta
-          - os: macOS-latest
-            rust: nightly
+        # exclude:
+        #   - os: macOS-latest
+        #     target: x86_64-unknown-linux-musl
+        #   - os: ubuntu-latest
+        #     rust: 1.40.0
+        #     target: x86_64-unknown-linux-musl
+        #   - os: ubuntu-latest
+        #     rust: beta
+        #     target: x86_64-unknown-linux-musl
+        #   - os: ubuntu-latest
+        #     rust: nightly
+        #     target: x86_64-unknown-linux-musl
+        #   - os: macOS-latest
+        #     rust: 1.40.0
+        #   - os: macOS-latest
+        #     rust: beta
+        #   - os: macOS-latest
+        #     rust: nightly
     env:
       RUST_BACKTRACE: 1
     steps:
@@ -63,7 +64,7 @@ jobs:
       - uses: actions/checkout@v1
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly
+          toolchain: stable
           components: rustfmt
           override: true
       - name: Run fmt check
@@ -74,7 +75,7 @@ jobs:
       - uses: actions/checkout@v1
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly
+          toolchain: stable
           components: clippy
           override: true
       - name: Run clippy check

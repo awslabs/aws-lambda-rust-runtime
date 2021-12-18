@@ -6,6 +6,11 @@ INTEG_EXTENSIONS := extension-fn extension-trait
 # Using musl to run extensions on both AL1 and AL2
 INTEG_ARCH := x86_64-unknown-linux-musl
 
+pr-check:
+	cargo +1.54.0 check --all
+	cargo +stable fmt --all -- --check
+	cargo +stable clippy
+
 integration-tests:
 # Build Integration functions
 	cross build --release --target $(INTEG_ARCH) -p lambda_integration_tests

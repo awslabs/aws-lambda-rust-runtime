@@ -103,7 +103,7 @@ pub trait Handler<'a>: Sized {
 pub fn handler<'a, H: Handler<'a>>(handler: H) -> Adapter<'a, H> {
     Adapter {
         handler,
-        _pd: PhantomData,
+        _phantom_data: PhantomData,
     }
 }
 
@@ -152,7 +152,7 @@ where
 /// for a larger explanation of why this is necessary
 pub struct Adapter<'a, H: Handler<'a>> {
     handler: H,
-    _pd: PhantomData<&'a H>,
+    _phantom_data: PhantomData<&'a H>,
 }
 
 impl<'a, H: Handler<'a>> Handler<'a> for Adapter<'a, H> {

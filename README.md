@@ -259,3 +259,15 @@ fn main() -> Result<(), Box<Error>> {
     Ok(())
 }
 ```
+
+## Supported Rust Versions (MSRV)
+
+The AWS Lambda Rust Runtime requires a minimum of Rust 1.54, and is not guaranteed to build on compiler versions earlier than that.
+
+## Security
+
+See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
+
+## License
+
+This project is licensed under the Apache-2.0 License.

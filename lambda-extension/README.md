@@ -10,17 +10,14 @@ The code below creates a simple extension that's registered to every `INVOKE` an
 
 ```rust,no_run
 use lambda_extension::{extension_fn, Error, NextEvent};
-use log::LevelFilter;
-use simple_logger::SimpleLogger;
-use tracing::info;
 
 async fn log_extension(event: NextEvent) -> Result<(), Error> {
     match event {
         NextEvent::Shutdown(event) => {
-            info!("{}", event);
+            println!("Shutdown {:?}", event);
         }
         NextEvent::Invoke(event) => {
-            info!("{}", event);
+            println!("Invoke {:?}", event);
         }
     }
     Ok(())
@@ -28,8 +25,6 @@ async fn log_extension(event: NextEvent) -> Result<(), Error> {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    SimpleLogger::new().with_level(LevelFilter::Info).init().unwrap();
-
     let func = extension_fn(log_extension);
     lambda_extension::run(func).await
 }

@@ -1,6 +1,4 @@
 use lambda_extension::{run, Error, Extension, InvokeEvent, NextEvent};
-use log::LevelFilter;
-use simple_logger::SimpleLogger;
 use std::{
     future::{ready, Future},
     pin::Pin,
@@ -28,9 +26,5 @@ impl Extension for MyExtension {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    // required to enable CloudWatch error logging by the runtime
-    // can be replaced with any other method of initializing `log`
-    SimpleLogger::new().with_level(LevelFilter::Info).init().unwrap();
-
     run(MyExtension::default()).await
 }

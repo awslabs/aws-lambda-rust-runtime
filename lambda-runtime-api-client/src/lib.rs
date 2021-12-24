@@ -8,7 +8,7 @@ use hyper::{
     client::{connect::Connection, HttpConnector},
     Body,
 };
-use std::fmt::Debug;
+use std::{convert::TryInto, fmt::Debug};
 use tokio::io::{AsyncRead, AsyncWrite};
 use tower_service::Service;
 

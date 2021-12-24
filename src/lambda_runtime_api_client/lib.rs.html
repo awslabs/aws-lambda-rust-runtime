@@ -142,7 +142,7 @@
     <span class="ident">client</span>::{<span class="ident">connect::Connection</span>, <span class="ident">HttpConnector</span>},
     <span class="ident">Body</span>,
 };
-<span class="kw">use</span> <span class="ident">std::fmt::Debug</span>;
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">convert::TryInto</span>, <span class="ident">fmt::Debug</span>};
 <span class="kw">use</span> <span class="ident">tokio::io</span>::{<span class="ident">AsyncRead</span>, <span class="ident">AsyncWrite</span>};
 <span class="kw">use</span> <span class="ident">tower_service::Service</span>;
 

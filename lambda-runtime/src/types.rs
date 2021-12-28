@@ -57,15 +57,18 @@ struct MobileClientIdentity(String);
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct ClientContext {
     /// Information about the mobile application invoking the function.
+    #[serde(default)]
     pub client: ClientApplication,
     /// Custom properties attached to the mobile event context.
+    #[serde(default)]
     pub custom: HashMap<String, String>,
     /// Environment settings from the mobile client.
+    #[serde(default)]
     pub environment: HashMap<String, String>,
 }
 
 /// AWS Mobile SDK client fields.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Default, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ClientApplication {
     /// The mobile app installation id
@@ -119,6 +122,18 @@ pub struct Context {
 impl TryFrom<HeaderMap> for Context {
     type Error = Error;
     fn try_from(headers: HeaderMap) -> Result<Self, Self::Error> {
+        let client_context: Option<ClientContext> = if let Some(value) = headers.get("lambda-runtime-client-context") {
+            serde_json::from_str(value.to_str()?)?
+        } else {
+            None
+        };
+
+        let identity: Option<CognitoIdentity> = if let Some(value) = headers.get("lambda-runtime-cognito-identity") {
+            serde_json::from_str(value.to_str()?)?
+        } else {
+            None
+        };
+
         let ctx = Context {
             request_id: headers
                 .get("lambda-runtime-aws-request-id")
@@ -142,8 +157,11 @@ impl TryFrom<HeaderMap> for Context {
                 .unwrap_or(&HeaderValue::from_static(""))
                 .to_str()?
                 .to_owned(),
+            client_context,
+            identity,
             ..Default::default()
         };
+
         Ok(ctx)
     }
 }
@@ -176,6 +194,70 @@ mod test {
     }
 
     #[test]
+    fn context_with_client_context_resolves() {
+        let mut custom = HashMap::new();
+        custom.insert("key".to_string(), "value".to_string());
+        let mut environment = HashMap::new();
+        environment.insert("key".to_string(), "value".to_string());
+        let client_context = ClientContext {
+            client: ClientApplication {
+                installation_id: String::new(),
+                app_title: String::new(),
+                app_version_name: String::new(),
+                app_version_code: String::new(),
+                app_package_name: String::new(),
+            },
+            custom,
+            environment,
+        };
+        let client_context_str = serde_json::to_string(&client_context).unwrap();
+        let mut headers = HeaderMap::new();
+        headers.insert("lambda-runtime-aws-request-id", HeaderValue::from_static("my-id"));
+        headers.insert("lambda-runtime-deadline-ms", HeaderValue::from_static("123"));
+        headers.insert(
+            "lambda-runtime-client-context",
+            HeaderValue::from_str(&client_context_str).unwrap(),
+        );
+        let tried = Context::try_from(headers);
+        assert!(tried.is_ok());
+        let tried = tried.unwrap();
+        assert!(tried.client_context.is_some());
+        assert_eq!(tried.client_context.unwrap(), client_context);
+    }
+
+    #[test]
+    fn context_with_empty_client_context_resolves() {
+        let mut headers = HeaderMap::new();
+        headers.insert("lambda-runtime-aws-request-id", HeaderValue::from_static("my-id"));
+        headers.insert("lambda-runtime-deadline-ms", HeaderValue::from_static("123"));
+        headers.insert("lambda-runtime-client-context", HeaderValue::from_static("{}"));
+        let tried = Context::try_from(headers);
+        assert!(tried.is_ok());
+        assert!(tried.unwrap().client_context.is_some());
+    }
+
+    #[test]
+    fn context_with_identity_resolves() {
+        let cognito_identity = CognitoIdentity {
+            identity_id: String::new(),
+            identity_pool_id: String::new(),
+        };
+        let cognito_identity_str = serde_json::to_string(&cognito_identity).unwrap();
+        let mut headers = HeaderMap::new();
+        headers.insert("lambda-runtime-aws-request-id", HeaderValue::from_static("my-id"));
+        headers.insert("lambda-runtime-deadline-ms", HeaderValue::from_static("123"));
+        headers.insert(
+            "lambda-runtime-cognito-identity",
+            HeaderValue::from_str(&cognito_identity_str).unwrap(),
+        );
+        let tried = Context::try_from(headers);
+        assert!(tried.is_ok());
+        let tried = tried.unwrap();
+        assert!(tried.identity.is_some());
+        assert_eq!(tried.identity.unwrap(), cognito_identity);
+    }
+
+    #[test]
     fn context_with_bad_deadline_type_is_err() {
         let mut headers = HeaderMap::new();
         headers.insert("lambda-runtime-aws-request-id", HeaderValue::from_static("my-id"));
@@ -188,6 +270,42 @@ mod test {
             HeaderValue::from_static("arn::myarn"),
         );
         headers.insert("lambda-runtime-trace-id", HeaderValue::from_static("arn::myarn"));
+        let tried = Context::try_from(headers);
+        assert!(tried.is_err());
+    }
+
+    #[test]
+    fn context_with_bad_client_context_is_err() {
+        let mut headers = HeaderMap::new();
+        headers.insert("lambda-runtime-aws-request-id", HeaderValue::from_static("my-id"));
+        headers.insert("lambda-runtime-deadline-ms", HeaderValue::from_static("123"));
+        headers.insert(
+            "lambda-runtime-client-context",
+            HeaderValue::from_static("BAD-Type,not JSON"),
+        );
+        let tried = Context::try_from(headers);
+        assert!(tried.is_err());
+    }
+
+    #[test]
+    fn context_with_empty_identity_is_err() {
+        let mut headers = HeaderMap::new();
+        headers.insert("lambda-runtime-aws-request-id", HeaderValue::from_static("my-id"));
+        headers.insert("lambda-runtime-deadline-ms", HeaderValue::from_static("123"));
+        headers.insert("lambda-runtime-cognito-identity", HeaderValue::from_static("{}"));
+        let tried = Context::try_from(headers);
+        assert!(tried.is_err());
+    }
+
+    #[test]
+    fn context_with_bad_identity_is_err() {
+        let mut headers = HeaderMap::new();
+        headers.insert("lambda-runtime-aws-request-id", HeaderValue::from_static("my-id"));
+        headers.insert("lambda-runtime-deadline-ms", HeaderValue::from_static("123"));
+        headers.insert(
+            "lambda-runtime-cognito-identity",
+            HeaderValue::from_static("BAD-Type,not JSON"),
+        );
         let tried = Context::try_from(headers);
         assert!(tried.is_err());
     }

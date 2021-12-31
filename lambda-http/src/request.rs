@@ -317,7 +317,7 @@ where
         }
     }
 
-    deserializer.deserialize_map(HeaderVisitor)
+    Ok(deserializer.deserialize_map(HeaderVisitor).unwrap_or_default())
 }
 
 /// Deserialize a map of Cow<'_, str> => Cow<'_, str> into an http::HeaderMap
@@ -865,6 +865,22 @@ mod tests {
             serde_json::from_str::<Test>(r#"{"headers":null}"#).expect("failed to deserialize"),
             Test {
                 headers: http::HeaderMap::new()
+            }
+        )
+    }
+
+    #[test]
+    fn deserialize_null_multi_value_headers() {
+        #[derive(Debug, PartialEq, Deserialize)]
+        struct Test {
+            #[serde(deserialize_with = "deserialize_multi_value_headers")]
+            multi_value_headers: http::HeaderMap,
+        }
+
+        assert_eq!(
+            serde_json::from_str::<Test>(r#"{"multi_value_headers":null}"#).expect("failed to deserialize"),
+            Test {
+                multi_value_headers: http::HeaderMap::new()
             }
         )
     }

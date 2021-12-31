@@ -1,11 +1,10 @@
 use lambda_runtime::{Context, Error, Handler};
-use log::{info, LevelFilter};
 use serde::{Deserialize, Serialize};
-use simple_logger::SimpleLogger;
 use std::{
     future::{ready, Future},
     pin::Pin,
 };
+use tracing::info;
 
 #[derive(Deserialize, Debug)]
 struct Request {
@@ -37,7 +36,14 @@ impl Handler<Request, Response> for MyHandler {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    SimpleLogger::new().with_level(LevelFilter::Info).init().unwrap();
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::INFO)
+        // this needs to be set to false, otherwise ANSI color codes will
+        // show up in a confusing manner in CloudWatch logs.
+        .with_ansi(false)
+        // disabling time is handy because CloudWatch will add the ingestion time.
+        .without_time()
+        .init();
 
     lambda_runtime::run(MyHandler::default()).await
 }

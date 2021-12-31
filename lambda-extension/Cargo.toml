@@ -24,6 +24,5 @@ tokio-stream = "0.1.2"
 lambda_runtime_api_client = { version = "0.4", path = "../lambda-runtime-api-client" }
 
 [dev-dependencies]
-simple_logger = "1.6.0"
-log = "^0.4"
 simple-error = "0.2"
+tracing-subscriber = "0.3"

@@ -1,9 +1,7 @@
 /// See https://github.com/awslabs/aws-lambda-rust-runtime for more info on Rust runtime for AWS Lambda
 use lambda_runtime::{handler_fn, Error};
-use log::LevelFilter;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use simple_logger::SimpleLogger;
 use std::fs::File;
 
 /// A simple Lambda request structure with just one field
@@ -51,13 +49,8 @@ impl std::fmt::Display for CustomError {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    // The runtime logging can be enabled here by initializing `log` with `simple_logger`
-    // or another compatible crate. The runtime is using `tracing` internally.
-    // You can comment out the `simple_logger` init line and uncomment the following block to
-    // use `tracing` in the handler function.
-    //
-    SimpleLogger::new().with_level(LevelFilter::Info).init().unwrap();
-    /*
+    // The runtime logging can be enabled here by initializing `tracing` with `tracing-subscriber`
+    // While `tracing` is used internally, `log` can be used as well if preferred.
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::INFO)
         // this needs to be set to false, otherwise ANSI color codes will
@@ -66,7 +59,6 @@ async fn main() -> Result<(), Error> {
         // disabling time is handy because CloudWatch will add the ingestion time.
         .without_time()
         .init();
-    */
 
     // call the actual handler of the request
     let func = handler_fn(func);

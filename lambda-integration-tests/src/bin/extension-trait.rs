@@ -1,10 +1,9 @@
 use lambda_extension::{Error, Extension, NextEvent};
-use log::{info, LevelFilter};
-use simple_logger::SimpleLogger;
 use std::{
     future::{ready, Future},
     pin::Pin,
 };
+use tracing::info;
 
 #[derive(Default)]
 struct MyExtension {
@@ -31,7 +30,16 @@ impl Extension for MyExtension {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    SimpleLogger::new().with_level(LevelFilter::Info).init().unwrap();
+    // The runtime logging can be enabled here by initializing `tracing` with `tracing-subscriber`
+    // While `tracing` is used internally, `log` can be used as well if preferred.
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::INFO)
+        // this needs to be set to false, otherwise ANSI color codes will
+        // show up in a confusing manner in CloudWatch logs.
+        .with_ansi(false)
+        // disabling time is handy because CloudWatch will add the ingestion time.
+        .without_time()
+        .init();
 
     lambda_extension::run(MyExtension::default()).await
 }

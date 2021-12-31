@@ -128,7 +128,9 @@ $ aws lambda create-function --function-name rustTest \
 You can now test the function using the AWS CLI or the AWS Lambda console
 
 ```bash
-$ aws lambda invoke --function-name rustTest \
+$ aws lambda invoke
+  --cli-binary-format raw-in-base64-out \
+  --function-name rustTest \
   --payload '{"command": "Say Hi!"}' \
   output.json
 $ cat output.json  # Prints: {"msg": "Command Say Hi! executed."}

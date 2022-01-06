@@ -2,9 +2,7 @@
 // { "command": "do something" }
 
 use lambda_runtime::{handler_fn, Context, Error};
-use log::LevelFilter;
 use serde::{Deserialize, Serialize};
-use simple_logger::SimpleLogger;
 
 /// This is also a made-up example. Requests come into the runtime as unicode
 /// strings in json format, which can map to any structure that implements `serde::Deserialize`
@@ -26,9 +24,14 @@ struct Response {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    // required to enable CloudWatch error logging by the runtime
-    // can be replaced with any other method of initializing `log`
-    SimpleLogger::new().with_level(LevelFilter::Info).init().unwrap();
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::INFO)
+        // this needs to be set to false, otherwise ANSI color codes will
+        // show up in a confusing manner in CloudWatch logs.
+        .with_ansi(false)
+        // disabling time is handy because CloudWatch will add the ingestion time.
+        .without_time()
+        .init();
 
     let func = handler_fn(my_handler);
     lambda_runtime::run(func).await?;

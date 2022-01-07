@@ -4,7 +4,7 @@
 
 //! This crate includes a base HTTP client to interact with
 //! the AWS Lambda Runtime API.
-use http::{uri::Scheme, Request, Response, Uri};
+use http::{uri::PathAndQuery, uri::Scheme, Request, Response, Uri};
 use hyper::{
     client::{connect::Connection, HttpConnector},
     Body,
@@ -58,26 +58,24 @@ where
 
     fn set_origin<B>(&self, req: Request<B>) -> Result<Request<B>, Error> {
         let (mut parts, body) = req.into_parts();
-        let (scheme, authority) = {
+        let (scheme, authority, base_path) = {
             let scheme = self.base.scheme().unwrap_or(&Scheme::HTTP);
             let authority = self.base.authority().expect("Authority not found");
-            (scheme, authority)
+            let base_path = self.base.path().trim_end_matches('/');
+            (scheme, authority, base_path)
         };
         let path = parts.uri.path_and_query().expect("PathAndQuery not found");
+        let pq: PathAndQuery = format!("{}{}", base_path, path).parse().expect("PathAndQuery invalid");
 
         let uri = Uri::builder()
-            .scheme(scheme.clone())
-            .authority(authority.clone())
-            .path_and_query(path.clone())
-            .build();
+            .scheme(scheme.as_ref())
+            .authority(authority.as_ref())
+            .path_and_query(pq)
+            .build()
+            .map_err(Box::new)?;
 
-        match uri {
-            Ok(u) => {
-                parts.uri = u;
-                Ok(Request::from_parts(parts, body))
-            }
-            Err(e) => Err(Box::new(e)),
-        }
+        parts.uri = uri;
+        Ok(Request::from_parts(parts, body))
     }
 }
 
@@ -132,4 +130,51 @@ where
 /// the default User-Agent.
 pub fn build_request() -> http::request::Builder {
     http::Request::builder().header(USER_AGENT_HEADER, USER_AGENT)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_set_origin() {
+        let base = "http://localhost:9001";
+        let client = Client::builder().with_endpoint(base.parse().unwrap()).build().unwrap();
+        let req = build_request()
+            .uri("/2018-06-01/runtime/invocation/next")
+            .body(())
+            .unwrap();
+        let req = client.set_origin(req).unwrap();
+        assert_eq!(
+            "http://localhost:9001/2018-06-01/runtime/invocation/next",
+            &req.uri().to_string()
+        );
+    }
+
+    #[test]
+    fn test_set_origin_with_base_path() {
+        let base = "http://localhost:9001/foo";
+        let client = Client::builder().with_endpoint(base.parse().unwrap()).build().unwrap();
+        let req = build_request()
+            .uri("/2018-06-01/runtime/invocation/next")
+            .body(())
+            .unwrap();
+        let req = client.set_origin(req).unwrap();
+        assert_eq!(
+            "http://localhost:9001/foo/2018-06-01/runtime/invocation/next",
+            &req.uri().to_string()
+        );
+
+        let base = "http://localhost:9001/foo/";
+        let client = Client::builder().with_endpoint(base.parse().unwrap()).build().unwrap();
+        let req = build_request()
+            .uri("/2018-06-01/runtime/invocation/next")
+            .body(())
+            .unwrap();
+        let req = client.set_origin(req).unwrap();
+        assert_eq!(
+            "http://localhost:9001/foo/2018-06-01/runtime/invocation/next",
+            &req.uri().to_string()
+        );
+    }
 }

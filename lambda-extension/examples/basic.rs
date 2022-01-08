@@ -1,7 +1,7 @@
-use lambda_extension::{extension_fn, Error, NextEvent};
+use lambda_extension::{extension_fn, Error, LambdaEvent, NextEvent};
 
-async fn my_extension(event: NextEvent) -> Result<(), Error> {
-    match event {
+async fn my_extension(event: LambdaEvent) -> Result<(), Error> {
+    match event.next {
         NextEvent::Shutdown(_e) => {
             // do something with the shutdown event
         }

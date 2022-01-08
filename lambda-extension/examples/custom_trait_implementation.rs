@@ -1,4 +1,4 @@
-use lambda_extension::{run, Error, Extension, InvokeEvent, NextEvent};
+use lambda_extension::{run, Error, Extension, InvokeEvent, LambdaEvent, NextEvent};
 use std::{
     future::{ready, Future},
     pin::Pin,
@@ -11,8 +11,8 @@ struct MyExtension {
 
 impl Extension for MyExtension {
     type Fut = Pin<Box<dyn Future<Output = Result<(), Error>>>>;
-    fn call(&mut self, event: NextEvent) -> Self::Fut {
-        match event {
+    fn call(&mut self, event: LambdaEvent) -> Self::Fut {
+        match event.next {
             NextEvent::Shutdown(_e) => {
                 self.data.clear();
             }

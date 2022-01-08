@@ -29,11 +29,11 @@
 <span id="29">29</span>
 <span id="30">30</span>
 <span id="31">31</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">lambda_extension</span>::{<span class="ident">extension_fn</span>, <span class="ident">Error</span>, <span class="ident">NextEvent</span>};
+</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">lambda_extension</span>::{<span class="ident">extension_fn</span>, <span class="ident">Error</span>, <span class="ident">LambdaEvent</span>, <span class="ident">NextEvent</span>};
 <span class="kw">use</span> <span class="ident">tracing::info</span>;
 
-<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">my_extension</span>(<span class="ident">event</span>: <span class="ident">NextEvent</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-    <span class="kw">match</span> <span class="ident">event</span> {
+<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">my_extension</span>(<span class="ident">event</span>: <span class="ident">LambdaEvent</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">match</span> <span class="ident">event</span>.<span class="ident">next</span> {
         <span class="ident">NextEvent::Shutdown</span>(<span class="ident">e</span>) =&gt; {
             <span class="macro">info!</span>(<span class="string">&quot;[extension-fn] Shutdown event received: {:?}&quot;</span>, <span class="ident">e</span>);
         }

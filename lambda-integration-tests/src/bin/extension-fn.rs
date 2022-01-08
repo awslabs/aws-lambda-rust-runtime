@@ -1,8 +1,8 @@
-use lambda_extension::{extension_fn, Error, NextEvent};
+use lambda_extension::{extension_fn, Error, LambdaEvent, NextEvent};
 use tracing::info;
 
-async fn my_extension(event: NextEvent) -> Result<(), Error> {
-    match event {
+async fn my_extension(event: LambdaEvent) -> Result<(), Error> {
+    match event.next {
         NextEvent::Shutdown(e) => {
             info!("[extension-fn] Shutdown event received: {:?}", e);
         }

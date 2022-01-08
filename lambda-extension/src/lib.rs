@@ -94,12 +94,21 @@ impl NextEvent {
     }
 }
 
+/// Wrapper with information about the next
+/// event that the Lambda Runtime is going to process
+pub struct LambdaEvent {
+    /// ID assigned to this extension by the Lambda Runtime
+    pub extension_id: String,
+    /// Next incoming event
+    pub next: NextEvent,
+}
+
 /// A trait describing an asynchronous extension.
 pub trait Extension {
     /// Response of this Extension.
     type Fut: Future<Output = Result<(), Error>>;
     /// Handle the incoming event.
-    fn call(&mut self, event: NextEvent) -> Self::Fut;
+    fn call(&mut self, event: LambdaEvent) -> Self::Fut;
 }
 
 /// Returns a new [`ExtensionFn`] with the given closure.
@@ -119,11 +128,11 @@ pub struct ExtensionFn<F> {
 
 impl<F, Fut> Extension for ExtensionFn<F>
 where
-    F: Fn(NextEvent) -> Fut,
+    F: Fn(LambdaEvent) -> Fut,
     Fut: Future<Output = Result<(), Error>>,
 {
     type Fut = Fut;
-    fn call(&mut self, event: NextEvent) -> Self::Fut {
+    fn call(&mut self, event: LambdaEvent) -> Self::Fut {
         (self.f)(event)
     }
 }
@@ -172,6 +181,11 @@ where
             trace!("{}", std::str::from_utf8(&body)?); // this may be very verbose
             let event: NextEvent = serde_json::from_slice(&body)?;
             let is_invoke = event.is_invoke();
+
+            let event = LambdaEvent {
+                extension_id: self.extension_id.clone(),
+                next: event,
+            };
 
             let res = extension.call(event).await;
             if let Err(error) = res {

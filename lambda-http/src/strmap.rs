@@ -41,6 +41,20 @@ impl StrMap {
         StrMapIter {
             data: self,
             keys: self.0.keys(),
+            current: None,
+            next_idx: 0,
+        }
+    }
+
+    /// Return the URI query representation for this map
+    pub fn to_query_string(&self) -> String {
+        if self.is_empty() {
+            "".into()
+        } else {
+            self.iter()
+                .map(|(k, v)| format!("{}={}", k, v))
+                .collect::<Vec<_>>()
+                .join("&")
         }
     }
 }
@@ -62,6 +76,8 @@ impl From<HashMap<String, Vec<String>>> for StrMap {
 pub struct StrMapIter<'a> {
     data: &'a StrMap,
     keys: Keys<'a, String, Vec<String>>,
+    current: Option<(&'a String, Vec<&'a str>)>,
+    next_idx: usize,
 }
 
 impl<'a> Iterator for StrMapIter<'a> {
@@ -69,7 +85,31 @@ impl<'a> Iterator for StrMapIter<'a> {
 
     #[inline]
     fn next(&mut self) -> Option<(&'a str, &'a str)> {
-        self.keys.next().and_then(|k| self.data.get(k).map(|v| (k.as_str(), v)))
+        if self.current.is_none() {
+            self.current = self.keys.next().map(|k| (k, self.data.get_all(k).unwrap_or_default()));
+        };
+
+        let mut reset = false;
+        let ret = if let Some((key, values)) = &self.current {
+            let value = values[self.next_idx];
+
+            if self.next_idx + 1 < values.len() {
+                self.next_idx += 1;
+            } else {
+                reset = true;
+            }
+
+            Some((key.as_str(), value))
+        } else {
+            None
+        };
+
+        if reset {
+            self.current = None;
+            self.next_idx = 0;
+        }
+
+        ret
     }
 }
 
@@ -157,5 +197,25 @@ mod tests {
         let mut values = strmap.iter().map(|(_, v)| v).collect::<Vec<_>>();
         values.sort();
         assert_eq!(values, vec!["bar", "boom"]);
+    }
+
+    #[test]
+    fn test_empty_str_map_to_query_string() {
+        let data = HashMap::new();
+        let strmap = StrMap(data.into());
+        let query = strmap.to_query_string();
+        assert_eq!("", &query);
+    }
+
+    #[test]
+    fn test_str_map_to_query_string() {
+        let mut data = HashMap::new();
+        data.insert("foo".into(), vec!["bar".into(), "qux".into()]);
+        data.insert("baz".into(), vec!["quux".into()]);
+
+        let strmap = StrMap(data.into());
+        let query = strmap.to_query_string();
+        assert!(query.contains("foo=bar&foo=qux"));
+        assert!(query.contains("baz=quux"));
     }
 }

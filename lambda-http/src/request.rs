@@ -441,7 +441,7 @@ impl<'a> From<LambdaRequest<'a>> for http::Request<Body> {
                     .method(http_method)
                     .uri({
                         let host = headers.get(http::header::HOST).and_then(|val| val.to_str().ok());
-                        match host {
+                        let mut uri = match host {
                             Some(host) => {
                                 format!(
                                     "{}://{}{}",
@@ -454,7 +454,17 @@ impl<'a> From<LambdaRequest<'a>> for http::Request<Body> {
                                 )
                             }
                             None => path.to_string(),
+                        };
+
+                        if !multi_value_query_string_parameters.is_empty() {
+                            uri.push('?');
+                            uri.push_str(multi_value_query_string_parameters.to_query_string().as_str());
+                        } else if !query_string_parameters.is_empty() {
+                            uri.push('?');
+                            uri.push_str(query_string_parameters.to_query_string().as_str());
                         }
+
+                        uri
                     })
                     // multi-valued query string parameters are always a super
                     // set of singly valued query string parameters,
@@ -507,7 +517,7 @@ impl<'a> From<LambdaRequest<'a>> for http::Request<Body> {
                     .method(http_method)
                     .uri({
                         let host = headers.get(http::header::HOST).and_then(|val| val.to_str().ok());
-                        match host {
+                        let mut uri = match host {
                             Some(host) => {
                                 format!(
                                     "{}://{}{}",
@@ -520,7 +530,17 @@ impl<'a> From<LambdaRequest<'a>> for http::Request<Body> {
                                 )
                             }
                             None => path.to_string(),
+                        };
+
+                        if !multi_value_query_string_parameters.is_empty() {
+                            uri.push('?');
+                            uri.push_str(multi_value_query_string_parameters.to_query_string().as_str());
+                        } else if !query_string_parameters.is_empty() {
+                            uri.push('?');
+                            uri.push_str(query_string_parameters.to_query_string().as_str());
                         }
+
+                        uri
                     })
                     // multi valued query string parameters are always a super
                     // set of singly valued query string parameters,
@@ -698,7 +718,7 @@ mod tests {
         assert_eq!(req.method(), "GET");
         assert_eq!(
             req.uri(),
-            "https://wt6mne2s9k.execute-api.us-west-2.amazonaws.com/test/hello"
+            "https://wt6mne2s9k.execute-api.us-west-2.amazonaws.com/test/hello?name=me"
         );
 
         // Ensure this is an APIGW request
@@ -727,7 +747,10 @@ mod tests {
         );
         let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "GET");
-        assert_eq!(req.uri(), "https://lambda-846800462-us-east-2.elb.amazonaws.com/");
+        assert_eq!(
+            req.uri(),
+            "https://lambda-846800462-us-east-2.elb.amazonaws.com/?myKey=val2"
+        );
 
         // Ensure this is an ALB request
         let req_context = req.request_context();
@@ -822,7 +845,7 @@ mod tests {
         );
         let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "GET");
-        assert_eq!(req.uri(), "/test/hello");
+        assert_eq!(req.uri(), "/test/hello?name=me");
     }
 
     #[test]

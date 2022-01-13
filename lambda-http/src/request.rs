@@ -154,12 +154,32 @@ pub struct ApiGatewayRequestContext {
     pub account_id: String,
     /// The identifier that API Gateway assigns to your resource.
     pub resource_id: String,
+    /// 
+    #[serde(default, deserialize_with = "nullable_default")]
+    pub operation_name: Option<String>,
     /// The deployment stage of the API request (for example, Beta or Prod).
     pub stage: String,
+    ///
+    #[serde(default, deserialize_with = "nullable_default")]
+    pub domain_name: Option<String>,
+    ///
+    #[serde(default, deserialize_with = "nullable_default")]
+    pub domain_prefix: Option<String>,
     /// The ID that API Gateway assigns to the API request.
     pub request_id: String,
     /// The path to your resource. For example, for the non-proxy request URI of `https://{rest-api-id.execute-api.{region}.amazonaws.com/{stage}/root/child`, The $context.resourcePath value is /root/child.
     pub resource_path: String,
+    ///
+    #[serde(default, deserialize_with = "nullable_default")]
+    pub protocol: Option<String>,
+    ///
+    #[serde(default)]
+    pub request_time: Option<String>,
+    ///
+    pub request_time_epoch: i64,
+    ///
+    #[serde(default, deserialize_with = "nullable_default")]
+    pub apiid: Option<String>,
     /// The HTTP method used. Valid values include: DELETE, GET, HEAD, OPTIONS, PATCH, POST, and PUT.
     pub http_method: String,
     /// The stringified value of the specified key-value pair of the context map returned from an API Gateway Lambda authorizer function.
@@ -168,6 +188,7 @@ pub struct ApiGatewayRequestContext {
     /// The identifier API Gateway assigns to your API.
     pub api_id: String,
     /// Cofnito identity information
+    #[serde(default)]
     pub identity: Identity,
 }
 

@@ -86,7 +86,9 @@ pub enum LambdaRequest<'a> {
         body: Option<Cow<'a, str>>,
         #[serde(default)]
         is_base64_encoded: bool,
-        request_context: ApiGatewayRequestContext,
+        request_context: ApiGatewayRequestContext,      
+        #[serde(default, deserialize_with = "nullable_default")]
+        resource: Option<String>,
     },
 }
 
@@ -436,6 +438,7 @@ impl<'a> From<LambdaRequest<'a>> for http::Request<Body> {
                 body,
                 is_base64_encoded,
                 request_context,
+                resource: _,
             } => {
                 let builder = http::Request::builder()
                     .method(http_method)

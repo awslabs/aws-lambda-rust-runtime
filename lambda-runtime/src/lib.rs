@@ -4,17 +4,17 @@
 
 //! The mechanism available for defining a Lambda function is as follows:
 //!
-//! Create a type that conforms to the [`Handler`] trait. This type can then be passed
-//! to the the `lambda_runtime::run` function, which launches and runs the Lambda runtime.
-pub use crate::types::{Context, LambdaRequest};
+//! Create a type that conforms to the [`tower::Service`] trait. This type can
+//! then be passed to the the `lambda_runtime::run` function, which launches
+//! and runs the Lambda runtime.
 use hyper::client::{connect::Connection, HttpConnector};
 use lambda_runtime_api_client::Client;
 use serde::{Deserialize, Serialize};
 use std::{convert::TryFrom, env, fmt, future::Future, panic};
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio_stream::{Stream, StreamExt};
-pub use tower;
-use tower::{service_fn, util::ServiceFn, Service};
+pub use tower::{self, Service};
+use tower::{service_fn, util::ServiceFn};
 use tracing::{error, trace};
 
 mod requests;
@@ -25,6 +25,7 @@ mod types;
 
 use requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest};
 use types::Diagnostic;
+pub use types::{Context, LambdaEvent};
 
 /// Error type that lambdas may result in
 pub type Error = lambda_runtime_api_client::Error;
@@ -61,13 +62,13 @@ impl Config {
     }
 }
 
-/// Wraps a function that takes 2 arguments into one that only takes a [`LambdaRequest`]
-fn handler_wrapper<A, Fut>(f: impl Fn(A, Context) -> Fut) -> impl Fn(LambdaRequest<A>) -> Fut {
+/// Wraps a function that takes 2 arguments into one that only takes a [`LambdaEvent`]
+fn handler_wrapper<A, Fut>(f: impl Fn(A, Context) -> Fut) -> impl Fn(LambdaEvent<A>) -> Fut {
     move |req| f(req.event, req.context)
 }
 
 /// Return a new [`ServiceFn`] with a closure that takes an event and context as separate arguments.
-pub fn handler_fn<A, F, Fut>(f: F) -> ServiceFn<impl Fn(LambdaRequest<A>) -> Fut>
+pub fn handler_fn<A, F, Fut>(f: F) -> ServiceFn<impl Fn(LambdaEvent<A>) -> Fut>
 where
     F: Fn(A, Context) -> Fut,
 {
@@ -92,7 +93,7 @@ where
         config: &Config,
     ) -> Result<(), Error>
     where
-        F: Service<LambdaRequest<A>>,
+        F: Service<LambdaEvent<A>>,
         F::Future: Future<Output = Result<B, F::Error>>,
         F::Error: fmt::Display,
         A: for<'de> Deserialize<'de>,
@@ -115,7 +116,7 @@ where
             env::set_var("_X_AMZN_TRACE_ID", xray_trace_id);
 
             let request_id = &ctx.request_id.clone();
-            let task = panic::catch_unwind(panic::AssertUnwindSafe(|| handler.call(LambdaRequest::new(body, ctx))));
+            let task = panic::catch_unwind(panic::AssertUnwindSafe(|| handler.call(LambdaEvent::new(body, ctx))));
 
             let req = match task {
                 Ok(response) => match response.await {
@@ -200,7 +201,7 @@ where
 /// ```
 pub async fn run<A, B, F>(handler: F) -> Result<(), Error>
 where
-    F: Service<LambdaRequest<A>>,
+    F: Service<LambdaEvent<A>>,
     F::Future: Future<Output = Result<B, F::Error>>,
     F::Error: fmt::Display,
     A: for<'de> Deserialize<'de>,

@@ -168,14 +168,14 @@ impl TryFrom<HeaderMap> for Context {
 
 /// Incoming Lambda request containing the event payload and context.
 #[derive(Clone, Debug)]
-pub struct LambdaRequest<T> {
+pub struct LambdaEvent<T> {
     /// Event payload.
     pub event: T,
     /// Invocation context.
     pub context: Context,
 }
 
-impl<T> LambdaRequest<T> {
+impl<T> LambdaEvent<T> {
     /// Creates a new Lambda request
     pub fn new(event: T, context: Context) -> Self {
         Self { event, context }

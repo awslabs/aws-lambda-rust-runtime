@@ -23,5 +23,6 @@ async fn main() -> Result<(), Error> {
         .without_time()
         .init();
 
-    lambda_runtime::run(lambda_http::handler(handler)).await
+    let handler = lambda_http::handler(handler);
+    lambda_runtime::run(handler).await
 }

@@ -63,7 +63,10 @@ extern crate maplit;
 
 pub use http::{self, Response};
 pub use lambda_runtime::{self, Context};
-use lambda_runtime::{Error, LambdaEvent, Service};
+use lambda_runtime::{
+    tower::util::{service_fn, ServiceFn},
+    Error, LambdaEvent, Service,
+};
 
 mod body;
 pub mod ext;
@@ -85,47 +88,29 @@ use std::{
 /// Type alias for `http::Request`s with a fixed [`Body`](enum.Body.html) type
 pub type Request = http::Request<Body>;
 
-/// Functions serving as ALB and API Gateway REST and HTTP API handlers must conform to this type.
-///
-/// This can be viewed as a `lambda_runtime::Handler` constrained to `http` crate `Request` and `Response` types
-pub trait Handler<'a>: Sized {
-    /// The type of Error that this Handler will return
-    type Error;
-    /// The type of Response this Handler will return
-    type Response: IntoResponse;
-    /// The type of Future this Handler will return
-    type Fut: Future<Output = Result<Self::Response, Self::Error>> + 'a;
-    /// Function used to execute handler behavior
-    fn call(&mut self, event: Request, context: Context) -> Self::Fut;
+/// Wraps a function that takes 2 arguments into one that only takes a [`LambdaEvent`]
+fn handler_wrapper<A, Fut>(f: impl Fn(A, Context) -> Fut) -> impl Fn(LambdaEvent<A>) -> Fut {
+    move |req| f(req.event, req.context)
 }
 
-/// Adapts a [`Handler`](trait.Handler.html) to the `lambda_runtime::run` interface
-pub fn handler<'a, H: Handler<'a>>(handler: H) -> Adapter<'a, H> {
-    Adapter {
-        handler,
-        _phantom_data: PhantomData,
-    }
-}
-
-/// An implementation of `Handler` for a given closure return a `Future` representing the computed response
-impl<'a, F, R, Fut> Handler<'a> for F
+/// Adapts a [`Service`] into another [`Service`].
+pub fn handler<'a, R, Fut>(
+    f: impl Fn(Request, Context) -> Fut,
+) -> Adapter<'a, R, ServiceFn<impl Fn(LambdaEvent<Request>) -> Fut>>
 where
-    F: Fn(Request, Context) -> Fut,
     R: IntoResponse,
-    Fut: Future<Output = Result<R, Error>> + 'a,
+    Fut: Future<Output = Result<R, Error>>,
 {
-    type Response = R;
-    type Error = Error;
-    type Fut = Fut;
-    fn call(&mut self, event: Request, context: Context) -> Self::Fut {
-        (self)(event, context)
+    Adapter {
+        service: service_fn(handler_wrapper(f)),
+        _phantom_data: PhantomData,
     }
 }
 
 #[doc(hidden)]
 pub struct TransformResponse<'a, R, E> {
     request_origin: RequestOrigin,
-    fut: Pin<Box<dyn Future<Output = Result<R, E>> + 'a>>,
+    fut: Pin<Box<dyn Future<Output = Result<R, E>> + Send + 'a>>,
 }
 
 impl<'a, R, E> Future for TransformResponse<'a, R, E>
@@ -133,6 +118,7 @@ where
     R: IntoResponse,
 {
     type Output = Result<LambdaResponse, E>;
+
     fn poll(mut self: Pin<&mut Self>, cx: &mut TaskContext) -> Poll<Self::Output> {
         match self.fut.as_mut().poll(cx) {
             Poll::Ready(result) => Poll::Ready(
@@ -143,39 +129,29 @@ where
     }
 }
 
-/// Exists only to satisfy the trait cover rule for `lambda_runtime::Handler` impl
-///
-/// User code should never need to interact with this type directly. Since `Adapter` implements `Handler`
-/// It serves as a opaque trait covering type.
-///
-/// See [this article](http://smallcultfollowing.com/babysteps/blog/2015/01/14/little-orphan-impls/)
-/// for a larger explanation of why this is necessary
-pub struct Adapter<'a, H: Handler<'a>> {
-    handler: H,
-    _phantom_data: PhantomData<&'a H>,
+#[doc(hidden)]
+pub struct Adapter<'a, R, S> {
+    service: S,
+    _phantom_data: PhantomData<&'a R>,
 }
 
-impl<'a, H: Handler<'a>> Handler<'a> for Adapter<'a, H> {
-    type Response = H::Response;
-    type Error = H::Error;
-    type Fut = H::Fut;
-    fn call(&mut self, event: Request, context: Context) -> Self::Fut {
-        self.handler.call(event, context)
-    }
-}
-
-impl<'a, 'b, H: Handler<'a>> Service<LambdaEvent<LambdaRequest<'b>>> for Adapter<'a, H> {
-    type Error = H::Error;
+impl<'a, R, S> Service<LambdaEvent<LambdaRequest<'a>>> for Adapter<'a, R, S>
+where
+    S: Service<LambdaEvent<Request>, Response = R, Error = Error> + Send,
+    S::Future: Send + 'a,
+    R: IntoResponse,
+{
     type Response = LambdaResponse;
-    type Future = TransformResponse<'a, H::Response, H::Error>;
+    type Error = Error;
+    type Future = TransformResponse<'a, R, Self::Error>;
 
     fn poll_ready(&mut self, _cx: &mut core::task::Context<'_>) -> core::task::Poll<Result<(), Self::Error>> {
         core::task::Poll::Ready(Ok(()))
     }
 
-    fn call(&mut self, req: LambdaEvent<LambdaRequest<'_>>) -> Self::Future {
+    fn call(&mut self, req: LambdaEvent<LambdaRequest<'a>>) -> Self::Future {
         let request_origin = req.event.request_origin();
-        let fut = Box::pin(self.handler.call(req.event.into(), req.context));
+        let fut = Box::pin(self.service.call(LambdaEvent::new(req.event.into(), req.context)));
         TransformResponse { request_origin, fut }
     }
 }

@@ -63,7 +63,7 @@ extern crate maplit;
 
 pub use http::{self, Response};
 pub use lambda_runtime::{self, Context};
-use lambda_runtime::{Error, LambdaRequest as RuntimeRequest, Service};
+use lambda_runtime::{Error, LambdaEvent, Service};
 
 mod body;
 pub mod ext;
@@ -164,7 +164,7 @@ impl<'a, H: Handler<'a>> Handler<'a> for Adapter<'a, H> {
     }
 }
 
-impl<'a, 'b, H: Handler<'a>> Service<RuntimeRequest<LambdaRequest<'b>>> for Adapter<'a, H> {
+impl<'a, 'b, H: Handler<'a>> Service<LambdaEvent<LambdaRequest<'b>>> for Adapter<'a, H> {
     type Error = H::Error;
     type Response = LambdaResponse;
     type Future = TransformResponse<'a, H::Response, H::Error>;
@@ -173,7 +173,7 @@ impl<'a, 'b, H: Handler<'a>> Service<RuntimeRequest<LambdaRequest<'b>>> for Adap
         core::task::Poll::Ready(Ok(()))
     }
 
-    fn call(&mut self, req: RuntimeRequest<LambdaRequest<'_>>) -> Self::Future {
+    fn call(&mut self, req: LambdaEvent<LambdaRequest<'_>>) -> Self::Future {
         let request_origin = req.event.request_origin();
         let fut = Box::pin(self.handler.call(req.event.into(), req.context));
         TransformResponse { request_origin, fut }

@@ -1,4 +1,4 @@
-use lambda_runtime::{Context, Error, Handler};
+use lambda_runtime::{Error, Service, LambdaEvent};
 use serde::{Deserialize, Serialize};
 use std::{
     future::{ready, Future},
@@ -21,15 +21,20 @@ struct MyHandler {
     invoke_count: usize,
 }
 
-impl Handler<Request, Response> for MyHandler {
+impl Service<LambdaEvent<Request>> for MyHandler {
     type Error = Error;
-    type Fut = Pin<Box<dyn Future<Output = Result<Response, Error>>>>;
+    type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Error>>>>;
+    type Response = Response;
 
-    fn call(&mut self, event: Request, _context: Context) -> Self::Fut {
+    fn poll_ready(&mut self, _cx: &mut core::task::Context<'_>) -> core::task::Poll<Result<(), Self::Error>> {
+        core::task::Poll::Ready(Ok(()))
+    }
+
+    fn call(&mut self, request: LambdaEvent<Request>) -> Self::Future {
         self.invoke_count += 1;
-        info!("[handler] Received event {}: {:?}", self.invoke_count, event);
+        info!("[handler] Received event {}: {:?}", self.invoke_count, request);
         Box::pin(ready(Ok(Response {
-            message: event.command.to_uppercase(),
+            message: request.event.command.to_uppercase(),
         })))
     }
 }

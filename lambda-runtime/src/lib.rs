@@ -6,14 +6,15 @@
 //!
 //! Create a type that conforms to the [`Handler`] trait. This type can then be passed
 //! to the the `lambda_runtime::run` function, which launches and runs the Lambda runtime.
-pub use crate::types::Context;
+pub use crate::types::{Context, LambdaRequest};
 use hyper::client::{connect::Connection, HttpConnector};
 use lambda_runtime_api_client::Client;
 use serde::{Deserialize, Serialize};
 use std::{convert::TryFrom, env, fmt, future::Future, panic};
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio_stream::{Stream, StreamExt};
-use tower_service::Service;
+pub use tower;
+use tower::{service_fn, util::ServiceFn, Service};
 use tracing::{error, trace};
 
 mod requests;
@@ -60,42 +61,17 @@ impl Config {
     }
 }
 
-/// A trait describing an asynchronous function `A` to `B`.
-pub trait Handler<A, B> {
-    /// Errors returned by this handler.
-    type Error;
-    /// Response of this handler.
-    type Fut: Future<Output = Result<B, Self::Error>>;
-    /// Handle the incoming event.
-    fn call(&mut self, event: A, context: Context) -> Self::Fut;
+/// Wraps a function that takes 2 arguments into one that only takes a [`LambdaRequest`]
+fn handler_wrapper<A, Fut>(f: impl Fn(A, Context) -> Fut) -> impl Fn(LambdaRequest<A>) -> Fut {
+    move |req| f(req.event, req.context)
 }
 
-/// Returns a new [`HandlerFn`] with the given closure.
-///
-/// [`HandlerFn`]: struct.HandlerFn.html
-pub fn handler_fn<F>(f: F) -> HandlerFn<F> {
-    HandlerFn { f }
-}
-
-/// A [`Handler`] implemented by a closure.
-///
-/// [`Handler`]: trait.Handler.html
-#[derive(Clone, Debug)]
-pub struct HandlerFn<F> {
-    f: F,
-}
-
-impl<F, A, B, Error, Fut> Handler<A, B> for HandlerFn<F>
+/// Return a new [`ServiceFn`] with a closure that takes an event and context as separate arguments.
+pub fn handler_fn<A, F, Fut>(f: F) -> ServiceFn<impl Fn(LambdaRequest<A>) -> Fut>
 where
     F: Fn(A, Context) -> Fut,
-    Fut: Future<Output = Result<B, Error>>,
-    Error: Into<Box<dyn std::error::Error + Send + Sync + 'static>> + fmt::Display,
 {
-    type Error = Error;
-    type Fut = Fut;
-    fn call(&mut self, req: A, ctx: Context) -> Self::Fut {
-        (self.f)(req, ctx)
-    }
+    service_fn(handler_wrapper(f))
 }
 
 struct Runtime<C: Service<http::Uri> = HttpConnector> {
@@ -105,9 +81,9 @@ struct Runtime<C: Service<http::Uri> = HttpConnector> {
 impl<C> Runtime<C>
 where
     C: Service<http::Uri> + Clone + Send + Sync + Unpin + 'static,
-    <C as Service<http::Uri>>::Future: Unpin + Send,
-    <C as Service<http::Uri>>::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
-    <C as Service<http::Uri>>::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
+    C::Future: Unpin + Send,
+    C::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
+    C::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
 {
     pub async fn run<F, A, B>(
         &self,
@@ -116,9 +92,9 @@ where
         config: &Config,
     ) -> Result<(), Error>
     where
-        F: Handler<A, B>,
-        <F as Handler<A, B>>::Fut: Future<Output = Result<B, <F as Handler<A, B>>::Error>>,
-        <F as Handler<A, B>>::Error: fmt::Display,
+        F: Service<LambdaRequest<A>>,
+        F::Future: Future<Output = Result<B, F::Error>>,
+        F::Error: fmt::Display,
         A: for<'de> Deserialize<'de>,
         B: Serialize,
     {
@@ -139,7 +115,7 @@ where
             env::set_var("_X_AMZN_TRACE_ID", xray_trace_id);
 
             let request_id = &ctx.request_id.clone();
-            let task = panic::catch_unwind(panic::AssertUnwindSafe(|| handler.call(body, ctx)));
+            let task = panic::catch_unwind(panic::AssertUnwindSafe(|| handler.call(LambdaRequest::new(body, ctx))));
 
             let req = match task {
                 Ok(response) => match response.await {
@@ -224,9 +200,9 @@ where
 /// ```
 pub async fn run<A, B, F>(handler: F) -> Result<(), Error>
 where
-    F: Handler<A, B>,
-    <F as Handler<A, B>>::Fut: Future<Output = Result<B, <F as Handler<A, B>>::Error>>,
-    <F as Handler<A, B>>::Error: fmt::Display,
+    F: Service<LambdaRequest<A>>,
+    F::Future: Future<Output = Result<B, F::Error>>,
+    F::Error: fmt::Display,
     A: for<'de> Deserialize<'de>,
     B: Serialize,
 {

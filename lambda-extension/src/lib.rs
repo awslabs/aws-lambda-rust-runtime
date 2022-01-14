@@ -9,10 +9,11 @@
 use hyper::client::{connect::Connection, HttpConnector};
 use lambda_runtime_api_client::Client;
 use serde::Deserialize;
-use std::{future::Future, path::PathBuf};
+use std::{future::Future, path::PathBuf, fmt};
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio_stream::StreamExt;
-use tower_service::Service;
+pub use tower::{self, Service};
+use tower::{util::ServiceFn, service_fn};
 use tracing::trace;
 
 /// Include several request builders to interact with the Extension API.
@@ -103,39 +104,46 @@ pub struct LambdaEvent {
     pub next: NextEvent,
 }
 
-/// A trait describing an asynchronous extension.
-pub trait Extension {
-    /// Response of this Extension.
-    type Fut: Future<Output = Result<(), Error>>;
-    /// Handle the incoming event.
-    fn call(&mut self, event: LambdaEvent) -> Self::Fut;
-}
+// /// A trait describing an asynchronous extension.
+// pub trait Extension {
+//     /// Response of this Extension.
+//     type Fut: Future<Output = Result<(), Error>>;
+//     /// Handle the incoming event.
+//     fn call(&mut self, event: LambdaEvent) -> Self::Fut;
+// }
 
-/// Returns a new [`ExtensionFn`] with the given closure.
-///
-/// [`ExtensionFn`]: struct.ExtensionFn.html
-pub fn extension_fn<F>(f: F) -> ExtensionFn<F> {
-    ExtensionFn { f }
-}
+// /// Returns a new [`ExtensionFn`] with the given closure.
+// ///
+// /// [`ExtensionFn`]: struct.ExtensionFn.html
+// pub fn extension_fn<F>(f: F) -> ExtensionFn<F> {
+//     ExtensionFn { f }
+// }
 
-/// An [`Extension`] implemented by a closure.
-///
-/// [`Extension`]: trait.Extension.html
-#[derive(Clone, Debug)]
-pub struct ExtensionFn<F> {
-    f: F,
-}
-
-impl<F, Fut> Extension for ExtensionFn<F>
+/// Returns a new [`ServiceFn`] with the given closure.
+pub fn extension_fn<F, Fut>(f: F) -> ServiceFn<impl Fn(LambdaEvent) -> Fut>
 where
-    F: Fn(LambdaEvent) -> Fut,
-    Fut: Future<Output = Result<(), Error>>,
-{
-    type Fut = Fut;
-    fn call(&mut self, event: LambdaEvent) -> Self::Fut {
-        (self.f)(event)
-    }
+    F: Fn(LambdaEvent) -> Fut {
+        service_fn(f)
 }
+
+// /// An [`Extension`] implemented by a closure.
+// ///
+// /// [`Extension`]: trait.Extension.html
+// #[derive(Clone, Debug)]
+// pub struct ExtensionFn<F> {
+//     f: F,
+// }
+
+// impl<F, Fut> Extension for ExtensionFn<F>
+// where
+//     F: Fn(LambdaEvent) -> Fut,
+//     Fut: Future<Output = Result<(), Error>>,
+// {
+//     type Fut = Fut;
+//     fn call(&mut self, event: LambdaEvent) -> Self::Fut {
+//         (self.f)(event)
+//     }
+// }
 
 /// The Runtime handles all the incoming extension requests
 pub struct Runtime<C: Service<http::Uri> = HttpConnector> {
@@ -153,13 +161,18 @@ impl Runtime {
 impl<C> Runtime<C>
 where
     C: Service<http::Uri> + Clone + Send + Sync + Unpin + 'static,
-    <C as Service<http::Uri>>::Future: Unpin + Send,
-    <C as Service<http::Uri>>::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
-    <C as Service<http::Uri>>::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
+    C::Future: Unpin + Send,
+    C::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
+    C::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
 {
     /// Execute the given extension.
     /// Register the extension with the Extensions API and wait for incoming events.
-    pub async fn run(&self, mut extension: impl Extension) -> Result<(), Error> {
+    pub async fn run<E>(&self, mut extension: E) -> Result<(), Error>
+        where
+            E: Service<LambdaEvent>,
+            E::Future: Future<Output = Result<(), E::Error>>,
+            E::Error: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Display,
+        {
         let client = &self.client;
 
         let incoming = async_stream::stream! {
@@ -196,7 +209,7 @@ where
                 };
 
                 self.client.call(req).await?;
-                return Err(error);
+                return Err(error.into());
             }
         }
 
@@ -263,9 +276,11 @@ impl<'a> RuntimeBuilder<'a> {
 }
 
 /// Execute the given extension
-pub async fn run<Ex>(extension: Ex) -> Result<(), Error>
+pub async fn run<E>(extension: E) -> Result<(), Error>
 where
-    Ex: Extension,
+    E: Service<LambdaEvent>,
+    E::Future: Future<Output = Result<(), E::Error>>,
+    E::Error: Into<Box<dyn std::error::Error + Send + Sync>> +  fmt::Display,
 {
     Runtime::builder().register().await?.run(extension).await
 }

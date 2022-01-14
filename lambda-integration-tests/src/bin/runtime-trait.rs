@@ -1,4 +1,4 @@
-use lambda_runtime::{Error, Service, LambdaEvent};
+use lambda_runtime::{Error, LambdaEvent, Service};
 use serde::{Deserialize, Serialize};
 use std::{
     future::{ready, Future},

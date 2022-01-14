@@ -9,11 +9,11 @@
 use hyper::client::{connect::Connection, HttpConnector};
 use lambda_runtime_api_client::Client;
 use serde::Deserialize;
-use std::{future::Future, path::PathBuf, fmt};
+use std::{fmt, future::Future, path::PathBuf};
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio_stream::StreamExt;
 pub use tower::{self, Service};
-use tower::{util::ServiceFn, service_fn};
+use tower::{service_fn, util::ServiceFn};
 use tracing::trace;
 
 /// Include several request builders to interact with the Extension API.
@@ -122,8 +122,9 @@ pub struct LambdaEvent {
 /// Returns a new [`ServiceFn`] with the given closure.
 pub fn extension_fn<F, Fut>(f: F) -> ServiceFn<impl Fn(LambdaEvent) -> Fut>
 where
-    F: Fn(LambdaEvent) -> Fut {
-        service_fn(f)
+    F: Fn(LambdaEvent) -> Fut,
+{
+    service_fn(f)
 }
 
 // /// An [`Extension`] implemented by a closure.
@@ -168,11 +169,11 @@ where
     /// Execute the given extension.
     /// Register the extension with the Extensions API and wait for incoming events.
     pub async fn run<E>(&self, mut extension: E) -> Result<(), Error>
-        where
-            E: Service<LambdaEvent>,
-            E::Future: Future<Output = Result<(), E::Error>>,
-            E::Error: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Display,
-        {
+    where
+        E: Service<LambdaEvent>,
+        E::Future: Future<Output = Result<(), E::Error>>,
+        E::Error: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Display,
+    {
         let client = &self.client;
 
         let incoming = async_stream::stream! {
@@ -280,7 +281,7 @@ pub async fn run<E>(extension: E) -> Result<(), Error>
 where
     E: Service<LambdaEvent>,
     E::Future: Future<Output = Result<(), E::Error>>,
-    E::Error: Into<Box<dyn std::error::Error + Send + Sync>> +  fmt::Display,
+    E::Error: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Display,
 {
     Runtime::builder().register().await?.run(extension).await
 }

@@ -1,4 +1,4 @@
-use lambda_extension::{run, Error, Service, InvokeEvent, LambdaEvent, NextEvent};
+use lambda_extension::{run, Error, InvokeEvent, LambdaEvent, NextEvent, Service};
 use std::{
     future::{ready, Future},
     pin::Pin,

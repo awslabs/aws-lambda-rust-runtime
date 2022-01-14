@@ -1,4 +1,4 @@
-use lambda_extension::{Error, Service, LambdaEvent, NextEvent};
+use lambda_extension::{Error, LambdaEvent, NextEvent, Service};
 use std::{
     future::{ready, Future},
     pin::Pin,

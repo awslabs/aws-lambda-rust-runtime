@@ -86,7 +86,7 @@ pub enum LambdaRequest<'a> {
         body: Option<Cow<'a, str>>,
         #[serde(default)]
         is_base64_encoded: bool,
-        request_context: ApiGatewayRequestContext,      
+        request_context: ApiGatewayRequestContext,
         #[serde(default, deserialize_with = "nullable_default")]
         resource: Option<String>,
     },

@@ -154,31 +154,23 @@ pub struct ApiGatewayRequestContext {
     pub account_id: String,
     /// The identifier that API Gateway assigns to your resource.
     pub resource_id: String,
-    /// 
-    #[serde(default, deserialize_with = "nullable_default")]
-    pub operation_name: Option<String>,
     /// The deployment stage of the API request (for example, Beta or Prod).
     pub stage: String,
-    ///
-    #[serde(default, deserialize_with = "nullable_default")]
+    /// The full domain name used to invoke the API. This should be the same as the incoming Host header.
     pub domain_name: Option<String>,
-    ///
-    #[serde(default, deserialize_with = "nullable_default")]
+    /// The first label of the $context.domainName. This is often used as a caller/customer identifier.
     pub domain_prefix: Option<String>,
     /// The ID that API Gateway assigns to the API request.
     pub request_id: String,
     /// The path to your resource. For example, for the non-proxy request URI of `https://{rest-api-id.execute-api.{region}.amazonaws.com/{stage}/root/child`, The $context.resourcePath value is /root/child.
     pub resource_path: String,
-    ///
-    #[serde(default, deserialize_with = "nullable_default")]
+    /// The request protocol, for example, HTTP/1.1.
     pub protocol: Option<String>,
-    ///
-    #[serde(default)]
+    /// The CLF-formatted request time (dd/MMM/yyyy:HH:mm:ss +-hhmm).
     pub request_time: Option<String>,
-    ///
+    /// The Epoch-formatted request time, in milliseconds.
     pub request_time_epoch: i64,
-    ///
-    #[serde(default, deserialize_with = "nullable_default")]
+    /// The identifier API Gateway assigns to your API.
     pub apiid: Option<String>,
     /// The HTTP method used. Valid values include: DELETE, GET, HEAD, OPTIONS, PATCH, POST, and PUT.
     pub http_method: String,

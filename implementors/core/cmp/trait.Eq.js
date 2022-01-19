@@ -1,3 +1,3 @@
 (function() {var implementors = {};
-implementors["lambda_extension"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.57.0/core/cmp/trait.Eq.html\" title=\"trait core::cmp::Eq\">Eq</a> for <a class=\"struct\" href=\"lambda_extension/struct.ExtensionError.html\" title=\"struct lambda_extension::ExtensionError\">ExtensionError</a>","synthetic":false,"types":["lambda_extension::ExtensionError"]}];
+implementors["lambda_extension"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.58.0/core/cmp/trait.Eq.html\" title=\"trait core::cmp::Eq\">Eq</a> for <a class=\"struct\" href=\"lambda_extension/struct.ExtensionError.html\" title=\"struct lambda_extension::ExtensionError\">ExtensionError</a>","synthetic":false,"types":["lambda_extension::ExtensionError"]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

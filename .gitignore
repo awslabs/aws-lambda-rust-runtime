@@ -11,5 +11,4 @@ lambda.zip
 output.json
 
 .aws-sam
-build.history
-.history
+build

@@ -26,6 +26,7 @@
     "resourceId": "us4z18",
     "stage": "test",
     "requestId": "41b45ea3-70b5-11e6-b7bd-69b5aaebc7d9",
+    "requestTimeEpoch": 1583798639428,
     "identity": {
       "cognitoIdentityPoolId": "",
       "accountId": "",

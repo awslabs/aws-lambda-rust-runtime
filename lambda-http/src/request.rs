@@ -87,6 +87,8 @@ pub enum LambdaRequest<'a> {
         #[serde(default)]
         is_base64_encoded: bool,
         request_context: ApiGatewayRequestContext,
+        #[serde(default, deserialize_with = "nullable_default")]
+        resource: Option<String>,
     },
 }
 
@@ -154,10 +156,22 @@ pub struct ApiGatewayRequestContext {
     pub resource_id: String,
     /// The deployment stage of the API request (for example, Beta or Prod).
     pub stage: String,
+    /// The full domain name used to invoke the API. This should be the same as the incoming Host header.
+    pub domain_name: Option<String>,
+    /// The first label of the $context.domainName. This is often used as a caller/customer identifier.
+    pub domain_prefix: Option<String>,
     /// The ID that API Gateway assigns to the API request.
     pub request_id: String,
     /// The path to your resource. For example, for the non-proxy request URI of `https://{rest-api-id.execute-api.{region}.amazonaws.com/{stage}/root/child`, The $context.resourcePath value is /root/child.
     pub resource_path: String,
+    /// The request protocol, for example, HTTP/1.1.
+    pub protocol: Option<String>,
+    /// The CLF-formatted request time (dd/MMM/yyyy:HH:mm:ss +-hhmm).
+    pub request_time: Option<String>,
+    /// The Epoch-formatted request time, in milliseconds.
+    pub request_time_epoch: i64,
+    /// The identifier API Gateway assigns to your API.
+    pub apiid: Option<String>,
     /// The HTTP method used. Valid values include: DELETE, GET, HEAD, OPTIONS, PATCH, POST, and PUT.
     pub http_method: String,
     /// The stringified value of the specified key-value pair of the context map returned from an API Gateway Lambda authorizer function.
@@ -166,6 +180,7 @@ pub struct ApiGatewayRequestContext {
     /// The identifier API Gateway assigns to your API.
     pub api_id: String,
     /// Cofnito identity information
+    #[serde(default)]
     pub identity: Identity,
 }
 
@@ -436,6 +451,7 @@ impl<'a> From<LambdaRequest<'a>> for http::Request<Body> {
                 body,
                 is_base64_encoded,
                 request_context,
+                resource: _,
             } => {
                 let builder = http::Request::builder()
                     .method(http_method)

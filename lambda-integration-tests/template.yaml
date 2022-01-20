@@ -28,7 +28,7 @@ Resources:
         - !Ref ExtensionFn
         - !Ref ExtensionTrait
 
-  # Rust function using a Handler implementation running on AL2
+  # Rust function using a Service implementation running on AL2
   RuntimeTraitAl2:
     Type: AWS::Serverless::Function
     Properties:
@@ -38,7 +38,7 @@ Resources:
         - !Ref ExtensionFn
         - !Ref ExtensionTrait
   
-  # Rust function using a Handler implementation running on AL1
+  # Rust function using a Service implementation running on AL1
   RuntimeTrait:
     Type: AWS::Serverless::Function
     Properties:
@@ -48,7 +48,7 @@ Resources:
         - !Ref ExtensionFn
         - !Ref ExtensionTrait
   
-  # Rust function using lambda_http::runtime running on AL2
+  # Rust function using lambda_http::service_fn running on AL2
   HttpFnAl2:
     Type: AWS::Serverless::Function
     Properties:
@@ -78,8 +78,39 @@ Resources:
       Layers:
         - !Ref ExtensionFn
         - !Ref ExtensionTrait
+  
+  # Rust function using lambda_http with Service running on AL2
+  HttpTraitAl2:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../build/http-trait/
+      Runtime: provided.al2
+      Events:
+        ApiGet:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /al2-trait/get
+        ApiPost:
+          Type: Api
+          Properties:
+            Method: POST
+            Path: /al2-trait/post
+        ApiV2Get:
+          Type: HttpApi
+          Properties:
+            Method: GET
+            Path: /al2-trait/get
+        ApiV2Post:
+          Type: HttpApi
+          Properties:
+            Method: POST
+            Path: /al2-trait/post
+      Layers:
+        - !Ref ExtensionFn
+        - !Ref ExtensionTrait
 
-  # Rust function using lambda_http::runtime running on AL1
+  # Rust function using lambda_http::service_fn running on AL1
   HttpFn:
     Type: AWS::Serverless::Function
     Properties:
@@ -106,6 +137,37 @@ Resources:
           Properties:
             Method: POST
             Path: /post
+      Layers:
+        - !Ref ExtensionFn
+        - !Ref ExtensionTrait
+
+  # Rust function using lambda_http with Service running on AL1
+  HttpTrait:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../build/http-trait/
+      Runtime: provided
+      Events:
+        ApiGet:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /trait/get
+        ApiPost:
+          Type: Api
+          Properties:
+            Method: POST
+            Path: /trait/post
+        ApiV2Get:
+          Type: HttpApi
+          Properties:
+            Method: GET
+            Path: /trait/get
+        ApiV2Post:
+          Type: HttpApi
+          Properties:
+            Method: POST
+            Path: /trait/post
       Layers:
         - !Ref ExtensionFn
         - !Ref ExtensionTrait

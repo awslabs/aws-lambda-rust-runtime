@@ -61,8 +61,12 @@
 extern crate maplit;
 
 pub use http::{self, Response};
-pub use lambda_runtime::{self, tower::util::service_fn, Context, Error};
-use lambda_runtime::{LambdaEvent, Service};
+use lambda_runtime::LambdaEvent;
+pub use lambda_runtime::{
+    self,
+    tower::{util::service_fn, Service},
+    Context, Error,
+};
 
 mod body;
 pub mod ext;
@@ -87,7 +91,8 @@ pub type Request = http::Request<Body>;
 /// Future that will convert an [`IntoResponse`] into an actual [`LambdaResponse`]
 ///
 /// This is used by the `Adapter` wrapper and is completely internal to the `lambda_http::run` function.
-struct TransformResponse<'a, R, E> {
+#[doc(hidden)]
+pub struct TransformResponse<'a, R, E> {
     request_origin: RequestOrigin,
     fut: Pin<Box<dyn Future<Output = Result<R, E>> + Send + 'a>>,
 }
@@ -111,7 +116,8 @@ where
 /// Wraps a `Service<Request>` in a `Service<LambdaEvent<Request>>`
 ///
 /// This is completely internal to the `lambda_http::run` function.
-struct Adapter<'a, R, S> {
+#[doc(hidden)]
+pub struct Adapter<'a, R, S> {
     service: S,
     _phantom_data: PhantomData<&'a R>,
 }
@@ -157,7 +163,7 @@ where
 ///
 /// This takes care of transforming the LambdaEvent into a [`Request`] and then
 /// converting the result into a [`LambdaResponse`].
-pub async fn run<'a, S, R>(handler: S) -> Result<(), Error>
+pub async fn run<'a, R, S>(handler: S) -> Result<(), Error>
 where
     S: Service<Request, Response = R, Error = Error> + Send,
     S::Future: Send + 'a,

@@ -4,7 +4,7 @@
 // Run it with the following input:
 // { "command": "do something" }
 
-use lambda_runtime::{handler_fn, Context, Error};
+use lambda_runtime::{service_fn, Error, LambdaEvent};
 use serde::{Deserialize, Serialize};
 
 /// This is also a made-up example. Requests come into the runtime as unicode
@@ -56,9 +56,9 @@ async fn main() -> Result<(), Error> {
 
     let client = SharedClient::new("Shared Client 1 (perhaps a database)");
     let client_ref = &client;
-    lambda_runtime::run(handler_fn(move |event: Request, ctx: Context| async move {
-        let command = event.command;
-        Ok::<Response, Error>(client_ref.response(ctx.request_id, command))
+    lambda_runtime::run(service_fn(move |event: LambdaEvent<Request>| async move {
+        let command = event.payload.command;
+        Ok::<Response, Error>(client_ref.response(event.context.request_id, command))
     }))
     .await?;
     Ok(())

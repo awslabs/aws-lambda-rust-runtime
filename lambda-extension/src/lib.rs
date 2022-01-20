@@ -12,8 +12,7 @@ use serde::Deserialize;
 use std::{fmt, future::Future, path::PathBuf};
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio_stream::StreamExt;
-pub use tower::{self, Service};
-use tower::{service_fn, util::ServiceFn};
+pub use tower::{self, service_fn, Service};
 use tracing::trace;
 
 /// Include several request builders to interact with the Extension API.
@@ -103,48 +102,6 @@ pub struct LambdaEvent {
     /// Next incoming event
     pub next: NextEvent,
 }
-
-// /// A trait describing an asynchronous extension.
-// pub trait Extension {
-//     /// Response of this Extension.
-//     type Fut: Future<Output = Result<(), Error>>;
-//     /// Handle the incoming event.
-//     fn call(&mut self, event: LambdaEvent) -> Self::Fut;
-// }
-
-// /// Returns a new [`ExtensionFn`] with the given closure.
-// ///
-// /// [`ExtensionFn`]: struct.ExtensionFn.html
-// pub fn extension_fn<F>(f: F) -> ExtensionFn<F> {
-//     ExtensionFn { f }
-// }
-
-/// Returns a new [`ServiceFn`] with the given closure.
-pub fn extension_fn<F, Fut>(f: F) -> ServiceFn<impl Fn(LambdaEvent) -> Fut>
-where
-    F: Fn(LambdaEvent) -> Fut,
-{
-    service_fn(f)
-}
-
-// /// An [`Extension`] implemented by a closure.
-// ///
-// /// [`Extension`]: trait.Extension.html
-// #[derive(Clone, Debug)]
-// pub struct ExtensionFn<F> {
-//     f: F,
-// }
-
-// impl<F, Fut> Extension for ExtensionFn<F>
-// where
-//     F: Fn(LambdaEvent) -> Fut,
-//     Fut: Future<Output = Result<(), Error>>,
-// {
-//     type Fut = Fut;
-//     fn call(&mut self, event: LambdaEvent) -> Self::Fut {
-//         (self.f)(event)
-//     }
-// }
 
 /// The Runtime handles all the incoming extension requests
 pub struct Runtime<C: Service<http::Uri> = HttpConnector> {

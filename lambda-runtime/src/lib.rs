@@ -13,8 +13,8 @@ use serde::{Deserialize, Serialize};
 use std::{convert::TryFrom, env, fmt, future::Future, panic};
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio_stream::{Stream, StreamExt};
-pub use tower::{self, Service};
-use tower::{service_fn, util::ServiceFn};
+use tower::util::ServiceFn;
+pub use tower::{self, service_fn, Service};
 use tracing::{error, trace};
 
 mod requests;
@@ -62,17 +62,13 @@ impl Config {
     }
 }
 
-/// Wraps a function that takes 2 arguments into one that only takes a [`LambdaEvent`]
-fn handler_wrapper<A, Fut>(f: impl Fn(A, Context) -> Fut) -> impl Fn(LambdaEvent<A>) -> Fut {
-    move |req| f(req.event, req.context)
-}
-
 /// Return a new [`ServiceFn`] with a closure that takes an event and context as separate arguments.
+#[deprecated(since = "0.5.0", note = "Use `service_fn` and `LambdaEvent` instead")]
 pub fn handler_fn<A, F, Fut>(f: F) -> ServiceFn<impl Fn(LambdaEvent<A>) -> Fut>
 where
     F: Fn(A, Context) -> Fut,
 {
-    service_fn(handler_wrapper(f))
+    service_fn(move |req: LambdaEvent<A>| f(req.payload, req.context))
 }
 
 struct Runtime<C: Service<http::Uri> = HttpConnector> {
@@ -185,18 +181,18 @@ where
 ///
 /// # Example
 /// ```no_run
-/// use lambda_runtime::{Error, handler_fn, Context};
+/// use lambda_runtime::{Error, service_fn, LambdaEvent};
 /// use serde_json::Value;
 ///
 /// #[tokio::main]
 /// async fn main() -> Result<(), Error> {
-///     let func = handler_fn(func);
+///     let func = service_fn(func);
 ///     lambda_runtime::run(func).await?;
 ///     Ok(())
 /// }
 ///
-/// async fn func(event: Value, _: Context) -> Result<Value, Error> {
-///     Ok(event)
+/// async fn func(event: LambdaEvent<Value>) -> Result<Value, Error> {
+///     Ok(event.payload)
 /// }
 /// ```
 pub async fn run<A, B, F>(handler: F) -> Result<(), Error>
@@ -439,10 +435,11 @@ mod endpoint_tests {
             .build()
             .expect("Unable to build client");
 
-        async fn func(event: serde_json::Value, _: crate::Context) -> Result<serde_json::Value, Error> {
+        async fn func(event: crate::LambdaEvent<serde_json::Value>) -> Result<serde_json::Value, Error> {
+            let (event, _) = event.into_parts();
             Ok(event)
         }
-        let f = crate::handler_fn(func);
+        let f = crate::service_fn(func);
 
         // set env vars needed to init Config if they are not already set in the environment
         if env::var("AWS_LAMBDA_RUNTIME_API").is_err() {

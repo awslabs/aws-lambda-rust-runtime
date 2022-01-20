@@ -15,17 +15,18 @@ This package makes it easy to run AWS Lambda Functions written in Rust. This wor
 The code below creates a simple function that receives an event with a `firstName` field and returns a message to the caller. Notice: this crate is tested against latest stable Rust.
 
 ```rust,no_run
-use lambda_runtime::{handler_fn, Context, Error};
+use lambda_runtime::{service_fn, LambdaEvent, Error};
 use serde_json::{json, Value};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    let func = handler_fn(func);
+    let func = service_fn(func);
     lambda_runtime::run(func).await?;
     Ok(())
 }
 
-async fn func(event: Value, _: Context) -> Result<Value, Error> {
+async fn func(event: LambdaEvent<Value>) -> Result<Value, Error> {
+    let (event, _context) = event.into_parts();
     let first_name = event["firstName"].as_str().unwrap_or("world");
 
     Ok(json!({ "message": format!("Hello, {}!", first_name) }))
@@ -213,12 +214,9 @@ Lambdas can be run and debugged locally using a special [Lambda debug proxy](htt
 
 ## `lambda`
 
-`lambda_runtime` is a library for authoring reliable and performant Rust-based AWS Lambda functions. At a high level, it provides a few major components:
+`lambda_runtime` is a library for authoring reliable and performant Rust-based AWS Lambda functions. At a high level, it provides `lambda_runtime::run`, a function that runs a `tower::Service<LambdaEvent>`.
 
-- `Handler`, a trait that defines interactions between customer-authored code and this library.
-- `lambda_runtime::run`, function that runs an `Handler`.
-
-The function `handler_fn` converts a rust function or closure to `Handler`, which can then be run by `lambda_runtime::run`.
+To write a function that will handle request, you need to pass it through `service_fn`, which will convert your function into a `tower::Service<LambdaEvent>`, which can then be run by `lambda_runtime::run`.
 
 ## AWS event objects
 

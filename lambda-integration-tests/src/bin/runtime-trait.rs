@@ -34,7 +34,7 @@ impl Service<LambdaEvent<Request>> for MyHandler {
         self.invoke_count += 1;
         info!("[handler] Received event {}: {:?}", self.invoke_count, request);
         Box::pin(ready(Ok(Response {
-            message: request.event.command.to_uppercase(),
+            message: request.payload.command.to_uppercase(),
         })))
     }
 }

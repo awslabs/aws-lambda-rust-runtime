@@ -1,4 +1,4 @@
-use lambda_extension::{extension_fn, Error, LambdaEvent, NextEvent};
+use lambda_extension::{service_fn, Error, LambdaEvent, NextEvent};
 
 async fn my_extension(event: LambdaEvent) -> Result<(), Error> {
     match event.next {
@@ -25,6 +25,6 @@ async fn main() -> Result<(), Error> {
         .without_time()
         .init();
 
-    let func = extension_fn(my_extension);
+    let func = service_fn(my_extension);
     lambda_extension::run(func).await
 }

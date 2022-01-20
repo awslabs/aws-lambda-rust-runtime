@@ -10,6 +10,8 @@ pr-check:
 	cargo +1.54.0 check --all
 	cargo +stable fmt --all -- --check
 	cargo +stable clippy
+	cargo +1.54.0 test
+	cargo +stable test
 
 integration-tests:
 # Build Integration functions

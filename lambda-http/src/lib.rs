@@ -12,7 +12,7 @@
 //! ## Hello World
 //!
 //! The following example is how you would structure your Lambda such that you have a `main` function where you explicitly invoke
-//! `lambda_runtime::run` in combination with the [`handler`](fn.handler.html) function. This pattern allows you to utilize global initialization
+//! `lambda_http::run` in combination with the [`service_fn`](fn.service_fn.html) function. This pattern allows you to utilize global initialization
 //! of tools such as loggers, to use on warm invokes to the same Lambda function after the first request, helping to reduce the latency of
 //! your function's execution path.
 //!
@@ -31,7 +31,7 @@
 //! ## Leveraging trigger provided data
 //!
 //! You can also access information provided directly from the underlying trigger events, like query string parameters,
-//! with the [`RequestExt`](trait.RequestExt.html) trait.
+//! or Lambda function context, with the [`RequestExt`](trait.RequestExt.html) trait.
 //!
 //! ```rust,no_run
 //! use lambda_http::{service_fn, Error, IntoResponse, Request, RequestExt};
@@ -45,6 +45,8 @@
 //! async fn hello(
 //!     request: Request
 //! ) -> Result<impl IntoResponse, Error> {
+//!     let _context = request.lambda_context();
+//!
 //!     Ok(format!(
 //!         "hello {}",
 //!         request
@@ -62,11 +64,7 @@ extern crate maplit;
 
 pub use http::{self, Response};
 use lambda_runtime::LambdaEvent;
-pub use lambda_runtime::{
-    self,
-    tower::{util::service_fn, Service},
-    Context, Error,
-};
+pub use lambda_runtime::{self, service_fn, tower, Context, Error, Service};
 
 mod body;
 pub mod ext;
@@ -151,8 +149,8 @@ where
     }
 
     fn call(&mut self, req: LambdaEvent<LambdaRequest<'a>>) -> Self::Future {
-        let request_origin = req.event.request_origin();
-        let event: Request = req.event.into();
+        let request_origin = req.payload.request_origin();
+        let event: Request = req.payload.into();
         let fut = Box::pin(self.service.call(event.with_lambda_context(req.context)));
         TransformResponse { request_origin, fut }
     }

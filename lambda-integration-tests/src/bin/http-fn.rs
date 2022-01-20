@@ -1,10 +1,8 @@
-use lambda_http::{
-    lambda_runtime::{self, Context, Error},
-    IntoResponse, Request, Response,
-};
+use lambda_http::{service_fn, Error, IntoResponse, Request, RequestExt, Response};
 use tracing::info;
 
-async fn handler(event: Request, _context: Context) -> Result<impl IntoResponse, Error> {
+async fn handler(event: Request) -> Result<impl IntoResponse, Error> {
+    let _context = event.lambda_context();
     info!("[http-fn] Received event {} {}", event.method(), event.uri().path());
 
     Ok(Response::builder().status(200).body("Hello, world!").unwrap())
@@ -23,6 +21,6 @@ async fn main() -> Result<(), Error> {
         .without_time()
         .init();
 
-    let handler = lambda_http::handler(handler);
-    lambda_runtime::run(handler).await
+    let handler = service_fn(handler);
+    lambda_http::run(handler).await
 }

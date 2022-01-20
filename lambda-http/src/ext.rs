@@ -1,6 +1,7 @@
 //! Extension methods for `http::Request` types
 
 use crate::{request::RequestContext, strmap::StrMap, Body};
+use lambda_runtime::Context;
 use serde::{de::value::Error as SerdeError, Deserialize};
 use std::{error::Error, fmt};
 
@@ -167,6 +168,12 @@ pub trait RequestExt {
     fn payload<D>(&self) -> Result<Option<D>, PayloadError>
     where
         for<'de> D: Deserialize<'de>;
+
+    /// Return the Lambda function context associated with the request
+    fn lambda_context(&self) -> Context;
+
+    /// Configures instance with lambda context
+    fn with_lambda_context(self, context: Context) -> Self;
 }
 
 impl RequestExt for http::Request<Body> {
@@ -224,6 +231,19 @@ impl RequestExt for http::Request<Body> {
             .get::<RequestContext>()
             .cloned()
             .expect("Request did not contain a request context")
+    }
+
+    fn lambda_context(&self) -> Context {
+        self.extensions()
+            .get::<Context>()
+            .cloned()
+            .expect("Request did not contain a lambda context")
+    }
+
+    fn with_lambda_context(self, context: Context) -> Self {
+        let mut s = self;
+        s.extensions_mut().insert(context);
+        s
     }
 
     fn payload<D>(&self) -> Result<Option<D>, PayloadError>

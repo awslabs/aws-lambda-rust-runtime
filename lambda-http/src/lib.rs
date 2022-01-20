@@ -17,13 +17,13 @@
 //! your function's execution path.
 //!
 //! ```rust,no_run
-//! use lambda_http::{handler, lambda_runtime::{self, Error}};
+//! use lambda_http::{service_fn, Error};
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Error> {
 //!     // initialize dependencies once here for the lifetime of your
 //!     // lambda task
-//!     lambda_runtime::run(handler(|request, context| async { Ok("👋 world!") })).await?;
+//!     lambda_http::run(service_fn(|request| async { Ok("👋 world!") })).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -34,17 +34,16 @@
 //! with the [`RequestExt`](trait.RequestExt.html) trait.
 //!
 //! ```rust,no_run
-//! use lambda_http::{handler, lambda_runtime::{self, Context, Error}, IntoResponse, Request, RequestExt};
+//! use lambda_http::{service_fn, Error, IntoResponse, Request, RequestExt};
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Error> {
-//!     lambda_runtime::run(handler(hello)).await?;
+//!     lambda_http::run(service_fn(hello)).await?;
 //!     Ok(())
 //! }
 //!
 //! async fn hello(
-//!     request: Request,
-//!     _: Context
+//!     request: Request
 //! ) -> Result<impl IntoResponse, Error> {
 //!     Ok(format!(
 //!         "hello {}",
@@ -62,11 +61,8 @@
 extern crate maplit;
 
 pub use http::{self, Response};
-pub use lambda_runtime::{self, Context};
-use lambda_runtime::{
-    tower::util::{service_fn, ServiceFn},
-    Error, LambdaEvent, Service,
-};
+pub use lambda_runtime::{self, tower::util::service_fn, Context, Error};
+use lambda_runtime::{LambdaEvent, Service};
 
 mod body;
 pub mod ext;
@@ -88,27 +84,10 @@ use std::{
 /// Type alias for `http::Request`s with a fixed [`Body`](enum.Body.html) type
 pub type Request = http::Request<Body>;
 
-/// Wraps a function that takes 2 arguments into one that only takes a [`LambdaEvent`]
-fn handler_wrapper<A, Fut>(f: impl Fn(A, Context) -> Fut) -> impl Fn(LambdaEvent<A>) -> Fut {
-    move |req| f(req.event, req.context)
-}
-
-/// Adapts a [`Service`] into another [`Service`].
-pub fn handler<'a, R, Fut>(
-    f: impl Fn(Request, Context) -> Fut,
-) -> Adapter<'a, R, ServiceFn<impl Fn(LambdaEvent<Request>) -> Fut>>
-where
-    R: IntoResponse,
-    Fut: Future<Output = Result<R, Error>>,
-{
-    Adapter {
-        service: service_fn(handler_wrapper(f)),
-        _phantom_data: PhantomData,
-    }
-}
-
-#[doc(hidden)]
-pub struct TransformResponse<'a, R, E> {
+/// Future that will convert an [`IntoResponse`] into an actual [`LambdaResponse`]
+///
+/// This is used by the `Adapter` wrapper and is completely internal to the `lambda_http::run` function.
+struct TransformResponse<'a, R, E> {
     request_origin: RequestOrigin,
     fut: Pin<Box<dyn Future<Output = Result<R, E>> + Send + 'a>>,
 }
@@ -129,15 +108,31 @@ where
     }
 }
 
-#[doc(hidden)]
-pub struct Adapter<'a, R, S> {
+/// Wraps a `Service<Request>` in a `Service<LambdaEvent<Request>>`
+///
+/// This is completely internal to the `lambda_http::run` function.
+struct Adapter<'a, R, S> {
     service: S,
     _phantom_data: PhantomData<&'a R>,
 }
 
+impl<'a, R, S> From<S> for Adapter<'a, R, S>
+where
+    S: Service<Request, Response = R, Error = Error> + Send,
+    S::Future: Send + 'a,
+    R: IntoResponse,
+{
+    fn from(service: S) -> Self {
+        Adapter {
+            service,
+            _phantom_data: PhantomData,
+        }
+    }
+}
+
 impl<'a, R, S> Service<LambdaEvent<LambdaRequest<'a>>> for Adapter<'a, R, S>
 where
-    S: Service<LambdaEvent<Request>, Response = R, Error = Error> + Send,
+    S: Service<Request, Response = R, Error = Error> + Send,
     S::Future: Send + 'a,
     R: IntoResponse,
 {
@@ -151,7 +146,22 @@ where
 
     fn call(&mut self, req: LambdaEvent<LambdaRequest<'a>>) -> Self::Future {
         let request_origin = req.event.request_origin();
-        let fut = Box::pin(self.service.call(LambdaEvent::new(req.event.into(), req.context)));
+        let event: Request = req.event.into();
+        let fut = Box::pin(self.service.call(event.with_lambda_context(req.context)));
         TransformResponse { request_origin, fut }
     }
+}
+
+/// Starts the Lambda Rust runtime and begins polling for events on the [Lambda
+/// Runtime APIs](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html).
+///
+/// This takes care of transforming the LambdaEvent into a [`Request`] and then
+/// converting the result into a [`LambdaResponse`].
+pub async fn run<'a, S, R>(handler: S) -> Result<(), Error>
+where
+    S: Service<Request, Response = R, Error = Error> + Send,
+    S::Future: Send + 'a,
+    R: IntoResponse,
+{
+    lambda_runtime::run(Adapter::from(handler)).await
 }

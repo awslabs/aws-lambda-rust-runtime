@@ -23,7 +23,10 @@ impl Service<Request> for MyHandler {
         self.invoke_count += 1;
         info!("[http-trait] Received event {}: {:?}", self.invoke_count, request);
         info!("[http-trait] Lambda context: {:?}", request.lambda_context());
-        Box::pin(ready(Ok(Response::builder().status(200).body("Hello, World!").unwrap())))
+        Box::pin(ready(Ok(Response::builder()
+            .status(200)
+            .body("Hello, World!")
+            .unwrap())))
     }
 }
 

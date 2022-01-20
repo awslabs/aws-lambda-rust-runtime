@@ -67,7 +67,7 @@ impl Error for PayloadError {
 /// as well as `{"x":1, "y":2}` respectively.
 ///
 /// ```rust,no_run
-/// use lambda_http::{handler, lambda_runtime::{self, Error, Context}, Body, IntoResponse, Request, Response, RequestExt};
+/// use lambda_http::{service_fn, Error, Context, Body, IntoResponse, Request, Response, RequestExt};
 /// use serde::Deserialize;
 ///
 /// #[derive(Debug,Deserialize,Default)]
@@ -80,13 +80,12 @@ impl Error for PayloadError {
 ///
 /// #[tokio::main]
 /// async fn main() -> Result<(), Error> {
-///   lambda_runtime::run(handler(add)).await?;
+///   lambda_http::run(service_fn(add)).await?;
 ///   Ok(())
 /// }
 ///
 /// async fn add(
-///   request: Request,
-///   _: Context
+///   request: Request
 /// ) -> Result<Response<Body>, Error> {
 ///   let args: Args = request.payload()
 ///     .unwrap_or_else(|_parse_err| None)

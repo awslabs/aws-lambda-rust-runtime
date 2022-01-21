@@ -1,4 +1,4 @@
-use lambda_runtime::{handler_fn, Context, Error};
+use lambda_runtime::{service_fn, Error, LambdaEvent};
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
@@ -12,8 +12,10 @@ struct Response {
     message: String,
 }
 
-async fn handler(event: Request, _context: Context) -> Result<Response, Error> {
+async fn handler(event: LambdaEvent<Request>) -> Result<Response, Error> {
     info!("[handler-fn] Received event: {:?}", event);
+
+    let (event, _) = event.into_parts();
 
     Ok(Response {
         message: event.command.to_uppercase(),
@@ -33,5 +35,5 @@ async fn main() -> Result<(), Error> {
         .without_time()
         .init();
 
-    lambda_runtime::run(handler_fn(handler)).await
+    lambda_runtime::run(service_fn(handler)).await
 }

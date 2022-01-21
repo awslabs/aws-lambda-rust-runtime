@@ -1,4 +1,4 @@
-use lambda_extension::{extension_fn, Error, LambdaEvent, NextEvent};
+use lambda_extension::{service_fn, Error, LambdaEvent, NextEvent};
 use tracing::info;
 
 async fn my_extension(event: LambdaEvent) -> Result<(), Error> {
@@ -27,5 +27,5 @@ async fn main() -> Result<(), Error> {
         .without_time()
         .init();
 
-    lambda_extension::run(extension_fn(my_extension)).await
+    lambda_extension::run(service_fn(my_extension)).await
 }

@@ -4,16 +4,17 @@
 
 //! The mechanism available for defining a Lambda function is as follows:
 //!
-//! Create a type that conforms to the [`Handler`] trait. This type can then be passed
-//! to the the `lambda_runtime::run` function, which launches and runs the Lambda runtime.
-pub use crate::types::Context;
+//! Create a type that conforms to the [`tower::Service`] trait. This type can
+//! then be passed to the the `lambda_runtime::run` function, which launches
+//! and runs the Lambda runtime.
 use hyper::client::{connect::Connection, HttpConnector};
 use lambda_runtime_api_client::Client;
 use serde::{Deserialize, Serialize};
 use std::{convert::TryFrom, env, fmt, future::Future, panic};
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio_stream::{Stream, StreamExt};
-use tower_service::Service;
+use tower::util::ServiceFn;
+pub use tower::{self, service_fn, Service};
 use tracing::{error, trace};
 
 mod requests;
@@ -24,6 +25,7 @@ mod types;
 
 use requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest};
 use types::Diagnostic;
+pub use types::{Context, LambdaEvent};
 
 /// Error type that lambdas may result in
 pub type Error = lambda_runtime_api_client::Error;
@@ -60,42 +62,13 @@ impl Config {
     }
 }
 
-/// A trait describing an asynchronous function `A` to `B`.
-pub trait Handler<A, B> {
-    /// Errors returned by this handler.
-    type Error;
-    /// Response of this handler.
-    type Fut: Future<Output = Result<B, Self::Error>>;
-    /// Handle the incoming event.
-    fn call(&mut self, event: A, context: Context) -> Self::Fut;
-}
-
-/// Returns a new [`HandlerFn`] with the given closure.
-///
-/// [`HandlerFn`]: struct.HandlerFn.html
-pub fn handler_fn<F>(f: F) -> HandlerFn<F> {
-    HandlerFn { f }
-}
-
-/// A [`Handler`] implemented by a closure.
-///
-/// [`Handler`]: trait.Handler.html
-#[derive(Clone, Debug)]
-pub struct HandlerFn<F> {
-    f: F,
-}
-
-impl<F, A, B, Error, Fut> Handler<A, B> for HandlerFn<F>
+/// Return a new [`ServiceFn`] with a closure that takes an event and context as separate arguments.
+#[deprecated(since = "0.5.0", note = "Use `service_fn` and `LambdaEvent` instead")]
+pub fn handler_fn<A, F, Fut>(f: F) -> ServiceFn<impl Fn(LambdaEvent<A>) -> Fut>
 where
     F: Fn(A, Context) -> Fut,
-    Fut: Future<Output = Result<B, Error>>,
-    Error: Into<Box<dyn std::error::Error + Send + Sync + 'static>> + fmt::Display,
 {
-    type Error = Error;
-    type Fut = Fut;
-    fn call(&mut self, req: A, ctx: Context) -> Self::Fut {
-        (self.f)(req, ctx)
-    }
+    service_fn(move |req: LambdaEvent<A>| f(req.payload, req.context))
 }
 
 struct Runtime<C: Service<http::Uri> = HttpConnector> {
@@ -105,9 +78,9 @@ struct Runtime<C: Service<http::Uri> = HttpConnector> {
 impl<C> Runtime<C>
 where
     C: Service<http::Uri> + Clone + Send + Sync + Unpin + 'static,
-    <C as Service<http::Uri>>::Future: Unpin + Send,
-    <C as Service<http::Uri>>::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
-    <C as Service<http::Uri>>::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
+    C::Future: Unpin + Send,
+    C::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
+    C::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
 {
     pub async fn run<F, A, B>(
         &self,
@@ -116,9 +89,9 @@ where
         config: &Config,
     ) -> Result<(), Error>
     where
-        F: Handler<A, B>,
-        <F as Handler<A, B>>::Fut: Future<Output = Result<B, <F as Handler<A, B>>::Error>>,
-        <F as Handler<A, B>>::Error: fmt::Display,
+        F: Service<LambdaEvent<A>>,
+        F::Future: Future<Output = Result<B, F::Error>>,
+        F::Error: fmt::Display,
         A: for<'de> Deserialize<'de>,
         B: Serialize,
     {
@@ -139,7 +112,7 @@ where
             env::set_var("_X_AMZN_TRACE_ID", xray_trace_id);
 
             let request_id = &ctx.request_id.clone();
-            let task = panic::catch_unwind(panic::AssertUnwindSafe(|| handler.call(body, ctx)));
+            let task = panic::catch_unwind(panic::AssertUnwindSafe(|| handler.call(LambdaEvent::new(body, ctx))));
 
             let req = match task {
                 Ok(response) => match response.await {
@@ -208,25 +181,25 @@ where
 ///
 /// # Example
 /// ```no_run
-/// use lambda_runtime::{Error, handler_fn, Context};
+/// use lambda_runtime::{Error, service_fn, LambdaEvent};
 /// use serde_json::Value;
 ///
 /// #[tokio::main]
 /// async fn main() -> Result<(), Error> {
-///     let func = handler_fn(func);
+///     let func = service_fn(func);
 ///     lambda_runtime::run(func).await?;
 ///     Ok(())
 /// }
 ///
-/// async fn func(event: Value, _: Context) -> Result<Value, Error> {
-///     Ok(event)
+/// async fn func(event: LambdaEvent<Value>) -> Result<Value, Error> {
+///     Ok(event.payload)
 /// }
 /// ```
 pub async fn run<A, B, F>(handler: F) -> Result<(), Error>
 where
-    F: Handler<A, B>,
-    <F as Handler<A, B>>::Fut: Future<Output = Result<B, <F as Handler<A, B>>::Error>>,
-    <F as Handler<A, B>>::Error: fmt::Display,
+    F: Service<LambdaEvent<A>>,
+    F::Future: Future<Output = Result<B, F::Error>>,
+    F::Error: fmt::Display,
     A: for<'de> Deserialize<'de>,
     B: Serialize,
 {
@@ -462,10 +435,11 @@ mod endpoint_tests {
             .build()
             .expect("Unable to build client");
 
-        async fn func(event: serde_json::Value, _: crate::Context) -> Result<serde_json::Value, Error> {
+        async fn func(event: crate::LambdaEvent<serde_json::Value>) -> Result<serde_json::Value, Error> {
+            let (event, _) = event.into_parts();
             Ok(event)
         }
-        let f = crate::handler_fn(func);
+        let f = crate::service_fn(func);
 
         // set env vars needed to init Config if they are not already set in the environment
         if env::var("AWS_LAMBDA_RUNTIME_API").is_err() {

@@ -1,5 +1,5 @@
 INTEG_STACK_NAME ?= rust-lambda-integration-tests
-INTEG_FUNCTIONS_BUILD := runtime-fn runtime-trait http-fn
+INTEG_FUNCTIONS_BUILD := runtime-fn runtime-trait http-fn http-trait
 INTEG_FUNCTIONS_INVOKE := RuntimeFn RuntimeFnAl2 RuntimeTrait RuntimeTraitAl2 Python PythonAl2
 INTEG_API_INVOKE := RestApiUrl HttpApiUrl
 INTEG_EXTENSIONS := extension-fn extension-trait
@@ -10,6 +10,8 @@ pr-check:
 	cargo +1.54.0 check --all
 	cargo +stable fmt --all -- --check
 	cargo +stable clippy
+	cargo +1.54.0 test
+	cargo +stable test
 
 integration-tests:
 # Build Integration functions
@@ -47,7 +49,11 @@ invoke-integration-api-%:
 		--query 'Stacks[0].Outputs[?OutputKey==`$*`].OutputValue' \
 		--output text))
 	curl $(API_URL)/get
+	curl $(API_URL)/trait/get
 	curl $(API_URL)/al2/get
+	curl $(API_URL)/al2-trait/get
 	curl -X POST -d '{"command": "hello"}' $(API_URL)/post
+	curl -X POST -d '{"command": "hello"}' $(API_URL)/trait/post
 	curl -X POST -d '{"command": "hello"}' $(API_URL)/al2/post
+	curl -X POST -d '{"command": "hello"}' $(API_URL)/al2-trait/post
 	

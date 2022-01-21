@@ -1,7 +1,7 @@
 // This example requires the following input to succeed:
 // { "command": "do something" }
 
-use lambda_runtime::{handler_fn, Context, Error};
+use lambda_runtime::{service_fn, Error, LambdaEvent};
 use serde::{Deserialize, Serialize};
 
 /// This is also a made-up example. Requests come into the runtime as unicode
@@ -33,18 +33,18 @@ async fn main() -> Result<(), Error> {
         .without_time()
         .init();
 
-    let func = handler_fn(my_handler);
+    let func = service_fn(my_handler);
     lambda_runtime::run(func).await?;
     Ok(())
 }
 
-pub(crate) async fn my_handler(event: Request, ctx: Context) -> Result<Response, Error> {
+pub(crate) async fn my_handler(event: LambdaEvent<Request>) -> Result<Response, Error> {
     // extract some useful info from the request
-    let command = event.command;
+    let command = event.payload.command;
 
     // prepare the response
     let resp = Response {
-        req_id: ctx.request_id,
+        req_id: event.context.request_id,
         msg: format!("Command {} executed.", command),
     };
 

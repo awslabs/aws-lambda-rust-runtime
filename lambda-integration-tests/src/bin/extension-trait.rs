@@ -1,4 +1,4 @@
-use lambda_extension::{Error, Extension, LambdaEvent, NextEvent};
+use lambda_extension::{Error, LambdaEvent, NextEvent, Service};
 use std::{
     future::{ready, Future},
     pin::Pin,
@@ -10,10 +10,16 @@ struct MyExtension {
     invoke_count: usize,
 }
 
-impl Extension for MyExtension {
-    type Fut = Pin<Box<dyn Future<Output = Result<(), Error>>>>;
+impl Service<LambdaEvent> for MyExtension {
+    type Error = Error;
+    type Future = Pin<Box<dyn Future<Output = Result<(), Error>>>>;
+    type Response = ();
 
-    fn call(&mut self, event: LambdaEvent) -> Self::Fut {
+    fn poll_ready(&mut self, _cx: &mut core::task::Context<'_>) -> core::task::Poll<Result<(), Self::Error>> {
+        core::task::Poll::Ready(Ok(()))
+    }
+
+    fn call(&mut self, event: LambdaEvent) -> Self::Future {
         match event.next {
             NextEvent::Shutdown(e) => {
                 info!("[extension] Shutdown event received: {:?}", e);

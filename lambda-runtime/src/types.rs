@@ -166,6 +166,27 @@ impl TryFrom<HeaderMap> for Context {
     }
 }
 
+/// Incoming Lambda request containing the event payload and context.
+#[derive(Clone, Debug)]
+pub struct LambdaEvent<T> {
+    /// Event payload.
+    pub payload: T,
+    /// Invocation context.
+    pub context: Context,
+}
+
+impl<T> LambdaEvent<T> {
+    /// Creates a new Lambda request
+    pub fn new(payload: T, context: Context) -> Self {
+        Self { payload, context }
+    }
+
+    /// Split the Lambda event into its payload and context.
+    pub fn into_parts(self) -> (T, Context) {
+        (self.payload, self.context)
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;

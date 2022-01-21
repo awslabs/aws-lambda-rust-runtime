@@ -1,9 +1,11 @@
 //! Provides an ALB / API Gateway oriented request and response body entity interface
 
-use std::{borrow::Cow, ops::Deref};
-
+use crate::Error;
 use base64::display::Base64Display;
+use bytes::Bytes;
+use http_body::{Body as HttpBody, SizeHint};
 use serde::ser::{Error as SerError, Serialize, Serializer};
+use std::{borrow::Cow, mem::take, ops::Deref, pin::Pin, task::Poll};
 
 /// Representation of http request and response bodies as supported
 /// by API Gateway and ALBs.
@@ -171,6 +173,45 @@ impl<'a> Serialize for Body {
             }
             Body::Binary(data) => serializer.collect_str(&Base64Display::with_config(data, base64::STANDARD)),
             Body::Empty => serializer.serialize_unit(),
+        }
+    }
+}
+
+impl HttpBody for Body {
+    type Data = Bytes;
+    type Error = Error;
+
+    fn poll_data(
+        self: Pin<&mut Self>,
+        _cx: &mut std::task::Context<'_>,
+    ) -> Poll<Option<Result<Self::Data, Self::Error>>> {
+        let body = take(self.get_mut());
+        Poll::Ready(match body {
+            Body::Empty => None,
+            Body::Text(s) => Some(Ok(s.into())),
+            Body::Binary(b) => Some(Ok(b.into())),
+        })
+    }
+
+    fn poll_trailers(
+        self: Pin<&mut Self>,
+        _cx: &mut std::task::Context<'_>,
+    ) -> Poll<Result<Option<http::HeaderMap>, Self::Error>> {
+        Poll::Ready(Ok(None))
+    }
+
+    fn is_end_stream(&self) -> bool {
+        match self {
+            Body::Empty => true,
+            _ => false,
+        }
+    }
+
+    fn size_hint(&self) -> SizeHint {
+        match self {
+            Body::Empty => SizeHint::default(),
+            Body::Text(ref s) => SizeHint::with_exact(s.len() as u64),
+            Body::Binary(ref b) => SizeHint::with_exact(b.len() as u64),
         }
     }
 }

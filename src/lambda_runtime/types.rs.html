@@ -349,6 +349,27 @@
 <span id="348">348</span>
 <span id="349">349</span>
 <span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Config</span>, <span class="ident">Error</span>};
 <span class="kw">use</span> <span class="ident">http</span>::{<span class="ident">HeaderMap</span>, <span class="ident">HeaderValue</span>};
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
@@ -514,6 +535,27 @@
         };
 
         <span class="prelude-val">Ok</span>(<span class="ident">ctx</span>)
+    }
+}
+
+<span class="doccomment">/// Incoming Lambda request containing the event payload and context.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LambdaEvent</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Event payload.</span>
+    <span class="kw">pub</span> <span class="ident">payload</span>: <span class="ident">T</span>,
+    <span class="doccomment">/// Invocation context.</span>
+    <span class="kw">pub</span> <span class="ident">context</span>: <span class="ident">Context</span>,
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">LambdaEvent</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Creates a new Lambda request</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">payload</span>: <span class="ident">T</span>, <span class="ident">context</span>: <span class="ident">Context</span>) -&gt; <span class="self">Self</span> {
+        <span class="self">Self</span> { <span class="ident">payload</span>, <span class="ident">context</span> }
+    }
+
+    <span class="doccomment">/// Split the Lambda event into its payload and context.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_parts</span>(<span class="self">self</span>) -&gt; (<span class="ident">T</span>, <span class="ident">Context</span>) {
+        (<span class="self">self</span>.<span class="ident">payload</span>, <span class="self">self</span>.<span class="ident">context</span>)
     }
 }
 

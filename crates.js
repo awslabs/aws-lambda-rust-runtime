@@ -1,1 +1,1 @@
-window.ALL_CRATES = ["extension_fn","extension_trait","http_fn","lambda_extension","lambda_http","lambda_runtime","lambda_runtime_api_client","runtime_fn","runtime_trait"];
+window.ALL_CRATES = ["extension_fn","extension_trait","http_fn","http_trait","lambda_extension","lambda_http","lambda_runtime","lambda_runtime_api_client","runtime_fn","runtime_trait"];

@@ -30,7 +30,7 @@
 <span id="29">29</span>
 <span id="30">30</span>
 <span id="31">31</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">lambda_extension</span>::{<span class="ident">extension_fn</span>, <span class="ident">Error</span>, <span class="ident">LambdaEvent</span>, <span class="ident">NextEvent</span>};
+</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">lambda_extension</span>::{<span class="ident">service_fn</span>, <span class="ident">Error</span>, <span class="ident">LambdaEvent</span>, <span class="ident">NextEvent</span>};
 <span class="kw">use</span> <span class="ident">tracing::info</span>;
 
 <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">my_extension</span>(<span class="ident">event</span>: <span class="ident">LambdaEvent</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
@@ -59,7 +59,7 @@
         .<span class="ident">without_time</span>()
         .<span class="ident">init</span>();
 
-    <span class="ident">lambda_extension::run</span>(<span class="ident">extension_fn</span>(<span class="ident">my_extension</span>)).<span class="kw">await</span>
+    <span class="ident">lambda_extension::run</span>(<span class="ident">service_fn</span>(<span class="ident">my_extension</span>)).<span class="kw">await</span>
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="extension_fn" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>

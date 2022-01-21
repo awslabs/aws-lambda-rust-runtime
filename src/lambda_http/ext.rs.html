@@ -383,9 +383,29 @@
 <span id="382">382</span>
 <span id="383">383</span>
 <span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Extension methods for `http::Request` types</span>
 
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">request::RequestContext</span>, <span class="ident">strmap::StrMap</span>, <span class="ident">Body</span>};
+<span class="kw">use</span> <span class="ident">lambda_runtime::Context</span>;
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">de::value::Error</span> <span class="kw">as</span> <span class="ident">SerdeError</span>, <span class="ident">Deserialize</span>};
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">error::Error</span>, <span class="ident">fmt</span>};
 
@@ -451,7 +471,7 @@
 <span class="doccomment">/// as well as `{&quot;x&quot;:1, &quot;y&quot;:2}` respectively.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ```rust,no_run</span>
-<span class="doccomment">/// use lambda_http::{handler, lambda_runtime::{self, Error, Context}, Body, IntoResponse, Request, Response, RequestExt};</span>
+<span class="doccomment">/// use lambda_http::{service_fn, Error, Context, Body, IntoResponse, Request, Response, RequestExt};</span>
 <span class="doccomment">/// use serde::Deserialize;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// #[derive(Debug,Deserialize,Default)]</span>
@@ -464,13 +484,12 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// #[tokio::main]</span>
 <span class="doccomment">/// async fn main() -&gt; Result&lt;(), Error&gt; {</span>
-<span class="doccomment">///   lambda_runtime::run(handler(add)).await?;</span>
+<span class="doccomment">///   lambda_http::run(service_fn(add)).await?;</span>
 <span class="doccomment">///   Ok(())</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// async fn add(</span>
-<span class="doccomment">///   request: Request,</span>
-<span class="doccomment">///   _: Context</span>
+<span class="doccomment">///   request: Request</span>
 <span class="doccomment">/// ) -&gt; Result&lt;Response&lt;Body&gt;, Error&gt; {</span>
 <span class="doccomment">///   let args: Args = request.payload()</span>
 <span class="doccomment">///     .unwrap_or_else(|_parse_err| None)</span>
@@ -552,6 +571,12 @@
     <span class="kw">fn</span> <span class="ident">payload</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>, <span class="ident">PayloadError</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">D</span>: <span class="ident">Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>;
+
+    <span class="doccomment">/// Return the Lambda function context associated with the request</span>
+    <span class="kw">fn</span> <span class="ident">lambda_context</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Context</span>;
+
+    <span class="doccomment">/// Configures instance with lambda context</span>
+    <span class="kw">fn</span> <span class="ident">with_lambda_context</span>(<span class="self">self</span>, <span class="ident">context</span>: <span class="ident">Context</span>) -&gt; <span class="self">Self</span>;
 }
 
 <span class="kw">impl</span> <span class="ident">RequestExt</span> <span class="kw">for</span> <span class="ident">http::Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span> {
@@ -609,6 +634,19 @@
             .<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">RequestContext</span><span class="op">&gt;</span>()
             .<span class="ident">cloned</span>()
             .<span class="ident">expect</span>(<span class="string">&quot;Request did not contain a request context&quot;</span>)
+    }
+
+    <span class="kw">fn</span> <span class="ident">lambda_context</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Context</span> {
+        <span class="self">self</span>.<span class="ident">extensions</span>()
+            .<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">Context</span><span class="op">&gt;</span>()
+            .<span class="ident">cloned</span>()
+            .<span class="ident">expect</span>(<span class="string">&quot;Request did not contain a lambda context&quot;</span>)
+    }
+
+    <span class="kw">fn</span> <span class="ident">with_lambda_context</span>(<span class="self">self</span>, <span class="ident">context</span>: <span class="ident">Context</span>) -&gt; <span class="self">Self</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="self">self</span>;
+        <span class="ident">s</span>.<span class="ident">extensions_mut</span>().<span class="ident">insert</span>(<span class="ident">context</span>);
+        <span class="ident">s</span>
     }
 
     <span class="kw">fn</span> <span class="ident">payload</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>, <span class="ident">PayloadError</span><span class="op">&gt;</span>

@@ -477,48 +477,23 @@
 <span id="476">476</span>
 <span id="477">477</span>
 <span id="478">478</span>
-<span id="479">479</span>
-<span id="480">480</span>
-<span id="481">481</span>
-<span id="482">482</span>
-<span id="483">483</span>
-<span id="484">484</span>
-<span id="485">485</span>
-<span id="486">486</span>
-<span id="487">487</span>
-<span id="488">488</span>
-<span id="489">489</span>
-<span id="490">490</span>
-<span id="491">491</span>
-<span id="492">492</span>
-<span id="493">493</span>
-<span id="494">494</span>
-<span id="495">495</span>
-<span id="496">496</span>
-<span id="497">497</span>
-<span id="498">498</span>
-<span id="499">499</span>
-<span id="500">500</span>
-<span id="501">501</span>
-<span id="502">502</span>
-<span id="503">503</span>
-<span id="504">504</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">deny</span>(<span class="ident">clippy::all</span>, <span class="ident">clippy::cargo</span>)]</span>
 <span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::multiple_crate_versions</span>)]</span>
 <span class="attribute">#![<span class="ident">warn</span>(<span class="ident">missing_docs</span>, <span class="ident">nonstandard_style</span>, <span class="ident">rust_2018_idioms</span>)]</span>
 
 <span class="doccomment">//! The mechanism available for defining a Lambda function is as follows:</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! Create a type that conforms to the [`Handler`] trait. This type can then be passed</span>
-<span class="doccomment">//! to the the `lambda_runtime::run` function, which launches and runs the Lambda runtime.</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::types::Context</span>;
+<span class="doccomment">//! Create a type that conforms to the [`tower::Service`] trait. This type can</span>
+<span class="doccomment">//! then be passed to the the `lambda_runtime::run` function, which launches</span>
+<span class="doccomment">//! and runs the Lambda runtime.</span>
 <span class="kw">use</span> <span class="ident">hyper::client</span>::{<span class="ident">connect::Connection</span>, <span class="ident">HttpConnector</span>};
 <span class="kw">use</span> <span class="ident">lambda_runtime_api_client::Client</span>;
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">convert::TryFrom</span>, <span class="ident">env</span>, <span class="ident">fmt</span>, <span class="ident">future::Future</span>, <span class="ident">panic</span>};
 <span class="kw">use</span> <span class="ident">tokio::io</span>::{<span class="ident">AsyncRead</span>, <span class="ident">AsyncWrite</span>};
 <span class="kw">use</span> <span class="ident">tokio_stream</span>::{<span class="ident">Stream</span>, <span class="ident">StreamExt</span>};
-<span class="kw">use</span> <span class="ident">tower_service::Service</span>;
+<span class="kw">use</span> <span class="ident">tower::util::ServiceFn</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">tower</span>::{<span class="self">self</span>, <span class="ident">service_fn</span>, <span class="ident">Service</span>};
 <span class="kw">use</span> <span class="ident">tracing</span>::{<span class="ident">error</span>, <span class="ident">trace</span>};
 
 <span class="kw">mod</span> <span class="ident">requests</span>;
@@ -529,6 +504,7 @@
 
 <span class="kw">use</span> <span class="ident">requests</span>::{<span class="ident">EventCompletionRequest</span>, <span class="ident">EventErrorRequest</span>, <span class="ident">IntoRequest</span>, <span class="ident">NextEventRequest</span>};
 <span class="kw">use</span> <span class="ident">types::Diagnostic</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">types</span>::{<span class="ident">Context</span>, <span class="ident">LambdaEvent</span>};
 
 <span class="doccomment">/// Error type that lambdas may result in</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">lambda_runtime_api_client::Error</span>;
@@ -565,42 +541,13 @@
     }
 }
 
-<span class="doccomment">/// A trait describing an asynchronous function `A` to `B`.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Handler</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Errors returned by this handler.</span>
-    <span class="kw">type</span> <span class="ident">Error</span>;
-    <span class="doccomment">/// Response of this handler.</span>
-    <span class="kw">type</span> <span class="ident">Fut</span>: <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span><span class="op">&gt;</span>;
-    <span class="doccomment">/// Handle the incoming event.</span>
-    <span class="kw">fn</span> <span class="ident">call</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">event</span>: <span class="ident">A</span>, <span class="ident">context</span>: <span class="ident">Context</span>) -&gt; <span class="ident"><span class="self">Self</span>::Fut</span>;
-}
-
-<span class="doccomment">/// Returns a new [`HandlerFn`] with the given closure.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`HandlerFn`]: struct.HandlerFn.html</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">handler_fn</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="ident">HandlerFn</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> {
-    <span class="ident">HandlerFn</span> { <span class="ident">f</span> }
-}
-
-<span class="doccomment">/// A [`Handler`] implemented by a closure.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`Handler`]: trait.Handler.html</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">HandlerFn</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> {
-    <span class="ident">f</span>: <span class="ident">F</span>,
-}
-
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">A</span>, <span class="ident">B</span>, <span class="ident">Error</span>, <span class="ident">Fut</span><span class="op">&gt;</span> <span class="ident">Handler</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">HandlerFn</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>
+<span class="doccomment">/// Return a new [`ServiceFn`] with a closure that takes an event and context as separate arguments.</span>
+<span class="attribute">#[<span class="ident">deprecated</span>(<span class="ident">since</span> <span class="op">=</span> <span class="string">&quot;0.5.0&quot;</span>, <span class="ident">note</span> <span class="op">=</span> <span class="string">&quot;Use `service_fn` and `LambdaEvent` instead&quot;</span>)]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">handler_fn</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">F</span>, <span class="ident">Fut</span><span class="op">&gt;</span>(<span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="ident">ServiceFn</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">Fn</span>(<span class="ident">LambdaEvent</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>) -&gt; <span class="ident">Fut</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">A</span>, <span class="ident">Context</span>) -&gt; <span class="ident">Fut</span>,
-    <span class="ident">Fut</span>: <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">Error</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="ident">Error</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">std::error::Error</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="lifetime">&#39;static</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">fmt::Display</span>,
 {
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>;
-    <span class="kw">type</span> <span class="ident">Fut</span> <span class="op">=</span> <span class="ident">Fut</span>;
-    <span class="kw">fn</span> <span class="ident">call</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">req</span>: <span class="ident">A</span>, <span class="ident">ctx</span>: <span class="ident">Context</span>) -&gt; <span class="ident"><span class="self">Self</span>::Fut</span> {
-        (<span class="self">self</span>.<span class="ident">f</span>)(<span class="ident">req</span>, <span class="ident">ctx</span>)
-    }
+    <span class="ident">service_fn</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">req</span>: <span class="ident">LambdaEvent</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span><span class="op">|</span> <span class="ident">f</span>(<span class="ident">req</span>.<span class="ident">payload</span>, <span class="ident">req</span>.<span class="ident">context</span>))
 }
 
 <span class="kw">struct</span> <span class="ident">Runtime</span><span class="op">&lt;</span><span class="ident">C</span>: <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">http::Uri</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">HttpConnector</span><span class="op">&gt;</span> {
@@ -610,9 +557,9 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span> <span class="ident">Runtime</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">C</span>: <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">http::Uri</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="ident">Unpin</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
-    <span class="op">&lt;</span><span class="ident">C</span> <span class="kw">as</span> <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">http::Uri</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="ident">::Future</span>: <span class="ident">Unpin</span> <span class="op">+</span> <span class="ident">Send</span>,
-    <span class="op">&lt;</span><span class="ident">C</span> <span class="kw">as</span> <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">http::Uri</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="ident">::Error</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">std::error::Error</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="op">&lt;</span><span class="ident">C</span> <span class="kw">as</span> <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">http::Uri</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="ident">::Response</span>: <span class="ident">AsyncRead</span> <span class="op">+</span> <span class="ident">AsyncWrite</span> <span class="op">+</span> <span class="ident">Connection</span> <span class="op">+</span> <span class="ident">Unpin</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
+    <span class="ident">C::Future</span>: <span class="ident">Unpin</span> <span class="op">+</span> <span class="ident">Send</span>,
+    <span class="ident">C::Error</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">std::error::Error</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">C::Response</span>: <span class="ident">AsyncRead</span> <span class="op">+</span> <span class="ident">AsyncWrite</span> <span class="op">+</span> <span class="ident">Connection</span> <span class="op">+</span> <span class="ident">Unpin</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
 {
     <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">run</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
@@ -621,9 +568,9 @@
         <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>,
     ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span>
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">Handler</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span>,
-        <span class="op">&lt;</span><span class="ident">F</span> <span class="kw">as</span> <span class="ident">Handler</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="ident">::Fut</span>: <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="op">&lt;</span><span class="ident">F</span> <span class="kw">as</span> <span class="ident">Handler</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="ident">::Error</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-        <span class="op">&lt;</span><span class="ident">F</span> <span class="kw">as</span> <span class="ident">Handler</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="ident">::Error</span>: <span class="ident">fmt::Display</span>,
+        <span class="ident">F</span>: <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">LambdaEvent</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+        <span class="ident">F::Future</span>: <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">F::Error</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+        <span class="ident">F::Error</span>: <span class="ident">fmt::Display</span>,
         <span class="ident">A</span>: <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
         <span class="ident">B</span>: <span class="ident">Serialize</span>,
     {
@@ -644,7 +591,7 @@
             <span class="ident">env::set_var</span>(<span class="string">&quot;_X_AMZN_TRACE_ID&quot;</span>, <span class="ident">xray_trace_id</span>);
 
             <span class="kw">let</span> <span class="ident">request_id</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">ctx</span>.<span class="ident">request_id</span>.<span class="ident">clone</span>();
-            <span class="kw">let</span> <span class="ident">task</span> <span class="op">=</span> <span class="ident">panic::catch_unwind</span>(<span class="ident">panic::AssertUnwindSafe</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">handler</span>.<span class="ident">call</span>(<span class="ident">body</span>, <span class="ident">ctx</span>)));
+            <span class="kw">let</span> <span class="ident">task</span> <span class="op">=</span> <span class="ident">panic::catch_unwind</span>(<span class="ident">panic::AssertUnwindSafe</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">handler</span>.<span class="ident">call</span>(<span class="ident">LambdaEvent::new</span>(<span class="ident">body</span>, <span class="ident">ctx</span>))));
 
             <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">task</span> {
                 <span class="prelude-val">Ok</span>(<span class="ident">response</span>) =&gt; <span class="kw">match</span> <span class="ident">response</span>.<span class="kw">await</span> {
@@ -713,25 +660,25 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Example</span>
 <span class="doccomment">/// ```no_run</span>
-<span class="doccomment">/// use lambda_runtime::{Error, handler_fn, Context};</span>
+<span class="doccomment">/// use lambda_runtime::{Error, service_fn, LambdaEvent};</span>
 <span class="doccomment">/// use serde_json::Value;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// #[tokio::main]</span>
 <span class="doccomment">/// async fn main() -&gt; Result&lt;(), Error&gt; {</span>
-<span class="doccomment">///     let func = handler_fn(func);</span>
+<span class="doccomment">///     let func = service_fn(func);</span>
 <span class="doccomment">///     lambda_runtime::run(func).await?;</span>
 <span class="doccomment">///     Ok(())</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// async fn func(event: Value, _: Context) -&gt; Result&lt;Value, Error&gt; {</span>
-<span class="doccomment">///     Ok(event)</span>
+<span class="doccomment">/// async fn func(event: LambdaEvent&lt;Value&gt;) -&gt; Result&lt;Value, Error&gt; {</span>
+<span class="doccomment">///     Ok(event.payload)</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// ```</span>
 <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">run</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">handler</span>: <span class="ident">F</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span>
 <span class="kw">where</span>
-    <span class="ident">F</span>: <span class="ident">Handler</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span>,
-    <span class="op">&lt;</span><span class="ident">F</span> <span class="kw">as</span> <span class="ident">Handler</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="ident">::Fut</span>: <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="op">&lt;</span><span class="ident">F</span> <span class="kw">as</span> <span class="ident">Handler</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="ident">::Error</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="op">&lt;</span><span class="ident">F</span> <span class="kw">as</span> <span class="ident">Handler</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="ident">::Error</span>: <span class="ident">fmt::Display</span>,
+    <span class="ident">F</span>: <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">LambdaEvent</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">F::Future</span>: <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">F::Error</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">F::Error</span>: <span class="ident">fmt::Display</span>,
     <span class="ident">A</span>: <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
     <span class="ident">B</span>: <span class="ident">Serialize</span>,
 {
@@ -967,10 +914,11 @@
             .<span class="ident">build</span>()
             .<span class="ident">expect</span>(<span class="string">&quot;Unable to build client&quot;</span>);
 
-        <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">func</span>(<span class="ident">event</span>: <span class="ident">serde_json::Value</span>, <span class="kw">_</span>: <span class="ident"><span class="kw">crate</span>::Context</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">serde_json::Value</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">func</span>(<span class="ident">event</span>: <span class="ident"><span class="kw">crate</span>::LambdaEvent</span><span class="op">&lt;</span><span class="ident">serde_json::Value</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">serde_json::Value</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+            <span class="kw">let</span> (<span class="ident">event</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">event</span>.<span class="ident">into_parts</span>();
             <span class="prelude-val">Ok</span>(<span class="ident">event</span>)
         }
-        <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::handler_fn</span>(<span class="ident">func</span>);
+        <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::service_fn</span>(<span class="ident">func</span>);
 
         <span class="comment">// set env vars needed to init Config if they are not already set in the environment</span>
         <span class="kw">if</span> <span class="ident">env::var</span>(<span class="string">&quot;AWS_LAMBDA_RUNTIME_API&quot;</span>).<span class="ident">is_err</span>() {

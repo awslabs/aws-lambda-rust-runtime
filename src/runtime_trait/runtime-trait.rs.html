@@ -48,7 +48,12 @@
 <span id="47">47</span>
 <span id="48">48</span>
 <span id="49">49</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">lambda_runtime</span>::{<span class="ident">Context</span>, <span class="ident">Error</span>, <span class="ident">Handler</span>};
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">lambda_runtime</span>::{<span class="ident">Error</span>, <span class="ident">LambdaEvent</span>, <span class="ident">Service</span>};
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 <span class="kw">use</span> <span class="ident">std</span>::{
     <span class="ident">future</span>::{<span class="ident">ready</span>, <span class="ident">Future</span>},
@@ -71,15 +76,20 @@
     <span class="ident">invoke_count</span>: <span class="ident">usize</span>,
 }
 
-<span class="kw">impl</span> <span class="ident">Handler</span><span class="op">&lt;</span><span class="ident">Request</span>, <span class="ident">Response</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">MyHandler</span> {
+<span class="kw">impl</span> <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">LambdaEvent</span><span class="op">&lt;</span><span class="ident">Request</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">MyHandler</span> {
     <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>;
-    <span class="kw">type</span> <span class="ident">Fut</span> <span class="op">=</span> <span class="ident">Pin</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Response</span>, <span class="ident">Error</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="ident">Future</span> <span class="op">=</span> <span class="ident">Pin</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Response</span>, <span class="ident">Error</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="ident">Response</span> <span class="op">=</span> <span class="ident">Response</span>;
 
-    <span class="kw">fn</span> <span class="ident">call</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">event</span>: <span class="ident">Request</span>, <span class="ident">_context</span>: <span class="ident">Context</span>) -&gt; <span class="ident"><span class="self">Self</span>::Fut</span> {
+    <span class="kw">fn</span> <span class="ident">poll_ready</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">_cx</span>: <span class="kw-2">&amp;mut</span> <span class="ident">core::task::Context</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">core::task::Poll</span><span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="ident">core::task::Poll::Ready</span>(<span class="prelude-val">Ok</span>(()))
+    }
+
+    <span class="kw">fn</span> <span class="ident">call</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">request</span>: <span class="ident">LambdaEvent</span><span class="op">&lt;</span><span class="ident">Request</span><span class="op">&gt;</span>) -&gt; <span class="ident"><span class="self">Self</span>::Future</span> {
         <span class="self">self</span>.<span class="ident">invoke_count</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-        <span class="macro">info!</span>(<span class="string">&quot;[handler] Received event {}: {:?}&quot;</span>, <span class="self">self</span>.<span class="ident">invoke_count</span>, <span class="ident">event</span>);
+        <span class="macro">info!</span>(<span class="string">&quot;[handler] Received event {}: {:?}&quot;</span>, <span class="self">self</span>.<span class="ident">invoke_count</span>, <span class="ident">request</span>);
         <span class="ident">Box::pin</span>(<span class="ident">ready</span>(<span class="prelude-val">Ok</span>(<span class="ident">Response</span> {
-            <span class="ident">message</span>: <span class="ident">event</span>.<span class="ident">command</span>.<span class="ident">to_uppercase</span>(),
+            <span class="ident">message</span>: <span class="ident">request</span>.<span class="ident">payload</span>.<span class="ident">command</span>.<span class="ident">to_uppercase</span>(),
         })))
     }
 }

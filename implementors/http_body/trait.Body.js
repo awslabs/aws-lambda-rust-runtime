@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["lambda_http"] = [{"text":"impl <a class=\"trait\" href=\"https://docs.rs/http-body/0.4.4/http_body/trait.Body.html\" title=\"trait http_body::Body\">Body</a> for <a class=\"enum\" href=\"lambda_http/enum.Body.html\" title=\"enum lambda_http::Body\">Body</a>","synthetic":false,"types":["lambda_http::body::Body"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

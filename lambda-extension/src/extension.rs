@@ -112,10 +112,11 @@ where
         let client = &Client::builder().build()?;
 
         let extension_id = register(client, self.extension_name, self.events).await?;
+        let extension_id = extension_id.to_str()?;
         let mut ep = self.events_processor;
 
         if let Some(mut lp) = self.logs_processor {
-            // fixme(david): 
+            // fixme(david):
             //   - Spawn task to run processor
             //   - Call Logs API to start receiving vents
         }
@@ -123,7 +124,7 @@ where
         let incoming = async_stream::stream! {
             loop {
                 trace!("Waiting for next event (incoming loop)");
-                let req = requests::next_event_request(extension_id)?;
+                let req = requests::next_event_request(&extension_id)?;
                 let res = client.call(req).await;
                 yield res;
             }
@@ -140,17 +141,14 @@ where
             let event: NextEvent = serde_json::from_slice(&body)?;
             let is_invoke = event.is_invoke();
 
-            let event = LambdaEvent {
-                extension_id: extension_id.to_string(),
-                next: event,
-            };
+            let event = LambdaEvent::new(&extension_id, event);
 
             let res = ep.call(event).await;
             if let Err(error) = res {
                 let req = if is_invoke {
-                    requests::init_error(extension_id, &error.to_string(), None)?
+                    requests::init_error(&extension_id, &error.to_string(), None)?
                 } else {
-                    requests::exit_error(extension_id, &error.to_string(), None)?
+                    requests::exit_error(&extension_id, &error.to_string(), None)?
                 };
 
                 client.call(req).await?;
@@ -193,7 +191,7 @@ async fn register<'a>(
     client: &'a Client,
     extension_name: Option<&'a str>,
     events: Option<&'a [&'a str]>,
-) -> Result<&'a str, Error> {
+) -> Result<http::HeaderValue, Error> {
     let name = match extension_name {
         Some(name) => name.into(),
         None => {
@@ -215,6 +213,10 @@ async fn register<'a>(
         return Err(ExtensionError::boxed("unable to register the extension"));
     }
 
-    let extension_id = res.headers().get(requests::EXTENSION_ID_HEADER).unwrap().to_str()?;
-    Ok("asdf")
+    let header = res
+        .headers()
+        .get(requests::EXTENSION_ID_HEADER)
+        .ok_or_else(|| ExtensionError::boxed("missing extension id header"))
+        .map_err(|e| ExtensionError::boxed(e.to_string()))?;
+    Ok(header.clone())
 }

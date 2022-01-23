@@ -1,4 +1,4 @@
-use lambda_extension::{service_fn, Error, LambdaEvent, NextEvent, Runtime};
+use lambda_extension::{service_fn, Error, Extension, LambdaEvent, NextEvent};
 
 async fn my_extension(event: LambdaEvent) -> Result<(), Error> {
     match event.next {
@@ -27,9 +27,9 @@ async fn main() -> Result<(), Error> {
         .without_time()
         .init();
 
-    let func = service_fn(my_extension);
-
-    let runtime = Runtime::builder().with_events(&["SHUTDOWN"]).register().await?;
-
-    runtime.run(func).await
+    Extension::new()
+        .with_events(&["SHUTDOWN"])
+        .with_events_processor(service_fn(my_extension))
+        .run()
+        .await
 }

@@ -11,21 +11,23 @@ pub use tower::{self, service_fn, Service};
 
 mod error;
 pub use error::*;
+mod extension;
+pub use extension::*;
 mod events;
 pub use events::*;
+mod logs;
+pub use logs::*;
 
 /// Include several request builders to interact with the Extension API.
 pub mod requests;
 
-mod runtime;
-pub use runtime::*;
-
-/// Execute the given extension
-pub async fn run<E>(extension: E) -> Result<(), Error>
+/// Execute the given events processor
+pub async fn run<E>(events_processor: E) -> Result<(), Error>
 where
     E: Service<LambdaEvent>,
     E::Future: Future<Output = Result<(), E::Error>>,
     E::Error: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Display,
 {
-    Runtime::builder().register().await?.run(extension).await
+    let ext = Extension::new().with_events_processor(events_processor);
+    ext.run().await
 }

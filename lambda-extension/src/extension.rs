@@ -2,7 +2,7 @@ use crate::{logs::*, requests, Error, ExtensionError, LambdaEvent, NextEvent};
 use lambda_runtime_api_client::Client;
 use std::{fmt, future::ready, future::Future, path::PathBuf, pin::Pin};
 use tokio_stream::StreamExt;
-pub use tower::{self, service_fn, Service};
+use tower::Service;
 use tracing::trace;
 
 /// An Extension that runs event and log processors
@@ -26,6 +26,12 @@ impl<'a> Extension<'a, Identity<LambdaEvent>, Identity<LambdaLog>> {
             log_buffering: None,
             logs_processor: None,
         }
+    }
+}
+
+impl<'a> Default for Extension<'a, Identity<LambdaEvent>, Identity<LambdaLog>> {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -115,16 +121,22 @@ where
         let extension_id = extension_id.to_str()?;
         let mut ep = self.events_processor;
 
-        if let Some(mut lp) = self.logs_processor {
+        if let Some(mut _lp) = self.logs_processor {
             // fixme(david):
             //   - Spawn task to run processor
-            //   - Call Logs API to start receiving vents
+
+            //   - Call Logs API to start receiving events
+            let req = requests::subscribe_logs_request(extension_id, self.log_types, self.log_buffering)?;
+            let res = client.call(req).await?;
+            if res.status() != http::StatusCode::OK {
+                return Err(ExtensionError::boxed("unable to initialize the logs api"));
+            }
         }
 
         let incoming = async_stream::stream! {
             loop {
                 trace!("Waiting for next event (incoming loop)");
-                let req = requests::next_event_request(&extension_id)?;
+                let req = requests::next_event_request(extension_id)?;
                 let res = client.call(req).await;
                 yield res;
             }
@@ -141,14 +153,14 @@ where
             let event: NextEvent = serde_json::from_slice(&body)?;
             let is_invoke = event.is_invoke();
 
-            let event = LambdaEvent::new(&extension_id, event);
+            let event = LambdaEvent::new(extension_id, event);
 
             let res = ep.call(event).await;
             if let Err(error) = res {
                 let req = if is_invoke {
-                    requests::init_error(&extension_id, &error.to_string(), None)?
+                    requests::init_error(extension_id, &error.to_string(), None)?
                 } else {
-                    requests::exit_error(&extension_id, &error.to_string(), None)?
+                    requests::exit_error(extension_id, &error.to_string(), None)?
                 };
 
                 client.call(req).await?;

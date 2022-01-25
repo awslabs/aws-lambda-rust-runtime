@@ -65,7 +65,7 @@ impl LambdaEvent {
     pub(crate) fn new(ex_id: &str, next: NextEvent) -> LambdaEvent {
         LambdaEvent {
             extension_id: ex_id.into(),
-            next: next,
+            next,
         }
     }
 }

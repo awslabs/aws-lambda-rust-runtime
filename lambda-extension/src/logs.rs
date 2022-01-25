@@ -20,11 +20,21 @@ pub struct LambdaLog {
 pub struct LogBuffering {
     /// The maximum time (in milliseconds) to buffer a batch.
     /// Default: 1,000. Minimum: 25. Maximum: 30,000
-    timeout_ms: usize,
+    pub timeout_ms: usize,
     /// The maximum size (in bytes) of the logs to buffer in memory.
     /// Default: 262,144. Minimum: 262,144. Maximum: 1,048,576
-    max_bytes: usize,
+    pub max_bytes: usize,
     /// The maximum number of events to buffer in memory.
     /// Default: 10,000. Minimum: 1,000. Maximum: 10,000
-    max_items: usize,
+    pub max_items: usize,
+}
+
+impl Default for LogBuffering {
+    fn default() -> Self {
+        LogBuffering {
+            timeout_ms: 1_000,
+            max_bytes: 262_144,
+            max_items: 10_000,
+        }
+    }
 }

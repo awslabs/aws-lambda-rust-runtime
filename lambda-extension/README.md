@@ -9,18 +9,15 @@
 The code below creates a simple extension that's registered to every `INVOKE` and `SHUTDOWN` events, and logs them in CloudWatch.
 
 ```rust,no_run
-use lambda_extension::{extension_fn, Error, NextEvent};
-use log::LevelFilter;
-use simple_logger::SimpleLogger;
-use tracing::info;
+use lambda_extension::{service_fn, Error, LambdaEvent, NextEvent};
 
-async fn log_extension(event: NextEvent) -> Result<(), Error> {
-    match event {
-        NextEvent::Shutdown(event) => {
-            info!("{}", event);
+async fn my_extension(event: LambdaEvent) -> Result<(), Error> {
+    match event.next {
+        NextEvent::Shutdown(_e) => {
+            // do something with the shutdown event
         }
-        NextEvent::Invoke(event) => {
-            info!("{}", event);
+        NextEvent::Invoke(_e) => {
+            // do something with the invoke event
         }
     }
     Ok(())
@@ -28,11 +25,16 @@ async fn log_extension(event: NextEvent) -> Result<(), Error> {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    SimpleLogger::new().with_level(LevelFilter::Info).init().unwrap();
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::INFO)
+        .with_ansi(false)
+        .without_time()
+        .init();
 
-    let func = extension_fn(log_extension);
+    let func = service_fn(my_extension);
     lambda_extension::run(func).await
 }
+
 ```
 
 ## Deployment

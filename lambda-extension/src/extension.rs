@@ -1,8 +1,9 @@
 use crate::{logs::*, requests, Error, ExtensionError, LambdaEvent, NextEvent};
+use hyper::Server;
 use lambda_runtime_api_client::Client;
-use std::{fmt, future::ready, future::Future, path::PathBuf, pin::Pin};
+use std::{fmt, future::ready, future::Future, path::PathBuf, pin::Pin, net::SocketAddr};
 use tokio_stream::StreamExt;
-use tower::Service;
+use tower::{Service, make::Shared};
 use tracing::trace;
 
 /// An Extension that runs event and log processors
@@ -41,9 +42,10 @@ where
     E::Future: Future<Output = Result<(), E::Error>>,
     E::Error: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Display,
 
-    L: Service<LambdaLog>,
-    L::Future: Future<Output = Result<(), L::Error>>,
-    L::Error: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Display,
+    // Fixme: 'static bound might be too restrictive
+    L: Service<LambdaLog, Response = ()> + Clone + Send + Sync + 'static,
+    L::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
+    L::Future: Future<Output = Result<(), L::Error>> + Send,
 {
     /// Create a new [`Extension`] with a given extension name
     pub fn with_extension_name(self, extension_name: &'a str) -> Self {
@@ -121,11 +123,16 @@ where
         let extension_id = extension_id.to_str()?;
         let mut ep = self.events_processor;
 
-        if let Some(mut _lp) = self.logs_processor {
-            // fixme(david):
-            //   - Spawn task to run processor
+        if let Some(log_processor) = self.logs_processor {
+            // Spawn task to run processor
+            let addr = SocketAddr::from(([127, 0, 0, 1], 8000));
+            let make_service = Shared::new(LogAdapter::new(log_processor));
+            let server = Server::bind(&addr).serve(make_service);
+            tokio::spawn(async move {
+                server.await
+            });
 
-            //   - Call Logs API to start receiving events
+            // Call Logs API to start receiving events
             let req = requests::subscribe_logs_request(extension_id, self.log_types, self.log_buffering)?;
             let res = client.call(req).await?;
             if res.status() != http::StatusCode::OK {
@@ -172,6 +179,7 @@ where
 }
 
 /// A no-op generic processor
+#[derive(Clone)]
 pub struct Identity<T> {
     _pd: std::marker::PhantomData<T>,
 }

@@ -1,8 +1,16 @@
 use serde::{Deserialize, Serialize};
+use std::{
+    pin::Pin,
+    boxed::Box,
+    marker::PhantomData,
+    future::Future,
+    task::{Context, Poll},
+};
+use tower::Service;
 
 /// Payload received from the Lambda Logs API
 /// See: https://docs.aws.amazon.com/lambda/latest/dg/runtimes-logs-api.html#runtimes-logs-api-msg
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct LambdaLog {
     /// Time when the log was generated
     pub time: String,
@@ -11,6 +19,13 @@ pub struct LambdaLog {
     // Fixme(david): the record can be a struct with more information, implement custom deserializer
     /// Log data
     pub record: String,
+}
+
+impl From<hyper::Request<hyper::Body>> for LambdaLog {
+    fn from(_request: hyper::Request<hyper::Body>) -> Self {
+        // Todo: implement this
+        todo!()
+    }
 }
 
 /// Log buffering configuration.
@@ -35,6 +50,60 @@ impl Default for LogBuffering {
             timeout_ms: 1_000,
             max_bytes: 262_144,
             max_items: 10_000,
+        }
+    }
+}
+
+/// Service to convert hyper request into a LambdaLog struct
+#[derive(Clone)]
+pub struct LogAdapter<'a, S> {
+    service: S,
+    _phantom_data: PhantomData<&'a ()>,
+}
+
+impl<'a, S> LogAdapter<'a, S> {
+    pub fn new(service: S) -> Self {
+        Self {
+            service,
+            _phantom_data: PhantomData,
+        }
+    }
+}
+
+impl<'a, S> Service<hyper::Request<hyper::Body>> for LogAdapter<'a, S>
+where
+    S: Service<LambdaLog, Response = ()> + Clone + Send,
+    S::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
+    S::Future: Send + 'a,
+{
+    type Response = hyper::Response<hyper::Body>;
+    type Error = S::Error;
+    type Future = TransformResponse<'a, S::Error>;
+
+    fn poll_ready(&mut self, cx: &mut std::task::Context<'_>) -> std::task::Poll<Result<(), Self::Error>> {
+        self.service.poll_ready(cx)
+    }
+
+    fn call(&mut self, req: hyper::Request<hyper::Body>) -> Self::Future {
+        // todo: convert AddrStream to LambdaLog
+        let fut = self.service.call(req.into());
+        TransformResponse { fut: Box::pin(fut) }
+    }
+}
+
+pub struct TransformResponse<'a, E> {
+    fut: Pin<Box<dyn Future<Output = Result<(), E>> + Send + 'a>>,
+}
+
+impl<'a, E> Future for TransformResponse<'a, E> {
+    type Output = Result<hyper::Response<hyper::Body>, E>;
+
+    fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        match self.fut.as_mut().poll(cx) {
+            Poll::Ready(result) => Poll::Ready(
+                result.map(|resp| hyper::Response::new(hyper::Body::empty())),
+            ),
+            Poll::Pending => Poll::Pending,
         }
     }
 }

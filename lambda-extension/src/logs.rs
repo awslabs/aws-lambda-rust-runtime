@@ -6,7 +6,7 @@ use std::{
     future::Future,
     task::{Context, Poll},
 };
-use tower::Service;
+use tower::{Service};
 
 /// Payload received from the Lambda Logs API
 /// See: https://docs.aws.amazon.com/lambda/latest/dg/runtimes-logs-api.html#runtimes-logs-api-msg
@@ -55,7 +55,6 @@ impl Default for LogBuffering {
 }
 
 /// Service to convert hyper request into a LambdaLog struct
-#[derive(Clone)]
 pub struct LogAdapter<'a, S> {
     service: S,
     _phantom_data: PhantomData<&'a ()>,
@@ -72,7 +71,7 @@ impl<'a, S> LogAdapter<'a, S> {
 
 impl<'a, S> Service<hyper::Request<hyper::Body>> for LogAdapter<'a, S>
 where
-    S: Service<LambdaLog, Response = ()> + Clone + Send,
+    S: Service<LambdaLog, Response = ()>,
     S::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
     S::Future: Send + 'a,
 {
@@ -85,7 +84,6 @@ where
     }
 
     fn call(&mut self, req: hyper::Request<hyper::Body>) -> Self::Future {
-        // todo: convert AddrStream to LambdaLog
         let fut = self.service.call(req.into());
         TransformResponse { fut: Box::pin(fut) }
     }

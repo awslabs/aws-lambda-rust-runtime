@@ -1,9 +1,9 @@
 use crate::{logs::*, requests, Error, ExtensionError, LambdaEvent, NextEvent};
-use hyper::Server;
+use hyper::{Server, service::make_service_fn, server::conn::AddrStream};
 use lambda_runtime_api_client::Client;
 use std::{fmt, future::ready, future::Future, path::PathBuf, pin::Pin, net::SocketAddr};
 use tokio_stream::StreamExt;
-use tower::{Service, make::Shared};
+use tower::{Service, MakeService};
 use tracing::trace;
 
 /// An Extension that runs event and log processors
@@ -16,7 +16,7 @@ pub struct Extension<'a, E, L> {
     log_buffering: Option<LogBuffering>,
 }
 
-impl<'a> Extension<'a, Identity<LambdaEvent>, Identity<LambdaLog>> {
+impl<'a> Extension<'a, Identity<LambdaEvent>, MakeIdentity<LambdaLog>> {
     /// Create a new base [`Extension`] with a no-op events processor
     pub fn new() -> Self {
         Extension {
@@ -30,7 +30,7 @@ impl<'a> Extension<'a, Identity<LambdaEvent>, Identity<LambdaLog>> {
     }
 }
 
-impl<'a> Default for Extension<'a, Identity<LambdaEvent>, Identity<LambdaLog>> {
+impl<'a> Default for Extension<'a, Identity<LambdaEvent>, MakeIdentity<LambdaLog>> {
     fn default() -> Self {
         Self::new()
     }
@@ -43,9 +43,12 @@ where
     E::Error: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Display,
 
     // Fixme: 'static bound might be too restrictive
-    L: Service<LambdaLog, Response = ()> + Clone + Send + Sync + 'static,
+    L: MakeService<(), LambdaLog, Response = ()> + Send + Sync + 'static,
+    L::Service: Service<LambdaLog, Response = ()> + Send + Sync,
+    <L::Service as Service<LambdaLog>>::Future: Send + 'a,
     L::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
-    L::Future: Future<Output = Result<(), L::Error>> + Send,
+    L::MakeError: Into<Box<dyn std::error::Error + Send + Sync>>,
+    L::Future: Send,
 {
     /// Create a new [`Extension`] with a given extension name
     pub fn with_extension_name(self, extension_name: &'a str) -> Self {
@@ -123,10 +126,16 @@ where
         let extension_id = extension_id.to_str()?;
         let mut ep = self.events_processor;
 
-        if let Some(log_processor) = self.logs_processor {
+        if let Some(mut log_processor) = self.logs_processor {
             // Spawn task to run processor
             let addr = SocketAddr::from(([127, 0, 0, 1], 8000));
-            let make_service = Shared::new(LogAdapter::new(log_processor));
+            // let make_service = LogAdapter::new(log_processor);
+            let make_service = make_service_fn(move |_socket: &AddrStream| {
+                let service = log_processor.make_service(());
+                async move {
+                    Ok::<_, L::MakeError>(LogAdapter::new(service.await?))
+                }
+            });
             let server = Server::bind(&addr).serve(make_service);
             tokio::spawn(async move {
                 server.await
@@ -181,13 +190,13 @@ where
 /// A no-op generic processor
 #[derive(Clone)]
 pub struct Identity<T> {
-    _pd: std::marker::PhantomData<T>,
+    _phantom: std::marker::PhantomData<T>,
 }
 
 impl<T> Identity<T> {
-    fn new() -> Identity<T> {
-        Identity {
-            _pd: std::marker::PhantomData,
+    fn new() -> Self {
+        Self {
+            _phantom: std::marker::PhantomData,
         }
     }
 }
@@ -203,6 +212,34 @@ impl<T> Service<T> for Identity<T> {
 
     fn call(&mut self, _event: T) -> Self::Future {
         Box::pin(ready(Ok(())))
+    }
+}
+
+pub struct MakeIdentity<T> {
+    _phantom: std::marker::PhantomData<T>,
+}
+
+impl<T> MakeIdentity<T> {
+    fn new() -> Self {
+        Self {
+            _phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<T> Service<()> for MakeIdentity<T>
+    where T: Send + Sync + 'static,
+{
+    type Error = Error;
+    type Response = Identity<T>;
+    type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>>>>;
+
+    fn poll_ready(&mut self, _cx: &mut core::task::Context<'_>) -> core::task::Poll<Result<(), Self::Error>> {
+        core::task::Poll::Ready(Ok(()))
+    }
+
+    fn call(&mut self, _: ()) -> Self::Future {
+        Box::pin(ready(Ok(Identity::new())))
     }
 }
 

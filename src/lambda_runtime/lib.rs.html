@@ -534,8 +534,8 @@
                 .<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>()
                 .<span class="ident">expect</span>(<span class="string">&quot;AWS_LAMBDA_FUNCTION_MEMORY_SIZE env var is not &lt;i32&gt;&quot;</span>),
             <span class="ident">version</span>: <span class="ident">env::var</span>(<span class="string">&quot;AWS_LAMBDA_FUNCTION_VERSION&quot;</span>).<span class="ident">expect</span>(<span class="string">&quot;Missing AWS_LAMBDA_FUNCTION_VERSION env var&quot;</span>),
-            <span class="ident">log_stream</span>: <span class="ident">env::var</span>(<span class="string">&quot;AWS_LAMBDA_LOG_STREAM_NAME&quot;</span>).<span class="ident">expect</span>(<span class="string">&quot;Missing AWS_LAMBDA_LOG_STREAM_NAME env var&quot;</span>),
-            <span class="ident">log_group</span>: <span class="ident">env::var</span>(<span class="string">&quot;AWS_LAMBDA_LOG_GROUP_NAME&quot;</span>).<span class="ident">expect</span>(<span class="string">&quot;Missing AWS_LAMBDA_LOG_GROUP_NAME env var&quot;</span>),
+            <span class="ident">log_stream</span>: <span class="ident">env::var</span>(<span class="string">&quot;AWS_LAMBDA_LOG_STREAM_NAME&quot;</span>).<span class="ident">unwrap_or_default</span>(),
+            <span class="ident">log_group</span>: <span class="ident">env::var</span>(<span class="string">&quot;AWS_LAMBDA_LOG_GROUP_NAME&quot;</span>).<span class="ident">unwrap_or_default</span>(),
         };
         <span class="prelude-val">Ok</span>(<span class="ident">conf</span>)
     }

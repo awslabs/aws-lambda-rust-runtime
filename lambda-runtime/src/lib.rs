@@ -125,7 +125,7 @@ where
                         .into_req()
                     }
                     Err(err) => {
-                        error!("{}", err); // logs the error in CloudWatch
+                        error!("{:?}", err); // logs the error (chain) to CloudWatch Logs
                         EventErrorRequest {
                             request_id,
                             diagnostic: Diagnostic {

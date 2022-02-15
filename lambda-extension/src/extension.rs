@@ -1,9 +1,9 @@
 use crate::{logs::*, requests, Error, ExtensionError, LambdaEvent, NextEvent};
-use hyper::{Server, service::make_service_fn, server::conn::AddrStream};
+use hyper::{server::conn::AddrStream, service::make_service_fn, Server};
 use lambda_runtime_api_client::Client;
-use std::{fmt, future::ready, future::Future, path::PathBuf, pin::Pin, net::SocketAddr};
+use std::{fmt, future::ready, future::Future, net::SocketAddr, path::PathBuf, pin::Pin};
 use tokio_stream::StreamExt;
-use tower::{Service, MakeService};
+use tower::{MakeService, Service};
 use tracing::trace;
 
 /// An Extension that runs event and log processors
@@ -132,14 +132,10 @@ where
             // let make_service = LogAdapter::new(log_processor);
             let make_service = make_service_fn(move |_socket: &AddrStream| {
                 let service = log_processor.make_service(());
-                async move {
-                    Ok::<_, L::MakeError>(LogAdapter::new(service.await?))
-                }
+                async move { Ok::<_, L::MakeError>(LogAdapter::new(service.await?)) }
             });
             let server = Server::bind(&addr).serve(make_service);
-            tokio::spawn(async move {
-                server.await
-            });
+            tokio::spawn(async move { server.await });
 
             // Call Logs API to start receiving events
             let req = requests::subscribe_logs_request(extension_id, self.log_types, self.log_buffering)?;
@@ -203,7 +199,7 @@ impl<T> Identity<T> {
 
 impl<T> Service<T> for Identity<T> {
     type Error = Error;
-    type Future = Pin<Box<dyn Future<Output = Result<(), Error>>>>;
+    type Future = Pin<Box<dyn Future<Output = Result<(), Error>> + Send>>;
     type Response = ();
 
     fn poll_ready(&mut self, _cx: &mut core::task::Context<'_>) -> core::task::Poll<Result<(), Self::Error>> {
@@ -215,24 +211,19 @@ impl<T> Service<T> for Identity<T> {
     }
 }
 
+/// Service factory to generate no-op generic processors
+#[derive(Clone)]
 pub struct MakeIdentity<T> {
     _phantom: std::marker::PhantomData<T>,
 }
 
-impl<T> MakeIdentity<T> {
-    fn new() -> Self {
-        Self {
-            _phantom: std::marker::PhantomData,
-        }
-    }
-}
-
 impl<T> Service<()> for MakeIdentity<T>
-    where T: Send + Sync + 'static,
+where
+    T: Send + Sync + 'static,
 {
     type Error = Error;
     type Response = Identity<T>;
-    type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>>>>;
+    type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>;
 
     fn poll_ready(&mut self, _cx: &mut core::task::Context<'_>) -> core::task::Poll<Result<(), Self::Error>> {
         core::task::Poll::Ready(Ok(()))

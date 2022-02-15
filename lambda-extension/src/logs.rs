@@ -1,12 +1,12 @@
 use serde::{Deserialize, Serialize};
 use std::{
-    pin::Pin,
     boxed::Box,
-    marker::PhantomData,
     future::Future,
+    marker::PhantomData,
+    pin::Pin,
     task::{Context, Poll},
 };
-use tower::{Service};
+use tower::Service;
 
 /// Payload received from the Lambda Logs API
 /// See: https://docs.aws.amazon.com/lambda/latest/dg/runtimes-logs-api.html#runtimes-logs-api-msg
@@ -55,13 +55,14 @@ impl Default for LogBuffering {
 }
 
 /// Service to convert hyper request into a LambdaLog struct
-pub struct LogAdapter<'a, S> {
+pub(crate) struct LogAdapter<'a, S> {
     service: S,
     _phantom_data: PhantomData<&'a ()>,
 }
 
 impl<'a, S> LogAdapter<'a, S> {
-    pub fn new(service: S) -> Self {
+    /// Create a new LogAdapter
+    pub(crate) fn new(service: S) -> Self {
         Self {
             service,
             _phantom_data: PhantomData,
@@ -89,7 +90,8 @@ where
     }
 }
 
-pub struct TransformResponse<'a, E> {
+/// Future that transforms a LambdaLog into a hyper response
+pub(crate) struct TransformResponse<'a, E> {
     fut: Pin<Box<dyn Future<Output = Result<(), E>> + Send + 'a>>,
 }
 
@@ -98,9 +100,7 @@ impl<'a, E> Future for TransformResponse<'a, E> {
 
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         match self.fut.as_mut().poll(cx) {
-            Poll::Ready(result) => Poll::Ready(
-                result.map(|resp| hyper::Response::new(hyper::Body::empty())),
-            ),
+            Poll::Ready(result) => Poll::Ready(result.map(|_| hyper::Response::new(hyper::Body::empty()))),
             Poll::Pending => Poll::Pending,
         }
     }

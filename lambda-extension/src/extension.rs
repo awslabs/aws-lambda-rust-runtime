@@ -5,7 +5,9 @@ use std::{fmt, future::ready, future::Future, net::SocketAddr, path::PathBuf, pi
 use tokio::sync::Mutex;
 use tokio_stream::StreamExt;
 use tower::{service_fn, MakeService, Service};
-use tracing::trace;
+use tracing::{error, trace};
+
+const DEFAULT_LOG_PORT_NUMBER: u16 = 9002;
 
 /// An Extension that runs event and log processors
 pub struct Extension<'a, E, L> {
@@ -15,6 +17,7 @@ pub struct Extension<'a, E, L> {
     log_types: Option<&'a [&'a str]>,
     logs_processor: Option<L>,
     log_buffering: Option<LogBuffering>,
+    log_port_number: u16,
 }
 
 impl<'a> Extension<'a, Identity<LambdaEvent>, MakeIdentity<Vec<LambdaLog>>> {
@@ -27,6 +30,7 @@ impl<'a> Extension<'a, Identity<LambdaEvent>, MakeIdentity<Vec<LambdaLog>>> {
             log_types: None,
             log_buffering: None,
             logs_processor: None,
+            log_port_number: DEFAULT_LOG_PORT_NUMBER,
         }
     }
 }
@@ -82,6 +86,7 @@ where
             log_types: self.log_types,
             log_buffering: self.log_buffering,
             logs_processor: self.logs_processor,
+            log_port_number: self.log_port_number,
         }
     }
 
@@ -99,6 +104,7 @@ where
             events: self.events,
             log_types: self.log_types,
             log_buffering: self.log_buffering,
+            log_port_number: self.log_port_number,
         }
     }
 
@@ -119,6 +125,14 @@ where
         }
     }
 
+    /// Create a new [`Extension`] with a different port number to listen to logs.
+    pub fn with_log_port_number(self, port_number: u16) -> Self {
+        Extension {
+            log_port_number: port_number,
+            ..self
+        }
+    }
+
     /// Execute the given extension
     pub async fn run(self) -> Result<(), Error> {
         let client = &Client::builder().build()?;
@@ -128,9 +142,11 @@ where
         let mut ep = self.events_processor;
 
         if let Some(mut log_processor) = self.logs_processor {
+            trace!("Log processor found");
             // Spawn task to run processor
-            let addr = SocketAddr::from(([127, 0, 0, 1], 8000));
+            let addr = SocketAddr::from(([0, 0, 0, 0], self.log_port_number));
             let make_service = service_fn(move |_socket: &AddrStream| {
+                trace!("Creating new log processor Service");
                 let service = log_processor.make_service(());
                 async move {
                     let service = Arc::new(Mutex::new(service.await?));
@@ -138,14 +154,25 @@ where
                 }
             });
             let server = Server::bind(&addr).serve(make_service);
-            tokio::spawn(async move { server.await });
+            tokio::spawn(async move {
+                if let Err(e) = server.await {
+                    error!("Error while running log processor: {}", e);
+                }
+            });
+            trace!("Log processor started");
 
             // Call Logs API to start receiving events
-            let req = requests::subscribe_logs_request(extension_id, self.log_types, self.log_buffering)?;
+            let req = requests::subscribe_logs_request(
+                extension_id,
+                self.log_types,
+                self.log_buffering,
+                self.log_port_number,
+            )?;
             let res = client.call(req).await?;
             if res.status() != http::StatusCode::OK {
                 return Err(ExtensionError::boxed("unable to initialize the logs api"));
             }
+            trace!("Registered extension with Logs API");
         }
 
         let incoming = async_stream::stream! {

@@ -8,6 +8,7 @@ use std::{
     },
     task::Poll,
 };
+use tracing::info;
 
 #[derive(Default)]
 struct MyLogsProcessor {
@@ -38,6 +39,8 @@ impl Service<()> for MyLogsProcessor {
     }
 
     fn call(&mut self, _: ()) -> Self::Future {
+        info!("[logs] creating new service");
+
         Box::pin(ready(Ok(MyLogsProcessor {
             counter: self.counter.clone(),
         })))
@@ -59,7 +62,7 @@ impl Service<Vec<LambdaLog>> for MyLogsProcessor {
     fn call(&mut self, logs: Vec<LambdaLog>) -> Self::Future {
         let counter = self.counter.fetch_add(1, SeqCst);
         for log in logs {
-            println!("[logs] {}: {}", counter, log.record);
+            info!("[logs] {}: {}", counter, log.record);
         }
 
         Box::pin(ready(Ok(())))
@@ -68,6 +71,17 @@ impl Service<Vec<LambdaLog>> for MyLogsProcessor {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
+    // The runtime logging can be enabled here by initializing `tracing` with `tracing-subscriber`
+    // While `tracing` is used internally, `log` can be used as well if preferred.
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::INFO)
+        // this needs to be set to false, otherwise ANSI color codes will
+        // show up in a confusing manner in CloudWatch logs.
+        .with_ansi(false)
+        // disabling time is handy because CloudWatch will add the ingestion time.
+        .without_time()
+        .init();
+
     Extension::new()
         .with_logs_processor(MyLogsProcessor::new())
         .run()

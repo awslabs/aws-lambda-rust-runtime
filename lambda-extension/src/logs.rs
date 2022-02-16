@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::{boxed::Box, sync::Arc};
 use tokio::sync::Mutex;
 use tower::Service;
+use tracing::{error, trace};
 
 /// Payload received from the Lambda Logs API
 /// See: https://docs.aws.amazon.com/lambda/latest/dg/runtimes-logs-api.html#runtimes-logs-api-msg
@@ -55,8 +56,28 @@ where
     S::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
     S::Future: Send,
 {
-    let body = hyper::body::to_bytes(req.into_body()).await?;
-    let logs: Vec<LambdaLog> = serde_json::from_slice(&body)?;
+    trace!("Received logs request");
+    // Parse the request body as a Vec<LambdaLog>
+    let body = match hyper::body::to_bytes(req.into_body()).await {
+        Ok(body) => body,
+        Err(e) => {
+            error!("Error reading logs request body: {}", e);
+            return Ok(hyper::Response::builder()
+                .status(hyper::StatusCode::BAD_REQUEST)
+                .body(hyper::Body::empty())
+                .unwrap());
+        }
+    };
+    let logs: Vec<LambdaLog> = match serde_json::from_slice(&body) {
+        Ok(logs) => logs,
+        Err(e) => {
+            error!("Error parsing logs: {}", e);
+            return Ok(hyper::Response::builder()
+                .status(hyper::StatusCode::BAD_REQUEST)
+                .body(hyper::Body::empty())
+                .unwrap());
+        }
+    };
 
     {
         let mut service = service.lock().await;

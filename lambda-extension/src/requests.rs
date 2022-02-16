@@ -33,6 +33,7 @@ pub(crate) fn subscribe_logs_request(
     extension_id: &str,
     types: Option<&[&str]>,
     buffering: Option<LogBuffering>,
+    port_number: u16,
 ) -> Result<Request<Body>, Error> {
     let types = types.unwrap_or(&["platform", "function"]);
 
@@ -42,7 +43,7 @@ pub(crate) fn subscribe_logs_request(
         "buffering": buffering.unwrap_or_default(),
         "destination": {
             "protocol": "HTTP",
-            "URI": "http://sandbox.localdomain:8080"
+            "URI": format!("http://sandbox.localdomain:{}", port_number),
         }
     });
 

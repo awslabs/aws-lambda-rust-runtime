@@ -1,6 +1,4 @@
-#![allow(clippy::type_complexity)]
-
-use lambda_extension::{Error, Extension, LambdaLog, LambdaLogRecord, Service};
+use lambda_extension::{Error, Extension, LambdaLog, LambdaLogRecord, Service, SharedService};
 use std::{
     future::{ready, Future},
     pin::Pin,
@@ -12,7 +10,14 @@ use std::{
 };
 use tracing::info;
 
-#[derive(Default)]
+/// Custom log processor that increments a counter for each log record.
+///
+/// This is a simple example of a custom log processor that can be used to
+/// count the number of log records that are processed.
+///
+/// This needs to derive Clone (and store the counter in an Arc) as the runtime
+/// could need multiple `Service`s to process the logs.
+#[derive(Clone, Default)]
 struct MyLogsProcessor {
     counter: Arc<AtomicUsize>,
 }
@@ -20,32 +25,6 @@ struct MyLogsProcessor {
 impl MyLogsProcessor {
     pub fn new() -> Self {
         Self::default()
-    }
-}
-
-/// Implements MakeService for MyLogsProcessor
-///
-/// The runtime may spawn multiple services, so we need to implement MakeService
-/// to have a factory of services. You do that by creating a `Service` that returns
-/// a `Service`.
-///
-/// For this example, we are using the same type for both the service factory and the
-/// service itself.
-impl Service<()> for MyLogsProcessor {
-    type Response = MyLogsProcessor;
-    type Error = Error;
-    type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>;
-
-    fn poll_ready(&mut self, _cx: &mut core::task::Context<'_>) -> core::task::Poll<Result<(), Self::Error>> {
-        Poll::Ready(Ok(()))
-    }
-
-    fn call(&mut self, _: ()) -> Self::Future {
-        info!("[logs] creating new service");
-
-        Box::pin(ready(Ok(MyLogsProcessor {
-            counter: self.counter.clone(),
-        })))
     }
 }
 
@@ -65,8 +44,8 @@ impl Service<Vec<LambdaLog>> for MyLogsProcessor {
         let counter = self.counter.fetch_add(1, SeqCst);
         for log in logs {
             match log.record {
-                LambdaLogRecord::Function(record) => info!("[logs] [function] {}: {}", counter, record.trim()),
-                LambdaLogRecord::Extension(record) => info!("[logs] [extension] {}: {}", counter, record.trim()),
+                LambdaLogRecord::Function(record) => info!("[logs] [function] {}: {}", counter, record),
+                LambdaLogRecord::Extension(record) => info!("[logs] [extension] {}: {}", counter, record),
                 _ => (),
             }
         }
@@ -77,21 +56,9 @@ impl Service<Vec<LambdaLog>> for MyLogsProcessor {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    // The runtime logging can be enabled here by initializing `tracing` with `tracing-subscriber`
-    // While `tracing` is used internally, `log` can be used as well if preferred.
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
-        // this needs to be set to false, otherwise ANSI color codes will
-        // show up in a confusing manner in CloudWatch logs.
-        .with_ansi(false)
-        // disabling time is handy because CloudWatch will add the ingestion time.
-        .without_time()
-        .init();
+    let logs_processor = SharedService::new(MyLogsProcessor::new());
 
-    Extension::new()
-        .with_logs_processor(MyLogsProcessor::new())
-        .run()
-        .await?;
+    Extension::new().with_logs_processor(logs_processor).run().await?;
 
     Ok(())
 }

@@ -44,8 +44,8 @@ impl Service<Vec<LambdaLog>> for MyLogsProcessor {
         let counter = self.counter.fetch_add(1, SeqCst);
         for log in logs {
             match log.record {
-                LambdaLogRecord::Function(record) => info!("[logs] [function] {}: {}", counter, record),
-                LambdaLogRecord::Extension(record) => info!("[logs] [extension] {}: {}", counter, record),
+                LambdaLogRecord::Function(record) => info!("[logs] {} [function] {}: {}", log.time, counter, record.trim()),
+                LambdaLogRecord::Extension(record) => info!("[logs] {} [extension] {}: {}", log.time, counter, record.trim()),
                 _ => (),
             }
         }
@@ -56,8 +56,16 @@ impl Service<Vec<LambdaLog>> for MyLogsProcessor {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    let logs_processor = SharedService::new(MyLogsProcessor::new());
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::INFO)
+        // this needs to be set to false, otherwise ANSI color codes will
+        // show up in a confusing manner in CloudWatch logs.
+        .with_ansi(false)
+        // disabling time is handy because CloudWatch will add the ingestion time.
+        .without_time()
+        .init();
 
+    let logs_processor = SharedService::new(MyLogsProcessor::new());
     Extension::new().with_logs_processor(logs_processor).run().await?;
 
     Ok(())

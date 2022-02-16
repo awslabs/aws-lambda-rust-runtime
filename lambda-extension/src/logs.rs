@@ -180,8 +180,8 @@ where
 
 #[cfg(test)]
 mod tests {
-    use chrono::TimeZone;
     use super::*;
+    use chrono::TimeZone;
 
     #[test]
     fn deserialize_full() {

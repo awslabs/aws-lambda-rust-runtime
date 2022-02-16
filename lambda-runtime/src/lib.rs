@@ -55,8 +55,8 @@ impl Config {
                 .parse::<i32>()
                 .expect("AWS_LAMBDA_FUNCTION_MEMORY_SIZE env var is not <i32>"),
             version: env::var("AWS_LAMBDA_FUNCTION_VERSION").expect("Missing AWS_LAMBDA_FUNCTION_VERSION env var"),
-            log_stream: env::var("AWS_LAMBDA_LOG_STREAM_NAME").expect("Missing AWS_LAMBDA_LOG_STREAM_NAME env var"),
-            log_group: env::var("AWS_LAMBDA_LOG_GROUP_NAME").expect("Missing AWS_LAMBDA_LOG_GROUP_NAME env var"),
+            log_stream: env::var("AWS_LAMBDA_LOG_STREAM_NAME").unwrap_or_default(),
+            log_group: env::var("AWS_LAMBDA_LOG_GROUP_NAME").unwrap_or_default(),
         };
         Ok(conf)
     }

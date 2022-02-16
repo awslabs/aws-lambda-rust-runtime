@@ -27,9 +27,16 @@ async fn my_extension(event: LambdaEvent) -> Result<(), Error> {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::INFO)
+        .with_ansi(false)
+        .without_time()
+        .init();
+
     let func = service_fn(my_extension);
     lambda_extension::run(func).await
 }
+
 ```
 
 ### Log processor extension

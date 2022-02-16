@@ -2,25 +2,24 @@
 
 [![Docs](https://docs.rs/lambda_extension/badge.svg)](https://docs.rs/lambda_extension)
 
-**`lambda-extension`** is a library that makes it easy to write [AWS Lambda Runtime Extensions](https://docs.aws.amazon.com/lambda/latest/dg/using-extensions.html) in Rust.
+**`lambda-extension`** is a library that makes it easy to write [AWS Lambda Runtime Extensions](https://docs.aws.amazon.com/lambda/latest/dg/using-extensions.html) in Rust. It also helps with using [Lambda Logs API](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-logs-api.html).
 
-## Example extension
+## Example extensions
+
+### Simple extension
 
 The code below creates a simple extension that's registered to every `INVOKE` and `SHUTDOWN` events, and logs them in CloudWatch.
 
 ```rust,no_run
-use lambda_extension::{extension_fn, Error, NextEvent};
-use log::LevelFilter;
-use simple_logger::SimpleLogger;
-use tracing::info;
+use lambda_extension::{service_fn, Error, LambdaEvent, NextEvent};
 
-async fn log_extension(event: NextEvent) -> Result<(), Error> {
-    match event {
-        NextEvent::Shutdown(event) => {
-            info!("{}", event);
+async fn my_extension(event: LambdaEvent) -> Result<(), Error> {
+    match event.next {
+        NextEvent::Shutdown(_e) => {
+            // do something with the shutdown event
         }
-        NextEvent::Invoke(event) => {
-            info!("{}", event);
+        NextEvent::Invoke(_e) => {
+            // do something with the invoke event
         }
     }
     Ok(())
@@ -28,11 +27,43 @@ async fn log_extension(event: NextEvent) -> Result<(), Error> {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    SimpleLogger::new().with_level(LevelFilter::Info).init().unwrap();
-
-    let func = extension_fn(log_extension);
+    let func = service_fn(my_extension);
     lambda_extension::run(func).await
 }
+```
+
+### Log processor extension
+
+```rust,no_run
+use lambda_extension::{service_fn, Error, Extension, LambdaLog, LambdaLogRecord, SharedService};
+use tracing::info;
+
+async fn handler(logs: Vec<LambdaLog>) -> Result<(), Error> {
+    for log in logs {
+        match log.record {
+            LambdaLogRecord::Function(_record) => {
+                // do something with the function log record
+            },
+            LambdaLogRecord::Extension(_record) => {
+                // do something with the extension log record
+            },
+            },
+            _ => (),
+        }
+    }
+
+    Ok(())
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Error> {
+    let logs_processor = SharedService::new(service_fn(handler));
+
+    Extension::new().with_logs_processor(logs_processor).run().await?;
+
+    Ok(())
+}
+
 ```
 
 ## Deployment

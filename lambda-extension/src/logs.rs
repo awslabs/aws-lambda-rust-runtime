@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::{boxed::Box, sync::Arc};
 use tokio::sync::Mutex;
@@ -6,11 +7,10 @@ use tracing::{error, trace};
 
 /// Payload received from the Lambda Logs API
 /// See: https://docs.aws.amazon.com/lambda/latest/dg/runtimes-logs-api.html#runtimes-logs-api-msg
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq)]
 pub struct LambdaLog {
-    /// TODO: Convert time
     /// Time when the log was generated
-    pub time: String,
+    pub time: DateTime<Utc>,
     /// Log record entry
     #[serde(flatten)]
     pub record: LambdaLogRecord,
@@ -180,7 +180,21 @@ where
 
 #[cfg(test)]
 mod tests {
+    use chrono::TimeZone;
     use super::*;
+
+    #[test]
+    fn deserialize_full() {
+        let data = r#"{"time": "2020-08-20T12:31:32.123Z","type": "function", "record": "hello world"}"#;
+        let expected = LambdaLog {
+            time: Utc.ymd(2020, 8, 20).and_hms_milli(12, 31, 32, 123),
+            record: LambdaLogRecord::Function("hello world".to_string()),
+        };
+
+        let actual = serde_json::from_str::<LambdaLog>(data).unwrap();
+
+        assert_eq!(expected, actual);
+    }
 
     macro_rules! deserialize_tests {
         ($($name:ident: $value:expr,)*) => {

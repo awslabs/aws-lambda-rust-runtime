@@ -1,4 +1,4 @@
-use crate::Error;
+use crate::{Error, LogBuffering};
 use http::{Method, Request};
 use hyper::Body;
 use lambda_runtime_api_client::build_request;
@@ -25,6 +25,33 @@ pub(crate) fn register_request(extension_name: &str, events: &[&str]) -> Result<
         .uri("/2020-01-01/extension/register")
         .header(EXTENSION_NAME_HEADER, extension_name)
         .body(Body::from(serde_json::to_string(&events)?))?;
+
+    Ok(req)
+}
+
+pub(crate) fn subscribe_logs_request(
+    extension_id: &str,
+    types: Option<&[&str]>,
+    buffering: Option<LogBuffering>,
+    port_number: u16,
+) -> Result<Request<Body>, Error> {
+    let types = types.unwrap_or(&["platform", "function"]);
+
+    let data = serde_json::json!({
+        "schemaVersion": "2021-03-18",
+        "types": types,
+        "buffering": buffering.unwrap_or_default(),
+        "destination": {
+            "protocol": "HTTP",
+            "URI": format!("http://sandbox.localdomain:{}", port_number),
+        }
+    });
+
+    let req = build_request()
+        .method(Method::PUT)
+        .uri("/2020-08-15/logs")
+        .header(EXTENSION_ID_HEADER, extension_id)
+        .body(Body::from(serde_json::to_string(&data)?))?;
 
     Ok(req)
 }

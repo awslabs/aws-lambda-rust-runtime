@@ -1,16 +1,29 @@
-use lambda_extension::{service_fn, Error, Extension, LambdaEvent, NextEvent};
+use lambda_extension::{
+    service_fn, Error, Extension, LambdaEvent, LambdaLog, LambdaLogRecord, NextEvent, SharedService,
+};
+use tracing::info;
 
 async fn my_extension(event: LambdaEvent) -> Result<(), Error> {
     match event.next {
         NextEvent::Shutdown(_e) => {
             // do something with the shutdown event
         }
-        _ => {
-            // ignore any other event
-            // because we've registered the extension
-            // only to receive SHUTDOWN events
+        NextEvent::Invoke(_e) => {
+            // do something with the invoke event
         }
     }
+    Ok(())
+}
+
+async fn my_log_processor(logs: Vec<LambdaLog>) -> Result<(), Error> {
+    for log in logs {
+        match log.record {
+            LambdaLogRecord::Function(record) => info!("[logs] [function] {}", record),
+            LambdaLogRecord::Extension(record) => info!("[logs] [extension] {}", record),
+            _ => (),
+        }
+    }
+
     Ok(())
 }
 
@@ -27,9 +40,12 @@ async fn main() -> Result<(), Error> {
         .without_time()
         .init();
 
+    let func = service_fn(my_extension);
+    let logs_processor = SharedService::new(service_fn(my_log_processor));
+
     Extension::new()
-        .with_events(&["SHUTDOWN"])
-        .with_events_processor(service_fn(my_extension))
+        .with_events_processor(func)
+        .with_logs_processor(logs_processor)
         .run()
         .await
 }

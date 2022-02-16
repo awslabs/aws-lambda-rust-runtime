@@ -44,8 +44,12 @@ impl Service<Vec<LambdaLog>> for MyLogsProcessor {
         let counter = self.counter.fetch_add(1, SeqCst);
         for log in logs {
             match log.record {
-                LambdaLogRecord::Function(record) => info!("[logs] {} [function] {}: {}", log.time, counter, record.trim()),
-                LambdaLogRecord::Extension(record) => info!("[logs] {} [extension] {}: {}", log.time, counter, record.trim()),
+                LambdaLogRecord::Function(record) => {
+                    info!("[logs] {} [function] {}: {}", log.time, counter, record.trim())
+                }
+                LambdaLogRecord::Extension(record) => {
+                    info!("[logs] {} [extension] {}: {}", log.time, counter, record.trim())
+                }
                 _ => (),
             }
         }

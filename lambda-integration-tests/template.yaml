@@ -15,6 +15,7 @@ Resources:
       CodeUri: ../build/runtime-fn/
       Runtime: provided.al2
       Layers:
+        - !Ref LogsTrait
         - !Ref ExtensionFn
         - !Ref ExtensionTrait
   
@@ -25,6 +26,7 @@ Resources:
       CodeUri: ../build/runtime-fn/
       Runtime: provided
       Layers:
+        - !Ref LogsTrait
         - !Ref ExtensionFn
         - !Ref ExtensionTrait
 
@@ -35,6 +37,7 @@ Resources:
       CodeUri: ../build/runtime-trait/
       Runtime: provided.al2
       Layers:
+        - !Ref LogsTrait
         - !Ref ExtensionFn
         - !Ref ExtensionTrait
   
@@ -45,6 +48,7 @@ Resources:
       CodeUri: ../build/runtime-trait/
       Runtime: provided
       Layers:
+        - !Ref LogsTrait
         - !Ref ExtensionFn
         - !Ref ExtensionTrait
   
@@ -76,6 +80,7 @@ Resources:
             Method: POST
             Path: /al2/post
       Layers:
+        - !Ref LogsTrait
         - !Ref ExtensionFn
         - !Ref ExtensionTrait
   
@@ -107,6 +112,7 @@ Resources:
             Method: POST
             Path: /al2-trait/post
       Layers:
+        - !Ref LogsTrait
         - !Ref ExtensionFn
         - !Ref ExtensionTrait
 
@@ -138,6 +144,7 @@ Resources:
             Method: POST
             Path: /post
       Layers:
+        - !Ref LogsTrait
         - !Ref ExtensionFn
         - !Ref ExtensionTrait
 
@@ -169,6 +176,7 @@ Resources:
             Method: POST
             Path: /trait/post
       Layers:
+        - !Ref LogsTrait
         - !Ref ExtensionFn
         - !Ref ExtensionTrait
 
@@ -180,6 +188,7 @@ Resources:
       Handler: main.handler
       Runtime: python3.9
       Layers:
+        - !Ref LogsTrait
         - !Ref ExtensionFn
         - !Ref ExtensionTrait
 
@@ -191,8 +200,14 @@ Resources:
       Handler: main.handler
       Runtime: python3.7
       Layers:
+        - !Ref LogsTrait
         - !Ref ExtensionFn
         - !Ref ExtensionTrait
+
+  LogsTrait:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      ContentUri: ../build/logs-trait/
 
   ExtensionFn:
     Type: AWS::Serverless::LayerVersion

@@ -2,7 +2,7 @@ INTEG_STACK_NAME ?= rust-lambda-integration-tests
 INTEG_FUNCTIONS_BUILD := runtime-fn runtime-trait http-fn http-trait
 INTEG_FUNCTIONS_INVOKE := RuntimeFn RuntimeFnAl2 RuntimeTrait RuntimeTraitAl2 Python PythonAl2
 INTEG_API_INVOKE := RestApiUrl HttpApiUrl
-INTEG_EXTENSIONS := extension-fn extension-trait
+INTEG_EXTENSIONS := extension-fn extension-trait logs-trait
 # Using musl to run extensions on both AL1 and AL2
 INTEG_ARCH := x86_64-unknown-linux-musl
 

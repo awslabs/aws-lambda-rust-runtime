@@ -1,4 +1,4 @@
-use lambda_extension::{Error, Extension, LambdaLog, LambdaLogRecord, Service};
+use lambda_extension::{Error, Extension, LambdaLog, LambdaLogRecord, Service, SharedService};
 use std::{
     future::{ready, Future},
     pin::Pin,
@@ -10,7 +10,14 @@ use std::{
 };
 use tracing::info;
 
-#[derive(Default)]
+/// Custom log processor that increments a counter for each log record.
+///
+/// This is a simple example of a custom log processor that can be used to
+/// count the number of log records that are processed.
+///
+/// This needs to derive Clone (and store the counter in an Arc) as the runtime
+/// could need multiple `Service`s to process the logs.
+#[derive(Clone, Default)]
 struct MyLogsProcessor {
     counter: Arc<AtomicUsize>,
 }
@@ -18,30 +25,6 @@ struct MyLogsProcessor {
 impl MyLogsProcessor {
     pub fn new() -> Self {
         Self::default()
-    }
-}
-
-/// Implements MakeService for MyLogsProcessor
-///
-/// The runtime may spawn multiple services, so we need to implement MakeService
-/// to have a factory of services. You do that by creating a `Service` that returns
-/// a `Service`.
-///
-/// For this example, we are using the same type for both the service factory and the
-/// service itself.
-impl Service<()> for MyLogsProcessor {
-    type Response = MyLogsProcessor;
-    type Error = Error;
-    type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>;
-
-    fn poll_ready(&mut self, _cx: &mut core::task::Context<'_>) -> core::task::Poll<Result<(), Self::Error>> {
-        Poll::Ready(Ok(()))
-    }
-
-    fn call(&mut self, _: ()) -> Self::Future {
-        Box::pin(ready(Ok(MyLogsProcessor {
-            counter: self.counter.clone(),
-        })))
     }
 }
 
@@ -73,10 +56,9 @@ impl Service<Vec<LambdaLog>> for MyLogsProcessor {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    Extension::new()
-        .with_logs_processor(MyLogsProcessor::new())
-        .run()
-        .await?;
+    let logs_processor = SharedService::new(MyLogsProcessor::new());
+
+    Extension::new().with_logs_processor(logs_processor).run().await?;
 
     Ok(())
 }

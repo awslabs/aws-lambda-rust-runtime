@@ -7,7 +7,7 @@
 //! Create a type that conforms to the [`Extension`] trait. This type can then be passed
 //! to the the `lambda_extension::run` function, which launches and runs the Lambda runtime extension.
 use std::{fmt, future::Future};
-pub use tower::{self, service_fn, Service};
+pub use tower::{self, make::Shared as SharedService, service_fn, Service};
 
 mod error;
 pub use error::*;

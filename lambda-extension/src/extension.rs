@@ -91,10 +91,10 @@ where
     }
 
     /// Create a new [`Extension`] with a service that receives Lambda logs.
-    pub fn with_logs_processor<N>(self, lp: N) -> Extension<'a, E, N>
+    pub fn with_logs_processor<N, NS>(self, lp: N) -> Extension<'a, E, N>
     where
-        N: Service<Vec<LambdaLog>>,
-        N::Future: Future<Output = Result<(), N::Error>>,
+        N: Service<()>,
+        N::Future: Future<Output = Result<NS, N::Error>>,
         N::Error: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Display,
     {
         Extension {

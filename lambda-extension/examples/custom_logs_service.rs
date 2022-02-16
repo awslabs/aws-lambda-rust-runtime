@@ -2,7 +2,10 @@ use lambda_extension::{Error, Extension, LambdaLog, Service};
 use std::{
     future::{ready, Future},
     pin::Pin,
-    sync::{atomic::{AtomicUsize, Ordering::SeqCst}, Arc},
+    sync::{
+        atomic::{AtomicUsize, Ordering::SeqCst},
+        Arc,
+    },
     task::Poll,
 };
 
@@ -22,7 +25,7 @@ impl MyLogsProcessor {
 /// The runtime may spawn multiple services, so we need to implement MakeService
 /// to have a factory of services. You do that by creating a `Service` that returns
 /// a `Service`.
-/// 
+///
 /// For this example, we are using the same type for both the service factory and the
 /// service itself.
 impl Service<()> for MyLogsProcessor {
@@ -42,7 +45,7 @@ impl Service<()> for MyLogsProcessor {
 }
 
 /// Implementation of the actual log processor
-/// 
+///
 /// This receives a `Vec<LambdaLog>` whenever there are new log entries available.
 impl Service<Vec<LambdaLog>> for MyLogsProcessor {
     type Response = ();

@@ -1,9 +1,10 @@
 use crate::{logs::*, requests, Error, ExtensionError, LambdaEvent, NextEvent};
-use hyper::{server::conn::AddrStream, service::make_service_fn, Server};
+use hyper::{server::conn::AddrStream, Server};
 use lambda_runtime_api_client::Client;
-use std::{fmt, future::ready, future::Future, net::SocketAddr, path::PathBuf, pin::Pin};
+use std::{fmt, future::ready, future::Future, net::SocketAddr, path::PathBuf, pin::Pin, sync::Arc};
+use tokio::sync::Mutex;
 use tokio_stream::StreamExt;
-use tower::{MakeService, Service};
+use tower::{service_fn, MakeService, Service};
 use tracing::trace;
 
 /// An Extension that runs event and log processors
@@ -16,7 +17,7 @@ pub struct Extension<'a, E, L> {
     log_buffering: Option<LogBuffering>,
 }
 
-impl<'a> Extension<'a, Identity<LambdaEvent>, MakeIdentity<LambdaLog>> {
+impl<'a> Extension<'a, Identity<LambdaEvent>, MakeIdentity<Vec<LambdaLog>>> {
     /// Create a new base [`Extension`] with a no-op events processor
     pub fn new() -> Self {
         Extension {
@@ -30,7 +31,7 @@ impl<'a> Extension<'a, Identity<LambdaEvent>, MakeIdentity<LambdaLog>> {
     }
 }
 
-impl<'a> Default for Extension<'a, Identity<LambdaEvent>, MakeIdentity<LambdaLog>> {
+impl<'a> Default for Extension<'a, Identity<LambdaEvent>, MakeIdentity<Vec<LambdaLog>>> {
     fn default() -> Self {
         Self::new()
     }
@@ -43,9 +44,9 @@ where
     E::Error: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Display,
 
     // Fixme: 'static bound might be too restrictive
-    L: MakeService<(), LambdaLog, Response = ()> + Send + Sync + 'static,
-    L::Service: Service<LambdaLog, Response = ()> + Send + Sync,
-    <L::Service as Service<LambdaLog>>::Future: Send + 'a,
+    L: MakeService<(), Vec<LambdaLog>, Response = ()> + Send + Sync + 'static,
+    L::Service: Service<Vec<LambdaLog>, Response = ()> + Send + Sync,
+    <L::Service as Service<Vec<LambdaLog>>>::Future: Send + 'a,
     L::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
     L::MakeError: Into<Box<dyn std::error::Error + Send + Sync>>,
     L::Future: Send,
@@ -87,7 +88,7 @@ where
     /// Create a new [`Extension`] with a service that receives Lambda logs.
     pub fn with_logs_processor<N>(self, lp: N) -> Extension<'a, E, N>
     where
-        N: Service<LambdaLog>,
+        N: Service<Vec<LambdaLog>>,
         N::Future: Future<Output = Result<(), N::Error>>,
         N::Error: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Display,
     {
@@ -129,10 +130,12 @@ where
         if let Some(mut log_processor) = self.logs_processor {
             // Spawn task to run processor
             let addr = SocketAddr::from(([127, 0, 0, 1], 8000));
-            // let make_service = LogAdapter::new(log_processor);
-            let make_service = make_service_fn(move |_socket: &AddrStream| {
+            let make_service = service_fn(move |_socket: &AddrStream| {
                 let service = log_processor.make_service(());
-                async move { Ok::<_, L::MakeError>(LogAdapter::new(service.await?)) }
+                async move {
+                    let service = Arc::new(Mutex::new(service.await?));
+                    Ok::<_, L::MakeError>(service_fn(move |req| log_wrapper(service.clone(), req)))
+                }
             });
             let server = Server::bind(&addr).serve(make_service);
             tokio::spawn(async move { server.await });

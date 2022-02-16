@@ -1,11 +1,6 @@
 use serde::{Deserialize, Serialize};
-use std::{
-    boxed::Box,
-    future::Future,
-    marker::PhantomData,
-    pin::Pin,
-    task::{Context, Poll},
-};
+use std::{boxed::Box, sync::Arc};
+use tokio::sync::Mutex;
 use tower::Service;
 
 /// Payload received from the Lambda Logs API
@@ -19,13 +14,6 @@ pub struct LambdaLog {
     // Fixme(david): the record can be a struct with more information, implement custom deserializer
     /// Log data
     pub record: String,
-}
-
-impl From<hyper::Request<hyper::Body>> for LambdaLog {
-    fn from(_request: hyper::Request<hyper::Body>) -> Self {
-        // Todo: implement this
-        todo!()
-    }
 }
 
 /// Log buffering configuration.
@@ -54,54 +42,26 @@ impl Default for LogBuffering {
     }
 }
 
-/// Service to convert hyper request into a LambdaLog struct
-pub(crate) struct LogAdapter<'a, S> {
-    service: S,
-    _phantom_data: PhantomData<&'a ()>,
-}
-
-impl<'a, S> LogAdapter<'a, S> {
-    /// Create a new LogAdapter
-    pub(crate) fn new(service: S) -> Self {
-        Self {
-            service,
-            _phantom_data: PhantomData,
-        }
-    }
-}
-
-impl<'a, S> Service<hyper::Request<hyper::Body>> for LogAdapter<'a, S>
+/// Wrapper function that sends logs to the subscriber Service
+///
+/// This takes an `hyper::Request` and transforms it into `Vec<LambdaLog>` for the
+/// underlying `Service` to process.
+pub(crate) async fn log_wrapper<S>(
+    service: Arc<Mutex<S>>,
+    req: hyper::Request<hyper::Body>,
+) -> Result<hyper::Response<hyper::Body>, Box<dyn std::error::Error + Send + Sync>>
 where
-    S: Service<LambdaLog, Response = ()>,
+    S: Service<Vec<LambdaLog>, Response = ()>,
     S::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
-    S::Future: Send + 'a,
+    S::Future: Send,
 {
-    type Response = hyper::Response<hyper::Body>;
-    type Error = S::Error;
-    type Future = TransformResponse<'a, S::Error>;
+    let body = hyper::body::to_bytes(req.into_body()).await?;
+    let logs: Vec<LambdaLog> = serde_json::from_slice(&body)?;
 
-    fn poll_ready(&mut self, cx: &mut std::task::Context<'_>) -> std::task::Poll<Result<(), Self::Error>> {
-        self.service.poll_ready(cx)
+    {
+        let mut service = service.lock().await;
+        let _ = service.call(logs).await;
     }
 
-    fn call(&mut self, req: hyper::Request<hyper::Body>) -> Self::Future {
-        let fut = self.service.call(req.into());
-        TransformResponse { fut: Box::pin(fut) }
-    }
-}
-
-/// Future that transforms a LambdaLog into a hyper response
-pub(crate) struct TransformResponse<'a, E> {
-    fut: Pin<Box<dyn Future<Output = Result<(), E>> + Send + 'a>>,
-}
-
-impl<'a, E> Future for TransformResponse<'a, E> {
-    type Output = Result<hyper::Response<hyper::Body>, E>;
-
-    fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        match self.fut.as_mut().poll(cx) {
-            Poll::Ready(result) => Poll::Ready(result.map(|_| hyper::Response::new(hyper::Body::empty()))),
-            Poll::Pending => Poll::Pending,
-        }
-    }
+    Ok(hyper::Response::new(hyper::Body::empty()))
 }

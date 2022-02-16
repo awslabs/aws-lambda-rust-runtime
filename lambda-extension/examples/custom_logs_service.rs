@@ -1,4 +1,4 @@
-use lambda_extension::{Error, Extension, LambdaLog, Service};
+use lambda_extension::{Error, Extension, LambdaLog, LambdaLogRecord, Service};
 use std::{
     future::{ready, Future},
     pin::Pin,
@@ -8,6 +8,7 @@ use std::{
     },
     task::Poll,
 };
+use tracing::info;
 
 #[derive(Default)]
 struct MyLogsProcessor {
@@ -59,7 +60,11 @@ impl Service<Vec<LambdaLog>> for MyLogsProcessor {
     fn call(&mut self, logs: Vec<LambdaLog>) -> Self::Future {
         let counter = self.counter.fetch_add(1, SeqCst);
         for log in logs {
-            println!("[logs] {}: {}", counter, log.record);
+            match log.record {
+                LambdaLogRecord::Function(record) => info!("[logs] [function] {}: {}", counter, record),
+                LambdaLogRecord::Extension(record) => info!("[logs] [extension] {}: {}", counter, record),
+                _ => (),
+            }
         }
 
         Box::pin(ready(Ok(())))

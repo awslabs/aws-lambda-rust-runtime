@@ -1,4 +1,6 @@
-use lambda_extension::{Error, Extension, LambdaLog, Service};
+#![allow(clippy::type_complexity)]
+
+use lambda_extension::{Error, Extension, LambdaLog, LambdaLogRecord, Service};
 use std::{
     future::{ready, Future},
     pin::Pin,
@@ -62,7 +64,11 @@ impl Service<Vec<LambdaLog>> for MyLogsProcessor {
     fn call(&mut self, logs: Vec<LambdaLog>) -> Self::Future {
         let counter = self.counter.fetch_add(1, SeqCst);
         for log in logs {
-            info!("[logs] {}: {}", counter, log.record);
+            match log.record {
+                LambdaLogRecord::Function(record) => info!("[logs] [function] {}: {}", counter, record.trim()),
+                LambdaLogRecord::Extension(record) => info!("[logs] [extension] {}: {}", counter, record.trim()),
+                _ => (),
+            }
         }
 
         Box::pin(ready(Ok(())))

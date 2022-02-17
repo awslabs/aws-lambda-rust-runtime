@@ -26,7 +26,7 @@ pub async fn run<E>(events_processor: E) -> Result<(), Error>
 where
     E: Service<LambdaEvent>,
     E::Future: Future<Output = Result<(), E::Error>>,
-    E::Error: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Display,
+    E::Error: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Display + fmt::Debug,
 {
     let ext = Extension::new().with_events_processor(events_processor);
     ext.run().await

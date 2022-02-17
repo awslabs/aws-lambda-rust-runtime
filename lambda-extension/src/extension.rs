@@ -1,7 +1,9 @@
 use crate::{logs::*, requests, Error, ExtensionError, LambdaEvent, NextEvent};
 use hyper::{server::conn::AddrStream, Server};
 use lambda_runtime_api_client::Client;
-use std::{fmt, future::ready, future::Future, net::SocketAddr, path::PathBuf, pin::Pin, sync::Arc};
+use std::{
+    convert::Infallible, fmt, future::ready, future::Future, net::SocketAddr, path::PathBuf, pin::Pin, sync::Arc,
+};
 use tokio::sync::Mutex;
 use tokio_stream::StreamExt;
 use tower::{service_fn, MakeService, Service};
@@ -45,14 +47,14 @@ impl<'a, E, L> Extension<'a, E, L>
 where
     E: Service<LambdaEvent>,
     E::Future: Future<Output = Result<(), E::Error>>,
-    E::Error: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Display,
+    E::Error: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Display + fmt::Debug,
 
     // Fixme: 'static bound might be too restrictive
     L: MakeService<(), Vec<LambdaLog>, Response = ()> + Send + Sync + 'static,
     L::Service: Service<Vec<LambdaLog>, Response = ()> + Send + Sync,
     <L::Service as Service<Vec<LambdaLog>>>::Future: Send + 'a,
-    L::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
-    L::MakeError: Into<Box<dyn std::error::Error + Send + Sync>>,
+    L::Error: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Debug,
+    L::MakeError: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Debug,
     L::Future: Send,
 {
     /// Create a new [`Extension`] with a given extension name
@@ -199,6 +201,7 @@ where
 
             let res = ep.call(event).await;
             if let Err(error) = res {
+                println!("{:?}", error);
                 let req = if is_invoke {
                     requests::init_error(extension_id, &error.to_string(), None)?
                 } else {
@@ -228,8 +231,8 @@ impl<T> Identity<T> {
 }
 
 impl<T> Service<T> for Identity<T> {
-    type Error = Error;
-    type Future = Pin<Box<dyn Future<Output = Result<(), Error>> + Send>>;
+    type Error = Infallible;
+    type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>;
     type Response = ();
 
     fn poll_ready(&mut self, _cx: &mut core::task::Context<'_>) -> core::task::Poll<Result<(), Self::Error>> {
@@ -251,7 +254,7 @@ impl<T> Service<()> for MakeIdentity<T>
 where
     T: Send + Sync + 'static,
 {
-    type Error = Error;
+    type Error = Infallible;
     type Response = Identity<T>;
     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>;
 

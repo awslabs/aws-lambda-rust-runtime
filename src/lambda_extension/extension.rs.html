@@ -299,10 +299,15 @@
 <span id="298">298</span>
 <span id="299">299</span>
 <span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">logs</span>::<span class="kw-2">*</span>, <span class="ident">requests</span>, <span class="ident">Error</span>, <span class="ident">ExtensionError</span>, <span class="ident">LambdaEvent</span>, <span class="ident">NextEvent</span>};
 <span class="kw">use</span> <span class="ident">hyper</span>::{<span class="ident">server::conn::AddrStream</span>, <span class="ident">Server</span>};
 <span class="kw">use</span> <span class="ident">lambda_runtime_api_client::Client</span>;
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">fmt</span>, <span class="ident">future::ready</span>, <span class="ident">future::Future</span>, <span class="ident">net::SocketAddr</span>, <span class="ident">path::PathBuf</span>, <span class="ident">pin::Pin</span>, <span class="ident">sync::Arc</span>};
+<span class="kw">use</span> <span class="ident">std</span>::{
+    <span class="ident">convert::Infallible</span>, <span class="ident">fmt</span>, <span class="ident">future::ready</span>, <span class="ident">future::Future</span>, <span class="ident">net::SocketAddr</span>, <span class="ident">path::PathBuf</span>, <span class="ident">pin::Pin</span>, <span class="ident">sync::Arc</span>,
+};
 <span class="kw">use</span> <span class="ident">tokio::sync::Mutex</span>;
 <span class="kw">use</span> <span class="ident">tokio_stream::StreamExt</span>;
 <span class="kw">use</span> <span class="ident">tower</span>::{<span class="ident">service_fn</span>, <span class="ident">MakeService</span>, <span class="ident">Service</span>};
@@ -346,14 +351,14 @@
 <span class="kw">where</span>
     <span class="ident">E</span>: <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">LambdaEvent</span><span class="op">&gt;</span>,
     <span class="ident">E::Future</span>: <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">E::Error</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="ident">E::Error</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">std::error::Error</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">fmt::Display</span>,
+    <span class="ident">E::Error</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">std::error::Error</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">fmt::Display</span> <span class="op">+</span> <span class="ident">fmt::Debug</span>,
 
     <span class="comment">// Fixme: &#39;static bound might be too restrictive</span>
     <span class="ident">L</span>: <span class="ident">MakeService</span><span class="op">&lt;</span>(), <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">LambdaLog</span><span class="op">&gt;</span>, <span class="ident">Response</span> <span class="op">=</span> ()<span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
     <span class="ident">L::Service</span>: <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">LambdaLog</span><span class="op">&gt;</span>, <span class="ident">Response</span> <span class="op">=</span> ()<span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span>,
     <span class="op">&lt;</span><span class="ident">L::Service</span> <span class="kw">as</span> <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">LambdaLog</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="ident">::Future</span>: <span class="ident">Send</span> <span class="op">+</span> <span class="lifetime">&#39;a</span>,
-    <span class="ident">L::Error</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">std::error::Error</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="ident">L::MakeError</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">std::error::Error</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">L::Error</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">std::error::Error</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">fmt::Debug</span>,
+    <span class="ident">L::MakeError</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">std::error::Error</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">fmt::Debug</span>,
     <span class="ident">L::Future</span>: <span class="ident">Send</span>,
 {
     <span class="doccomment">/// Create a new [`Extension`] with a given extension name</span>
@@ -500,6 +505,7 @@
 
             <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">ep</span>.<span class="ident">call</span>(<span class="ident">event</span>).<span class="kw">await</span>;
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">error</span>) <span class="op">=</span> <span class="ident">res</span> {
+                <span class="macro">println!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">error</span>);
                 <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">is_invoke</span> {
                     <span class="ident">requests::init_error</span>(<span class="ident">extension_id</span>, <span class="kw-2">&amp;</span><span class="ident">error</span>.<span class="ident">to_string</span>(), <span class="prelude-val">None</span>)<span class="question-mark">?</span>
                 } <span class="kw">else</span> {
@@ -529,8 +535,8 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Identity</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>;
-    <span class="kw">type</span> <span class="ident">Future</span> <span class="op">=</span> <span class="ident">Pin</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Infallible</span>;
+    <span class="kw">type</span> <span class="ident">Future</span> <span class="op">=</span> <span class="ident">Pin</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Response</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span><span class="op">&gt;</span><span class="op">&gt;</span>;
     <span class="kw">type</span> <span class="ident">Response</span> <span class="op">=</span> ();
 
     <span class="kw">fn</span> <span class="ident">poll_ready</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">_cx</span>: <span class="kw-2">&amp;mut</span> <span class="ident">core::task::Context</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">core::task::Poll</span><span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span><span class="op">&gt;</span> {
@@ -552,7 +558,7 @@
 <span class="kw">where</span>
     <span class="ident">T</span>: <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
 {
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>;
+    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Infallible</span>;
     <span class="kw">type</span> <span class="ident">Response</span> <span class="op">=</span> <span class="ident">Identity</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
     <span class="kw">type</span> <span class="ident">Future</span> <span class="op">=</span> <span class="ident">Pin</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Response</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 

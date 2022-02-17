@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use std::{boxed::Box, sync::Arc};
+use std::{boxed::Box, fmt, sync::Arc};
 use tokio::sync::Mutex;
 use tower::Service;
 use tracing::{error, trace};
@@ -144,7 +144,7 @@ pub(crate) async fn log_wrapper<S>(
 ) -> Result<hyper::Response<hyper::Body>, Box<dyn std::error::Error + Send + Sync>>
 where
     S: Service<Vec<LambdaLog>, Response = ()>,
-    S::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
+    S::Error: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Debug,
     S::Future: Send,
 {
     trace!("Received logs request");
@@ -172,7 +172,10 @@ where
 
     {
         let mut service = service.lock().await;
-        let _ = service.call(logs).await;
+        match service.call(logs).await {
+            Ok(_) => (),
+            Err(err) => println!("{:?}", err),
+        }
     }
 
     Ok(hyper::Response::new(hyper::Body::empty()))

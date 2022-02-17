@@ -1,6 +1,6 @@
 [package]
 name = "lambda_runtime"
-version = "0.4.1"
+version = "0.5.0"
 authors = ["David Barsky <dbarsky@amazon.com>"]
 description = "AWS Lambda Runtime"
 edition = "2018"
@@ -25,7 +25,7 @@ async-stream = "0.3"
 tracing = { version = "0.1", features = ["log"] }
 tower = { version = "0.4", features = ["util"] }
 tokio-stream = "0.1.2"
-lambda_runtime_api_client = { version = "0.4", path = "../lambda-runtime-api-client" }
+lambda_runtime_api_client = { version = "0.5", path = "../lambda-runtime-api-client" }
 
 [dev-dependencies]
 tracing-subscriber = "0.3"

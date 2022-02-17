@@ -1,6 +1,6 @@
 [package]
 name = "lambda_runtime_api_client"
-version = "0.4.1"
+version = "0.5.0"
 edition = "2018"
 authors = ["David Calavera <david.calavera@gmail.com>"]
 description = "AWS Lambda Runtime interaction API"

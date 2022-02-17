@@ -1,6 +1,6 @@
 [package]
 name = "lambda_extension"
-version = "0.1.0"
+version = "0.5.0"
 edition = "2018"
 authors = ["David Calavera <david.calavera@gmail.com>"]
 description = "AWS Lambda Extension API"
@@ -16,7 +16,7 @@ bytes = "1.0"
 chrono = { version = "0.4", features = ["serde"] }
 http = "0.2"
 hyper = { version = "0.14", features = ["http1", "client", "server", "stream", "runtime"] }
-lambda_runtime_api_client = { version = "0.4", path = "../lambda-runtime-api-client" }
+lambda_runtime_api_client = { version = "0.5", path = "../lambda-runtime-api-client" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "^1"
 tracing = { version = "0.1", features = ["log"] }

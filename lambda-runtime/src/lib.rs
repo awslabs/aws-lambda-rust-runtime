@@ -91,7 +91,7 @@ where
     where
         F: Service<LambdaEvent<A>>,
         F::Future: Future<Output = Result<B, F::Error>>,
-        F::Error: fmt::Display,
+        F::Error: fmt::Debug + fmt::Display,
         A: for<'de> Deserialize<'de>,
         B: Serialize,
     {
@@ -125,7 +125,7 @@ where
                         .into_req()
                     }
                     Err(err) => {
-                        error!("{}", err); // logs the error in CloudWatch
+                        error!("{:?}", err); // logs the error in CloudWatch
                         EventErrorRequest {
                             request_id,
                             diagnostic: Diagnostic {
@@ -137,7 +137,7 @@ where
                     }
                 },
                 Err(err) => {
-                    error!("{:?}", err); // inconsistent with other log record formats - to be reviewed
+                    error!("{:?}", err);
                     EventErrorRequest {
                         request_id,
                         diagnostic: Diagnostic {
@@ -199,7 +199,7 @@ pub async fn run<A, B, F>(handler: F) -> Result<(), Error>
 where
     F: Service<LambdaEvent<A>>,
     F::Future: Future<Output = Result<B, F::Error>>,
-    F::Error: fmt::Display,
+    F::Error: fmt::Debug + fmt::Display,
     A: for<'de> Deserialize<'de>,
     B: Serialize,
 {

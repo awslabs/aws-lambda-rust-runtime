@@ -570,7 +570,7 @@
     <span class="kw">where</span>
         <span class="ident">F</span>: <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">LambdaEvent</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span><span class="op">&gt;</span>,
         <span class="ident">F::Future</span>: <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">F::Error</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-        <span class="ident">F::Error</span>: <span class="ident">fmt::Display</span>,
+        <span class="ident">F::Error</span>: <span class="ident">fmt::Debug</span> <span class="op">+</span> <span class="ident">fmt::Display</span>,
         <span class="ident">A</span>: <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
         <span class="ident">B</span>: <span class="ident">Serialize</span>,
     {
@@ -604,7 +604,7 @@
                         .<span class="ident">into_req</span>()
                     }
                     <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; {
-                        <span class="macro">error!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">err</span>); <span class="comment">// logs the error in CloudWatch</span>
+                        <span class="macro">error!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">err</span>); <span class="comment">// logs the error in CloudWatch</span>
                         <span class="ident">EventErrorRequest</span> {
                             <span class="ident">request_id</span>,
                             <span class="ident">diagnostic</span>: <span class="ident">Diagnostic</span> {
@@ -616,7 +616,7 @@
                     }
                 },
                 <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; {
-                    <span class="macro">error!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">err</span>); <span class="comment">// inconsistent with other log record formats - to be reviewed</span>
+                    <span class="macro">error!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">err</span>);
                     <span class="ident">EventErrorRequest</span> {
                         <span class="ident">request_id</span>,
                         <span class="ident">diagnostic</span>: <span class="ident">Diagnostic</span> {
@@ -678,7 +678,7 @@
 <span class="kw">where</span>
     <span class="ident">F</span>: <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">LambdaEvent</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     <span class="ident">F::Future</span>: <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">F::Error</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="ident">F::Error</span>: <span class="ident">fmt::Display</span>,
+    <span class="ident">F::Error</span>: <span class="ident">fmt::Debug</span> <span class="op">+</span> <span class="ident">fmt::Display</span>,
     <span class="ident">A</span>: <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
     <span class="ident">B</span>: <span class="ident">Serialize</span>,
 {

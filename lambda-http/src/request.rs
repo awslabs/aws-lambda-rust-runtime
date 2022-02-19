@@ -6,7 +6,8 @@
 use crate::ext::{PathParameters, QueryStringParameters, StageVariables};
 use aws_lambda_events::alb::{AlbTargetGroupRequest, AlbTargetGroupRequestContext};
 use aws_lambda_events::apigw::{
-    ApiGatewayProxyRequest, ApiGatewayProxyRequestContext, ApiGatewayV2httpRequest, ApiGatewayV2httpRequestContext, ApiGatewayWebsocketProxyRequest, ApiGatewayWebsocketProxyRequestContext
+    ApiGatewayProxyRequest, ApiGatewayProxyRequestContext, ApiGatewayV2httpRequest, ApiGatewayV2httpRequestContext,
+    ApiGatewayWebsocketProxyRequest, ApiGatewayWebsocketProxyRequestContext,
 };
 use aws_lambda_events::encodings::Body;
 use http::header::HeaderName;
@@ -39,7 +40,7 @@ impl LambdaRequest {
             LambdaRequest::ApiGatewayV1 { .. } => RequestOrigin::ApiGatewayV1,
             LambdaRequest::ApiGatewayV2 { .. } => RequestOrigin::ApiGatewayV2,
             LambdaRequest::Alb { .. } => RequestOrigin::Alb,
-            LambdaRequest::WebSocket { .. } => RequestOrigin::WebSocket
+            LambdaRequest::WebSocket { .. } => RequestOrigin::WebSocket,
         }
     }
 }
@@ -55,7 +56,7 @@ pub enum RequestOrigin {
     /// ALB request origin
     Alb,
     /// API Gateway WebSocket
-    WebSocket
+    WebSocket,
 }
 
 fn into_api_gateway_v2_request(ag: ApiGatewayV2httpRequest) -> http::Request<Body> {
@@ -293,7 +294,7 @@ fn into_websocket_request(ag: ApiGatewayWebsocketProxyRequest) -> http::Request<
 
     // no builder method that sets headers in batch
     let _ = mem::replace(req.headers_mut(), headers);
-    let _ = mem::replace(req.method_mut(), http_method.unwrap_or_else(|| http::Method::GET));
+    let _ = mem::replace(req.method_mut(), http_method.unwrap_or(http::Method::GET));
 
     req
 }
@@ -302,7 +303,7 @@ fn apigw_path_with_stage(stage: &Option<String>, path: &str) -> String {
     match stage {
         None => path.into(),
         Some(stage) if stage == "$default" => path.into(),
-        Some(stage) => format!("/{}{}", stage, path)
+        Some(stage) => format!("/{}{}", stage, path),
     }
 }
 

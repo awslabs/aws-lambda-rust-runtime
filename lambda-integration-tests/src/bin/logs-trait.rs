@@ -28,14 +28,15 @@ impl MyLogsProcessor {
     }
 }
 
+type MyLogsFuture<R, E> = Pin<Box<dyn Future<Output = Result<R, E>> + Send>>;
+
 /// Implementation of the actual log processor
 ///
 /// This receives a `Vec<LambdaLog>` whenever there are new log entries available.
 impl Service<Vec<LambdaLog>> for MyLogsProcessor {
     type Response = ();
     type Error = Error;
-    #[allow(clippy::type_complexity)]
-    type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>;
+    type Future = MyLogsFuture<Self::Response, Self::Error>;
 
     fn poll_ready(&mut self, _cx: &mut core::task::Context<'_>) -> core::task::Poll<Result<(), Self::Error>> {
         Poll::Ready(Ok(()))

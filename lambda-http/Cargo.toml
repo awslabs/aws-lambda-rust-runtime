@@ -17,6 +17,7 @@ travis-ci = { repository = "awslabs/aws-lambda-rust-runtime" }
 maintenance = { status = "actively-developed" }
 
 [dependencies]
+aws_lambda_events = { version = "0.6", default-features = false, features = ["alb", "apigw"]}
 base64 = "0.13.0"
 bytes = "1"
 http = "0.2"
@@ -25,6 +26,7 @@ lambda_runtime = { path = "../lambda-runtime", version = "0.5" }
 serde = { version = "^1", features = ["derive"] }
 serde_json = "^1"
 serde_urlencoded = "0.7.0"
+query_map = { version = "0.4", features = ["url-query"] }
 
 [dev-dependencies]
 log = "^0.4"

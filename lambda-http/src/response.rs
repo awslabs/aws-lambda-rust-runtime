@@ -136,7 +136,7 @@ impl LambdaResponse {
                     headers,
                 })
             }
-            RequestOrigin::ApiGateway => LambdaResponse::ApiGateway(ApiGatewayResponse {
+            RequestOrigin::ApiGatewayV1 => LambdaResponse::ApiGateway(ApiGatewayResponse {
                 body,
                 status_code,
                 is_base64_encoded,
@@ -307,7 +307,7 @@ mod tests {
     #[test]
     fn serialize_multi_value_headers() {
         let res = LambdaResponse::from_response(
-            &RequestOrigin::ApiGateway,
+            &RequestOrigin::ApiGatewayV1,
             Response::builder()
                 .header("multi", "a")
                 .header("multi", "b")

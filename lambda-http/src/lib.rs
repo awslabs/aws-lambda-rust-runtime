@@ -66,7 +66,6 @@ pub use http::{self, Response};
 use lambda_runtime::LambdaEvent;
 pub use lambda_runtime::{self, service_fn, tower, Context, Error, Service};
 
-pub mod body;
 pub mod ext;
 pub mod request;
 mod response;
@@ -75,7 +74,7 @@ use crate::{
     request::{LambdaRequest, RequestOrigin},
     response::LambdaResponse,
 };
-use aws_lambda_events::encodings::Body;
+pub use aws_lambda_events::encodings::Body;
 use std::{
     future::Future,
     marker::PhantomData,

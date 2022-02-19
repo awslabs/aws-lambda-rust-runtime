@@ -19,7 +19,7 @@ async fn main() -> Result<(), Error> {
 }
 
 async fn func(event: Request) -> Result<Response<Body>, Error> {
-    Ok(match event.query_string_parameters().get("first_name") {
+    Ok(match event.query_string_parameters().first("first_name") {
         Some(first_name) => format!("Hello, {}!", first_name).into_response(),
         _ => Response::builder()
             .status(400)

@@ -33,85 +33,67 @@ async fn func(event: LambdaEvent<Value>) -> Result<Value, Error> {
 }
 ```
 
-### Deployment
+## Building and deploying your Lambda functions
 
-There are currently multiple ways of building this package: manually with the AWS CLI, and with the [Serverless framework](https://serverless.com/framework/).
+There are currently multiple ways of building this package: manually with the AWS CLI, with [AWS SAM](https://github.com/aws/aws-sam-cli), and with the [Serverless framework](https://serverless.com/framework/).
 
-#### AWS CLI
+### 1. Cross-compiling your Lambda functions
 
-To deploy the basic sample as a Lambda function using the [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html), we first need to manually build it with [`cargo`](https://doc.rust-lang.org/cargo/). Due to a few differences in dependencies, the process for building for Amazon Linux 2 is slightly different than building for Amazon Linux.
+At the time of writing, the ability to cross compile to a different architecture is limited. For example, you might experience issues if you are compiling from a MacOS machine, or from a Linux machine with a different architecture (e.g. compiling to Arm64 from x86_64). The most robust way we've found is using [`cargo-zigbuild`](https://github.com/messense/cargo-zigbuild) to compile for the target architecture.
 
-**Building for Amazon Linux 2**
+#### 1.1. Setup the cross-compilation environment
 
-Decide which target you'd like to use. For ARM Lambda Functions you'll want to use `aarch64-unknown-linux-gnu` and for x86 Lambda Functions you'll want to use `x86_64-unknown-linux-gnu`.
+_You can skip this step if you are compiling for the same target as your host architecture (e.g. x86_64 Linux to x86_64 Linux), unless you're building for an Amazon Linux 1 runtime._
 
-Run this script once to add your desired target, in this example we'll use x86:
+Run this script once to add your desired target:
 
 ```bash
-$ rustup target add x86_64-unknown-linux-gnu
+# For Arm64 Lambda functions
+rustup target add aarch64-unknown-linux-gnu
+# For x86_64 Lambda functions
+rustup target add x86_64-unknown-linux-gnu
 ```
 
-Compile one of the examples as a _release_ with a specific _target_ for deployment to AWS:
+Once this is done, install [Zig](https://ziglang.org/) using the instructions in their [installation guide](https://ziglang.org/learn/getting-started/#installing-zig), and install `cargo-zigbuild`:
 
 ```bash
-$ cargo build -p lambda_runtime --example basic --release --target x86_64-unknown-linux-gnu
+cargo install cargo-zigbuild
 ```
 
-_Building on MacOS Using Docker_
+#### 1.2. Build your Lambda functions
 
-At the time of writing, the ability to cross compile to x86 or aarch64 AL2 on MacOS is limited. The most robust way we've found is using Docker to produce the artifacts for you. This guide will work for both Intel and Apple Silicon MacOS and requires that you have set up Docker correctly for either architecture. [See here for a guide on how to do this.](https://docs.docker.com/desktop/mac/install/)
+__Amazon Linux 2__
 
-The following command will pull the [official Rust Docker Image](https://hub.docker.com/_/rust) for a given architecture you plan to use in Lambda and use it to run any cargo commands you need, such as build.
+We recommend you to use Amazon Linux 2 runtimes (such as `provided.al2`) as much as possible for building Lambda functions in Rust. To build your Lambda functions for Amazon Linux 2 runtimes, run:
 
 ```bash
-$ LAMBDA_ARCH="linux/arm64" # set this to either linux/arm64 for ARM functions, or linux/amd64 for x86 functions.
-$ RUST_TARGET="aarch64-unknown-linux-gnu" # corresponding with the above, set this to aarch64 or x86_64 -unknown-linux-gnu for ARM or x86 functions.
-$ RUST_VERSION="latest" # Set this to a specific version of rust you want to compile for, or to latest if you want the latest stable version.
-$ docker run \
-  --platform ${LAMBDA_ARCH} \
-  --rm --user "$(id -u)":"$(id -g)" \
-  -v "${PWD}":/usr/src/myapp -w /usr/src/myapp rust:${RUST_VERSION} \
-  cargo build -p lambda_runtime --example basic --release --target ${RUST_TARGET} # This line can be any cargo command
+# Note: replace "aarch64" with "x86_64" if you are building for x86_64
+cargo zigbuild --release --target aarch64-unknown-linux-gnu
 ```
 
-In short, the above command does the following:
+__Amazon Linux 1__
 
-1. Gives the current user ownership of the artifacts produced by the cargo run.
-2. Mounts the current working directory as a volume within the pulled Docker image.
-3. Pulls a given Rust Docker image for a given platform.
-4. Executes the command on the line beginning with `cargo` within the project directory within the image.
+Amazon Linux 1 uses glibc version 2.17, while Rust binaries need glibc version 2.18 or later by default. However, with `cargo-zigbuild`, you can specify a different version of glibc.
 
-It is important to note that build artifacts produced from the above command can be found under the expected `target/` directory in the project after build.
+If you are building for Amazon Linux 1, or you want to support both Amazon Linux 2 and 1, run:
 
-**Building for Amazon Linux 1**
-
-Run this script once to add the new target:
-```bash
-$ rustup target add x86_64-unknown-linux-musl
+```
+# Note: replace "aarch64" with "x86_64" if you are building for x86_64
+cargo zigbuild --release --target aarch64-unknown-linux-gnu.2.17
 ```
 
-* **Note:** If you are running on Mac OS you'll need to install the linker for the target platform. You do this using the `musl-cross` tap from [Homebrew](https://brew.sh/) which provides a complete cross-compilation toolchain for Mac OS. Once `musl-cross` is installed we will also need to inform cargo of the newly installed linker when building for the `x86_64-unknown-linux-musl` platform.
+### 2. Deploying the binary to AWS Lambda
 
+For [a custom runtime](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-custom.html), AWS Lambda looks for an executable called `bootstrap` in the deployment package zip. Rename the generated executable to `bootstrap` and add it to a zip archive.
 
-```bash
-$ brew install filosottile/musl-cross/musl-cross
-$ mkdir .cargo
-$ echo $'[target.x86_64-unknown-linux-musl]\nlinker = "x86_64-linux-musl-gcc"' > .cargo/config
-```
+__Note__: Depending on the target you used above, you'll find the provided basic executable under the corresponding directory. For example, if you are building the aarch64-unknown-linux-gnu as your target, it will be under `./target/aarch64-unknown-linux-gnu/release/`.
 
-Compile one of the examples as a _release_ with a specific _target_ for deployment to AWS:
-```bash
-$ cargo build -p lambda_runtime --example basic --release --target x86_64-unknown-linux-musl
-```
+#### 2.1. Deploying with the AWS CLI
 
-**Uploading the Resulting Binary to Lambda**
-
-For [a custom runtime](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-custom.html), AWS Lambda looks for an executable called `bootstrap` in the deployment package zip. Rename the generated `basic` executable to `bootstrap` and add it to a zip archive.
-
-NOTE: Depending on the target you used above, you'll find the provided basic executable under the corresponding directory. In the following example, we've compiled for x86_64-unknown-linux-gnu.
+First, you will need to create a ZIP archive of your Lambda function. For example, if you are using the `basic` example and aarch64-unknown-linux-gnu as your target, you can run:
 
 ```bash
-$ cp ./target/x86_64-unknown-linux-gnu/release/examples/basic ./bootstrap && zip lambda.zip bootstrap && rm bootstrap
+cp ./target/aarch64-unknown-linux-gnu/release/examples/basic ./bootstrap && zip lambda.zip bootstrap && rm bootstrap
 ```
 
 Now that we have a deployment package (`lambda.zip`), we can use the [AWS CLI](https://aws.amazon.com/cli/) to create a new Lambda function. Make sure to replace the execution role with an existing role in your account!
@@ -140,7 +122,58 @@ $ cat output.json  # Prints: {"msg": "Command Say Hi! executed."}
 **Note:** `--cli-binary-format raw-in-base64-out` is a required
   argument when using the AWS CLI version 2. [More Information](https://docs.aws.amazon.com/cli/latest/userguide/cliv2-migration.html#cliv2-migration-binaryparam)
 
-#### Serverless Framework
+#### 2.2. AWS Serverless Application Model (SAM)
+
+You can use Lambda functions built in Rust with the [AWS Serverless Application Model (SAM)](https://aws.amazon.com/serverless/sam/). To do so, you will need to install the [AWS SAM CLI](https://github.com/aws/aws-sam-cli), which will help you package and deploy your Lambda functions in your AWS account.
+
+You will need to create a `template.yaml` file containing your desired infrastructure in YAML. Here is an example with a single Lambda function:
+
+```yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      MemorySize: 128
+      Architectures: ["aarch64"]
+      Handler: bootstrap
+      Runtime: provided.al2
+      Timeout: 5
+      CodeUri: build/
+
+Outputs:
+  FunctionName:
+    Value: !Ref HelloWorldFunction
+    Description: Name of the Lambda function
+```
+
+After building your function, you will also need to store the binary as `bootstrap` in a dedicated directory for that function (e.g. `build/bootstrap`):
+
+```bash
+mkdir build
+cp ./target/aarch64-unknown-linux-gnu/release/examples/basic ./build/bootstrap
+```
+
+You can then deploy your Lambda function using the AWS SAM CLI:
+
+```bash
+sam deploy --guided
+```
+
+At the end, `sam` will output the actual Lambda function name. You can use this name to invoke your function:
+
+```bash
+$ aws lambda invoke
+  --cli-binary-format raw-in-base64-out \
+  --function-name HelloWorldFunction-XXXXXXXX \ # Replace with the actual function name
+  --payload '{"command": "Say Hi!"}' \
+  output.json
+$ cat output.json  # Prints: {"msg": "Command Say Hi! executed."}
+```
+
+#### 2.3. Serverless Framework
 
 Alternatively, you can build a Rust-based Lambda function declaratively using the [Serverless framework Rust plugin](https://github.com/softprops/serverless-rust).
 
@@ -174,7 +207,7 @@ Invoke it using serverless framework or a configured AWS integrated trigger sour
 $ npx serverless invoke -f hello -d '{"foo":"bar"}'
 ```
 
-#### Docker
+### Docker
 
 Alternatively, you can build a Rust-based Lambda function in a [docker mirror of the AWS Lambda provided runtime with the Rust toolchain preinstalled](https://github.com/rustserverless/lambda-rust).
 
@@ -212,17 +245,17 @@ $ unzip -o \
 
 Lambdas can be run and debugged locally using a special [Lambda debug proxy](https://github.com/rimutaka/lambda-debug-proxy) (a non-AWS repo maintained by @rimutaka), which is a Lambda function that forwards incoming requests to one AWS SQS queue and reads responses from another queue. A local proxy running on your development computer reads the queue, calls your lambda locally and sends back the response. This approach allows debugging of Lambda functions locally while being part of your AWS workflow. The lambda handler code does not need to be modified between the local and AWS versions.
 
-## `lambda`
+## `lambda_runtime`
 
 `lambda_runtime` is a library for authoring reliable and performant Rust-based AWS Lambda functions. At a high level, it provides `lambda_runtime::run`, a function that runs a `tower::Service<LambdaEvent>`.
 
 To write a function that will handle request, you need to pass it through `service_fn`, which will convert your function into a `tower::Service<LambdaEvent>`, which can then be run by `lambda_runtime::run`.
 
-## AWS event objects
+### AWS event objects
 
 This project does not currently include Lambda event struct definitions though we [intend to do so in the future](https://github.com/awslabs/aws-lambda-rust-runtime/issues/12). Instead, the community-maintained [`aws_lambda_events`](https://crates.io/crates/aws_lambda_events) crate can be leveraged to provide strongly-typed Lambda event structs. You can create your own custom event objects and their corresponding structs as well.
 
-## Custom event objects
+### Custom event objects
 
 To serialize and deserialize events and responses, we suggest using the use the [`serde`](https://github.com/serde-rs/serde) library. To receive custom events, annotate your structure with Serde's macros:
 

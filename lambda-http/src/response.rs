@@ -154,6 +154,13 @@ impl LambdaResponse {
                     parts.status.canonical_reason().unwrap_or_default()
                 ),
             }),
+            RequestOrigin::WebSocket => LambdaResponse::ApiGateway(ApiGatewayResponse {
+                body,
+                status_code,
+                is_base64_encoded,
+                headers: headers.clone(),
+                multi_value_headers: headers,
+            }),
         }
     }
 }

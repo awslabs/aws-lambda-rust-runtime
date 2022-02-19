@@ -6,7 +6,7 @@
 use crate::ext::{PathParameters, QueryStringParameters, StageVariables};
 use aws_lambda_events::alb::{AlbTargetGroupRequest, AlbTargetGroupRequestContext};
 use aws_lambda_events::apigw::{
-    ApiGatewayProxyRequest, ApiGatewayProxyRequestContext, ApiGatewayV2httpRequest, ApiGatewayV2httpRequestContext,
+    ApiGatewayProxyRequest, ApiGatewayProxyRequestContext, ApiGatewayV2httpRequest, ApiGatewayV2httpRequestContext, ApiGatewayWebsocketProxyRequest, ApiGatewayWebsocketProxyRequestContext
 };
 use aws_lambda_events::encodings::Body;
 use http::header::HeaderName;
@@ -27,6 +27,7 @@ pub enum LambdaRequest {
     ApiGatewayV1(ApiGatewayProxyRequest),
     ApiGatewayV2(ApiGatewayV2httpRequest),
     Alb(AlbTargetGroupRequest),
+    WebSocket(ApiGatewayWebsocketProxyRequest),
 }
 
 impl LambdaRequest {
@@ -38,6 +39,7 @@ impl LambdaRequest {
             LambdaRequest::ApiGatewayV1 { .. } => RequestOrigin::ApiGatewayV1,
             LambdaRequest::ApiGatewayV2 { .. } => RequestOrigin::ApiGatewayV2,
             LambdaRequest::Alb { .. } => RequestOrigin::Alb,
+            LambdaRequest::WebSocket { .. } => RequestOrigin::WebSocket
         }
     }
 }
@@ -52,6 +54,8 @@ pub enum RequestOrigin {
     ApiGatewayV2,
     /// ALB request origin
     Alb,
+    /// API Gateway WebSocket
+    WebSocket
 }
 
 fn into_api_gateway_v2_request(ag: ApiGatewayV2httpRequest) -> http::Request<Body> {
@@ -231,6 +235,69 @@ fn into_alb_request(alb: AlbTargetGroupRequest) -> http::Request<Body> {
     req
 }
 
+fn into_websocket_request(ag: ApiGatewayWebsocketProxyRequest) -> http::Request<Body> {
+    let http_method = ag.http_method;
+    let builder = http::Request::builder()
+        .uri({
+            let host = ag.headers.get(http::header::HOST).and_then(|s| s.to_str().ok());
+            let path = apigw_path_with_stage(&ag.request_context.stage, &ag.path.unwrap_or_default());
+
+            let mut url = match host {
+                None => path,
+                Some(host) => {
+                    let scheme = ag
+                        .headers
+                        .get(x_forwarded_proto())
+                        .and_then(|s| s.to_str().ok())
+                        .unwrap_or("https");
+                    format!("{}://{}{}", scheme, host, path)
+                }
+            };
+
+            if !ag.multi_value_query_string_parameters.is_empty() {
+                url.push('?');
+                url.push_str(&ag.multi_value_query_string_parameters.to_query_string());
+            } else if !ag.query_string_parameters.is_empty() {
+                url.push('?');
+                url.push_str(&ag.query_string_parameters.to_query_string());
+            }
+            url
+        })
+        // multi-valued query string parameters are always a super
+        // set of singly valued query string parameters,
+        // when present, multi-valued query string parameters are preferred
+        .extension(QueryStringParameters(
+            if ag.multi_value_query_string_parameters.is_empty() {
+                ag.query_string_parameters
+            } else {
+                ag.multi_value_query_string_parameters
+            },
+        ))
+        .extension(PathParameters(QueryMap::from(ag.path_parameters)))
+        .extension(StageVariables(QueryMap::from(ag.stage_variables)))
+        .extension(RequestContext::WebSocket(ag.request_context));
+
+    // merge headers into multi_value_headers and make
+    // multi-value_headers our cannoncial source of request headers
+    let mut headers = ag.multi_value_headers;
+    headers.extend(ag.headers);
+
+    let base64 = ag.is_base64_encoded.unwrap_or_default();
+    let mut req = builder
+        .body(
+            ag.body
+                .as_deref()
+                .map_or_else(Body::default, |b| Body::from_maybe_encoded(base64, b)),
+        )
+        .expect("failed to build request");
+
+    // no builder method that sets headers in batch
+    let _ = mem::replace(req.headers_mut(), headers);
+    let _ = mem::replace(req.method_mut(), http_method.unwrap_or_else(|| http::Method::GET));
+
+    req
+}
+
 fn apigw_path_with_stage(stage: &Option<String>, path: &str) -> String {
     match stage {
         None => path.into(),
@@ -251,6 +318,8 @@ pub enum RequestContext {
     ApiGatewayV2(ApiGatewayV2httpRequestContext),
     /// ALB request context
     Alb(AlbTargetGroupRequestContext),
+    /// WebSocket request context
+    WebSocket(ApiGatewayWebsocketProxyRequestContext),
 }
 
 /// Converts LambdaRequest types into `http::Request<Body>` types
@@ -260,6 +329,7 @@ impl<'a> From<LambdaRequest> for http::Request<Body> {
             LambdaRequest::ApiGatewayV2(ag) => into_api_gateway_v2_request(ag),
             LambdaRequest::ApiGatewayV1(ag) => into_proxy_request(ag),
             LambdaRequest::Alb(alb) => into_alb_request(alb),
+            LambdaRequest::WebSocket(ag) => into_websocket_request(ag),
         }
     }
 }

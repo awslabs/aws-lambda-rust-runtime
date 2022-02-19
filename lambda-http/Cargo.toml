@@ -30,3 +30,4 @@ serde_urlencoded = "0.7.0"
 log = "^0.4"
 maplit = "1.0"
 tokio = { version = "1.0", features = ["macros"] }
+tower-http = { version = "0.2", features = ["cors"] }

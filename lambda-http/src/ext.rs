@@ -68,7 +68,7 @@ impl Error for PayloadError {
 /// as well as `{"x":1, "y":2}` respectively.
 ///
 /// ```rust,no_run
-/// use lambda_http::{service_fn, Error, Context, Body, IntoResponse, Request, Response, RequestExt};
+/// use lambda_http::{service_fn, Error, Context, body::Body, IntoResponse, Request, Response, RequestExt};
 /// use serde::Deserialize;
 ///
 /// #[derive(Debug,Deserialize,Default)]

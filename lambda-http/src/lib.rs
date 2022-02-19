@@ -51,7 +51,7 @@
 //!         "hello {}",
 //!         request
 //!             .query_string_parameters()
-//!             .get("name")
+//!             .first("name")
 //!             .unwrap_or_else(|| "stranger")
 //!     ))
 //! }
@@ -66,7 +66,7 @@ pub use http::{self, Response};
 use lambda_runtime::LambdaEvent;
 pub use lambda_runtime::{self, service_fn, tower, Context, Error, Service};
 
-mod body;
+pub mod body;
 pub mod ext;
 pub mod request;
 mod response;

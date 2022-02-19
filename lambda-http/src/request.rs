@@ -42,7 +42,7 @@ pub enum LambdaRequest<'a> {
         body: Option<Cow<'a, str>>,
         #[serde(default)]
         is_base64_encoded: bool,
-        request_context: Box<ApiGatewayV2RequestContext>,
+        request_context: ApiGatewayV2RequestContext,
     },
     #[serde(rename_all = "camelCase")]
     Alb {
@@ -64,7 +64,7 @@ pub enum LambdaRequest<'a> {
         body: Option<Cow<'a, str>>,
         #[serde(default)]
         is_base64_encoded: bool,
-        request_context: Box<AlbRequestContext>,
+        request_context: AlbRequestContext,
     },
     #[serde(rename_all = "camelCase")]
     ApiGateway {
@@ -86,7 +86,7 @@ pub enum LambdaRequest<'a> {
         body: Option<Cow<'a, str>>,
         #[serde(default)]
         is_base64_encoded: bool,
-        request_context: Box<ApiGatewayRequestContext>,
+        request_context: ApiGatewayRequestContext,
         #[serde(default, deserialize_with = "nullable_default")]
         resource: Option<String>,
     },
@@ -198,11 +198,11 @@ pub struct AlbRequestContext {
 #[serde(untagged)]
 pub enum RequestContext {
     /// API Gateway v2 request context
-    ApiGatewayV2(Box<ApiGatewayV2RequestContext>),
+    ApiGatewayV2(ApiGatewayV2RequestContext),
     /// API Gateway request context
-    ApiGateway(Box<ApiGatewayRequestContext>),
+    ApiGateway(ApiGatewayRequestContext),
     /// ALB request context
-    Alb(Box<AlbRequestContext>),
+    Alb(AlbRequestContext),
 }
 
 /// Elastic load balancer context information

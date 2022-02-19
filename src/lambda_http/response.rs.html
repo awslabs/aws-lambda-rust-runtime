@@ -209,241 +209,26 @@
 <span id="208">208</span>
 <span id="209">209</span>
 <span id="210">210</span>
-<span id="211">211</span>
-<span id="212">212</span>
-<span id="213">213</span>
-<span id="214">214</span>
-<span id="215">215</span>
-<span id="216">216</span>
-<span id="217">217</span>
-<span id="218">218</span>
-<span id="219">219</span>
-<span id="220">220</span>
-<span id="221">221</span>
-<span id="222">222</span>
-<span id="223">223</span>
-<span id="224">224</span>
-<span id="225">225</span>
-<span id="226">226</span>
-<span id="227">227</span>
-<span id="228">228</span>
-<span id="229">229</span>
-<span id="230">230</span>
-<span id="231">231</span>
-<span id="232">232</span>
-<span id="233">233</span>
-<span id="234">234</span>
-<span id="235">235</span>
-<span id="236">236</span>
-<span id="237">237</span>
-<span id="238">238</span>
-<span id="239">239</span>
-<span id="240">240</span>
-<span id="241">241</span>
-<span id="242">242</span>
-<span id="243">243</span>
-<span id="244">244</span>
-<span id="245">245</span>
-<span id="246">246</span>
-<span id="247">247</span>
-<span id="248">248</span>
-<span id="249">249</span>
-<span id="250">250</span>
-<span id="251">251</span>
-<span id="252">252</span>
-<span id="253">253</span>
-<span id="254">254</span>
-<span id="255">255</span>
-<span id="256">256</span>
-<span id="257">257</span>
-<span id="258">258</span>
-<span id="259">259</span>
-<span id="260">260</span>
-<span id="261">261</span>
-<span id="262">262</span>
-<span id="263">263</span>
-<span id="264">264</span>
-<span id="265">265</span>
-<span id="266">266</span>
-<span id="267">267</span>
-<span id="268">268</span>
-<span id="269">269</span>
-<span id="270">270</span>
-<span id="271">271</span>
-<span id="272">272</span>
-<span id="273">273</span>
-<span id="274">274</span>
-<span id="275">275</span>
-<span id="276">276</span>
-<span id="277">277</span>
-<span id="278">278</span>
-<span id="279">279</span>
-<span id="280">280</span>
-<span id="281">281</span>
-<span id="282">282</span>
-<span id="283">283</span>
-<span id="284">284</span>
-<span id="285">285</span>
-<span id="286">286</span>
-<span id="287">287</span>
-<span id="288">288</span>
-<span id="289">289</span>
-<span id="290">290</span>
-<span id="291">291</span>
-<span id="292">292</span>
-<span id="293">293</span>
-<span id="294">294</span>
-<span id="295">295</span>
-<span id="296">296</span>
-<span id="297">297</span>
-<span id="298">298</span>
-<span id="299">299</span>
-<span id="300">300</span>
-<span id="301">301</span>
-<span id="302">302</span>
-<span id="303">303</span>
-<span id="304">304</span>
-<span id="305">305</span>
-<span id="306">306</span>
-<span id="307">307</span>
-<span id="308">308</span>
-<span id="309">309</span>
-<span id="310">310</span>
-<span id="311">311</span>
-<span id="312">312</span>
-<span id="313">313</span>
-<span id="314">314</span>
-<span id="315">315</span>
-<span id="316">316</span>
-<span id="317">317</span>
-<span id="318">318</span>
-<span id="319">319</span>
-<span id="320">320</span>
-<span id="321">321</span>
-<span id="322">322</span>
-<span id="323">323</span>
-<span id="324">324</span>
-<span id="325">325</span>
-<span id="326">326</span>
-<span id="327">327</span>
-<span id="328">328</span>
-<span id="329">329</span>
-<span id="330">330</span>
-<span id="331">331</span>
-<span id="332">332</span>
-<span id="333">333</span>
-<span id="334">334</span>
-<span id="335">335</span>
-<span id="336">336</span>
-<span id="337">337</span>
-<span id="338">338</span>
-<span id="339">339</span>
-<span id="340">340</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Response types</span>
 
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">body::Body</span>, <span class="ident">request::RequestOrigin</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::request::RequestOrigin</span>;
+<span class="kw">use</span> <span class="ident">aws_lambda_events::encodings::Body</span>;
+<span class="kw">use</span> <span class="ident">aws_lambda_events::event::alb::AlbTargetGroupResponse</span>;
+<span class="kw">use</span> <span class="ident">aws_lambda_events::event::apigw</span>::{<span class="ident">ApiGatewayProxyResponse</span>, <span class="ident">ApiGatewayV2httpResponse</span>};
 <span class="kw">use</span> <span class="ident">http</span>::{
-    <span class="ident">header</span>::{<span class="ident">HeaderMap</span>, <span class="ident">HeaderValue</span>, <span class="ident">CONTENT_TYPE</span>, <span class="ident">SET_COOKIE</span>},
+    <span class="ident">header</span>::{<span class="ident">CONTENT_TYPE</span>, <span class="ident">SET_COOKIE</span>},
     <span class="ident">Response</span>,
 };
-<span class="kw">use</span> <span class="ident">serde</span>::{
-    <span class="ident">ser</span>::{<span class="ident">Error</span> <span class="kw">as</span> <span class="ident">SerError</span>, <span class="ident">SerializeMap</span>, <span class="ident">SerializeSeq</span>},
-    <span class="ident">Serialize</span>, <span class="ident">Serializer</span>,
-};
+<span class="kw">use</span> <span class="ident">serde::Serialize</span>;
 
 <span class="doccomment">/// Representation of Lambda response</span>
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Debug</span>)]</span>
 <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">untagged</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">LambdaResponse</span> {
-    <span class="ident">ApiGatewayV2</span>(<span class="ident">ApiGatewayV2Response</span>),
-    <span class="ident">Alb</span>(<span class="ident">AlbResponse</span>),
-    <span class="ident">ApiGateway</span>(<span class="ident">ApiGatewayResponse</span>),
-}
-
-<span class="doccomment">/// Representation of API Gateway v2 lambda response</span>
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Debug</span>)]</span>
-<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;camelCase&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ApiGatewayV2Response</span> {
-    <span class="ident">status_code</span>: <span class="ident">u16</span>,
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">serialize_with</span> <span class="op">=</span> <span class="string">&quot;serialize_headers&quot;</span>)]</span>
-    <span class="ident">headers</span>: <span class="ident">HeaderMap</span><span class="op">&lt;</span><span class="ident">HeaderValue</span><span class="op">&gt;</span>,
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">serialize_with</span> <span class="op">=</span> <span class="string">&quot;serialize_headers_slice&quot;</span>)]</span>
-    <span class="ident">cookies</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">HeaderValue</span><span class="op">&gt;</span>,
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="ident">body</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>,
-    <span class="ident">is_base64_encoded</span>: <span class="ident">bool</span>,
-}
-
-<span class="doccomment">/// Representation of ALB lambda response</span>
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Debug</span>)]</span>
-<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;camelCase&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AlbResponse</span> {
-    <span class="ident">status_code</span>: <span class="ident">u16</span>,
-    <span class="ident">status_description</span>: <span class="ident">String</span>,
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">serialize_with</span> <span class="op">=</span> <span class="string">&quot;serialize_headers&quot;</span>)]</span>
-    <span class="ident">headers</span>: <span class="ident">HeaderMap</span><span class="op">&lt;</span><span class="ident">HeaderValue</span><span class="op">&gt;</span>,
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="ident">body</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>,
-    <span class="ident">is_base64_encoded</span>: <span class="ident">bool</span>,
-}
-
-<span class="doccomment">/// Representation of API Gateway lambda response</span>
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Debug</span>)]</span>
-<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;camelCase&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ApiGatewayResponse</span> {
-    <span class="ident">status_code</span>: <span class="ident">u16</span>,
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">serialize_with</span> <span class="op">=</span> <span class="string">&quot;serialize_headers&quot;</span>)]</span>
-    <span class="ident">headers</span>: <span class="ident">HeaderMap</span><span class="op">&lt;</span><span class="ident">HeaderValue</span><span class="op">&gt;</span>,
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">serialize_with</span> <span class="op">=</span> <span class="string">&quot;serialize_multi_value_headers&quot;</span>)]</span>
-    <span class="ident">multi_value_headers</span>: <span class="ident">HeaderMap</span><span class="op">&lt;</span><span class="ident">HeaderValue</span><span class="op">&gt;</span>,
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="ident">body</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>,
-    <span class="ident">is_base64_encoded</span>: <span class="ident">bool</span>,
-}
-
-<span class="doccomment">/// Serialize a http::HeaderMap into a serde str =&gt; str map</span>
-<span class="kw">fn</span> <span class="ident">serialize_multi_value_headers</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">headers</span>: <span class="kw-2">&amp;</span><span class="ident">HeaderMap</span><span class="op">&lt;</span><span class="ident">HeaderValue</span><span class="op">&gt;</span>, <span class="ident">serializer</span>: <span class="ident">S</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S::Ok</span>, <span class="ident">S::Error</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">S</span>: <span class="ident">Serializer</span>,
-{
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">map</span> <span class="op">=</span> <span class="ident">serializer</span>.<span class="ident">serialize_map</span>(<span class="prelude-val">Some</span>(<span class="ident">headers</span>.<span class="ident">keys_len</span>()))<span class="question-mark">?</span>;
-    <span class="kw">for</span> <span class="ident">key</span> <span class="kw">in</span> <span class="ident">headers</span>.<span class="ident">keys</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">map_values</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
-        <span class="kw">for</span> <span class="ident">value</span> <span class="kw">in</span> <span class="ident">headers</span>.<span class="ident">get_all</span>(<span class="ident">key</span>) {
-            <span class="ident">map_values</span>.<span class="ident">push</span>(<span class="ident">value</span>.<span class="ident">to_str</span>().<span class="ident">map_err</span>(<span class="ident">S::Error::custom</span>)<span class="question-mark">?</span>)
-        }
-        <span class="ident">map</span>.<span class="ident">serialize_entry</span>(<span class="ident">key</span>.<span class="ident">as_str</span>(), <span class="kw-2">&amp;</span><span class="ident">map_values</span>)<span class="question-mark">?</span>;
-    }
-    <span class="ident">map</span>.<span class="ident">end</span>()
-}
-
-<span class="doccomment">/// Serialize a http::HeaderMap into a serde str =&gt; Vec&lt;str&gt; map</span>
-<span class="kw">fn</span> <span class="ident">serialize_headers</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">headers</span>: <span class="kw-2">&amp;</span><span class="ident">HeaderMap</span><span class="op">&lt;</span><span class="ident">HeaderValue</span><span class="op">&gt;</span>, <span class="ident">serializer</span>: <span class="ident">S</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S::Ok</span>, <span class="ident">S::Error</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">S</span>: <span class="ident">Serializer</span>,
-{
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">map</span> <span class="op">=</span> <span class="ident">serializer</span>.<span class="ident">serialize_map</span>(<span class="prelude-val">Some</span>(<span class="ident">headers</span>.<span class="ident">keys_len</span>()))<span class="question-mark">?</span>;
-    <span class="kw">for</span> <span class="ident">key</span> <span class="kw">in</span> <span class="ident">headers</span>.<span class="ident">keys</span>() {
-        <span class="kw">let</span> <span class="ident">map_value</span> <span class="op">=</span> <span class="ident">headers</span>[<span class="ident">key</span>].<span class="ident">to_str</span>().<span class="ident">map_err</span>(<span class="ident">S::Error::custom</span>)<span class="question-mark">?</span>;
-        <span class="ident">map</span>.<span class="ident">serialize_entry</span>(<span class="ident">key</span>.<span class="ident">as_str</span>(), <span class="ident">map_value</span>)<span class="question-mark">?</span>;
-    }
-    <span class="ident">map</span>.<span class="ident">end</span>()
-}
-
-<span class="doccomment">/// Serialize a &amp;[HeaderValue] into a Vec&lt;str&gt;</span>
-<span class="kw">fn</span> <span class="ident">serialize_headers_slice</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">headers</span>: <span class="kw-2">&amp;</span>[<span class="ident">HeaderValue</span>], <span class="ident">serializer</span>: <span class="ident">S</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S::Ok</span>, <span class="ident">S::Error</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">S</span>: <span class="ident">Serializer</span>,
-{
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">seq</span> <span class="op">=</span> <span class="ident">serializer</span>.<span class="ident">serialize_seq</span>(<span class="prelude-val">Some</span>(<span class="ident">headers</span>.<span class="ident">len</span>()))<span class="question-mark">?</span>;
-    <span class="kw">for</span> <span class="ident">header</span> <span class="kw">in</span> <span class="ident">headers</span> {
-        <span class="ident">seq</span>.<span class="ident">serialize_element</span>(<span class="ident">header</span>.<span class="ident">to_str</span>().<span class="ident">map_err</span>(<span class="ident">S::Error::custom</span>)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
-    }
-    <span class="ident">seq</span>.<span class="ident">end</span>()
+    <span class="ident">ApiGatewayV2</span>(<span class="ident">ApiGatewayV2httpResponse</span>),
+    <span class="ident">ApiGatewayV1</span>(<span class="ident">ApiGatewayProxyResponse</span>),
+    <span class="ident">Alb</span>(<span class="ident">AlbTargetGroupResponse</span>),
 }
 
 <span class="doccomment">/// tranformation from http type to internal type</span>
@@ -466,34 +251,48 @@
             <span class="ident">RequestOrigin::ApiGatewayV2</span> =&gt; {
                 <span class="comment">// ApiGatewayV2 expects the set-cookies headers to be in the &quot;cookies&quot; attribute,</span>
                 <span class="comment">// so remove them from the headers.</span>
-                <span class="kw">let</span> <span class="ident">cookies</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">HeaderValue</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">headers</span>.<span class="ident">get_all</span>(<span class="ident">SET_COOKIE</span>).<span class="ident">iter</span>().<span class="ident">cloned</span>().<span class="ident">collect</span>();
+                <span class="kw">let</span> <span class="ident">cookies</span> <span class="op">=</span> <span class="ident">headers</span>
+                    .<span class="ident">get_all</span>(<span class="ident">SET_COOKIE</span>)
+                    .<span class="ident">iter</span>()
+                    .<span class="ident">cloned</span>()
+                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">to_str</span>().<span class="ident">ok</span>().<span class="ident">unwrap_or_default</span>().<span class="ident">to_string</span>())
+                    .<span class="ident">collect</span>();
                 <span class="ident">headers</span>.<span class="ident">remove</span>(<span class="ident">SET_COOKIE</span>);
 
-                <span class="ident">LambdaResponse::ApiGatewayV2</span>(<span class="ident">ApiGatewayV2Response</span> {
+                <span class="ident">LambdaResponse::ApiGatewayV2</span>(<span class="ident">ApiGatewayV2httpResponse</span> {
                     <span class="ident">body</span>,
-                    <span class="ident">status_code</span>,
-                    <span class="ident">is_base64_encoded</span>,
+                    <span class="ident">status_code</span>: <span class="ident">status_code</span> <span class="kw">as</span> <span class="ident">i64</span>,
+                    <span class="ident">is_base64_encoded</span>: <span class="prelude-val">Some</span>(<span class="ident">is_base64_encoded</span>),
                     <span class="ident">cookies</span>,
-                    <span class="ident">headers</span>,
+                    <span class="ident">headers</span>: <span class="ident">headers</span>.<span class="ident">clone</span>(),
+                    <span class="ident">multi_value_headers</span>: <span class="ident">headers</span>,
                 })
             }
-            <span class="ident">RequestOrigin::ApiGateway</span> =&gt; <span class="ident">LambdaResponse::ApiGateway</span>(<span class="ident">ApiGatewayResponse</span> {
+            <span class="ident">RequestOrigin::ApiGatewayV1</span> =&gt; <span class="ident">LambdaResponse::ApiGatewayV1</span>(<span class="ident">ApiGatewayProxyResponse</span> {
                 <span class="ident">body</span>,
-                <span class="ident">status_code</span>,
-                <span class="ident">is_base64_encoded</span>,
+                <span class="ident">status_code</span>: <span class="ident">status_code</span> <span class="kw">as</span> <span class="ident">i64</span>,
+                <span class="ident">is_base64_encoded</span>: <span class="prelude-val">Some</span>(<span class="ident">is_base64_encoded</span>),
                 <span class="ident">headers</span>: <span class="ident">headers</span>.<span class="ident">clone</span>(),
                 <span class="ident">multi_value_headers</span>: <span class="ident">headers</span>,
             }),
-            <span class="ident">RequestOrigin::Alb</span> =&gt; <span class="ident">LambdaResponse::Alb</span>(<span class="ident">AlbResponse</span> {
+            <span class="ident">RequestOrigin::Alb</span> =&gt; <span class="ident">LambdaResponse::Alb</span>(<span class="ident">AlbTargetGroupResponse</span> {
                 <span class="ident">body</span>,
-                <span class="ident">status_code</span>,
+                <span class="ident">status_code</span>: <span class="ident">status_code</span> <span class="kw">as</span> <span class="ident">i64</span>,
                 <span class="ident">is_base64_encoded</span>,
-                <span class="ident">headers</span>,
-                <span class="ident">status_description</span>: <span class="macro">format!</span>(
+                <span class="ident">headers</span>: <span class="ident">headers</span>.<span class="ident">clone</span>(),
+                <span class="ident">multi_value_headers</span>: <span class="ident">headers</span>,
+                <span class="ident">status_description</span>: <span class="prelude-val">Some</span>(<span class="macro">format!</span>(
                     <span class="string">&quot;{} {}&quot;</span>,
                     <span class="ident">status_code</span>,
                     <span class="ident">parts</span>.<span class="ident">status</span>.<span class="ident">canonical_reason</span>().<span class="ident">unwrap_or_default</span>()
-                ),
+                )),
+            }),
+            <span class="ident">RequestOrigin::WebSocket</span> =&gt; <span class="ident">LambdaResponse::ApiGatewayV1</span>(<span class="ident">ApiGatewayProxyResponse</span> {
+                <span class="ident">body</span>,
+                <span class="ident">status_code</span>: <span class="ident">status_code</span> <span class="kw">as</span> <span class="ident">i64</span>,
+                <span class="ident">is_base64_encoded</span>: <span class="prelude-val">Some</span>(<span class="ident">is_base64_encoded</span>),
+                <span class="ident">headers</span>: <span class="ident">headers</span>.<span class="ident">clone</span>(),
+                <span class="ident">multi_value_headers</span>: <span class="ident">headers</span>,
             }),
         }
     }
@@ -530,12 +329,15 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span> <span class="ident">IntoResponse</span> <span class="kw">for</span> <span class="ident">B</span>
-<span class="kw">where</span>
-    <span class="ident">B</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>,
-{
+<span class="kw">impl</span> <span class="ident">IntoResponse</span> <span class="kw">for</span> <span class="ident">String</span> {
     <span class="kw">fn</span> <span class="ident">into_response</span>(<span class="self">self</span>) -&gt; <span class="ident">Response</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span> {
-        <span class="ident">Response::new</span>(<span class="self">self</span>.<span class="ident">into</span>())
+        <span class="ident">Response::new</span>(<span class="ident">Body::from</span>(<span class="self">self</span>))
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">IntoResponse</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">str</span> {
+    <span class="kw">fn</span> <span class="ident">into_response</span>(<span class="self">self</span>) -&gt; <span class="ident">Response</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span> {
+        <span class="ident">Response::new</span>(<span class="ident">Body::from</span>(<span class="self">self</span>))
     }
 }
 
@@ -554,41 +356,9 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::{
-        <span class="ident">AlbResponse</span>, <span class="ident">ApiGatewayResponse</span>, <span class="ident">ApiGatewayV2Response</span>, <span class="ident">Body</span>, <span class="ident">IntoResponse</span>, <span class="ident">LambdaResponse</span>, <span class="ident">RequestOrigin</span>,
-    };
+    <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">Body</span>, <span class="ident">IntoResponse</span>, <span class="ident">LambdaResponse</span>, <span class="ident">RequestOrigin</span>};
     <span class="kw">use</span> <span class="ident">http</span>::{<span class="ident">header::CONTENT_TYPE</span>, <span class="ident">Response</span>};
     <span class="kw">use</span> <span class="ident">serde_json</span>::{<span class="self">self</span>, <span class="ident">json</span>};
-
-    <span class="kw">fn</span> <span class="ident">api_gateway_response</span>() -&gt; <span class="ident">ApiGatewayResponse</span> {
-        <span class="ident">ApiGatewayResponse</span> {
-            <span class="ident">status_code</span>: <span class="number">200</span>,
-            <span class="ident">headers</span>: <span class="ident">Default::default</span>(),
-            <span class="ident">multi_value_headers</span>: <span class="ident">Default::default</span>(),
-            <span class="ident">body</span>: <span class="ident">Default::default</span>(),
-            <span class="ident">is_base64_encoded</span>: <span class="ident">Default::default</span>(),
-        }
-    }
-
-    <span class="kw">fn</span> <span class="ident">alb_response</span>() -&gt; <span class="ident">AlbResponse</span> {
-        <span class="ident">AlbResponse</span> {
-            <span class="ident">status_code</span>: <span class="number">200</span>,
-            <span class="ident">status_description</span>: <span class="string">&quot;200 OK&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">headers</span>: <span class="ident">Default::default</span>(),
-            <span class="ident">body</span>: <span class="ident">Default::default</span>(),
-            <span class="ident">is_base64_encoded</span>: <span class="ident">Default::default</span>(),
-        }
-    }
-
-    <span class="kw">fn</span> <span class="ident">api_gateway_v2_response</span>() -&gt; <span class="ident">ApiGatewayV2Response</span> {
-        <span class="ident">ApiGatewayV2Response</span> {
-            <span class="ident">status_code</span>: <span class="number">200</span>,
-            <span class="ident">headers</span>: <span class="ident">Default::default</span>(),
-            <span class="ident">body</span>: <span class="ident">Default::default</span>(),
-            <span class="ident">cookies</span>: <span class="ident">Default::default</span>(),
-            <span class="ident">is_base64_encoded</span>: <span class="ident">Default::default</span>(),
-        }
-    }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">json_into_response</span>() {
@@ -616,39 +386,9 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">serialize_body_for_api_gateway</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">resp</span> <span class="op">=</span> <span class="ident">api_gateway_response</span>();
-        <span class="ident">resp</span>.<span class="ident">body</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="string">&quot;foo&quot;</span>.<span class="ident">into</span>());
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">resp</span>).<span class="ident">expect</span>(<span class="string">&quot;failed to serialize response&quot;</span>),
-            <span class="string">r#&quot;{&quot;statusCode&quot;:200,&quot;headers&quot;:{},&quot;multiValueHeaders&quot;:{},&quot;body&quot;:&quot;foo&quot;,&quot;isBase64Encoded&quot;:false}&quot;#</span>
-        );
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">serialize_body_for_alb</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">resp</span> <span class="op">=</span> <span class="ident">alb_response</span>();
-        <span class="ident">resp</span>.<span class="ident">body</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="string">&quot;foo&quot;</span>.<span class="ident">into</span>());
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">resp</span>).<span class="ident">expect</span>(<span class="string">&quot;failed to serialize response&quot;</span>),
-            <span class="string">r#&quot;{&quot;statusCode&quot;:200,&quot;statusDescription&quot;:&quot;200 OK&quot;,&quot;headers&quot;:{},&quot;body&quot;:&quot;foo&quot;,&quot;isBase64Encoded&quot;:false}&quot;#</span>
-        );
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">serialize_body_for_api_gateway_v2</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">resp</span> <span class="op">=</span> <span class="ident">api_gateway_v2_response</span>();
-        <span class="ident">resp</span>.<span class="ident">body</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="string">&quot;foo&quot;</span>.<span class="ident">into</span>());
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">resp</span>).<span class="ident">expect</span>(<span class="string">&quot;failed to serialize response&quot;</span>),
-            <span class="string">r#&quot;{&quot;statusCode&quot;:200,&quot;headers&quot;:{},&quot;cookies&quot;:[],&quot;body&quot;:&quot;foo&quot;,&quot;isBase64Encoded&quot;:false}&quot;#</span>
-        );
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">serialize_multi_value_headers</span>() {
         <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">LambdaResponse::from_response</span>(
-            <span class="kw-2">&amp;</span><span class="ident">RequestOrigin::ApiGateway</span>,
+            <span class="kw-2">&amp;</span><span class="ident">RequestOrigin::ApiGatewayV1</span>,
             <span class="ident">Response::builder</span>()
                 .<span class="ident">header</span>(<span class="string">&quot;multi&quot;</span>, <span class="string">&quot;a&quot;</span>)
                 .<span class="ident">header</span>(<span class="string">&quot;multi&quot;</span>, <span class="string">&quot;b&quot;</span>)
@@ -674,8 +414,8 @@
         );
         <span class="kw">let</span> <span class="ident">json</span> <span class="op">=</span> <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">res</span>).<span class="ident">expect</span>(<span class="string">&quot;failed to serialize to json&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">json</span>,
-            <span class="string">r#&quot;{&quot;statusCode&quot;:200,&quot;headers&quot;:{},&quot;cookies&quot;:[&quot;cookie1=a&quot;,&quot;cookie2=b&quot;],&quot;isBase64Encoded&quot;:false}&quot;#</span>
+            <span class="string">&quot;{\&quot;statusCode\&quot;:200,\&quot;headers\&quot;:{},\&quot;multiValueHeaders\&quot;:{},\&quot;isBase64Encoded\&quot;:false,\&quot;cookies\&quot;:[\&quot;cookie1=a\&quot;,\&quot;cookie2=b\&quot;]}&quot;</span>,
+            <span class="ident">json</span>
         )
     }
 }

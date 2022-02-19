@@ -402,26 +402,28 @@
 <span id="401">401</span>
 <span id="402">402</span>
 <span id="403">403</span>
+<span id="404">404</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Extension methods for `http::Request` types</span>
 
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">request::RequestContext</span>, <span class="ident">strmap::StrMap</span>, <span class="ident">Body</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">request::RequestContext</span>, <span class="ident">Body</span>};
 <span class="kw">use</span> <span class="ident">lambda_runtime::Context</span>;
+<span class="kw">use</span> <span class="ident">query_map::QueryMap</span>;
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">de::value::Error</span> <span class="kw">as</span> <span class="ident">SerdeError</span>, <span class="ident">Deserialize</span>};
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">error::Error</span>, <span class="ident">fmt</span>};
 
 <span class="doccomment">/// ALB/API gateway pre-parsed http query string parameters</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">QueryStringParameters</span>(<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">StrMap</span>);
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">QueryStringParameters</span>(<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">QueryMap</span>);
 
 <span class="doccomment">/// API gateway pre-extracted url path parameters</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// These will always be empty for ALB requests</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">PathParameters</span>(<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">StrMap</span>);
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">PathParameters</span>(<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">QueryMap</span>);
 
 <span class="doccomment">/// API gateway configured</span>
 <span class="doccomment">/// [stage variables](https://docs.aws.amazon.com/apigateway/latest/developerguide/stage-variables.html)</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// These will always be empty for ALB requests</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">StageVariables</span>(<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">StrMap</span>);
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">StageVariables</span>(<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">QueryMap</span>);
 
 <span class="doccomment">/// Request payload deserialization errors</span>
 <span class="doccomment">///</span>
@@ -516,37 +518,37 @@
     <span class="doccomment">/// name are expected, `query_string_parameters().get_all(&quot;many&quot;)` to retrieve them all.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// No query parameters</span>
-    <span class="doccomment">/// will yield an empty `StrMap`.</span>
-    <span class="kw">fn</span> <span class="ident">query_string_parameters</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">StrMap</span>;
+    <span class="doccomment">/// will yield an empty `QueryMap`.</span>
+    <span class="kw">fn</span> <span class="ident">query_string_parameters</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">QueryMap</span>;
 
     <span class="doccomment">/// Configures instance with query string parameters under #[cfg(test)] configurations</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This is intended for use in mock testing contexts.</span>
     <span class="kw">fn</span> <span class="ident">with_query_string_parameters</span><span class="op">&lt;</span><span class="ident">Q</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">parameters</span>: <span class="ident">Q</span>) -&gt; <span class="self">Self</span>
     <span class="kw">where</span>
-        <span class="ident">Q</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">StrMap</span><span class="op">&gt;</span>;
+        <span class="ident">Q</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">QueryMap</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// Return pre-extracted path parameters, parameter provided in url placeholders</span>
     <span class="doccomment">/// `/foo/{bar}/baz/{boom}`,</span>
     <span class="doccomment">/// associated with the API gateway request. No path parameters</span>
-    <span class="doccomment">/// will yield an empty `StrMap`</span>
+    <span class="doccomment">/// will yield an empty `QueryMap`</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// These will always be empty for ALB triggered requests</span>
-    <span class="kw">fn</span> <span class="ident">path_parameters</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">StrMap</span>;
+    <span class="kw">fn</span> <span class="ident">path_parameters</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">QueryMap</span>;
 
     <span class="doccomment">/// Configures instance with path parameters under #[cfg(test)] configurations</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This is intended for use in mock testing contexts.</span>
     <span class="kw">fn</span> <span class="ident">with_path_parameters</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">parameters</span>: <span class="ident">P</span>) -&gt; <span class="self">Self</span>
     <span class="kw">where</span>
-        <span class="ident">P</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">StrMap</span><span class="op">&gt;</span>;
+        <span class="ident">P</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">QueryMap</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// Return [stage variables](https://docs.aws.amazon.com/apigateway/latest/developerguide/stage-variables.html)</span>
     <span class="doccomment">/// associated with the API gateway request. No stage parameters</span>
-    <span class="doccomment">/// will yield an empty `StrMap`</span>
+    <span class="doccomment">/// will yield an empty `QueryMap`</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// These will always be empty for ALB triggered requests</span>
-    <span class="kw">fn</span> <span class="ident">stage_variables</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">StrMap</span>;
+    <span class="kw">fn</span> <span class="ident">stage_variables</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">QueryMap</span>;
 
     <span class="doccomment">/// Configures instance with stage variables under #[cfg(test)] configurations</span>
     <span class="doccomment">///</span>
@@ -554,7 +556,7 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
     <span class="kw">fn</span> <span class="ident">with_stage_variables</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">variables</span>: <span class="ident">V</span>) -&gt; <span class="self">Self</span>
     <span class="kw">where</span>
-        <span class="ident">V</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">StrMap</span><span class="op">&gt;</span>;
+        <span class="ident">V</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">QueryMap</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// Return request context data assocaited with the ALB or API gateway request</span>
     <span class="kw">fn</span> <span class="ident">request_context</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">RequestContext</span>;
@@ -580,7 +582,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">RequestExt</span> <span class="kw">for</span> <span class="ident">http::Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">query_string_parameters</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">StrMap</span> {
+    <span class="kw">fn</span> <span class="ident">query_string_parameters</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">QueryMap</span> {
         <span class="self">self</span>.<span class="ident">extensions</span>()
             .<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">QueryStringParameters</span><span class="op">&gt;</span>()
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">ext</span><span class="op">|</span> <span class="ident">ext</span>.<span class="number">0</span>.<span class="ident">clone</span>())
@@ -589,14 +591,14 @@
 
     <span class="kw">fn</span> <span class="ident">with_query_string_parameters</span><span class="op">&lt;</span><span class="ident">Q</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">parameters</span>: <span class="ident">Q</span>) -&gt; <span class="self">Self</span>
     <span class="kw">where</span>
-        <span class="ident">Q</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">StrMap</span><span class="op">&gt;</span>,
+        <span class="ident">Q</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">QueryMap</span><span class="op">&gt;</span>,
     {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="self">self</span>;
         <span class="ident">s</span>.<span class="ident">extensions_mut</span>().<span class="ident">insert</span>(<span class="ident">QueryStringParameters</span>(<span class="ident">parameters</span>.<span class="ident">into</span>()));
         <span class="ident">s</span>
     }
 
-    <span class="kw">fn</span> <span class="ident">path_parameters</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">StrMap</span> {
+    <span class="kw">fn</span> <span class="ident">path_parameters</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">QueryMap</span> {
         <span class="self">self</span>.<span class="ident">extensions</span>()
             .<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">PathParameters</span><span class="op">&gt;</span>()
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">ext</span><span class="op">|</span> <span class="ident">ext</span>.<span class="number">0</span>.<span class="ident">clone</span>())
@@ -605,14 +607,14 @@
 
     <span class="kw">fn</span> <span class="ident">with_path_parameters</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">parameters</span>: <span class="ident">P</span>) -&gt; <span class="self">Self</span>
     <span class="kw">where</span>
-        <span class="ident">P</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">StrMap</span><span class="op">&gt;</span>,
+        <span class="ident">P</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">QueryMap</span><span class="op">&gt;</span>,
     {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="self">self</span>;
         <span class="ident">s</span>.<span class="ident">extensions_mut</span>().<span class="ident">insert</span>(<span class="ident">PathParameters</span>(<span class="ident">parameters</span>.<span class="ident">into</span>()));
         <span class="ident">s</span>
     }
 
-    <span class="kw">fn</span> <span class="ident">stage_variables</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">StrMap</span> {
+    <span class="kw">fn</span> <span class="ident">stage_variables</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">QueryMap</span> {
         <span class="self">self</span>.<span class="ident">extensions</span>()
             .<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">StageVariables</span><span class="op">&gt;</span>()
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">ext</span><span class="op">|</span> <span class="ident">ext</span>.<span class="number">0</span>.<span class="ident">clone</span>())
@@ -622,7 +624,7 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
     <span class="kw">fn</span> <span class="ident">with_stage_variables</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">variables</span>: <span class="ident">V</span>) -&gt; <span class="self">Self</span>
     <span class="kw">where</span>
-        <span class="ident">V</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">StrMap</span><span class="op">&gt;</span>,
+        <span class="ident">V</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">QueryMap</span><span class="op">&gt;</span>,
     {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="self">self</span>;
         <span class="ident">s</span>.<span class="ident">extensions_mut</span>().<span class="ident">insert</span>(<span class="ident">StageVariables</span>(<span class="ident">variables</span>.<span class="ident">into</span>()));

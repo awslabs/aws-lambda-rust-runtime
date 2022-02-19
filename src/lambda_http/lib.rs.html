@@ -169,7 +169,6 @@
 <span id="168">168</span>
 <span id="169">169</span>
 <span id="170">170</span>
-<span id="171">171</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">warn</span>(<span class="ident">missing_docs</span>)]</span>
 <span class="comment">//#![deny(warnings)]</span>
 <span class="doccomment">//! Enriches the `lambda` crate with [`http`](https://github.com/hyperium/http)</span>
@@ -223,7 +222,7 @@
 <span class="doccomment">//!         &quot;hello {}&quot;,</span>
 <span class="doccomment">//!         request</span>
 <span class="doccomment">//!             .query_string_parameters()</span>
-<span class="doccomment">//!             .get(&quot;name&quot;)</span>
+<span class="doccomment">//!             .first(&quot;name&quot;)</span>
 <span class="doccomment">//!             .unwrap_or_else(|| &quot;stranger&quot;)</span>
 <span class="doccomment">//!     ))</span>
 <span class="doccomment">//! }</span>
@@ -238,16 +237,15 @@
 <span class="kw">use</span> <span class="ident">lambda_runtime::LambdaEvent</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">lambda_runtime</span>::{<span class="self">self</span>, <span class="ident">service_fn</span>, <span class="ident">tower</span>, <span class="ident">Context</span>, <span class="ident">Error</span>, <span class="ident">Service</span>};
 
-<span class="kw">mod</span> <span class="ident">body</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">ext</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">request</span>;
 <span class="kw">mod</span> <span class="ident">response</span>;
-<span class="kw">mod</span> <span class="ident">strmap</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">body::Body</span>, <span class="ident">ext::RequestExt</span>, <span class="ident">response::IntoResponse</span>, <span class="ident">strmap::StrMap</span>};
+<span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">ext::RequestExt</span>, <span class="ident">response::IntoResponse</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::{
     <span class="ident">request</span>::{<span class="ident">LambdaRequest</span>, <span class="ident">RequestOrigin</span>},
     <span class="ident">response::LambdaResponse</span>,
 };
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">aws_lambda_events::encodings::Body</span>;
 <span class="kw">use</span> <span class="ident">std</span>::{
     <span class="ident">future::Future</span>,
     <span class="ident">marker::PhantomData</span>,
@@ -306,7 +304,7 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">R</span>, <span class="ident">S</span><span class="op">&gt;</span> <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">LambdaEvent</span><span class="op">&lt;</span><span class="ident">LambdaRequest</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Adapter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">R</span>, <span class="ident">S</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">R</span>, <span class="ident">S</span><span class="op">&gt;</span> <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">LambdaEvent</span><span class="op">&lt;</span><span class="ident">LambdaRequest</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Adapter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">R</span>, <span class="ident">S</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">S</span>: <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">Request</span>, <span class="ident">Response</span> <span class="op">=</span> <span class="ident">R</span>, <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span>,
     <span class="ident">S::Future</span>: <span class="ident">Send</span> <span class="op">+</span> <span class="lifetime">&#39;a</span>,
@@ -320,7 +318,7 @@
         <span class="ident">core::task::Poll::Ready</span>(<span class="prelude-val">Ok</span>(()))
     }
 
-    <span class="kw">fn</span> <span class="ident">call</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">req</span>: <span class="ident">LambdaEvent</span><span class="op">&lt;</span><span class="ident">LambdaRequest</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span>) -&gt; <span class="ident"><span class="self">Self</span>::Future</span> {
+    <span class="kw">fn</span> <span class="ident">call</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">req</span>: <span class="ident">LambdaEvent</span><span class="op">&lt;</span><span class="ident">LambdaRequest</span><span class="op">&gt;</span>) -&gt; <span class="ident"><span class="self">Self</span>::Future</span> {
         <span class="kw">let</span> <span class="ident">request_origin</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">payload</span>.<span class="ident">request_origin</span>();
         <span class="kw">let</span> <span class="ident">event</span>: <span class="ident">Request</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">payload</span>.<span class="ident">into</span>();
         <span class="kw">let</span> <span class="ident">fut</span> <span class="op">=</span> <span class="ident">Box::pin</span>(<span class="self">self</span>.<span class="ident">service</span>.<span class="ident">call</span>(<span class="ident">event</span>.<span class="ident">with_lambda_context</span>(<span class="ident">req</span>.<span class="ident">context</span>)));

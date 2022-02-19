@@ -34,6 +34,7 @@ impl MyLogsProcessor {
 impl Service<Vec<LambdaLog>> for MyLogsProcessor {
     type Response = ();
     type Error = Error;
+    #[allow(clippy::type_complexity)]
     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>;
 
     fn poll_ready(&mut self, _cx: &mut core::task::Context<'_>) -> core::task::Poll<Result<(), Self::Error>> {

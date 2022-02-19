@@ -201,10 +201,7 @@ impl HttpBody for Body {
     }
 
     fn is_end_stream(&self) -> bool {
-        match self {
-            Body::Empty => true,
-            _ => false,
-        }
+        matches!(self, Body::Empty)
     }
 
     fn size_hint(&self) -> SizeHint {

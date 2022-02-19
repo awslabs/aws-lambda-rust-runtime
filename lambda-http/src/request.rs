@@ -301,9 +301,8 @@ fn into_websocket_request(ag: ApiGatewayWebsocketProxyRequest) -> http::Request<
 fn apigw_path_with_stage(stage: &Option<String>, path: &str) -> String {
     match stage {
         None => path.into(),
-        Some(stage) => {
-            format!("/{}{}", stage, path)
-        }
+        Some(stage) if stage == "$default" => path.into(),
+        Some(stage) => format!("/{}{}", stage, path)
     }
 }
 
@@ -410,7 +409,7 @@ mod tests {
         );
         let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "GET");
-        assert_eq!(req.uri(), "https://xxx.execute-api.us-east-1.amazonaws.com/$default/");
+        assert_eq!(req.uri(), "https://xxx.execute-api.us-east-1.amazonaws.com/");
 
         // Ensure this is an APIGWv2 request
         let req_context = req.request_context();
@@ -444,7 +443,7 @@ mod tests {
             .and_then(|v| v.to_str().map_err(|e| e.to_string()));
 
         assert_eq!(req.method(), "POST");
-        assert_eq!(req.uri(), "https://id.execute-api.us-east-1.amazonaws.com/$default/my/path?parameter1=value1&parameter1=value2&parameter2=value");
+        assert_eq!(req.uri(), "https://id.execute-api.us-east-1.amazonaws.com/my/path?parameter1=value1&parameter1=value2&parameter2=value");
         assert_eq!(cookie_header, Ok("cookie1=value1;cookie2=value2"));
 
         // Ensure this is an APIGWv2 request
@@ -587,7 +586,7 @@ mod tests {
         );
         let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "GET");
-        assert_eq!(req.uri(), "http://127.0.0.1:3000/$default/hello");
+        assert_eq!(req.uri(), "http://127.0.0.1:3000/hello");
     }
 
     #[test]

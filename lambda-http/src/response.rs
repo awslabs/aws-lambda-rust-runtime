@@ -1,108 +1,23 @@
 //! Response types
 
-use crate::{body::Body, request::RequestOrigin};
+use crate::request::RequestOrigin;
+use aws_lambda_events::encodings::Body;
+use aws_lambda_events::event::alb::AlbTargetGroupResponse;
+use aws_lambda_events::event::apigw::{ApiGatewayProxyResponse, ApiGatewayV2httpResponse};
 use http::{
-    header::{HeaderMap, HeaderValue, CONTENT_TYPE, SET_COOKIE},
+    header::{CONTENT_TYPE, SET_COOKIE},
     Response,
 };
-use serde::{
-    ser::{Error as SerError, SerializeMap, SerializeSeq},
-    Serialize, Serializer,
-};
+use serde::Serialize;
 
 /// Representation of Lambda response
 #[doc(hidden)]
 #[derive(Serialize, Debug)]
 #[serde(untagged)]
 pub enum LambdaResponse {
-    ApiGatewayV2(ApiGatewayV2Response),
-    Alb(AlbResponse),
-    ApiGateway(ApiGatewayResponse),
-}
-
-/// Representation of API Gateway v2 lambda response
-#[doc(hidden)]
-#[derive(Serialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct ApiGatewayV2Response {
-    status_code: u16,
-    #[serde(serialize_with = "serialize_headers")]
-    headers: HeaderMap<HeaderValue>,
-    #[serde(serialize_with = "serialize_headers_slice")]
-    cookies: Vec<HeaderValue>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    body: Option<Body>,
-    is_base64_encoded: bool,
-}
-
-/// Representation of ALB lambda response
-#[doc(hidden)]
-#[derive(Serialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct AlbResponse {
-    status_code: u16,
-    status_description: String,
-    #[serde(serialize_with = "serialize_headers")]
-    headers: HeaderMap<HeaderValue>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    body: Option<Body>,
-    is_base64_encoded: bool,
-}
-
-/// Representation of API Gateway lambda response
-#[doc(hidden)]
-#[derive(Serialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct ApiGatewayResponse {
-    status_code: u16,
-    #[serde(serialize_with = "serialize_headers")]
-    headers: HeaderMap<HeaderValue>,
-    #[serde(serialize_with = "serialize_multi_value_headers")]
-    multi_value_headers: HeaderMap<HeaderValue>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    body: Option<Body>,
-    is_base64_encoded: bool,
-}
-
-/// Serialize a http::HeaderMap into a serde str => str map
-fn serialize_multi_value_headers<S>(headers: &HeaderMap<HeaderValue>, serializer: S) -> Result<S::Ok, S::Error>
-where
-    S: Serializer,
-{
-    let mut map = serializer.serialize_map(Some(headers.keys_len()))?;
-    for key in headers.keys() {
-        let mut map_values = Vec::new();
-        for value in headers.get_all(key) {
-            map_values.push(value.to_str().map_err(S::Error::custom)?)
-        }
-        map.serialize_entry(key.as_str(), &map_values)?;
-    }
-    map.end()
-}
-
-/// Serialize a http::HeaderMap into a serde str => Vec<str> map
-fn serialize_headers<S>(headers: &HeaderMap<HeaderValue>, serializer: S) -> Result<S::Ok, S::Error>
-where
-    S: Serializer,
-{
-    let mut map = serializer.serialize_map(Some(headers.keys_len()))?;
-    for key in headers.keys() {
-        let map_value = headers[key].to_str().map_err(S::Error::custom)?;
-        map.serialize_entry(key.as_str(), map_value)?;
-    }
-    map.end()
-}
-
-/// Serialize a &[HeaderValue] into a Vec<str>
-fn serialize_headers_slice<S>(headers: &[HeaderValue], serializer: S) -> Result<S::Ok, S::Error>
-where
-    S: Serializer,
-{
-    let mut seq = serializer.serialize_seq(Some(headers.len()))?;
-    for header in headers {
-        seq.serialize_element(header.to_str().map_err(S::Error::custom)?)?;
-    }
-    seq.end()
+    ApiGatewayV2(ApiGatewayV2httpResponse),
+    ApiGatewayV1(ApiGatewayProxyResponse),
+    Alb(AlbTargetGroupResponse),
 }
 
 /// tranformation from http type to internal type
@@ -125,34 +40,48 @@ impl LambdaResponse {
             RequestOrigin::ApiGatewayV2 => {
                 // ApiGatewayV2 expects the set-cookies headers to be in the "cookies" attribute,
                 // so remove them from the headers.
-                let cookies: Vec<HeaderValue> = headers.get_all(SET_COOKIE).iter().cloned().collect();
+                let cookies = headers
+                    .get_all(SET_COOKIE)
+                    .iter()
+                    .cloned()
+                    .map(|v| v.to_str().ok().unwrap_or_default().to_string())
+                    .collect();
                 headers.remove(SET_COOKIE);
 
-                LambdaResponse::ApiGatewayV2(ApiGatewayV2Response {
+                LambdaResponse::ApiGatewayV2(ApiGatewayV2httpResponse {
                     body,
-                    status_code,
-                    is_base64_encoded,
+                    status_code: status_code as i64,
+                    is_base64_encoded: Some(is_base64_encoded),
                     cookies,
-                    headers,
+                    headers: headers.clone(),
+                    multi_value_headers: headers,
                 })
             }
-            RequestOrigin::ApiGateway => LambdaResponse::ApiGateway(ApiGatewayResponse {
+            RequestOrigin::ApiGatewayV1 => LambdaResponse::ApiGatewayV1(ApiGatewayProxyResponse {
                 body,
-                status_code,
-                is_base64_encoded,
+                status_code: status_code as i64,
+                is_base64_encoded: Some(is_base64_encoded),
                 headers: headers.clone(),
                 multi_value_headers: headers,
             }),
-            RequestOrigin::Alb => LambdaResponse::Alb(AlbResponse {
+            RequestOrigin::Alb => LambdaResponse::Alb(AlbTargetGroupResponse {
                 body,
-                status_code,
+                status_code: status_code as i64,
                 is_base64_encoded,
-                headers,
-                status_description: format!(
+                headers: headers.clone(),
+                multi_value_headers: headers,
+                status_description: Some(format!(
                     "{} {}",
                     status_code,
                     parts.status.canonical_reason().unwrap_or_default()
-                ),
+                )),
+            }),
+            RequestOrigin::WebSocket => LambdaResponse::ApiGatewayV1(ApiGatewayProxyResponse {
+                body,
+                status_code: status_code as i64,
+                is_base64_encoded: Some(is_base64_encoded),
+                headers: headers.clone(),
+                multi_value_headers: headers,
             }),
         }
     }
@@ -189,12 +118,15 @@ where
     }
 }
 
-impl<B> IntoResponse for B
-where
-    B: Into<Body>,
-{
+impl IntoResponse for String {
     fn into_response(self) -> Response<Body> {
-        Response::new(self.into())
+        Response::new(Body::from(self))
+    }
+}
+
+impl IntoResponse for &str {
+    fn into_response(self) -> Response<Body> {
+        Response::new(Body::from(self))
     }
 }
 
@@ -213,41 +145,9 @@ impl IntoResponse for serde_json::Value {
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        AlbResponse, ApiGatewayResponse, ApiGatewayV2Response, Body, IntoResponse, LambdaResponse, RequestOrigin,
-    };
+    use super::{Body, IntoResponse, LambdaResponse, RequestOrigin};
     use http::{header::CONTENT_TYPE, Response};
     use serde_json::{self, json};
-
-    fn api_gateway_response() -> ApiGatewayResponse {
-        ApiGatewayResponse {
-            status_code: 200,
-            headers: Default::default(),
-            multi_value_headers: Default::default(),
-            body: Default::default(),
-            is_base64_encoded: Default::default(),
-        }
-    }
-
-    fn alb_response() -> AlbResponse {
-        AlbResponse {
-            status_code: 200,
-            status_description: "200 OK".to_string(),
-            headers: Default::default(),
-            body: Default::default(),
-            is_base64_encoded: Default::default(),
-        }
-    }
-
-    fn api_gateway_v2_response() -> ApiGatewayV2Response {
-        ApiGatewayV2Response {
-            status_code: 200,
-            headers: Default::default(),
-            body: Default::default(),
-            cookies: Default::default(),
-            is_base64_encoded: Default::default(),
-        }
-    }
 
     #[test]
     fn json_into_response() {
@@ -275,39 +175,9 @@ mod tests {
     }
 
     #[test]
-    fn serialize_body_for_api_gateway() {
-        let mut resp = api_gateway_response();
-        resp.body = Some("foo".into());
-        assert_eq!(
-            serde_json::to_string(&resp).expect("failed to serialize response"),
-            r#"{"statusCode":200,"headers":{},"multiValueHeaders":{},"body":"foo","isBase64Encoded":false}"#
-        );
-    }
-
-    #[test]
-    fn serialize_body_for_alb() {
-        let mut resp = alb_response();
-        resp.body = Some("foo".into());
-        assert_eq!(
-            serde_json::to_string(&resp).expect("failed to serialize response"),
-            r#"{"statusCode":200,"statusDescription":"200 OK","headers":{},"body":"foo","isBase64Encoded":false}"#
-        );
-    }
-
-    #[test]
-    fn serialize_body_for_api_gateway_v2() {
-        let mut resp = api_gateway_v2_response();
-        resp.body = Some("foo".into());
-        assert_eq!(
-            serde_json::to_string(&resp).expect("failed to serialize response"),
-            r#"{"statusCode":200,"headers":{},"cookies":[],"body":"foo","isBase64Encoded":false}"#
-        );
-    }
-
-    #[test]
     fn serialize_multi_value_headers() {
         let res = LambdaResponse::from_response(
-            &RequestOrigin::ApiGateway,
+            &RequestOrigin::ApiGatewayV1,
             Response::builder()
                 .header("multi", "a")
                 .header("multi", "b")
@@ -333,8 +203,8 @@ mod tests {
         );
         let json = serde_json::to_string(&res).expect("failed to serialize to json");
         assert_eq!(
-            json,
-            r#"{"statusCode":200,"headers":{},"cookies":["cookie1=a","cookie2=b"],"isBase64Encoded":false}"#
+            "{\"statusCode\":200,\"headers\":{},\"multiValueHeaders\":{},\"isBase64Encoded\":false,\"cookies\":[\"cookie1=a\",\"cookie2=b\"]}",
+            json
         )
     }
 }

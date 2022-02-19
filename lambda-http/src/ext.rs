@@ -1,23 +1,24 @@
 //! Extension methods for `http::Request` types
 
-use crate::{request::RequestContext, strmap::StrMap, Body};
+use crate::{request::RequestContext, Body};
 use lambda_runtime::Context;
+use query_map::QueryMap;
 use serde::{de::value::Error as SerdeError, Deserialize};
 use std::{error::Error, fmt};
 
 /// ALB/API gateway pre-parsed http query string parameters
-pub(crate) struct QueryStringParameters(pub(crate) StrMap);
+pub(crate) struct QueryStringParameters(pub(crate) QueryMap);
 
 /// API gateway pre-extracted url path parameters
 ///
 /// These will always be empty for ALB requests
-pub(crate) struct PathParameters(pub(crate) StrMap);
+pub(crate) struct PathParameters(pub(crate) QueryMap);
 
 /// API gateway configured
 /// [stage variables](https://docs.aws.amazon.com/apigateway/latest/developerguide/stage-variables.html)
 ///
 /// These will always be empty for ALB requests
-pub(crate) struct StageVariables(pub(crate) StrMap);
+pub(crate) struct StageVariables(pub(crate) QueryMap);
 
 /// Request payload deserialization errors
 ///
@@ -112,37 +113,37 @@ pub trait RequestExt {
     /// name are expected, `query_string_parameters().get_all("many")` to retrieve them all.
     ///
     /// No query parameters
-    /// will yield an empty `StrMap`.
-    fn query_string_parameters(&self) -> StrMap;
+    /// will yield an empty `QueryMap`.
+    fn query_string_parameters(&self) -> QueryMap;
 
     /// Configures instance with query string parameters under #[cfg(test)] configurations
     ///
     /// This is intended for use in mock testing contexts.
     fn with_query_string_parameters<Q>(self, parameters: Q) -> Self
     where
-        Q: Into<StrMap>;
+        Q: Into<QueryMap>;
 
     /// Return pre-extracted path parameters, parameter provided in url placeholders
     /// `/foo/{bar}/baz/{boom}`,
     /// associated with the API gateway request. No path parameters
-    /// will yield an empty `StrMap`
+    /// will yield an empty `QueryMap`
     ///
     /// These will always be empty for ALB triggered requests
-    fn path_parameters(&self) -> StrMap;
+    fn path_parameters(&self) -> QueryMap;
 
     /// Configures instance with path parameters under #[cfg(test)] configurations
     ///
     /// This is intended for use in mock testing contexts.
     fn with_path_parameters<P>(self, parameters: P) -> Self
     where
-        P: Into<StrMap>;
+        P: Into<QueryMap>;
 
     /// Return [stage variables](https://docs.aws.amazon.com/apigateway/latest/developerguide/stage-variables.html)
     /// associated with the API gateway request. No stage parameters
-    /// will yield an empty `StrMap`
+    /// will yield an empty `QueryMap`
     ///
     /// These will always be empty for ALB triggered requests
-    fn stage_variables(&self) -> StrMap;
+    fn stage_variables(&self) -> QueryMap;
 
     /// Configures instance with stage variables under #[cfg(test)] configurations
     ///
@@ -150,7 +151,7 @@ pub trait RequestExt {
     #[cfg(test)]
     fn with_stage_variables<V>(self, variables: V) -> Self
     where
-        V: Into<StrMap>;
+        V: Into<QueryMap>;
 
     /// Return request context data assocaited with the ALB or API gateway request
     fn request_context(&self) -> RequestContext;
@@ -176,7 +177,7 @@ pub trait RequestExt {
 }
 
 impl RequestExt for http::Request<Body> {
-    fn query_string_parameters(&self) -> StrMap {
+    fn query_string_parameters(&self) -> QueryMap {
         self.extensions()
             .get::<QueryStringParameters>()
             .map(|ext| ext.0.clone())
@@ -185,14 +186,14 @@ impl RequestExt for http::Request<Body> {
 
     fn with_query_string_parameters<Q>(self, parameters: Q) -> Self
     where
-        Q: Into<StrMap>,
+        Q: Into<QueryMap>,
     {
         let mut s = self;
         s.extensions_mut().insert(QueryStringParameters(parameters.into()));
         s
     }
 
-    fn path_parameters(&self) -> StrMap {
+    fn path_parameters(&self) -> QueryMap {
         self.extensions()
             .get::<PathParameters>()
             .map(|ext| ext.0.clone())
@@ -201,14 +202,14 @@ impl RequestExt for http::Request<Body> {
 
     fn with_path_parameters<P>(self, parameters: P) -> Self
     where
-        P: Into<StrMap>,
+        P: Into<QueryMap>,
     {
         let mut s = self;
         s.extensions_mut().insert(PathParameters(parameters.into()));
         s
     }
 
-    fn stage_variables(&self) -> StrMap {
+    fn stage_variables(&self) -> QueryMap {
         self.extensions()
             .get::<StageVariables>()
             .map(|ext| ext.0.clone())
@@ -218,7 +219,7 @@ impl RequestExt for http::Request<Body> {
     #[cfg(test)]
     fn with_stage_variables<V>(self, variables: V) -> Self
     where
-        V: Into<StrMap>,
+        V: Into<QueryMap>,
     {
         let mut s = self;
         s.extensions_mut().insert(StageVariables(variables.into()));

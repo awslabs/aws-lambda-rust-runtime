@@ -51,7 +51,7 @@
 //!         "hello {}",
 //!         request
 //!             .query_string_parameters()
-//!             .get("name")
+//!             .first("name")
 //!             .unwrap_or_else(|| "stranger")
 //!     ))
 //! }
@@ -66,16 +66,15 @@ pub use http::{self, Response};
 use lambda_runtime::LambdaEvent;
 pub use lambda_runtime::{self, service_fn, tower, Context, Error, Service};
 
-mod body;
 pub mod ext;
 pub mod request;
 mod response;
-mod strmap;
-pub use crate::{body::Body, ext::RequestExt, response::IntoResponse, strmap::StrMap};
+pub use crate::{ext::RequestExt, response::IntoResponse};
 use crate::{
     request::{LambdaRequest, RequestOrigin},
     response::LambdaResponse,
 };
+pub use aws_lambda_events::encodings::Body;
 use std::{
     future::Future,
     marker::PhantomData,
@@ -134,7 +133,7 @@ where
     }
 }
 
-impl<'a, R, S> Service<LambdaEvent<LambdaRequest<'a>>> for Adapter<'a, R, S>
+impl<'a, R, S> Service<LambdaEvent<LambdaRequest>> for Adapter<'a, R, S>
 where
     S: Service<Request, Response = R, Error = Error> + Send,
     S::Future: Send + 'a,
@@ -148,7 +147,7 @@ where
         core::task::Poll::Ready(Ok(()))
     }
 
-    fn call(&mut self, req: LambdaEvent<LambdaRequest<'a>>) -> Self::Future {
+    fn call(&mut self, req: LambdaEvent<LambdaRequest>) -> Self::Future {
         let request_origin = req.payload.request_origin();
         let event: Request = req.payload.into();
         let fut = Box::pin(self.service.call(event.with_lambda_context(req.context)));

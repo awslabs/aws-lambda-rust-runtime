@@ -15,7 +15,7 @@ readme = "../README.md"
 [dependencies]
 lambda_http = { path = "../lambda-http", version = "0.5" }
 lambda_runtime = { path = "../lambda-runtime", version = "0.5" }
-lambda_extension = { path = "../lambda-extension", version = "0.5" }
+lambda-extension = { path = "../lambda-extension", version = "0.5" }
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
 tracing = { version = "0.1", features = ["log"] }

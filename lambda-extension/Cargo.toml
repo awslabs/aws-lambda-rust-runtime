@@ -1,5 +1,5 @@
 [package]
-name = "lambda_extension"
+name = "lambda-extension"
 version = "0.5.0"
 edition = "2018"
 authors = ["David Calavera <david.calavera@gmail.com>"]

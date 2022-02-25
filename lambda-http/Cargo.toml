@@ -1,6 +1,6 @@
 [package]
 name = "lambda_http"
-version = "0.5.0"
+version = "0.5.1"
 authors = ["Doug Tangren"]
 edition = "2018"
 description = "Application Load Balancer and API Gateway event types for AWS Lambda"

@@ -1,6 +1,6 @@
 [package]
 name = "lambda_http"
-version = "0.5.0"
+version = "0.5.1"
 authors = ["Doug Tangren"]
 edition = "2018"
 description = "Application Load Balancer and API Gateway event types for AWS Lambda"
@@ -17,7 +17,7 @@ travis-ci = { repository = "awslabs/aws-lambda-rust-runtime" }
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-aws_lambda_events = { version = "0.6", default-features = false, features = ["alb", "apigw"]}
+aws_lambda_events = { version = "^0.6", default-features = false, features = ["alb", "apigw"]}
 base64 = "0.13.0"
 bytes = "1"
 http = "0.2"

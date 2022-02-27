@@ -81,10 +81,10 @@ jobs:
       - name: Run clippy check
         run: cargo clippy
 
-  # publish rustdoc to a gh-pages branch on pushes to master
+  # publish rustdoc to a gh-pages branch on pushes to main
   # this can be helpful to those depending on the mainline branch
   publish-docs:
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     needs: [build]
     steps:

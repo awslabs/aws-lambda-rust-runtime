@@ -54,11 +54,13 @@ rustup target add aarch64-unknown-linux-gnu
 rustup target add x86_64-unknown-linux-gnu
 ```
 
-Once this is done, install [Zig](https://ziglang.org/) using the instructions in their [installation guide](https://ziglang.org/learn/getting-started/#installing-zig), and install `cargo-zigbuild`:
+Once this is done, install `cargo-lambda`:
 
 ```bash
-cargo install cargo-zigbuild
+cargo install cargo-lambda
 ```
+
+This Cargo subcommand will give you the option to install [Zig](https://ziglang.org/) to use as the linker. You can also install [Zig](https://ziglang.org/) using the instructions in their [installation guide](https://ziglang.org/learn/getting-started/#installing-zig).
 
 #### 1.2. Build your Lambda functions
 
@@ -68,7 +70,7 @@ We recommend you to use Amazon Linux 2 runtimes (such as `provided.al2`) as much
 
 ```bash
 # Note: replace "aarch64" with "x86_64" if you are building for x86_64
-cargo zigbuild --release --target aarch64-unknown-linux-gnu
+cargo lambda build --release --target aarch64-unknown-linux-gnu
 ```
 
 __Amazon Linux 1__
@@ -79,21 +81,21 @@ If you are building for Amazon Linux 1, or you want to support both Amazon Linux
 
 ```
 # Note: replace "aarch64" with "x86_64" if you are building for x86_64
-cargo zigbuild --release --target aarch64-unknown-linux-gnu.2.17
+cargo lambda build --release --target aarch64-unknown-linux-gnu.2.17
 ```
 
 ### 2. Deploying the binary to AWS Lambda
 
 For [a custom runtime](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-custom.html), AWS Lambda looks for an executable called `bootstrap` in the deployment package zip. Rename the generated executable to `bootstrap` and add it to a zip archive.
 
-__Note__: Depending on the target you used above, you'll find the provided basic executable under the corresponding directory. For example, if you are building the aarch64-unknown-linux-gnu as your target, it will be under `./target/aarch64-unknown-linux-gnu/release/`.
+You can find the `bootstrap` binary for your function under the `target/lambda` directory.
 
 #### 2.1. Deploying with the AWS CLI
 
 First, you will need to create a ZIP archive of your Lambda function. For example, if you are using the `basic` example and aarch64-unknown-linux-gnu as your target, you can run:
 
 ```bash
-cp ./target/aarch64-unknown-linux-gnu/release/examples/basic ./bootstrap && zip lambda.zip bootstrap && rm bootstrap
+zip -j lambda.zip target/lambda/basic/bootstrap
 ```
 
 Now that we have a deployment package (`lambda.zip`), we can use the [AWS CLI](https://aws.amazon.com/cli/) to create a new Lambda function. Make sure to replace the execution role with an existing role in your account!
@@ -141,19 +143,12 @@ Resources:
       Handler: bootstrap
       Runtime: provided.al2
       Timeout: 5
-      CodeUri: build/
+      CodeUri: target/lambda/basic/
 
 Outputs:
   FunctionName:
     Value: !Ref HelloWorldFunction
     Description: Name of the Lambda function
-```
-
-After building your function, you will also need to store the binary as `bootstrap` in a dedicated directory for that function (e.g. `build/bootstrap`):
-
-```bash
-mkdir build
-cp ./target/aarch64-unknown-linux-gnu/release/examples/basic ./build/bootstrap
 ```
 
 You can then deploy your Lambda function using the AWS SAM CLI:

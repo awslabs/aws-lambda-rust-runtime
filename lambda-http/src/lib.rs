@@ -91,7 +91,7 @@ pub type Request = http::Request<Body>;
 #[doc(hidden)]
 pub struct TransformResponse<'a, R, E> {
     request_origin: RequestOrigin,
-    fut: Pin<Box<dyn Future<Output = Result<R, E>> + Send + 'a>>,
+    fut: Pin<Box<dyn Future<Output = Result<R, E>> + 'a>>,
 }
 
 impl<'a, R, E> Future for TransformResponse<'a, R, E>
@@ -121,8 +121,8 @@ pub struct Adapter<'a, R, S> {
 
 impl<'a, R, S> From<S> for Adapter<'a, R, S>
 where
-    S: Service<Request, Response = R, Error = Error> + Send,
-    S::Future: Send + 'a,
+    S: Service<Request, Response = R, Error = Error>,
+    S::Future: 'a,
     R: IntoResponse,
 {
     fn from(service: S) -> Self {
@@ -135,8 +135,8 @@ where
 
 impl<'a, R, S> Service<LambdaEvent<LambdaRequest>> for Adapter<'a, R, S>
 where
-    S: Service<Request, Response = R, Error = Error> + Send,
-    S::Future: Send + 'a,
+    S: Service<Request, Response = R, Error = Error>,
+    S::Future: 'a,
     R: IntoResponse,
 {
     type Response = LambdaResponse;
@@ -162,8 +162,8 @@ where
 /// converting the result into a [`LambdaResponse`].
 pub async fn run<'a, R, S>(handler: S) -> Result<(), Error>
 where
-    S: Service<Request, Response = R, Error = Error> + Send,
-    S::Future: Send + 'a,
+    S: Service<Request, Response = R, Error = Error>,
+    S::Future: 'a,
     R: IntoResponse,
 {
     lambda_runtime::run(Adapter::from(handler)).await

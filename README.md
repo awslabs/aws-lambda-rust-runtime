@@ -92,18 +92,18 @@ You can find the `bootstrap` binary for your function under the `target/lambda` 
 
 #### 2.1. Deploying with the AWS CLI
 
-First, you will need to create a ZIP archive of your Lambda function. For example, if you are using the `basic` example and aarch64-unknown-linux-gnu as your target, you can run:
+First, you will need to create a ZIP archive of your Lambda function. Cargo-lambda can do that for you automatically when it builds your binary if you add the `output-format` flag. For example, if you are using the `basic` example and aarch64-unknown-linux-gnu as your target, you can run:
 
 ```bash
-zip -j lambda.zip target/lambda/basic/bootstrap
+cargo lambda build --release --target aarch64-unknown-linux-gnu --output-format zip
 ```
 
-Now that we have a deployment package (`lambda.zip`), we can use the [AWS CLI](https://aws.amazon.com/cli/) to create a new Lambda function. Make sure to replace the execution role with an existing role in your account!
+Now that we have a deployment package (`target/lambda/basic/bootstrap.zip`), we can use the [AWS CLI](https://aws.amazon.com/cli/) to create a new Lambda function. Make sure to replace the execution role with an existing role in your account!
 
 ```bash
 $ aws lambda create-function --function-name rustTest \
-  --handler doesnt.matter \
-  --zip-file fileb://./lambda.zip \
+  --handler bootstrap \
+  --zip-file fileb://./target/lambda/basic/bootstrap.zip \
   --runtime provided.al2 \ # Change this to provided.al if you would like to use Amazon Linux 1.
   --role arn:aws:iam::XXXXXXXXXXXXX:role/your_lambda_execution_role \
   --environment Variables={RUST_BACKTRACE=1} \

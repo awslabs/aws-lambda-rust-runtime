@@ -72,7 +72,7 @@ fn into_api_gateway_v2_request(ag: ApiGatewayV2httpRequest) -> http::Request<Bod
                 .headers
                 .get(http::header::HOST)
                 .and_then(|s| s.to_str().ok())
-                .or_else(|| ag.request_context.domain_name.as_deref())
+                .or(ag.request_context.domain_name.as_deref())
                 .unwrap_or_default();
 
             let path = apigw_path_with_stage(&ag.request_context.stage, ag.raw_path.as_deref().unwrap_or_default());

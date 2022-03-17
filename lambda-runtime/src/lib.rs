@@ -97,15 +97,30 @@ where
     {
         let client = &self.client;
         tokio::pin!(incoming);
-        while let Some(event) = incoming.next().await {
+        while let Some(next_event_response) = incoming.next().await {
             trace!("New event arrived (run loop)");
-            let event = event?;
+            let event = next_event_response?;
             let (parts, body) = event.into_parts();
+
+            #[cfg(debug_assertions)]
+            if parts.status == http::StatusCode::NO_CONTENT {
+                // Ignore the event if the status code is 204.
+                // This is a way to keep the runtime alive when
+                // there are no events pending to be processed.
+                continue;
+            }
+
+            let body = hyper::body::to_bytes(body).await?;
+            trace!("response body - {}", std::str::from_utf8(&body)?);
+
+            #[cfg(debug_assertions)]
+            if parts.status.is_server_error() {
+                error!("Lambda Runtime server returned an unexpected error");
+                return Err(parts.status.to_string().into());
+            }
 
             let ctx: Context = Context::try_from(parts.headers)?;
             let ctx: Context = ctx.with_config(config);
-            let body = hyper::body::to_bytes(body).await?;
-            trace!("{}", std::str::from_utf8(&body)?); // this may be very verbose
             let body = serde_json::from_slice(&body)?;
 
             let xray_trace_id = &ctx.xray_trace_id.clone();

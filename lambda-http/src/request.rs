@@ -75,7 +75,7 @@ fn into_api_gateway_v2_request(ag: ApiGatewayV2httpRequest) -> http::Request<Bod
                 .or(ag.request_context.domain_name.as_deref())
                 .unwrap_or_default();
 
-            let path = apigw_path_with_stage(&ag.request_context.stage, ag.raw_path.as_deref().unwrap_or_default());
+            let path = ag.raw_path.as_deref().unwrap_or_default();
             let mut url = format!("{}://{}{}", scheme, host, path);
 
             if let Some(query) = ag.raw_query_string {
@@ -118,7 +118,7 @@ fn into_proxy_request(ag: ApiGatewayProxyRequest) -> http::Request<Body> {
     let builder = http::Request::builder()
         .uri({
             let host = ag.headers.get(http::header::HOST).and_then(|s| s.to_str().ok());
-            let path = apigw_path_with_stage(&ag.request_context.stage, &ag.path.unwrap_or_default());
+            let path = ag.path.unwrap_or_default();
 
             let mut url = match host {
                 None => path,
@@ -241,7 +241,7 @@ fn into_websocket_request(ag: ApiGatewayWebsocketProxyRequest) -> http::Request<
     let builder = http::Request::builder()
         .uri({
             let host = ag.headers.get(http::header::HOST).and_then(|s| s.to_str().ok());
-            let path = apigw_path_with_stage(&ag.request_context.stage, &ag.path.unwrap_or_default());
+            let path = ag.path.unwrap_or_default();
 
             let mut url = match host {
                 None => path,
@@ -297,14 +297,6 @@ fn into_websocket_request(ag: ApiGatewayWebsocketProxyRequest) -> http::Request<
     let _ = mem::replace(req.method_mut(), http_method.unwrap_or(http::Method::GET));
 
     req
-}
-
-fn apigw_path_with_stage(stage: &Option<String>, path: &str) -> String {
-    match stage {
-        None => path.into(),
-        Some(stage) if stage == "$default" => path.into(),
-        Some(stage) => format!("/{}{}", stage, path),
-    }
 }
 
 /// Event request context as an enumeration of request contexts
@@ -476,7 +468,7 @@ mod tests {
         assert_eq!(req.method(), "GET");
         assert_eq!(
             req.uri(),
-            "https://wt6mne2s9k.execute-api.us-west-2.amazonaws.com/test/test/hello?name=me"
+            "https://wt6mne2s9k.execute-api.us-west-2.amazonaws.com/test/hello?name=me"
         );
 
         // Ensure this is an APIGW request
@@ -603,6 +595,6 @@ mod tests {
         );
         let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "GET");
-        assert_eq!(req.uri(), "/test/test/hello?name=me");
+        assert_eq!(req.uri(), "/test/hello?name=me");
     }
 }

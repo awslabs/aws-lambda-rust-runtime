@@ -33,3 +33,8 @@ async fn main() -> Result<(), Error> {
     client.call(request).await
 }
 ```
+
+## Custom User Agent
+
+To customize User Agent header sent to Lambda Runtime API, you can configure an environment variable `LAMBDA_RUNTIME_USER_AGENT` at compiling time.
+This will overide the default User Agent. 

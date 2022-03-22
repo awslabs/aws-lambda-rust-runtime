@@ -14,7 +14,8 @@ use tokio::io::{AsyncRead, AsyncWrite};
 use tower_service::Service;
 
 const USER_AGENT_HEADER: &str = "User-Agent";
-const USER_AGENT: &str = concat!("aws-lambda-rust/", env!("CARGO_PKG_VERSION"));
+const DEFAULT_USER_AGENT: &str = concat!("aws-lambda-rust/", env!("CARGO_PKG_VERSION"));
+const CUSTOM_USER_AGENT: Option<&str> = option_env!("LAMBDA_RUNTIME_USER_AGENT");
 
 /// Error type that lambdas may result in
 pub type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
@@ -127,8 +128,13 @@ where
 
 /// Create a request builder.
 /// This builder uses `aws-lambda-rust/CRATE_VERSION` as
-/// the default User-Agent.
+/// the default User-Agent. Configure environment variable `LAMBDA_RUNTIME_USER_AGENT`
+/// at compile time to modify User-Agent value.
 pub fn build_request() -> http::request::Builder {
+    const USER_AGENT: &str = match CUSTOM_USER_AGENT {
+        Some(value) => value,
+        None => DEFAULT_USER_AGENT,
+    };
     http::Request::builder().header(USER_AGENT_HEADER, USER_AGENT)
 }
 

@@ -3,7 +3,7 @@
 //! Typically these are exposed via the `request_context`
 //! request extension method provided by [lambda_http::RequestExt](../trait.RequestExt.html)
 //!
-use crate::ext::{PathParameters, QueryStringParameters, StageVariables};
+use crate::ext::{PathParameters, QueryStringParameters, RawHttpPath, StageVariables};
 use aws_lambda_events::alb::{AlbTargetGroupRequest, AlbTargetGroupRequestContext};
 use aws_lambda_events::apigw::{
     ApiGatewayProxyRequest, ApiGatewayProxyRequestContext, ApiGatewayV2httpRequest, ApiGatewayV2httpRequestContext,
@@ -61,6 +61,8 @@ pub enum RequestOrigin {
 
 fn into_api_gateway_v2_request(ag: ApiGatewayV2httpRequest) -> http::Request<Body> {
     let http_method = ag.request_context.http.method.clone();
+    let raw_path = ag.raw_path.unwrap_or_default();
+
     let builder = http::Request::builder()
         .uri({
             let scheme = ag
@@ -75,7 +77,7 @@ fn into_api_gateway_v2_request(ag: ApiGatewayV2httpRequest) -> http::Request<Bod
                 .or(ag.request_context.domain_name.as_deref())
                 .unwrap_or_default();
 
-            let path = apigw_path_with_stage(&ag.request_context.stage, ag.raw_path.as_deref().unwrap_or_default());
+            let path = apigw_path_with_stage(&ag.request_context.stage, &raw_path);
             let mut url = format!("{}://{}{}", scheme, host, path);
 
             if let Some(query) = ag.raw_query_string {
@@ -84,6 +86,7 @@ fn into_api_gateway_v2_request(ag: ApiGatewayV2httpRequest) -> http::Request<Bod
             }
             url
         })
+        .extension(RawHttpPath(raw_path))
         .extension(QueryStringParameters(ag.query_string_parameters))
         .extension(PathParameters(QueryMap::from(ag.path_parameters)))
         .extension(StageVariables(QueryMap::from(ag.stage_variables)))
@@ -115,10 +118,12 @@ fn into_api_gateway_v2_request(ag: ApiGatewayV2httpRequest) -> http::Request<Bod
 
 fn into_proxy_request(ag: ApiGatewayProxyRequest) -> http::Request<Body> {
     let http_method = ag.http_method;
+    let raw_path = ag.path.unwrap_or_default();
+
     let builder = http::Request::builder()
         .uri({
             let host = ag.headers.get(http::header::HOST).and_then(|s| s.to_str().ok());
-            let path = apigw_path_with_stage(&ag.request_context.stage, &ag.path.unwrap_or_default());
+            let path = apigw_path_with_stage(&ag.request_context.stage, &raw_path);
 
             let mut url = match host {
                 None => path,
@@ -141,6 +146,7 @@ fn into_proxy_request(ag: ApiGatewayProxyRequest) -> http::Request<Body> {
             }
             url
         })
+        .extension(RawHttpPath(raw_path))
         // multi-valued query string parameters are always a super
         // set of singly valued query string parameters,
         // when present, multi-valued query string parameters are preferred
@@ -178,6 +184,8 @@ fn into_proxy_request(ag: ApiGatewayProxyRequest) -> http::Request<Body> {
 
 fn into_alb_request(alb: AlbTargetGroupRequest) -> http::Request<Body> {
     let http_method = alb.http_method;
+    let raw_path = alb.path.unwrap_or_default();
+
     let builder = http::Request::builder()
         .uri({
             let scheme = alb
@@ -191,7 +199,7 @@ fn into_alb_request(alb: AlbTargetGroupRequest) -> http::Request<Body> {
                 .and_then(|s| s.to_str().ok())
                 .unwrap_or_default();
 
-            let mut url = format!("{}://{}{}", scheme, host, alb.path.unwrap_or_default());
+            let mut url = format!("{}://{}{}", scheme, host, &raw_path);
             if !alb.multi_value_query_string_parameters.is_empty() {
                 url.push('?');
                 url.push_str(&alb.multi_value_query_string_parameters.to_query_string());
@@ -202,6 +210,7 @@ fn into_alb_request(alb: AlbTargetGroupRequest) -> http::Request<Body> {
 
             url
         })
+        .extension(RawHttpPath(raw_path))
         // multi valued query string parameters are always a super
         // set of singly valued query string parameters,
         // when present, multi-valued query string parameters are preferred

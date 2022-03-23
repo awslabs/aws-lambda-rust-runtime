@@ -20,6 +20,9 @@ pub(crate) struct PathParameters(pub(crate) QueryMap);
 /// These will always be empty for ALB requests
 pub(crate) struct StageVariables(pub(crate) QueryMap);
 
+/// ALB/API gateway raw http path without any stage information
+pub(crate) struct RawHttpPath(pub(crate) String);
+
 /// Request payload deserialization errors
 ///
 /// Returned by [`RequestExt#payload()`](trait.RequestExt.html#tymethod.payload)
@@ -104,6 +107,12 @@ impl Error for PayloadError {
 /// }
 /// ```
 pub trait RequestExt {
+    /// Return the raw http path for a request without any stage information.
+    fn raw_http_path(&self) -> String;
+
+    /// Configures instance with the raw http path.
+    fn with_raw_http_path(self, path: &str) -> Self;
+
     /// Return pre-parsed http query string parameters, parameters
     /// provided after the `?` portion of a url,
     /// associated with the API gateway request.
@@ -177,6 +186,19 @@ pub trait RequestExt {
 }
 
 impl RequestExt for http::Request<Body> {
+    fn raw_http_path(&self) -> String {
+        self.extensions()
+            .get::<RawHttpPath>()
+            .map(|ext| ext.0.clone())
+            .unwrap_or_default()
+    }
+
+    fn with_raw_http_path(self, path: &str) -> Self {
+        let mut s = self;
+        s.extensions_mut().insert(RawHttpPath(path.into()));
+        s
+    }
+
     fn query_string_parameters(&self) -> QueryMap {
         self.extensions()
             .get::<QueryStringParameters>()
@@ -400,5 +422,11 @@ mod tests {
             .expect("failed to bulid request");
         let payload: Option<Payload> = request.payload().unwrap_or_default();
         assert_eq!(payload, None);
+    }
+
+    #[test]
+    fn requests_can_mock_raw_http_path_ext() {
+        let request = Request::default().with_raw_http_path("/raw-path");
+        assert_eq!("/raw-path", request.raw_http_path().as_str());
     }
 }

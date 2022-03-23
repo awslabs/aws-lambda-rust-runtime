@@ -404,6 +404,34 @@
 <span id="402">402</span>
 <span id="403">403</span>
 <span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Extension methods for `http::Request` types</span>
 
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">request::RequestContext</span>, <span class="ident">Body</span>};
@@ -425,6 +453,9 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// These will always be empty for ALB requests</span>
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">StageVariables</span>(<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">QueryMap</span>);
+
+<span class="doccomment">/// ALB/API gateway raw http path without any stage information</span>
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">RawHttpPath</span>(<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">String</span>);
 
 <span class="doccomment">/// Request payload deserialization errors</span>
 <span class="doccomment">///</span>
@@ -510,6 +541,12 @@
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// ```</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">RequestExt</span> {
+    <span class="doccomment">/// Return the raw http path for a request without any stage information.</span>
+    <span class="kw">fn</span> <span class="ident">raw_http_path</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span>;
+
+    <span class="doccomment">/// Configures instance with the raw http path.</span>
+    <span class="kw">fn</span> <span class="ident">with_raw_http_path</span>(<span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="self">Self</span>;
+
     <span class="doccomment">/// Return pre-parsed http query string parameters, parameters</span>
     <span class="doccomment">/// provided after the `?` portion of a url,</span>
     <span class="doccomment">/// associated with the API gateway request.</span>
@@ -583,6 +620,19 @@
 }
 
 <span class="kw">impl</span> <span class="ident">RequestExt</span> <span class="kw">for</span> <span class="ident">http::Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">raw_http_path</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
+        <span class="self">self</span>.<span class="ident">extensions</span>()
+            .<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">RawHttpPath</span><span class="op">&gt;</span>()
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">ext</span><span class="op">|</span> <span class="ident">ext</span>.<span class="number">0</span>.<span class="ident">clone</span>())
+            .<span class="ident">unwrap_or_default</span>()
+    }
+
+    <span class="kw">fn</span> <span class="ident">with_raw_http_path</span>(<span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="self">Self</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="self">self</span>;
+        <span class="ident">s</span>.<span class="ident">extensions_mut</span>().<span class="ident">insert</span>(<span class="ident">RawHttpPath</span>(<span class="ident">path</span>.<span class="ident">into</span>()));
+        <span class="ident">s</span>
+    }
+
     <span class="kw">fn</span> <span class="ident">query_string_parameters</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">QueryMap</span> {
         <span class="self">self</span>.<span class="ident">extensions</span>()
             .<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">QueryStringParameters</span><span class="op">&gt;</span>()
@@ -806,6 +856,12 @@
             .<span class="ident">expect</span>(<span class="string">&quot;failed to bulid request&quot;</span>);
         <span class="kw">let</span> <span class="ident">payload</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Payload</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">payload</span>().<span class="ident">unwrap_or_default</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">payload</span>, <span class="prelude-val">None</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">requests_can_mock_raw_http_path_ext</span>() {
+        <span class="kw">let</span> <span class="ident">request</span> <span class="op">=</span> <span class="ident">Request::default</span>().<span class="ident">with_raw_http_path</span>(<span class="string">&quot;/raw-path&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="string">&quot;/raw-path&quot;</span>, <span class="ident">request</span>.<span class="ident">raw_http_path</span>().<span class="ident">as_str</span>());
     }
 }
 </code></pre></div>

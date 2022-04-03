@@ -9,7 +9,6 @@ This package makes it easy to run AWS Lambda Functions written in Rust. This wor
 - [![Docs](https://docs.rs/lambda-extension/badge.svg)](https://docs.rs/lambda-extension) **`lambda-extension`** is a library that makes it easy to write Lambda Runtime Extensions in Rust.
 - [![Docs](https://docs.rs/lambda_runtime_api_client/badge.svg)](https://docs.rs/lambda_runtime_api_client) **`lambda-runtime-api-client`** is a shared library between the lambda runtime and lambda extension libraries that includes a common API client to talk with the AWS Lambda Runtime API.
 
-
 ## Example function
 
 The code below creates a simple function that receives an event with a `firstName` field and returns a message to the caller. Notice: this crate is tested against latest stable Rust.
@@ -236,7 +235,15 @@ $ unzip -o \
 # Ctrl-D to yield control back to your function
 ```
 
-### Debugging
+## Local development and testing
+
+### Cargo Lambda
+
+[Cargo Lambda](https://crates.io/crates/cargo-lambda) provides a local server that emulates the AWS Lambda control plane. This server works on Windows, Linux, and MacOS. I the root of your Lambda project, run the subcommand `cargo lambda start` to start the server. Your function will be compiled when the server receives the first request to process. Use the subcommand `cargo lambda invoke` to send requests to your function. The `start` subcommand will watch your function's code for changes, and it will compile it every time you save the source after making changes.
+
+You can read more about how [cargo lambda start](https://github.com/calavera/cargo-lambda#start) and [cargo lambda invoke](https://github.com/calavera/cargo-lambda#invoke) work on the [project's README](https://github.com/calavera/cargo-lambda#cargo-lambda).
+
+### Lambda Debug Proxy
 
 Lambdas can be run and debugged locally using a special [Lambda debug proxy](https://github.com/rimutaka/lambda-debug-proxy) (a non-AWS repo maintained by @rimutaka), which is a Lambda function that forwards incoming requests to one AWS SQS queue and reads responses from another queue. A local proxy running on your development computer reads the queue, calls your lambda locally and sends back the response. This approach allows debugging of Lambda functions locally while being part of your AWS workflow. The lambda handler code does not need to be modified between the local and AWS versions.
 
@@ -246,9 +253,9 @@ Lambdas can be run and debugged locally using a special [Lambda debug proxy](htt
 
 To write a function that will handle request, you need to pass it through `service_fn`, which will convert your function into a `tower::Service<LambdaEvent>`, which can then be run by `lambda_runtime::run`.
 
-### AWS event objects
+## AWS event objects
 
-This project does not currently include Lambda event struct definitions though we [intend to do so in the future](https://github.com/awslabs/aws-lambda-rust-runtime/issues/12). Instead, the community-maintained [`aws_lambda_events`](https://crates.io/crates/aws_lambda_events) crate can be leveraged to provide strongly-typed Lambda event structs. You can create your own custom event objects and their corresponding structs as well.
+This project does not currently include Lambda event struct definitions. Instead, the community-maintained [`aws_lambda_events`](https://crates.io/crates/aws_lambda_events) crate can be leveraged to provide strongly-typed Lambda event structs. You can create your own custom event objects and their corresponding structs as well.
 
 ### Custom event objects
 

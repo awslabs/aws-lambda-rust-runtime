@@ -138,7 +138,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       MemorySize: 128
-      Architectures: ["aarch64"]
+      Architectures: ["arm64"]
       Handler: bootstrap
       Runtime: provided.al2
       Timeout: 5

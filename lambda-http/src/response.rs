@@ -8,7 +8,15 @@ use http::{
     header::{CONTENT_TYPE, SET_COOKIE},
     Response,
 };
+use http_body::Body as HttpBody;
+use hyper::body::to_bytes;
 use serde::Serialize;
+use std::future::ready;
+use std::{
+    any::{Any, TypeId},
+    pin::Pin,
+    future::Future,
+};
 
 /// Representation of Lambda response
 #[doc(hidden)]
@@ -87,52 +95,41 @@ impl LambdaResponse {
     }
 }
 
-/// A conversion of self into a `Response<Body>` for various types.
-///
-/// Implementations for `Response<B> where B: Into<Body>`,
-/// `B where B: Into<Body>` and `serde_json::Value` are provided
-/// by default.
-///
-/// # Example
-///
-/// ```rust
-/// use lambda_http::{Body, IntoResponse, Response};
-///
-/// assert_eq!(
-///   "hello".into_response().body(),
-///   Response::new(Body::from("hello")).body()
-/// );
-/// ```
 pub trait IntoResponse {
-    /// Return a translation of `self` into a `Response<Body>`
-    fn into_response(self) -> Response<Body>;
+    fn into_response(self) -> ResponseFuture;
 }
 
 impl<B> IntoResponse for Response<B>
 where
-    B: Into<Body>,
+    B: IntoBody + 'static,
 {
-    fn into_response(self) -> Response<Body> {
+    fn into_response(self) -> ResponseFuture {
         let (parts, body) = self.into_parts();
-        Response::from_parts(parts, body.into())
+
+        let fut = async {
+            Response::from_parts(parts, body.into_body().await)
+        };
+
+        Box::pin(fut)
     }
 }
 
 impl IntoResponse for String {
-    fn into_response(self) -> Response<Body> {
-        Response::new(Body::from(self))
+    fn into_response(self) -> ResponseFuture {
+        Box::pin(ready(Response::new(Body::from(self))))
     }
 }
 
 impl IntoResponse for &str {
-    fn into_response(self) -> Response<Body> {
-        Response::new(Body::from(self))
+    fn into_response(self) -> ResponseFuture {
+        Box::pin(ready(Response::new(Body::from(self))))
     }
 }
 
 impl IntoResponse for serde_json::Value {
-    fn into_response(self) -> Response<Body> {
-        Response::builder()
+    fn into_response(self) -> ResponseFuture {
+        Box::pin(async move {
+            Response::builder()
             .header(CONTENT_TYPE, "application/json")
             .body(
                 serde_json::to_string(&self)
@@ -140,8 +137,36 @@ impl IntoResponse for serde_json::Value {
                     .into(),
             )
             .expect("unable to build http::Response")
+        })
     }
 }
+
+pub type ResponseFuture = Pin<Box<dyn Future<Output=Response<Body>>>>;
+
+
+pub trait IntoBody {
+    fn into_body(self) -> BodyFuture;
+}
+
+impl<B> IntoBody for B
+where
+    B: HttpBody + Unpin + 'static,
+    B::Error: std::fmt::Debug,
+{
+    fn into_body(self) -> BodyFuture {
+        if TypeId::of::<Body>() == self.type_id() {
+            let any_self = Box::new(self) as Box<dyn Any + 'static>;
+            // Can safely unwrap here as we do type validation in the 'if' statement
+            Box::pin(ready(*any_self.downcast::<Body>().unwrap()))
+        } else {
+            Box::pin(async move {
+                Body::from(to_bytes(self).await.expect("unable to read bytes from body").to_vec())
+            })
+        }
+    }
+}
+
+pub type BodyFuture = Pin<Box<dyn Future<Output=Body>>>;
 
 #[cfg(test)]
 mod tests {
@@ -149,9 +174,9 @@ mod tests {
     use http::{header::CONTENT_TYPE, Response};
     use serde_json::{self, json};
 
-    #[test]
-    fn json_into_response() {
-        let response = json!({ "hello": "lambda"}).into_response();
+    #[tokio::test]
+    async fn json_into_response() {
+        let response = json!({ "hello": "lambda"}).into_response().await;
         match response.body() {
             Body::Text(json) => assert_eq!(json, r#"{"hello":"lambda"}"#),
             _ => panic!("invalid body"),
@@ -165,9 +190,9 @@ mod tests {
         )
     }
 
-    #[test]
-    fn text_into_response() {
-        let response = "text".into_response();
+    #[tokio::test]
+    async fn text_into_response() {
+        let response = "text".into_response().await;
         match response.body() {
             Body::Text(text) => assert_eq!(text, "text"),
             _ => panic!("invalid body"),

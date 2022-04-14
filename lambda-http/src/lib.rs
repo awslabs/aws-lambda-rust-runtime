@@ -67,6 +67,7 @@ extern crate maplit;
 pub use http::{self, Response};
 use lambda_runtime::LambdaEvent;
 pub use lambda_runtime::{self, service_fn, tower, Context, Error, Service};
+use response::ResponseFuture;
 
 pub mod ext;
 pub mod request;
@@ -93,7 +94,8 @@ pub type Request = http::Request<Body>;
 #[doc(hidden)]
 pub struct TransformResponse<'a, R, E> {
     request_origin: RequestOrigin,
-    fut: Pin<Box<dyn Future<Output = Result<R, E>> + 'a>>,
+    fut_req: Pin<Box<dyn Future<Output = Result<R, E>> + 'a>>,
+    fut_res: Option<ResponseFuture>,
 }
 
 impl<'a, R, E> Future for TransformResponse<'a, R, E>
@@ -103,11 +105,22 @@ where
     type Output = Result<LambdaResponse, E>;
 
     fn poll(mut self: Pin<&mut Self>, cx: &mut TaskContext) -> Poll<Self::Output> {
-        match self.fut.as_mut().poll(cx) {
-            Poll::Ready(result) => Poll::Ready(
-                result.map(|resp| LambdaResponse::from_response(&self.request_origin, resp.into_response())),
-            ),
-            Poll::Pending => Poll::Pending,
+        if let Some(fut_res) = self.fut_res.as_mut() {
+            match fut_res.as_mut().poll(cx) {
+                Poll::Ready(resp) => Poll::Ready(
+                    Ok(LambdaResponse::from_response(&self.request_origin, resp))
+                ),
+                Poll::Pending => Poll::Pending,
+            }
+        } else {
+            match self.fut_req.as_mut().poll(cx) {
+                Poll::Ready(Ok(resp)) => {
+                    self.fut_res = Some(resp.into_response());
+                    Poll::Pending
+                },
+                Poll::Ready(Err(err)) => Poll::Ready(Err(err)),
+                Poll::Pending => Poll::Pending,
+            }
         }
     }
 }
@@ -153,7 +166,7 @@ where
         let request_origin = req.payload.request_origin();
         let event: Request = req.payload.into();
         let fut = Box::pin(self.service.call(event.with_lambda_context(req.context)));
-        TransformResponse { request_origin, fut }
+        TransformResponse { request_origin, fut_req: fut, fut_res: None, }
     }
 }
 

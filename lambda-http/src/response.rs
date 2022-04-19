@@ -4,6 +4,7 @@ use crate::request::RequestOrigin;
 use aws_lambda_events::encodings::Body;
 use aws_lambda_events::event::alb::AlbTargetGroupResponse;
 use aws_lambda_events::event::apigw::{ApiGatewayProxyResponse, ApiGatewayV2httpResponse};
+use http::StatusCode;
 use http::{
     header::{CONTENT_TYPE, SET_COOKIE},
     Response,
@@ -11,6 +12,7 @@ use http::{
 use http_body::Body as HttpBody;
 use hyper::body::to_bytes;
 use serde::Serialize;
+use std::convert::TryInto;
 use std::future::ready;
 use std::{
     any::{Any, TypeId},
@@ -136,6 +138,22 @@ impl IntoResponse for serde_json::Value {
                         .expect("unable to serialize serde_json::Value")
                         .into(),
                 )
+                .expect("unable to build http::Response")
+        })
+    }
+}
+
+impl<S, B> IntoResponse for (S, B)
+where
+    S: TryInto<StatusCode> + 'static,
+    S::Error: fmt::Debug,
+    B: Into<Body> + 'static,
+{
+    fn into_response(self) -> ResponseFuture {
+        Box::pin(async move {
+            Response::builder()
+                .status(self.0.try_into().expect("unable to transform status code"))
+                .body(self.1.into())
                 .expect("unable to build http::Response")
         })
     }

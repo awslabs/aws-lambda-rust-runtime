@@ -8,7 +8,7 @@ async fn main() -> Result<(), Error> {
 
 async fn func(event: Request) -> Result<impl IntoResponse, Error> {
     Ok(match event.query_string_parameters().first("first_name") {
-        Some(first_name) => format!("Hello, {}!", first_name).into_response(),
+        Some(first_name) => format!("Hello, {}!", first_name).into_response().await,
         _ => Response::builder()
             .status(400)
             .body("Empty first name".into())

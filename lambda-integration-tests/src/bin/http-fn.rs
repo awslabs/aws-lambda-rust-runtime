@@ -1,11 +1,14 @@
-use lambda_http::{service_fn, Error, IntoResponse, Request, RequestExt, Response};
+use lambda_http::{service_fn, Body, Error, IntoResponse, Request, RequestExt, Response};
 use tracing::info;
 
 async fn handler(event: Request) -> Result<impl IntoResponse, Error> {
     let _context = event.lambda_context();
     info!("[http-fn] Received event {} {}", event.method(), event.uri().path());
 
-    Ok(Response::builder().status(200).body("Hello, world!").unwrap())
+    Ok(Response::builder()
+        .status(200)
+        .body(Body::from("Hello, world!"))
+        .unwrap())
 }
 
 #[tokio::main]

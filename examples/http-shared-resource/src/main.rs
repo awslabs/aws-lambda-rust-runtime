@@ -29,9 +29,12 @@ async fn main() -> Result<(), Error> {
     // Define a closure here that makes use of the shared client.
     let handler_func_closure = move |event: Request| async move {
         Result::<Response<Body>, Error>::Ok(match event.query_string_parameters().first("first_name") {
-            Some(first_name) => shared_client_ref
-                .response(event.lambda_context().request_id, first_name)
-                .into_response(),
+            Some(first_name) => {
+                shared_client_ref
+                    .response(event.lambda_context().request_id, first_name)
+                    .into_response()
+                    .await
+            }
             _ => Response::builder()
                 .status(400)
                 .body("Empty first name".into())

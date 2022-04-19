@@ -1,4 +1,4 @@
-use lambda_http::{Error, Request, RequestExt, Response, Service};
+use lambda_http::{Body, Error, Request, RequestExt, Response, Service};
 use std::{
     future::{ready, Future},
     pin::Pin,
@@ -13,7 +13,7 @@ struct MyHandler {
 impl Service<Request> for MyHandler {
     type Error = Error;
     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Error>> + Send>>;
-    type Response = Response<&'static str>;
+    type Response = Response<Body>;
 
     fn poll_ready(&mut self, _cx: &mut core::task::Context<'_>) -> core::task::Poll<Result<(), Self::Error>> {
         core::task::Poll::Ready(Ok(()))
@@ -25,7 +25,7 @@ impl Service<Request> for MyHandler {
         info!("[http-trait] Lambda context: {:?}", request.lambda_context());
         Box::pin(ready(Ok(Response::builder()
             .status(200)
-            .body("Hello, World!")
+            .body(Body::from("Hello, World!"))
             .unwrap())))
     }
 }

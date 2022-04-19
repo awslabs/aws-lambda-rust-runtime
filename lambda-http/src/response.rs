@@ -14,8 +14,9 @@ use serde::Serialize;
 use std::future::ready;
 use std::{
     any::{Any, TypeId},
-    pin::Pin,
+    fmt,
     future::Future,
+    pin::Pin,
 };
 
 /// Representation of Lambda response
@@ -28,14 +29,11 @@ pub enum LambdaResponse {
     Alb(AlbTargetGroupResponse),
 }
 
-/// tranformation from http type to internal type
+/// Tranformation from http type to internal type
 impl LambdaResponse {
-    pub(crate) fn from_response<T>(request_origin: &RequestOrigin, value: Response<T>) -> Self
-    where
-        T: Into<Body>,
-    {
+    pub(crate) fn from_response(request_origin: &RequestOrigin, value: Response<Body>) -> Self {
         let (parts, bod) = value.into_parts();
-        let (is_base64_encoded, body) = match bod.into() {
+        let (is_base64_encoded, body) = match bod {
             Body::Empty => (false, None),
             b @ Body::Text(_) => (false, Some(b)),
             b @ Body::Binary(_) => (true, Some(b)),
@@ -95,7 +93,11 @@ impl LambdaResponse {
     }
 }
 
+/// Trait for generating responses
+///
+/// Types that implement this trait can be used as return types for handler functions.
 pub trait IntoResponse {
+    /// Transform into a Response<Body> Future
     fn into_response(self) -> ResponseFuture;
 }
 
@@ -106,9 +108,7 @@ where
     fn into_response(self) -> ResponseFuture {
         let (parts, body) = self.into_parts();
 
-        let fut = async {
-            Response::from_parts(parts, body.into_body().await)
-        };
+        let fut = async { Response::from_parts(parts, body.into_body().await) };
 
         Box::pin(fut)
     }
@@ -130,19 +130,18 @@ impl IntoResponse for serde_json::Value {
     fn into_response(self) -> ResponseFuture {
         Box::pin(async move {
             Response::builder()
-            .header(CONTENT_TYPE, "application/json")
-            .body(
-                serde_json::to_string(&self)
-                    .expect("unable to serialize serde_json::Value")
-                    .into(),
-            )
-            .expect("unable to build http::Response")
+                .header(CONTENT_TYPE, "application/json")
+                .body(
+                    serde_json::to_string(&self)
+                        .expect("unable to serialize serde_json::Value")
+                        .into(),
+                )
+                .expect("unable to build http::Response")
         })
     }
 }
 
-pub type ResponseFuture = Pin<Box<dyn Future<Output=Response<Body>>>>;
-
+pub type ResponseFuture = Pin<Box<dyn Future<Output = Response<Body>>>>;
 
 pub trait IntoBody {
     fn into_body(self) -> BodyFuture;
@@ -151,7 +150,7 @@ pub trait IntoBody {
 impl<B> IntoBody for B
 where
     B: HttpBody + Unpin + 'static,
-    B::Error: std::fmt::Debug,
+    B::Error: fmt::Debug,
 {
     fn into_body(self) -> BodyFuture {
         if TypeId::of::<Body>() == self.type_id() {
@@ -159,14 +158,12 @@ where
             // Can safely unwrap here as we do type validation in the 'if' statement
             Box::pin(ready(*any_self.downcast::<Body>().unwrap()))
         } else {
-            Box::pin(async move {
-                Body::from(to_bytes(self).await.expect("unable to read bytes from body").to_vec())
-            })
+            Box::pin(async move { Body::from(to_bytes(self).await.expect("unable to read bytes from body").to_vec()) })
         }
     }
 }
 
-pub type BodyFuture = Pin<Box<dyn Future<Output=Body>>>;
+pub type BodyFuture = Pin<Box<dyn Future<Output = Body>>>;
 
 #[cfg(test)]
 mod tests {

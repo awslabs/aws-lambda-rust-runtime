@@ -107,9 +107,7 @@ where
     fn poll(mut self: Pin<&mut Self>, cx: &mut TaskContext) -> Poll<Self::Output> {
         if let Some(fut_res) = self.fut_res.as_mut() {
             match fut_res.as_mut().poll(cx) {
-                Poll::Ready(resp) => Poll::Ready(
-                    Ok(LambdaResponse::from_response(&self.request_origin, resp))
-                ),
+                Poll::Ready(resp) => Poll::Ready(Ok(LambdaResponse::from_response(&self.request_origin, resp))),
                 Poll::Pending => Poll::Pending,
             }
         } else {
@@ -117,7 +115,7 @@ where
                 Poll::Ready(Ok(resp)) => {
                     self.fut_res = Some(resp.into_response());
                     Poll::Pending
-                },
+                }
                 Poll::Ready(Err(err)) => Poll::Ready(Err(err)),
                 Poll::Pending => Poll::Pending,
             }
@@ -166,7 +164,11 @@ where
         let request_origin = req.payload.request_origin();
         let event: Request = req.payload.into();
         let fut = Box::pin(self.service.call(event.with_lambda_context(req.context)));
-        TransformResponse { request_origin, fut_req: fut, fut_res: None, }
+        TransformResponse {
+            request_origin,
+            fut_req: fut,
+            fut_res: None,
+        }
     }
 }
 

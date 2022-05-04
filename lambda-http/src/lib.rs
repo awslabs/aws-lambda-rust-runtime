@@ -69,7 +69,7 @@ pub use lambda_runtime::{self, service_fn, tower, Context, Error, Service};
 pub mod ext;
 pub mod request;
 mod response;
-pub use crate::{ext::RequestExt, response::IntoResponse};
+pub use crate::{ext::{RequestExt, RequestExtBody}, response::IntoResponse};
 use crate::{
     request::{LambdaRequest, RequestOrigin},
     response::LambdaResponse,

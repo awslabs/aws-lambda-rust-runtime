@@ -1,6 +1,7 @@
-//! Extension methods for `http::Request` types
+//! Extension methods for `http::Request` and `crate::Request` types
 
-use crate::{request::RequestContext, Body};
+use crate::{request::RequestContext, Request};
+use http_body::Body as HttpBody;
 use lambda_runtime::Context;
 use query_map::QueryMap;
 use serde::{de::value::Error as SerdeError, Deserialize};
@@ -30,6 +31,7 @@ pub(crate) struct RawHttpPath(pub(crate) String);
 pub enum PayloadError {
     /// Returned when `application/json` bodies fail to deserialize a payload
     Json(serde_json::Error),
+    UnsupportedFormat(Box<dyn std::error::Error + Send + Sync + 'static>),
     /// Returned when `application/x-www-form-urlencoded` bodies fail to deserialize a payload
     WwwFormUrlEncoded(SerdeError),
 }
@@ -38,6 +40,7 @@ impl fmt::Display for PayloadError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             PayloadError::Json(json) => writeln!(f, "failed to parse payload from application/json {}", json),
+            PayloadError::UnsupportedFormat(err) => writeln!(f, "unsupported payload {}", err),
             PayloadError::WwwFormUrlEncoded(form) => writeln!(
                 f,
                 "failed to parse payload from application/x-www-form-urlencoded {}",
@@ -51,56 +54,39 @@ impl Error for PayloadError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
             PayloadError::Json(json) => Some(json),
+            PayloadError::UnsupportedFormat(err) => Some(err.as_ref()),
             PayloadError::WwwFormUrlEncoded(form) => Some(form),
         }
     }
 }
 
-/// Extentions for `lambda_http::Request` structs that
+/// Extentions for `http::Request` structs that
 /// provide access to [API gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format)
 /// and [ALB](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html)
 /// features.
 ///
 /// # Examples
 ///
-/// A request's body can be deserialized if its correctly encoded as per  
-/// the request's `Content-Type` header. The two supported content types are
-/// `application/x-www-form-urlencoded` and `application/json`.
-///
-/// The following handler will work an http request body of `x=1&y=2`
-/// as well as `{"x":1, "y":2}` respectively.
+/// We can retrieve the stage variables and return it to the user.
 ///
 /// ```rust,no_run
 /// use lambda_http::{service_fn, Error, Context, Body, IntoResponse, Request, Response, RequestExt};
-/// use serde::Deserialize;
-///
-/// #[derive(Debug,Deserialize,Default)]
-/// struct Args {
-///   #[serde(default)]
-///   x: usize,
-///   #[serde(default)]
-///   y: usize
-/// }
 ///
 /// #[tokio::main]
 /// async fn main() -> Result<(), Error> {
-///   lambda_http::run(service_fn(add)).await?;
+///   lambda_http::run(service_fn(retrieve_stage_variables)).await?;
 ///   Ok(())
 /// }
 ///
-/// async fn add(
+/// async fn retrieve_stage_variables(
 ///   request: Request
 /// ) -> Result<Response<Body>, Error> {
-///   let args: Args = request.payload()
-///     .unwrap_or_else(|_parse_err| None)
-///     .unwrap_or_default();
+///   let stage_variables = request.stage_variables();
 ///   Ok(
 ///      Response::new(
 ///        format!(
-///          "{} + {} = {}",
-///          args.x,
-///          args.y,
-///          args.x + args.y
+///          "The stage variables: {:?}",
+///          stage_variables,
 ///        ).into()
 ///      )
 ///   )
@@ -165,19 +151,6 @@ pub trait RequestExt {
     /// Return request context data assocaited with the ALB or API gateway request
     fn request_context(&self) -> RequestContext;
 
-    /// Return the Result of a payload parsed into a serde Deserializeable
-    /// type
-    ///
-    /// Currently only `application/x-www-form-urlencoded`
-    /// and `application/json` flavors of content type
-    /// are supported
-    ///
-    /// A [PayloadError](enum.PayloadError.html) will be returned for undeserializable
-    /// payloads. If no body is provided, `Ok(None)` will be returned.
-    fn payload<D>(&self) -> Result<Option<D>, PayloadError>
-    where
-        for<'de> D: Deserialize<'de>;
-
     /// Return the Lambda function context associated with the request
     fn lambda_context(&self) -> Context;
 
@@ -185,7 +158,10 @@ pub trait RequestExt {
     fn with_lambda_context(self, context: Context) -> Self;
 }
 
-impl RequestExt for http::Request<Body> {
+impl <B> RequestExt for http::Request<B>
+where
+    B: HttpBody
+{
     fn raw_http_path(&self) -> String {
         self.extensions()
             .get::<RawHttpPath>()
@@ -267,11 +243,79 @@ impl RequestExt for http::Request<Body> {
         s.extensions_mut().insert(context);
         s
     }
+}
 
+/// Extentions for `lambda_http::Request` structs containing specific Lambda events body that
+/// provide access to [API gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format)
+/// and [ALB](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html)
+/// features.
+///
+/// # Examples
+///
+/// A request's body can be deserialized if its correctly encoded as per  
+/// the request's `Content-Type` header. The two supported content types are
+/// `application/x-www-form-urlencoded` and `application/json`.
+///
+/// The following handler will work an http request body of `x=1&y=2`
+/// as well as `{"x":1, "y":2}` respectively.
+///
+/// ```rust,no_run
+/// use lambda_http::{service_fn, Error, Context, Body, IntoResponse, Request, Response, RequestExt, RequestExtBody};
+/// use serde::Deserialize;
+///
+/// #[derive(Debug,Deserialize,Default)]
+/// struct Args {
+///   #[serde(default)]
+///   x: usize,
+///   #[serde(default)]
+///   y: usize
+/// }
+///
+/// #[tokio::main]
+/// async fn main() -> Result<(), Error> {
+///   lambda_http::run(service_fn(add)).await?;
+///   Ok(())
+/// }
+///
+/// async fn add(
+///   request: Request
+/// ) -> Result<Response<Body>, Error> {
+///   let args: Args = request.payload()
+///     .unwrap_or_else(|_parse_err| None)
+///     .unwrap_or_default();
+///   Ok(
+///      Response::new(
+///        format!(
+///          "{} + {} = {}",
+///          args.x,
+///          args.y,
+///          args.x + args.y
+///        ).into()
+///      )
+///   )
+/// }
+/// ```
+pub trait RequestExtBody {
+    /// Return the Result of a payload parsed into a serde Deserializeable
+    /// type
+    ///
+    /// Currently only `application/x-www-form-urlencoded`
+    /// and `application/json` flavors of content type
+    /// are supported
+    ///
+    /// A [PayloadError](enum.PayloadError.html) will be returned for undeserializable
+    /// payloads. If no body is provided, `Ok(None)` will be returned.
+    fn payload<D>(&self) -> Result<Option<D>, PayloadError>
+    where
+        for<'de> D: Deserialize<'de>;
+}
+
+impl RequestExtBody for Request {
     fn payload<D>(&self) -> Result<Option<D>, PayloadError>
     where
         for<'de> D: Deserialize<'de>,
     {
+        println!("RequestExtWithPayload::payload");
         self.headers()
             .get(http::header::CONTENT_TYPE)
             .map(|ct| match ct.to_str() {
@@ -296,7 +340,8 @@ impl RequestExt for http::Request<Body> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Body, Request, RequestExt};
+    use crate::{Body, Request, RequestExt, RequestExtBody};
+    use hyper::Body as HyperBody;
     use serde::Deserialize;
 
     #[test]
@@ -333,7 +378,7 @@ mod tests {
             foo: String,
             baz: usize,
         }
-        let request = http::Request::builder()
+        let request: Request = http::Request::builder()
             .header("Content-Type", "application/x-www-form-urlencoded")
             .body(Body::from("foo=bar&baz=2"))
             .expect("failed to build request");
@@ -354,7 +399,7 @@ mod tests {
             foo: String,
             baz: usize,
         }
-        let request = http::Request::builder()
+        let request: Request = http::Request::builder()
             .header("Content-Type", "application/json")
             .body(Body::from(r#"{"foo":"bar", "baz": 2}"#))
             .expect("failed to build request");
@@ -375,7 +420,7 @@ mod tests {
             foo: String,
             baz: usize,
         }
-        let request = http::Request::builder()
+        let request: Request = http::Request::builder()
             .header("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
             .body(Body::from("foo=bar&baz=2"))
             .expect("failed to build request");
@@ -396,7 +441,7 @@ mod tests {
             foo: String,
             baz: usize,
         }
-        let request = http::Request::builder()
+        let request: Request = http::Request::builder()
             .header("Content-Type", "application/json; charset=UTF-8")
             .body(Body::from(r#"{"foo":"bar", "baz": 2}"#))
             .expect("failed to build request");
@@ -417,7 +462,7 @@ mod tests {
             foo: String,
             baz: usize,
         }
-        let request = http::Request::builder()
+        let request: Request = http::Request::builder()
             .body(Body::from(r#"{"foo":"bar", "baz": 2}"#))
             .expect("failed to bulid request");
         let payload: Option<Payload> = request.payload().unwrap_or_default();
@@ -426,7 +471,10 @@ mod tests {
 
     #[test]
     fn requests_can_mock_raw_http_path_ext() {
-        let request = Request::default().with_raw_http_path("/raw-path");
+        let request: http::Request<HyperBody> = http::Request::builder()
+        .body(HyperBody::from(r#"foo=bar"#))
+        .expect("failed to build request")
+        .with_raw_http_path("/raw-path");
         assert_eq!("/raw-path", request.raw_http_path().as_str());
     }
 }

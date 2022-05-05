@@ -67,7 +67,7 @@ impl Error for PayloadError {
 ///
 /// # Examples
 ///
-/// We can retrieve the stage variables and return it to the user.
+/// We can retrieve the stage variables from API Gateway and return it to the user.
 ///
 /// ```rust,no_run
 /// use lambda_http::{service_fn, Error, Context, Body, IntoResponse, Request, Response, RequestExt};

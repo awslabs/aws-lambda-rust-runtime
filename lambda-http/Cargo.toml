@@ -26,7 +26,7 @@ lambda_runtime = { path = "../lambda-runtime", version = "0.5" }
 serde = { version = "^1", features = ["derive"] }
 serde_json = "^1"
 serde_urlencoded = "0.7.0"
-query_map = { version = "0.4", features = ["url-query"] }
+query_map = { version = "0.5", features = ["url-query"] }
 
 [dev-dependencies]
 log = "^0.4"

@@ -1,6 +1,6 @@
 [package]
 name = "lambda_http"
-version = "0.5.1"
+version = "0.5.2"
 authors = ["Doug Tangren"]
 edition = "2018"
 description = "Application Load Balancer and API Gateway event types for AWS Lambda"
@@ -26,7 +26,7 @@ lambda_runtime = { path = "../lambda-runtime", version = "0.5" }
 serde = { version = "^1", features = ["derive"] }
 serde_json = "^1"
 serde_urlencoded = "0.7.0"
-query_map = { version = "0.4", features = ["url-query"] }
+query_map = { version = "0.5", features = ["url-query"] }
 
 [dev-dependencies]
 log = "^0.4"

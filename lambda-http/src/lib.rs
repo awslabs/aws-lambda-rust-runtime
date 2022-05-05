@@ -23,7 +23,9 @@
 //! async fn main() -> Result<(), Error> {
 //!     // initialize dependencies once here for the lifetime of your
 //!     // lambda task
-//!     lambda_http::run(service_fn(|request| async { Ok("👋 world!") })).await?;
+//!     lambda_http::run(service_fn(|request| async {
+//!         Result::<&str, std::convert::Infallible>::Ok("👋 world!")
+//!     })).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -44,7 +46,7 @@
 //!
 //! async fn hello(
 //!     request: Request
-//! ) -> Result<impl IntoResponse, Error> {
+//! ) -> Result<impl IntoResponse, std::convert::Infallible> {
 //!     let _context = request.lambda_context();
 //!
 //!     Ok(format!(
@@ -119,9 +121,9 @@ pub struct Adapter<'a, R, S> {
     _phantom_data: PhantomData<&'a R>,
 }
 
-impl<'a, R, S> From<S> for Adapter<'a, R, S>
+impl<'a, R, S, E> From<S> for Adapter<'a, R, S>
 where
-    S: Service<Request, Response = R, Error = Error>,
+    S: Service<Request, Response = R, Error = E>,
     S::Future: 'a,
     R: IntoResponse,
 {
@@ -133,14 +135,14 @@ where
     }
 }
 
-impl<'a, R, S> Service<LambdaEvent<LambdaRequest>> for Adapter<'a, R, S>
+impl<'a, R, S, E> Service<LambdaEvent<LambdaRequest>> for Adapter<'a, R, S>
 where
-    S: Service<Request, Response = R, Error = Error>,
+    S: Service<Request, Response = R, Error = E>,
     S::Future: 'a,
     R: IntoResponse,
 {
     type Response = LambdaResponse;
-    type Error = Error;
+    type Error = E;
     type Future = TransformResponse<'a, R, Self::Error>;
 
     fn poll_ready(&mut self, _cx: &mut core::task::Context<'_>) -> core::task::Poll<Result<(), Self::Error>> {
@@ -160,11 +162,12 @@ where
 ///
 /// This takes care of transforming the LambdaEvent into a [`Request`] and then
 /// converting the result into a [`LambdaResponse`].
-pub async fn run<'a, R, S>(handler: S) -> Result<(), Error>
+pub async fn run<'a, R, S, E>(handler: S) -> Result<(), Error>
 where
-    S: Service<Request, Response = R, Error = Error>,
+    S: Service<Request, Response = R, Error = E>,
     S::Future: 'a,
     R: IntoResponse,
+    E: std::fmt::Debug + std::fmt::Display,
 {
     lambda_runtime::run(Adapter::from(handler)).await
 }

@@ -239,7 +239,7 @@ $ unzip -o \
 
 ### Cargo Lambda
 
-[Cargo Lambda](https://crates.io/crates/cargo-lambda) provides a local server that emulates the AWS Lambda control plane. This server works on Windows, Linux, and MacOS. I the root of your Lambda project, run the subcommand `cargo lambda start` to start the server. Your function will be compiled when the server receives the first request to process. Use the subcommand `cargo lambda invoke` to send requests to your function. The `start` subcommand will watch your function's code for changes, and it will compile it every time you save the source after making changes.
+[Cargo Lambda](https://crates.io/crates/cargo-lambda) provides a local server that emulates the AWS Lambda control plane. This server works on Windows, Linux, and MacOS. In the root of your Lambda project, run the subcommand `cargo lambda start` to start the server. Your function will be compiled when the server receives the first request to process. Use the subcommand `cargo lambda invoke` to send requests to your function. The `start` subcommand will watch your function's code for changes, and it will compile it every time you save the source after making changes.
 
 You can read more about how [cargo lambda start](https://github.com/calavera/cargo-lambda#start) and [cargo lambda invoke](https://github.com/calavera/cargo-lambda#invoke) work on the [project's README](https://github.com/calavera/cargo-lambda#cargo-lambda).
 

@@ -17,7 +17,7 @@ travis-ci = { repository = "awslabs/aws-lambda-rust-runtime" }
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-aws_lambda_events = { version = "^0.6", default-features = false, features = ["alb", "apigw"]}
+aws_lambda_events = { version = "^0.6.3", default-features = false, features = ["alb", "apigw"]}
 base64 = "0.13.0"
 bytes = "1"
 http = "0.2"

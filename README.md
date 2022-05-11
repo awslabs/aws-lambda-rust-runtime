@@ -32,6 +32,20 @@ async fn func(event: LambdaEvent<Value>) -> Result<Value, Error> {
 }
 ```
 
+To run this function, you need the `lambda_runtime`, `serde_json` and `tokio` crates. An example `Cargo.toml` looks like this:
+
+```
+[package]
+name = "rust-lambda-rust-runtime-example"
+version = "0.0.1
+edition = "2021"
+
+[dependencies]
+lambda_runtime = "*"
+serde_json = "*
+tokio = "*
+
+```
 ## Building and deploying your Lambda functions
 
 There are currently multiple ways of building this package: manually with the AWS CLI, with [AWS SAM](https://github.com/aws/aws-sam-cli), and with the [Serverless framework](https://serverless.com/framework/).

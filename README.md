@@ -38,7 +38,7 @@ To run this function, you need the `lambda_runtime`, `serde_json` and `tokio` cr
 [package]
 name = "basic"
 version = "0.0.1
-edition = "2021"
+edition = "2018"
 
 [dependencies]
 lambda_runtime = "*"

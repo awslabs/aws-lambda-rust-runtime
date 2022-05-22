@@ -171,7 +171,7 @@ $ cat output.json  # Prints: {"msg": "Command Say Hi! executed."}
 
 Alternatively, you can build a Rust-based Lambda function declaratively using the [Serverless framework Rust plugin](https://github.com/softprops/serverless-rust).
 
-A number of getting started Serverless application templates exist to get you up and running quickly
+A number of getting started Serverless application templates exist to get you up and running quickly:
 
 - a minimal [echo function](https://github.com/softprops/serverless-aws-rust) to demonstrate what the smallest Rust function setup looks like
 - a minimal [http function](https://github.com/softprops/serverless-aws-rust-http) to demonstrate how to interface with API Gateway using Rust's native [http](https://crates.io/crates/http) crate (note this will be a git dependency until 0.2 is published)
@@ -188,7 +188,7 @@ $ npx serverless install \
   && npm install --silent
 ```
 
-Deploy it using the standard serverless workflow
+Deploy it using the standard serverless workflow:
 
 ```bash
 # build, package, and deploy service to aws lambda
@@ -205,7 +205,7 @@ $ npx serverless invoke -f hello -d '{"foo":"bar"}'
 
 Alternatively, you can build a Rust-based Lambda function in a [docker mirror of the AWS Lambda provided runtime with the Rust toolchain preinstalled](https://github.com/rust-serverless/lambda-rust).
 
-Running the following command will start a ephemeral docker container which will build your Rust application and produce a zip file containing its binary auto-renamed to `bootstrap` to meet the AWS Lambda's expectations for binaries under `target/lambda_runtime/release/{your-binary-name}.zip`, typically this is just the name of your crate if you are using the cargo default binary (i.e. `main.rs`)
+Running the following command will start an ephemeral docker container, which will build your Rust application and produce a zip file containing its binary auto-renamed to `bootstrap` to meet the AWS Lambda's expectations for binaries under `target/lambda_runtime/release/{your-binary-name}.zip`. Typically, this is just the name of your crate if you are using the cargo default binary (i.e. `main.rs`):
 
 ```bash
 # build and package deploy-ready artifact
@@ -216,7 +216,7 @@ $ docker run --rm \
     rustserverless/lambda-rust
 ```
 
-With your application build and packaged, it's ready to ship to production. You can also invoke it locally to verify is behavior using the [lambdaci :provided docker container](https://hub.docker.com/r/lambci/lambda/) which is also a mirror of the AWS Lambda provided runtime with build dependencies omitted.
+With your application build and packaged, it's ready to ship to production. You can also invoke it locally to verify is behavior using the [lambci :provided docker container](https://hub.docker.com/r/lambci/lambda/), which is also a mirror of the AWS Lambda provided runtime with build dependencies omitted:
 
 ```bash
 # start a docker container replicating the "provided" lambda runtime
@@ -245,7 +245,7 @@ You can read more about how [cargo lambda start](https://github.com/calavera/car
 
 ### Lambda Debug Proxy
 
-Lambdas can be run and debugged locally using a special [Lambda debug proxy](https://github.com/rimutaka/lambda-debug-proxy) (a non-AWS repo maintained by @rimutaka), which is a Lambda function that forwards incoming requests to one AWS SQS queue and reads responses from another queue. A local proxy running on your development computer reads the queue, calls your lambda locally and sends back the response. This approach allows debugging of Lambda functions locally while being part of your AWS workflow. The lambda handler code does not need to be modified between the local and AWS versions.
+Lambdas can be run and debugged locally using a special [Lambda debug proxy](https://github.com/rimutaka/lambda-debug-proxy) (a non-AWS repo maintained by @rimutaka), which is a Lambda function that forwards incoming requests to one AWS SQS queue and reads responses from another queue. A local proxy running on your development computer reads the queue, calls your Lambda locally and sends back the response. This approach allows debugging of Lambda functions locally while being part of your AWS workflow. The Lambda handler code does not need to be modified between the local and AWS versions.
 
 ## `lambda_runtime`
 
@@ -259,7 +259,7 @@ This project does not currently include Lambda event struct definitions. Instead
 
 ### Custom event objects
 
-To serialize and deserialize events and responses, we suggest using the use the [`serde`](https://github.com/serde-rs/serde) library. To receive custom events, annotate your structure with Serde's macros:
+To serialize and deserialize events and responses, we suggest using the [`serde`](https://github.com/serde-rs/serde) library. To receive custom events, annotate your structure with Serde's macros:
 
 ```rust
 use serde::{Serialize, Deserialize};

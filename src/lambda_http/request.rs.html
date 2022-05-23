@@ -620,6 +620,17 @@
 <span id="615">615</span>
 <span id="616">616</span>
 <span id="617">617</span>
+<span id="618">618</span>
+<span id="619">619</span>
+<span id="620">620</span>
+<span id="621">621</span>
+<span id="622">622</span>
+<span id="623">623</span>
+<span id="624">624</span>
+<span id="625">625</span>
+<span id="626">626</span>
+<span id="627">627</span>
+<span id="628">628</span>
 </pre><pre class="rust"><code><span class="doccomment">//! ALB and API Gateway request adaptations</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! Typically these are exposed via the `request_context`</span>
@@ -685,6 +696,17 @@
     <span class="kw">let</span> <span class="ident">http_method</span> <span class="op">=</span> <span class="ident">ag</span>.<span class="ident">request_context</span>.<span class="ident">http</span>.<span class="ident">method</span>.<span class="ident">clone</span>();
     <span class="kw">let</span> <span class="ident">raw_path</span> <span class="op">=</span> <span class="ident">ag</span>.<span class="ident">raw_path</span>.<span class="ident">unwrap_or_default</span>();
 
+    <span class="comment">// don&#39;t use the query_string_parameters from API GW v2 to</span>
+    <span class="comment">// populate the QueryStringParameters extension because</span>
+    <span class="comment">// the value is not compatible with the whatgw specification.</span>
+    <span class="comment">// See: https://github.com/awslabs/aws-lambda-rust-runtime/issues/470</span>
+    <span class="comment">// See: https://url.spec.whatwg.org/#urlencoded-parsing</span>
+    <span class="kw">let</span> <span class="ident">query_string_parameters</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">query</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">ag</span>.<span class="ident">raw_query_string</span> {
+        <span class="ident">query</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>() <span class="comment">// this is Infallible</span>
+    } <span class="kw">else</span> {
+        <span class="ident">ag</span>.<span class="ident">query_string_parameters</span>
+    };
+
     <span class="kw">let</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">http::Request::builder</span>()
         .<span class="ident">uri</span>({
             <span class="kw">let</span> <span class="ident">scheme</span> <span class="op">=</span> <span class="ident">ag</span>
@@ -709,7 +731,7 @@
             <span class="ident">url</span>
         })
         .<span class="ident">extension</span>(<span class="ident">RawHttpPath</span>(<span class="ident">raw_path</span>))
-        .<span class="ident">extension</span>(<span class="ident">QueryStringParameters</span>(<span class="ident">ag</span>.<span class="ident">query_string_parameters</span>))
+        .<span class="ident">extension</span>(<span class="ident">QueryStringParameters</span>(<span class="ident">query_string_parameters</span>))
         .<span class="ident">extension</span>(<span class="ident">PathParameters</span>(<span class="ident">QueryMap::from</span>(<span class="ident">ag</span>.<span class="ident">path_parameters</span>)))
         .<span class="ident">extension</span>(<span class="ident">StageVariables</span>(<span class="ident">QueryMap::from</span>(<span class="ident">ag</span>.<span class="ident">stage_variables</span>)))
         .<span class="ident">extension</span>(<span class="ident">RequestContext::ApiGatewayV2</span>(<span class="ident">ag</span>.<span class="ident">request_context</span>));

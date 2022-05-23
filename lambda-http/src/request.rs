@@ -63,6 +63,17 @@ fn into_api_gateway_v2_request(ag: ApiGatewayV2httpRequest) -> http::Request<Bod
     let http_method = ag.request_context.http.method.clone();
     let raw_path = ag.raw_path.unwrap_or_default();
 
+    // don't use the query_string_parameters from API GW v2 to
+    // populate the QueryStringParameters extension because
+    // the value is not compatible with the whatgw specification.
+    // See: https://github.com/awslabs/aws-lambda-rust-runtime/issues/470
+    // See: https://url.spec.whatwg.org/#urlencoded-parsing
+    let query_string_parameters = if let Some(query) = &ag.raw_query_string {
+        query.parse().unwrap() // this is Infallible
+    } else {
+        ag.query_string_parameters
+    };
+
     let builder = http::Request::builder()
         .uri({
             let scheme = ag
@@ -87,7 +98,7 @@ fn into_api_gateway_v2_request(ag: ApiGatewayV2httpRequest) -> http::Request<Bod
             url
         })
         .extension(RawHttpPath(raw_path))
-        .extension(QueryStringParameters(ag.query_string_parameters))
+        .extension(QueryStringParameters(query_string_parameters))
         .extension(PathParameters(QueryMap::from(ag.path_parameters)))
         .extension(StageVariables(QueryMap::from(ag.stage_variables)))
         .extension(RequestContext::ApiGatewayV2(ag.request_context));

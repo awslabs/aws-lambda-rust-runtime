@@ -9,9 +9,36 @@ This package makes it easy to run AWS Lambda Functions written in Rust. This wor
 - [![Docs](https://docs.rs/lambda-extension/badge.svg)](https://docs.rs/lambda-extension) **`lambda-extension`** is a library that makes it easy to write Lambda Runtime Extensions in Rust.
 - [![Docs](https://docs.rs/lambda_runtime_api_client/badge.svg)](https://docs.rs/lambda_runtime_api_client) **`lambda-runtime-api-client`** is a shared library between the lambda runtime and lambda extension libraries that includes a common API client to talk with the AWS Lambda Runtime API.
 
-## Example function
+## Getting started
 
-The code below creates a simple function that receives an event with a `firstName` field and returns a message to the caller. Notice: this crate is tested against latest stable Rust.
+The easiest way to start writing Lambda functions with Rust is by using Cargo-Lambda. This Cargo subcommand provides several commands to help you in your journey with Rust on AWS Lambda.
+
+You can install `cargo-lambda` with a package manager like Homebrew:
+
+```bash
+brew tap cargo-lambda/cargo-lambda
+brew install cargo-lambda
+```
+
+Or by compiling it from source:
+
+```bash
+cargo install cargo-lambda
+```
+
+See other installation options in [the cargo-lambda documentation](https://github.com/cargo-lambda/cargo-lambda#installation).
+
+### Your first function
+
+To create your first function, run `cargo-lambda` with the subcomand `new`. This command will generate a Rust package with the initial source code for your function:
+
+```
+cargo lambda new YOUR_FUNCTION_NAME
+```
+
+### Example function
+
+If you'd like to manually create your first function, the code below shows you a simple function that receives an event with a `firstName` field and returns a message to the caller.
 
 ```rust,no_run
 use lambda_runtime::{service_fn, LambdaEvent, Error};
@@ -34,32 +61,18 @@ async fn func(event: LambdaEvent<Value>) -> Result<Value, Error> {
 
 ## Building and deploying your Lambda functions
 
-There are currently multiple ways of building this package: manually with the AWS CLI, with [AWS SAM](https://github.com/aws/aws-sam-cli), and with the [Serverless framework](https://serverless.com/framework/).
+If you already have `cargo-lambda` installed in your machine, run the next command to build your function:
+
+```
+cargo lambda build --release
+```
+
+There are other ways of building your function: manually with the AWS CLI, with [AWS SAM](https://github.com/aws/aws-sam-cli), and with the [Serverless framework](https://serverless.com/framework/).
+
 
 ### 1. Cross-compiling your Lambda functions
 
-At the time of writing, the ability to cross compile to a different architecture is limited. For example, you might experience issues if you are compiling from a MacOS machine, or from a Linux machine with a different architecture (e.g. compiling to Arm64 from x86_64). The most robust way we've found is using [`cargo-zigbuild`](https://github.com/messense/cargo-zigbuild) to compile for the target architecture.
-
-#### 1.1. Setup the cross-compilation environment
-
-_You can skip this step if you are compiling for the same target as your host architecture (e.g. x86_64 Linux to x86_64 Linux), unless you're building for an Amazon Linux 1 runtime._
-
-Run this script once to add your desired target:
-
-```bash
-# For Arm64 Lambda functions
-rustup target add aarch64-unknown-linux-gnu
-# For x86_64 Lambda functions
-rustup target add x86_64-unknown-linux-gnu
-```
-
-Once this is done, install `cargo-lambda`:
-
-```bash
-cargo install cargo-lambda
-```
-
-This Cargo subcommand will give you the option to install [Zig](https://ziglang.org/) to use as the linker. You can also install [Zig](https://ziglang.org/) using the instructions in their [installation guide](https://ziglang.org/learn/getting-started/#installing-zig).
+By default, `cargo-lambda` builds your functions to run on x86_64 architectures. If you'd like to use a different architecture, use the options described below.
 
 #### 1.2. Build your Lambda functions
 
@@ -68,13 +81,12 @@ __Amazon Linux 2__
 We recommend you to use Amazon Linux 2 runtimes (such as `provided.al2`) as much as possible for building Lambda functions in Rust. To build your Lambda functions for Amazon Linux 2 runtimes, run:
 
 ```bash
-# Note: replace "aarch64" with "x86_64" if you are building for x86_64
-cargo lambda build --release --target aarch64-unknown-linux-gnu
+cargo lambda build --release --arm64
 ```
 
 __Amazon Linux 1__
 
-Amazon Linux 1 uses glibc version 2.17, while Rust binaries need glibc version 2.18 or later by default. However, with `cargo-zigbuild`, you can specify a different version of glibc.
+Amazon Linux 1 uses glibc version 2.17, while Rust binaries need glibc version 2.18 or later by default. However, with `cargo-lambda`, you can specify a different version of glibc.
 
 If you are building for Amazon Linux 1, or you want to support both Amazon Linux 2 and 1, run:
 
@@ -89,15 +101,50 @@ For [a custom runtime](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-cus
 
 You can find the `bootstrap` binary for your function under the `target/lambda` directory.
 
-#### 2.1. Deploying with the AWS CLI
+#### 2.2. Deploying with cargo-lambda
 
-First, you will need to create a ZIP archive of your Lambda function. Cargo-lambda can do that for you automatically when it builds your binary if you add the `output-format` flag. For example, if you are using the `basic` example and aarch64-unknown-linux-gnu as your target, you can run:
+You can use `cargo-lambda` for simple function deployments. Once you've built your code with one of the options described earlier, use the `deploy` subcommand to upload your function to AWS:
 
 ```bash
-cargo lambda build --release --target aarch64-unknown-linux-gnu --output-format zip
+cargo lambda deploy \
+  --iam-role arn:aws:iam::XXXXXXXXXXXXX:role/your_lambda_execution_role
 ```
 
-Now that we have a deployment package (`target/lambda/basic/bootstrap.zip`), we can use the [AWS CLI](https://aws.amazon.com/cli/) to create a new Lambda function. Make sure to replace the execution role with an existing role in your account!
+> **warning**
+> Make sure to replace the execution role with an existing role in your account!
+
+This command will create a Lambda function with the same name of your rust package. You can change the name
+of the function by adding the argument at the end of the command:
+
+
+```bash
+cargo lambda deploy \
+  --iam-role arn:aws:iam::XXXXXXXXXXXXX:role/your_lambda_execution_role \
+  my-first-lambda-function
+```
+
+> **info**
+> See other deployment options in [the cargo-lambda documentation](https://github.com/cargo-lambda/cargo-lambda#deploy).
+
+You can test the function with `cargo-lambda`'s invoke subcommand:
+
+```bash
+cargo lambda invoke --remote \
+  --data-ascii '{"command": "hi"}' \
+  --output-format json \
+  my-first-lambda-function
+```
+
+#### 2.2. Deploying with the AWS CLI
+
+You can also use the AWS CLI to deploy your Rust functions. First, you will need to create a ZIP archive of your  function. Cargo-lambda can do that for you automatically when it builds your binary if you add the `output-format` flag:
+
+```bash
+cargo lambda build --release --arm64 --output-format zip
+```
+
+You can find the resulting zip file in `target/lambda/YOUR_PACKAGE/bootstrap.zip`. Use that file path to deploy your function with the [AWS CLI](https://aws.amazon.com/cli/):
+
 
 ```bash
 $ aws lambda create-function --function-name rustTest \
@@ -108,6 +155,9 @@ $ aws lambda create-function --function-name rustTest \
   --environment Variables={RUST_BACKTRACE=1} \
   --tracing-config Mode=Active
 ```
+
+> **warning**
+> Make sure to replace the execution role with an existing role in your account!
 
 You can now test the function using the AWS CLI or the AWS Lambda console
 
@@ -123,7 +173,7 @@ $ cat output.json  # Prints: {"msg": "Command Say Hi! executed."}
 **Note:** `--cli-binary-format raw-in-base64-out` is a required
   argument when using the AWS CLI version 2. [More Information](https://docs.aws.amazon.com/cli/latest/userguide/cliv2-migration.html#cliv2-migration-binaryparam)
 
-#### 2.2. AWS Serverless Application Model (SAM)
+#### 2.3. AWS Serverless Application Model (SAM)
 
 You can use Lambda functions built in Rust with the [AWS Serverless Application Model (SAM)](https://aws.amazon.com/serverless/sam/). To do so, you will need to install the [AWS SAM CLI](https://github.com/aws/aws-sam-cli), which will help you package and deploy your Lambda functions in your AWS account.
 
@@ -167,7 +217,7 @@ $ aws lambda invoke
 $ cat output.json  # Prints: {"msg": "Command Say Hi! executed."}
 ```
 
-#### 2.3. Serverless Framework
+#### 2.4. Serverless Framework
 
 Alternatively, you can build a Rust-based Lambda function declaratively using the [Serverless framework Rust plugin](https://github.com/softprops/serverless-rust).
 
@@ -201,7 +251,7 @@ Invoke it using serverless framework or a configured AWS integrated trigger sour
 $ npx serverless invoke -f hello -d '{"foo":"bar"}'
 ```
 
-### Docker
+#### 2.5. Docker
 
 Alternatively, you can build a Rust-based Lambda function in a [docker mirror of the AWS Lambda provided runtime with the Rust toolchain preinstalled](https://github.com/rust-serverless/lambda-rust).
 
@@ -237,6 +287,39 @@ $ unzip -o \
 
 ## Local development and testing
 
+### Testing your code with unit and integration tests
+
+AWS Lambda events are plain structures deserialized from JSON objects.
+If your function handler uses the standard runtime, you can use `serde` to deserialize
+your text fixtures into the structures, and call your handler directly:
+
+```rust,no_run
+#[test]
+fn test_my_lambda_handler() {
+  let input = serde_json::from_str("{\"command\": \"Say Hi!\"}").expect("failed to parse event");
+  let context = lambda_runtime::types::Context::default();
+
+  let event = lambda_runtime::types::LambdaEvent::new(input, context);
+
+  my_lambda_handler(event).expect("failed to handle event");
+}
+```
+
+If you're using `lambda_http` to receive HTTP events, you can also create `http_lambda::Request`
+structures from plain text fixtures:
+
+```rust,no_run
+#[test]
+fn test_my_lambda_handler() {
+  let input = include_str!("apigw_proxy_request.json");
+
+  let request = lambda_http::request::from_str(input)
+    .expect("failed to create request");
+
+  let response = my_lambda_handler(request).expect("failed to handle request");
+}
+```
+
 ### Cargo Lambda
 
 [Cargo Lambda](https://crates.io/crates/cargo-lambda) provides a local server that emulates the AWS Lambda control plane. This server works on Windows, Linux, and MacOS. In the root of your Lambda project, run the subcommand `cargo lambda start` to start the server. Your function will be compiled when the server receives the first request to process. Use the subcommand `cargo lambda invoke` to send requests to your function. The `start` subcommand will watch your function's code for changes, and it will compile it every time you save the source after making changes.
@@ -261,7 +344,7 @@ This project does not currently include Lambda event struct definitions. Instead
 
 To serialize and deserialize events and responses, we suggest using the [`serde`](https://github.com/serde-rs/serde) library. To receive custom events, annotate your structure with Serde's macros:
 
-```rust
+```rust,no_run
 use serde::{Serialize, Deserialize};
 use serde_json::json;
 use std::error::Error;

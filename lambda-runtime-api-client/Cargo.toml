@@ -12,6 +12,6 @@ readme = "README.md"
 
 [dependencies]
 http = "0.2"
-hyper = { version = "0.14", features = ["http1", "client", "server", "stream", "runtime"] }
+hyper = { version = "0.14", features = ["http1", "client", "stream", "tcp"] }
 tower-service = "0.3"
 tokio = { version = "1.0", features = ["io-util"] }

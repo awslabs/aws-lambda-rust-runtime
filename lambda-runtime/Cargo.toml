@@ -16,14 +16,14 @@ simulated = []
 
 [dependencies]
 tokio = { version = "1.0", features = ["macros", "io-util", "sync", "rt-multi-thread"] }
-hyper = { version = "0.14", features = ["http1", "client", "server", "stream", "runtime"] }
+hyper = { version = "0.14", features = ["http1", "client", "stream", "tcp"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "^1"
 bytes = "1.0"
 http = "0.2"
 async-stream = "0.3"
 tracing = { version = "0.1", features = ["log"] }
-tower = { version = "0.4", features = ["full"] }
+tower = { version = "0.4", features = ["util"] }
 tokio-stream = "0.1.2"
 lambda_runtime_api_client = { version = "0.5", path = "../lambda-runtime-api-client" }
 

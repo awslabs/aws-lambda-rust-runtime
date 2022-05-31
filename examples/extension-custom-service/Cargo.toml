@@ -1,0 +1,20 @@
+[package]
+name = "extension-custom-service"
+version = "0.1.0"
+edition = "2021"
+
+
+# Use cargo-edit(https://github.com/killercup/cargo-edit#installation)
+# to manage dependencies.
+# Running `cargo add DEPENDENCY_NAME` will
+# add the latest version of a dependency to the list,
+# and it will keep the alphabetic ordering for you.
+
+[dependencies]
+lambda-extension = { path = "../../lambda-extension" }
+serde = "1.0.136"
+tokio = { version = "1", features = ["macros"] }
+tracing = { version = "0.1", features = ["log"] }
+tracing-subscriber = { version = "0.3", default-features = false, features = ["fmt"] }
+
+

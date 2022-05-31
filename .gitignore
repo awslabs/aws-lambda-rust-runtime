@@ -1,4 +1,4 @@
-/target
+target
 /.cargo
 lambda-runtime/libtest.rmeta
 lambda-integration-tests/target

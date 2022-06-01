@@ -6,3 +6,5 @@ members = [
     "lambda-runtime",
     "lambda-extension"
 ]
+
+exclude = ["examples"]

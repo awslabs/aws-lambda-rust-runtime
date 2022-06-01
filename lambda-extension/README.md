@@ -81,16 +81,33 @@ Regardless of how you deploy them, the extensions MUST be compiled against the s
 
 ### Building extensions
 
-Once you've decided which target you'll use, you can install it by running the next `rustup` command:
+- Install [cargo-lambda](https://github.com/cargo-lambda/cargo-lambda#installation)
 
-```bash
-$ rustup target add x86_64-unknown-linux-musl
+- Build the extension with:
+
+```
+cargo lambda build --release --extension
 ```
 
-Then, you can compile the extension against that target:
+If you want to run the extension in ARM processors, add the `--arm64` flag to the previous command:
 
-```bash
-$ cargo build -p lambda_extension --example basic --release --target x86_64-unknown-linux-musl
+```
+cargo lambda build --release --extension --arm64
 ```
 
-This previous command will generate a binary file in `target/x86_64-unknown-linux-musl/release/examples` called `basic`. When the extension is registered with the [Runtime Extensions API](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-extensions-api.html#runtimes-extensions-api-reg), that's the name that the extension will be registered with. If you want to register the extension with a different name, you only have to rename this binary file and deploy it with the new name.
+This previous command will generate a binary file in `target/lambda/extensions` called `basic`. When the extension is registered with the [Runtime Extensions API](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-extensions-api.html#runtimes-extensions-api-reg), that's the name that the extension will be registered with. If you want to register the extension with a different name, you only have to rename this binary file and deploy it with the new name.
+
+### Deploying extensions
+
+- Make sure you have the right credentials in your terminal by running the AWS CLI configure command:
+
+```
+aws configure
+```
+
+- Deploy the extension as a layer with:
+
+```
+cargo lambda deploy --extension
+```
+

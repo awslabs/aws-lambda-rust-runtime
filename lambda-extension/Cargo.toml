@@ -24,6 +24,3 @@ tokio = { version = "1.0", features = ["macros", "io-util", "sync", "rt-multi-th
 tokio-stream = "0.1.2"
 tower = { version = "0.4", features = ["make", "util"] }
 
-[dev-dependencies]
-simple-error = "0.2"
-tracing-subscriber = "0.3"

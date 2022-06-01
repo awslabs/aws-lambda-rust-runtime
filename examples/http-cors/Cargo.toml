@@ -1,0 +1,21 @@
+[package]
+name = "http-cors"
+version = "0.1.0"
+edition = "2021"
+
+
+# Use cargo-edit(https://github.com/killercup/cargo-edit#installation)
+# to manage dependencies.
+# Running `cargo add DEPENDENCY_NAME` will
+# add the latest version of a dependency to the list,
+# and it will keep the alphabetic ordering for you.
+
+[dependencies]
+lambda_http = { path = "../../lambda-http" }
+lambda_runtime = { path = "../../lambda-runtime" }
+tokio = { version = "1", features = ["macros"] }
+tower-http = { version = "0.3.3", features = ["cors"] }
+tracing = { version = "0.1", features = ["log"] }
+tracing-subscriber = { version = "0.3", default-features = false, features = ["fmt"] }
+
+

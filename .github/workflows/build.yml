@@ -81,6 +81,20 @@ jobs:
       - name: Run clippy check
         run: cargo clippy
 
+  check-examples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: clippy
+          override: true
+      - name: Check examples
+        working-directory: examples
+        shell: bash
+        run: ./check-examples.sh
+
   # publish rustdoc to a gh-pages branch on pushes to main
   # this can be helpful to those depending on the mainline branch
   publish-docs:

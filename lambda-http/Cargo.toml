@@ -32,4 +32,4 @@ query_map = { version = "0.5", features = ["url-query"] }
 log = "^0.4"
 maplit = "1.0"
 tokio = { version = "1.0", features = ["macros"] }
-tower-http = { version = "0.2", features = ["cors"] }
+

@@ -14,6 +14,8 @@ use http::header::HeaderName;
 use query_map::QueryMap;
 use serde::Deserialize;
 use serde_json::error::Error as JsonError;
+use std::future::Future;
+use std::pin::Pin;
 use std::{io::Read, mem};
 
 /// Internal representation of an Lambda http event from
@@ -45,6 +47,9 @@ impl LambdaRequest {
     }
 }
 
+/// RequestFuture type
+pub type RequestFuture<'a, R, E> = Pin<Box<dyn Future<Output = Result<R, E>> + 'a>>;
+
 /// Represents the origin from which the lambda was requested from.
 #[doc(hidden)]
 #[derive(Debug)]
@@ -57,6 +62,17 @@ pub enum RequestOrigin {
     Alb,
     /// API Gateway WebSocket
     WebSocket,
+}
+
+impl RequestOrigin {
+    pub(crate) fn clone(&self) -> RequestOrigin {
+        match self {
+            RequestOrigin::ApiGatewayV1 => RequestOrigin::ApiGatewayV1,
+            RequestOrigin::ApiGatewayV2 => RequestOrigin::ApiGatewayV2,
+            RequestOrigin::Alb => RequestOrigin::Alb,
+            RequestOrigin::WebSocket => RequestOrigin::WebSocket,
+        }
+    }
 }
 
 fn into_api_gateway_v2_request(ag: ApiGatewayV2httpRequest) -> http::Request<Body> {

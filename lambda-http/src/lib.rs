@@ -114,6 +114,7 @@ where
             match self.fut_req.as_mut().poll(cx) {
                 Poll::Ready(Ok(resp)) => {
                     self.fut_res = Some(resp.into_response());
+                    cx.waker().wake_by_ref();
                     Poll::Pending
                 }
                 Poll::Ready(Err(err)) => Poll::Ready(Err(err)),

@@ -126,6 +126,18 @@ impl IntoResponse for &str {
     }
 }
 
+impl IntoResponse for &[u8] {
+    fn into_response(self) -> ResponseFuture {
+        Box::pin(ready(Response::new(Body::from(self))))
+    }
+}
+
+impl IntoResponse for Vec<u8> {
+    fn into_response(self) -> ResponseFuture {
+        Box::pin(ready(Response::new(Body::from(self))))
+    }
+}
+
 impl IntoResponse for serde_json::Value {
     fn into_response(self) -> ResponseFuture {
         Box::pin(async move {
@@ -192,6 +204,15 @@ mod tests {
         let response = "text".into_response().await;
         match response.body() {
             Body::Text(text) => assert_eq!(text, "text"),
+            _ => panic!("invalid body"),
+        }
+    }
+
+    #[tokio::test]
+    async fn bytes_into_response() {
+        let response = "text".as_bytes().into_response().await;
+        match response.body() {
+            Body::Binary(data) => assert_eq!(data, "text".as_bytes()),
             _ => panic!("invalid body"),
         }
     }

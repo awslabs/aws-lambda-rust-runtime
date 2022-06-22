@@ -29,7 +29,7 @@ pub enum LambdaResponse {
     Alb(AlbTargetGroupResponse),
 }
 
-/// Tranformation from http type to internal type
+/// Transformation from http type to internal type
 impl LambdaResponse {
     pub(crate) fn from_response(request_origin: &RequestOrigin, value: Response<Body>) -> Self {
         let (parts, bod) = value.into_parts();

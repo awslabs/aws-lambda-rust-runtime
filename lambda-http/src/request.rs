@@ -76,21 +76,24 @@ fn into_api_gateway_v2_request(ag: ApiGatewayV2httpRequest) -> http::Request<Bod
 
     let builder = http::Request::builder()
         .uri({
-            let scheme = ag
-                .headers
-                .get(x_forwarded_proto())
-                .and_then(|s| s.to_str().ok())
-                .unwrap_or("https");
             let host = ag
                 .headers
                 .get(http::header::HOST)
                 .and_then(|s| s.to_str().ok())
-                .or(ag.request_context.domain_name.as_deref())
-                .unwrap_or_default();
-
+                .or(ag.request_context.domain_name.as_deref());
             let path = apigw_path_with_stage(&ag.request_context.stage, &raw_path);
-            let mut url = format!("{}://{}{}", scheme, host, path);
 
+            let mut url = match host {
+                None => path,
+                Some(host) => {
+                    let scheme = ag
+                        .headers
+                        .get(x_forwarded_proto())
+                        .and_then(|s| s.to_str().ok())
+                        .unwrap_or("https");
+                    format!("{}://{}{}", scheme, host, path)
+                }
+            };
             if let Some(query) = ag.raw_query_string {
                 url.push('?');
                 url.push_str(&query);
@@ -199,18 +202,20 @@ fn into_alb_request(alb: AlbTargetGroupRequest) -> http::Request<Body> {
 
     let builder = http::Request::builder()
         .uri({
-            let scheme = alb
-                .headers
-                .get(x_forwarded_proto())
-                .and_then(|s| s.to_str().ok())
-                .unwrap_or("https");
-            let host = alb
-                .headers
-                .get(http::header::HOST)
-                .and_then(|s| s.to_str().ok())
-                .unwrap_or_default();
+            let host = alb.headers.get(http::header::HOST).and_then(|s| s.to_str().ok());
 
-            let mut url = format!("{}://{}{}", scheme, host, &raw_path);
+            let mut url = match host {
+                None => raw_path.clone(),
+                Some(host) => {
+                    let scheme = alb
+                        .headers
+                        .get(x_forwarded_proto())
+                        .and_then(|s| s.to_str().ok())
+                        .unwrap_or("https");
+                    format!("{}://{}{}", scheme, host, &raw_path)
+                }
+            };
+
             if !alb.multi_value_query_string_parameters.is_empty() {
                 url.push('?');
                 url.push_str(&alb.multi_value_query_string_parameters.to_query_string());
@@ -624,5 +629,21 @@ mod tests {
         let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "GET");
         assert_eq!(req.uri(), "/test/test/hello?name=me");
+    }
+
+    #[test]
+    fn deserialize_alb_no_host() {
+        // generated from ALB health checks
+        let input = include_str!("../tests/data/alb_no_host.json");
+        let result = from_str(input);
+        assert!(
+            result.is_ok(),
+            "event was not parsed as expected {:?} given {}",
+            result,
+            input
+        );
+        let req = result.expect("failed to parse request");
+        assert_eq!(req.method(), "GET");
+        assert_eq!(req.uri(), "/v1/health/");
     }
 }

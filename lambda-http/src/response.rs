@@ -4,9 +4,9 @@ use crate::request::RequestOrigin;
 use aws_lambda_events::encodings::Body;
 #[cfg(feature = "alb")]
 use aws_lambda_events::event::alb::AlbTargetGroupResponse;
-#[cfg(any(feature = "apigw_v1", feature = "apigw_websockets"))]
+#[cfg(any(feature = "apigw_rest", feature = "apigw_websockets"))]
 use aws_lambda_events::event::apigw::ApiGatewayProxyResponse;
-#[cfg(feature = "apigw_v2")]
+#[cfg(feature = "apigw_http")]
 use aws_lambda_events::event::apigw::ApiGatewayV2httpResponse;
 use http::{
     header::{CONTENT_TYPE, SET_COOKIE},
@@ -19,9 +19,9 @@ use serde::Serialize;
 #[derive(Serialize, Debug)]
 #[serde(untagged)]
 pub enum LambdaResponse {
-    #[cfg(any(feature = "apigw_v1", feature = "apigw_websockets"))]
+    #[cfg(any(feature = "apigw_rest", feature = "apigw_websockets"))]
     ApiGatewayV1(ApiGatewayProxyResponse),
-    #[cfg(feature = "apigw_v2")]
+    #[cfg(feature = "apigw_http")]
     ApiGatewayV2(ApiGatewayV2httpResponse),
     #[cfg(feature = "alb")]
     Alb(AlbTargetGroupResponse),
@@ -44,7 +44,7 @@ impl LambdaResponse {
         let status_code = parts.status.as_u16();
 
         match request_origin {
-            #[cfg(feature = "apigw_v1")]
+            #[cfg(feature = "apigw_rest")]
             RequestOrigin::ApiGatewayV1 => LambdaResponse::ApiGatewayV1(ApiGatewayProxyResponse {
                 body,
                 status_code: status_code as i64,
@@ -52,7 +52,7 @@ impl LambdaResponse {
                 headers: headers.clone(),
                 multi_value_headers: headers,
             }),
-            #[cfg(feature = "apigw_v2")]
+            #[cfg(feature = "apigw_http")]
             RequestOrigin::ApiGatewayV2 => {
                 // ApiGatewayV2 expects the set-cookies headers to be in the "cookies" attribute,
                 // so remove them from the headers.

@@ -13,9 +13,9 @@ categories = ["web-programming::http-server"]
 readme = "../README.md"
 
 [features]
-default = ["apigw_v1", "apigw_v2", "apigw_websockets", "alb"]
-apigw_v1 = []
-apigw_v2 = []
+default = ["apigw_rest", "apigw_http", "apigw_websockets", "alb"]
+apigw_rest = []
+apigw_http = []
 apigw_websockets = []
 alb = []
 

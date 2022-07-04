@@ -6,9 +6,9 @@
 use crate::ext::{PathParameters, QueryStringParameters, RawHttpPath, StageVariables};
 #[cfg(feature = "alb")]
 use aws_lambda_events::alb::{AlbTargetGroupRequest, AlbTargetGroupRequestContext};
-#[cfg(feature = "apigw_v1")]
+#[cfg(feature = "apigw_rest")]
 use aws_lambda_events::apigw::{ApiGatewayProxyRequest, ApiGatewayProxyRequestContext};
-#[cfg(feature = "apigw_v2")]
+#[cfg(feature = "apigw_http")]
 use aws_lambda_events::apigw::{ApiGatewayV2httpRequest, ApiGatewayV2httpRequestContext};
 #[cfg(feature = "apigw_websockets")]
 use aws_lambda_events::apigw::{ApiGatewayWebsocketProxyRequest, ApiGatewayWebsocketProxyRequestContext};
@@ -28,9 +28,9 @@ use std::{io::Read, mem};
 #[derive(Deserialize, Debug)]
 #[serde(untagged)]
 pub enum LambdaRequest {
-    #[cfg(feature = "apigw_v1")]
+    #[cfg(feature = "apigw_rest")]
     ApiGatewayV1(ApiGatewayProxyRequest),
-    #[cfg(feature = "apigw_v2")]
+    #[cfg(feature = "apigw_http")]
     ApiGatewayV2(ApiGatewayV2httpRequest),
     #[cfg(feature = "alb")]
     Alb(AlbTargetGroupRequest),
@@ -44,9 +44,9 @@ impl LambdaRequest {
     /// type of response the request origin expects.
     pub fn request_origin(&self) -> RequestOrigin {
         match self {
-            #[cfg(feature = "apigw_v1")]
+            #[cfg(feature = "apigw_rest")]
             LambdaRequest::ApiGatewayV1 { .. } => RequestOrigin::ApiGatewayV1,
-            #[cfg(feature = "apigw_v2")]
+            #[cfg(feature = "apigw_http")]
             LambdaRequest::ApiGatewayV2 { .. } => RequestOrigin::ApiGatewayV2,
             #[cfg(feature = "alb")]
             LambdaRequest::Alb { .. } => RequestOrigin::Alb,
@@ -61,10 +61,10 @@ impl LambdaRequest {
 #[derive(Debug)]
 pub enum RequestOrigin {
     /// API Gateway request origin
-    #[cfg(feature = "apigw_v1")]
+    #[cfg(feature = "apigw_rest")]
     ApiGatewayV1,
     /// API Gateway v2 request origin
-    #[cfg(feature = "apigw_v2")]
+    #[cfg(feature = "apigw_http")]
     ApiGatewayV2,
     /// ALB request origin
     #[cfg(feature = "alb")]
@@ -74,7 +74,7 @@ pub enum RequestOrigin {
     WebSocket,
 }
 
-#[cfg(feature = "apigw_v2")]
+#[cfg(feature = "apigw_http")]
 fn into_api_gateway_v2_request(ag: ApiGatewayV2httpRequest) -> http::Request<Body> {
     let http_method = ag.request_context.http.method.clone();
     let raw_path = ag.raw_path.unwrap_or_default();
@@ -146,7 +146,7 @@ fn into_api_gateway_v2_request(ag: ApiGatewayV2httpRequest) -> http::Request<Bod
     req
 }
 
-#[cfg(feature = "apigw_v1")]
+#[cfg(feature = "apigw_rest")]
 fn into_proxy_request(ag: ApiGatewayProxyRequest) -> http::Request<Body> {
     let http_method = ag.http_method;
     let raw_path = ag.path.unwrap_or_default();
@@ -357,10 +357,10 @@ fn apigw_path_with_stage(stage: &Option<String>, path: &str) -> String {
 #[serde(untagged)]
 pub enum RequestContext {
     /// API Gateway proxy request context
-    #[cfg(feature = "apigw_v1")]
+    #[cfg(feature = "apigw_rest")]
     ApiGatewayV1(ApiGatewayProxyRequestContext),
     /// API Gateway v2 request context
-    #[cfg(feature = "apigw_v2")]
+    #[cfg(feature = "apigw_http")]
     ApiGatewayV2(ApiGatewayV2httpRequestContext),
     /// ALB request context
     #[cfg(feature = "alb")]
@@ -374,9 +374,9 @@ pub enum RequestContext {
 impl<'a> From<LambdaRequest> for http::Request<Body> {
     fn from(value: LambdaRequest) -> Self {
         match value {
-            #[cfg(feature = "apigw_v1")]
+            #[cfg(feature = "apigw_rest")]
             LambdaRequest::ApiGatewayV1(ag) => into_proxy_request(ag),
-            #[cfg(feature = "apigw_v2")]
+            #[cfg(feature = "apigw_http")]
             LambdaRequest::ApiGatewayV2(ag) => into_api_gateway_v2_request(ag),
             #[cfg(feature = "alb")]
             LambdaRequest::Alb(alb) => into_alb_request(alb),
@@ -449,10 +449,10 @@ mod tests {
     }
 
     #[test]
-    fn deserializes_minimal_apigw_v2_request_events() {
+    fn deserializes_minimal_apigw_http_request_events() {
         // from the docs
         // https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request
-        let input = include_str!("../tests/data/apigw_v2_proxy_request_minimal.json");
+        let input = include_str!("../tests/data/apigw_http_proxy_request_minimal.json");
         let result = from_str(input);
         assert!(
             result.is_ok(),
@@ -477,10 +477,10 @@ mod tests {
     }
 
     #[test]
-    fn deserializes_apigw_v2_request_events() {
+    fn deserializes_apigw_http_request_events() {
         // from the docs
         // https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request
-        let input = include_str!("../tests/data/apigw_v2_proxy_request.json");
+        let input = include_str!("../tests/data/apigw_http_proxy_request.json");
         let result = from_str(input);
         assert!(
             result.is_ok(),
@@ -620,7 +620,7 @@ mod tests {
     }
 
     #[test]
-    fn deserialize_apigw_v2_sam_local() {
+    fn deserialize_apigw_http_sam_local() {
         // manually generated from AWS SAM CLI
         // Steps to recreate:
         // * sam init
@@ -629,7 +629,7 @@ mod tests {
         // * Change the function code to return the Lambda event serialized
         // * sam local start-api
         // * Invoke the API
-        let input = include_str!("../tests/data/apigw_v2_sam_local.json");
+        let input = include_str!("../tests/data/apigw_http_sam_local.json");
         let result = from_str(input);
         assert!(
             result.is_ok(),

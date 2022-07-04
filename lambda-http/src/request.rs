@@ -452,7 +452,7 @@ mod tests {
     fn deserializes_minimal_apigw_http_request_events() {
         // from the docs
         // https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request
-        let input = include_str!("../tests/data/apigw_http_proxy_request_minimal.json");
+        let input = include_str!("../tests/data/apigw_v2_proxy_request_minimal.json");
         let result = from_str(input);
         assert!(
             result.is_ok(),
@@ -480,7 +480,7 @@ mod tests {
     fn deserializes_apigw_http_request_events() {
         // from the docs
         // https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request
-        let input = include_str!("../tests/data/apigw_http_proxy_request.json");
+        let input = include_str!("../tests/data/apigw_v2_proxy_request.json");
         let result = from_str(input);
         assert!(
             result.is_ok(),
@@ -629,7 +629,7 @@ mod tests {
         // * Change the function code to return the Lambda event serialized
         // * sam local start-api
         // * Invoke the API
-        let input = include_str!("../tests/data/apigw_http_sam_local.json");
+        let input = include_str!("../tests/data/apigw_v2_sam_local.json");
         let result = from_str(input);
         assert!(
             result.is_ok(),

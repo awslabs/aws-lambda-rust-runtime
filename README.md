@@ -374,7 +374,7 @@ fn main() -> Result<(), Box<Error>> {
 
 ## Feature flags in lambda_http
 
-`lambda_http` is a wrapper for HTTP events coming from three different services, Amazon Load Balancer (ALB), Amazon Api Gateway (APIGW), and AWS Lambda Function URLs. Amazon Api Gateway can also send events from three different endpoints, REST APis, HTTP APIs, and WebSockets. `lambda_http` transforms events from all these sources into native `http::Request` objects, so you can incorporate Rust HTTP semantics into your Lambda functions.
+`lambda_http` is a wrapper for HTTP events coming from three different services, Amazon Load Balancer (ALB), Amazon Api Gateway (APIGW), and AWS Lambda Function URLs. Amazon Api Gateway can also send events from three different endpoints, REST APIs, HTTP APIs, and WebSockets. `lambda_http` transforms events from all these sources into native `http::Request` objects, so you can incorporate Rust HTTP semantics into your Lambda functions.
 
 By default, `lambda_http` compiles your function to support any of those services. This increases the compile time of your function because we have to generate code for all the sources. In reality, you'll usually put a Lambda function only behind one of those sources. You can choose which source to generate code for with feature flags.
 

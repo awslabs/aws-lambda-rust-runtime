@@ -1,4 +1,4 @@
-var N = null;var sourcesIndex = {};
+var sourcesIndex = {};
 sourcesIndex["extension_fn"] = {"name":"","files":["extension-fn.rs"]};
 sourcesIndex["extension_trait"] = {"name":"","files":["extension-trait.rs"]};
 sourcesIndex["http_fn"] = {"name":"","files":["http-fn.rs"]};

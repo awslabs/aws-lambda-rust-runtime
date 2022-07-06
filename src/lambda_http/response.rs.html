@@ -213,12 +213,27 @@
 <span id="208">208</span>
 <span id="209">209</span>
 <span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Response types</span>
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::request::RequestOrigin</span>;
 <span class="kw">use</span> <span class="ident">aws_lambda_events::encodings::Body</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;alb&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">aws_lambda_events::event::alb::AlbTargetGroupResponse</span>;
-<span class="kw">use</span> <span class="ident">aws_lambda_events::event::apigw</span>::{<span class="ident">ApiGatewayProxyResponse</span>, <span class="ident">ApiGatewayV2httpResponse</span>};
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_rest&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_websockets&quot;</span>))]</span>
+<span class="kw">use</span> <span class="ident">aws_lambda_events::event::apigw::ApiGatewayProxyResponse</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_http&quot;</span>)]</span>
+<span class="kw">use</span> <span class="ident">aws_lambda_events::event::apigw::ApiGatewayV2httpResponse</span>;
 <span class="kw">use</span> <span class="ident">http</span>::{
     <span class="ident">header</span>::{<span class="ident">CONTENT_TYPE</span>, <span class="ident">SET_COOKIE</span>},
     <span class="ident">Response</span>,
@@ -230,8 +245,11 @@
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Debug</span>)]</span>
 <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">untagged</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">LambdaResponse</span> {
-    <span class="ident">ApiGatewayV2</span>(<span class="ident">ApiGatewayV2httpResponse</span>),
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_rest&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_websockets&quot;</span>))]</span>
     <span class="ident">ApiGatewayV1</span>(<span class="ident">ApiGatewayProxyResponse</span>),
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_http&quot;</span>)]</span>
+    <span class="ident">ApiGatewayV2</span>(<span class="ident">ApiGatewayV2httpResponse</span>),
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;alb&quot;</span>)]</span>
     <span class="ident">Alb</span>(<span class="ident">AlbTargetGroupResponse</span>),
 }
 
@@ -252,6 +270,15 @@
         <span class="kw">let</span> <span class="ident">status_code</span> <span class="op">=</span> <span class="ident">parts</span>.<span class="ident">status</span>.<span class="ident">as_u16</span>();
 
         <span class="kw">match</span> <span class="ident">request_origin</span> {
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_rest&quot;</span>)]</span>
+            <span class="ident">RequestOrigin::ApiGatewayV1</span> =&gt; <span class="ident">LambdaResponse::ApiGatewayV1</span>(<span class="ident">ApiGatewayProxyResponse</span> {
+                <span class="ident">body</span>,
+                <span class="ident">status_code</span>: <span class="ident">status_code</span> <span class="kw">as</span> <span class="ident">i64</span>,
+                <span class="ident">is_base64_encoded</span>: <span class="prelude-val">Some</span>(<span class="ident">is_base64_encoded</span>),
+                <span class="ident">headers</span>: <span class="ident">headers</span>.<span class="ident">clone</span>(),
+                <span class="ident">multi_value_headers</span>: <span class="ident">headers</span>,
+            }),
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_http&quot;</span>)]</span>
             <span class="ident">RequestOrigin::ApiGatewayV2</span> =&gt; {
                 <span class="comment">// ApiGatewayV2 expects the set-cookies headers to be in the &quot;cookies&quot; attribute,</span>
                 <span class="comment">// so remove them from the headers.</span>
@@ -272,13 +299,7 @@
                     <span class="ident">multi_value_headers</span>: <span class="ident">headers</span>,
                 })
             }
-            <span class="ident">RequestOrigin::ApiGatewayV1</span> =&gt; <span class="ident">LambdaResponse::ApiGatewayV1</span>(<span class="ident">ApiGatewayProxyResponse</span> {
-                <span class="ident">body</span>,
-                <span class="ident">status_code</span>: <span class="ident">status_code</span> <span class="kw">as</span> <span class="ident">i64</span>,
-                <span class="ident">is_base64_encoded</span>: <span class="prelude-val">Some</span>(<span class="ident">is_base64_encoded</span>),
-                <span class="ident">headers</span>: <span class="ident">headers</span>.<span class="ident">clone</span>(),
-                <span class="ident">multi_value_headers</span>: <span class="ident">headers</span>,
-            }),
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;alb&quot;</span>)]</span>
             <span class="ident">RequestOrigin::Alb</span> =&gt; <span class="ident">LambdaResponse::Alb</span>(<span class="ident">AlbTargetGroupResponse</span> {
                 <span class="ident">body</span>,
                 <span class="ident">status_code</span>: <span class="ident">status_code</span> <span class="kw">as</span> <span class="ident">i64</span>,
@@ -291,6 +312,7 @@
                     <span class="ident">parts</span>.<span class="ident">status</span>.<span class="ident">canonical_reason</span>().<span class="ident">unwrap_or_default</span>()
                 )),
             }),
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_websockets&quot;</span>)]</span>
             <span class="ident">RequestOrigin::WebSocket</span> =&gt; <span class="ident">LambdaResponse::ApiGatewayV1</span>(<span class="ident">ApiGatewayProxyResponse</span> {
                 <span class="ident">body</span>,
                 <span class="ident">status_code</span>: <span class="ident">status_code</span> <span class="kw">as</span> <span class="ident">i64</span>,
@@ -424,5 +446,5 @@
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lambda_http" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lambda_http" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0 (a8314ef7d 2022-06-27)" ></div>
 </body></html>

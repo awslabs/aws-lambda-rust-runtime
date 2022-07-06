@@ -4,6 +4,8 @@ use crate::request::RequestOrigin;
 use aws_lambda_events::encodings::Body;
 use aws_lambda_events::event::alb::AlbTargetGroupResponse;
 use aws_lambda_events::event::apigw::{ApiGatewayProxyResponse, ApiGatewayV2httpResponse};
+use http::header::CONTENT_ENCODING;
+use http::HeaderMap;
 use http::{
     header::{CONTENT_TYPE, SET_COOKIE},
     Response,
@@ -12,12 +14,8 @@ use http_body::Body as HttpBody;
 use hyper::body::to_bytes;
 use serde::Serialize;
 use std::future::ready;
-use std::{
-    any::{Any, TypeId},
-    fmt,
-    future::Future,
-    pin::Pin,
-};
+use std::str::from_utf8;
+use std::{fmt, future::Future, pin::Pin};
 
 /// Representation of Lambda response
 #[doc(hidden)]
@@ -103,12 +101,13 @@ pub trait IntoResponse {
 
 impl<B> IntoResponse for Response<B>
 where
-    B: IntoBody + 'static,
+    B: ConvertBody + 'static,
 {
     fn into_response(self) -> ResponseFuture {
         let (parts, body) = self.into_parts();
+        let headers = parts.headers.clone();
 
-        let fut = async { Response::from_parts(parts, body.into_body().await) };
+        let fut = async { Response::from_parts(parts, body.convert(headers).await) };
 
         Box::pin(fut)
     }
@@ -155,24 +154,57 @@ impl IntoResponse for serde_json::Value {
 
 pub type ResponseFuture = Pin<Box<dyn Future<Output = Response<Body>>>>;
 
-pub trait IntoBody {
-    fn into_body(self) -> BodyFuture;
+pub trait ConvertBody {
+    fn convert(self, parts: HeaderMap) -> BodyFuture;
 }
 
-impl<B> IntoBody for B
+impl<B> ConvertBody for B
 where
     B: HttpBody + Unpin + 'static,
     B::Error: fmt::Debug,
 {
-    fn into_body(self) -> BodyFuture {
-        if TypeId::of::<Body>() == self.type_id() {
-            let any_self = Box::new(self) as Box<dyn Any + 'static>;
-            // Can safely unwrap here as we do type validation in the 'if' statement
-            Box::pin(ready(*any_self.downcast::<Body>().unwrap()))
-        } else {
-            Box::pin(async move { Body::from(to_bytes(self).await.expect("unable to read bytes from body").to_vec()) })
+    fn convert(self, headers: HeaderMap) -> BodyFuture {
+        if headers.get(CONTENT_ENCODING).is_some() {
+            return convert_to_binary(self);
         }
+
+        let content_type = if let Some(value) = headers.get(http::header::CONTENT_TYPE) {
+            value.to_str().unwrap_or_default()
+        } else {
+            // Content-Type and Content-Encoding not set, passthrough as utf8 text
+            return convert_to_text(self);
+        };
+
+        if content_type.starts_with("text")
+            || content_type.starts_with("application/json")
+            || content_type.starts_with("application/javascript")
+            || content_type.starts_with("application/xml")
+        {
+            return convert_to_text(self);
+        }
+
+        convert_to_binary(self)
     }
+}
+
+fn convert_to_binary<B>(body: B) -> BodyFuture
+where
+    B: HttpBody + Unpin + 'static,
+    B::Error: fmt::Debug,
+{
+    Box::pin(async move { Body::from(to_bytes(body).await.expect("unable to read bytes from body").to_vec()) })
+}
+
+fn convert_to_text<B>(body: B) -> BodyFuture
+where
+    B: HttpBody + Unpin + 'static,
+    B::Error: fmt::Debug,
+{
+    // assumes utf-8
+    Box::pin(async move {
+        let bytes = to_bytes(body).await.expect("unable to read bytes from body");
+        Body::from(from_utf8(&bytes).expect("response body not utf-8"))
+    })
 }
 
 pub type BodyFuture = Pin<Box<dyn Future<Output = Body>>>;
@@ -180,7 +212,11 @@ pub type BodyFuture = Pin<Box<dyn Future<Output = Body>>>;
 #[cfg(test)]
 mod tests {
     use super::{Body, IntoResponse, LambdaResponse, RequestOrigin};
-    use http::{header::CONTENT_TYPE, Response};
+    use http::{
+        header::{CONTENT_ENCODING, CONTENT_TYPE},
+        Response,
+    };
+    use hyper::Body as HyperBody;
     use serde_json::{self, json};
 
     #[tokio::test]
@@ -215,6 +251,59 @@ mod tests {
             Body::Binary(data) => assert_eq!(data, "text".as_bytes()),
             _ => panic!("invalid body"),
         }
+    }
+
+    #[tokio::test]
+    async fn content_encoding_header() {
+        // Drive the implementation by using `hyper::Body` instead of
+        // of `aws_lambda_events::encodings::Body`
+        let response = Response::builder()
+            .header(CONTENT_ENCODING, "gzip")
+            .body(HyperBody::from("000000".as_bytes()))
+            .expect("unable to build http::Response");
+        let response = response.into_response().await;
+        let response = LambdaResponse::from_response(&RequestOrigin::ApiGatewayV2, response);
+
+        let json = serde_json::to_string(&response).expect("failed to serialize to json");
+        assert_eq!(
+            json,
+            r#"{"statusCode":200,"headers":{"content-encoding":"gzip"},"multiValueHeaders":{"content-encoding":["gzip"]},"body":"MDAwMDAw","isBase64Encoded":true,"cookies":[]}"#
+        )
+    }
+
+    #[tokio::test]
+    async fn content_type_header() {
+        // Drive the implementation by using `hyper::Body` instead of
+        // of `aws_lambda_events::encodings::Body`
+        let response = Response::builder()
+            .header(CONTENT_TYPE, "application/json")
+            .body(HyperBody::from("000000".as_bytes()))
+            .expect("unable to build http::Response");
+        let response = response.into_response().await;
+        let response = LambdaResponse::from_response(&RequestOrigin::ApiGatewayV2, response);
+
+        let json = serde_json::to_string(&response).expect("failed to serialize to json");
+        assert_eq!(
+            json,
+            r#"{"statusCode":200,"headers":{"content-type":"application/json"},"multiValueHeaders":{"content-type":["application/json"]},"body":"000000","isBase64Encoded":false,"cookies":[]}"#
+        )
+    }
+
+    #[tokio::test]
+    async fn content_headers_unset() {
+        // Drive the implementation by using `hyper::Body` instead of
+        // of `aws_lambda_events::encodings::Body`
+        let response = Response::builder()
+            .body(HyperBody::from("000000".as_bytes()))
+            .expect("unable to build http::Response");
+        let response = response.into_response().await;
+        let response = LambdaResponse::from_response(&RequestOrigin::ApiGatewayV2, response);
+
+        let json = serde_json::to_string(&response).expect("failed to serialize to json");
+        assert_eq!(
+            json,
+            r#"{"statusCode":200,"headers":{},"multiValueHeaders":{},"body":"000000","isBase64Encoded":false,"cookies":[]}"#
+        )
     }
 
     #[test]

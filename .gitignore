@@ -12,3 +12,4 @@ output.json
 
 .aws-sam
 build
+.vscode

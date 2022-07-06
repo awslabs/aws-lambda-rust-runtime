@@ -1,0 +1,17 @@
+{
+  "body": "",
+  "headers": {
+    "user-agent": "ELB-HealthChecker/2.0"
+  },
+  "httpMethod": "GET",
+
+  "isBase64Encoded": false,
+
+  "path": "/v1/health/",
+  "queryStringParameters": {},
+  "requestContext": {
+    "elb": {
+      "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:111111111:targetgroup/cdn-ingestor-tg-usea1-dev/3fe2aca58c0da101"
+    }
+  }
+}

@@ -2,8 +2,12 @@
 
 use crate::request::RequestOrigin;
 use aws_lambda_events::encodings::Body;
+#[cfg(feature = "alb")]
 use aws_lambda_events::event::alb::AlbTargetGroupResponse;
-use aws_lambda_events::event::apigw::{ApiGatewayProxyResponse, ApiGatewayV2httpResponse};
+#[cfg(any(feature = "apigw_rest", feature = "apigw_websockets"))]
+use aws_lambda_events::event::apigw::ApiGatewayProxyResponse;
+#[cfg(feature = "apigw_http")]
+use aws_lambda_events::event::apigw::ApiGatewayV2httpResponse;
 use http::header::CONTENT_ENCODING;
 use http::HeaderMap;
 use http::{
@@ -22,8 +26,11 @@ use std::{fmt, future::Future, pin::Pin};
 #[derive(Serialize, Debug)]
 #[serde(untagged)]
 pub enum LambdaResponse {
-    ApiGatewayV2(ApiGatewayV2httpResponse),
+    #[cfg(any(feature = "apigw_rest", feature = "apigw_websockets"))]
     ApiGatewayV1(ApiGatewayProxyResponse),
+    #[cfg(feature = "apigw_http")]
+    ApiGatewayV2(ApiGatewayV2httpResponse),
+    #[cfg(feature = "alb")]
     Alb(AlbTargetGroupResponse),
 }
 
@@ -41,6 +48,15 @@ impl LambdaResponse {
         let status_code = parts.status.as_u16();
 
         match request_origin {
+            #[cfg(feature = "apigw_rest")]
+            RequestOrigin::ApiGatewayV1 => LambdaResponse::ApiGatewayV1(ApiGatewayProxyResponse {
+                body,
+                status_code: status_code as i64,
+                is_base64_encoded: Some(is_base64_encoded),
+                headers: headers.clone(),
+                multi_value_headers: headers,
+            }),
+            #[cfg(feature = "apigw_http")]
             RequestOrigin::ApiGatewayV2 => {
                 // ApiGatewayV2 expects the set-cookies headers to be in the "cookies" attribute,
                 // so remove them from the headers.
@@ -61,13 +77,7 @@ impl LambdaResponse {
                     multi_value_headers: headers,
                 })
             }
-            RequestOrigin::ApiGatewayV1 => LambdaResponse::ApiGatewayV1(ApiGatewayProxyResponse {
-                body,
-                status_code: status_code as i64,
-                is_base64_encoded: Some(is_base64_encoded),
-                headers: headers.clone(),
-                multi_value_headers: headers,
-            }),
+            #[cfg(feature = "alb")]
             RequestOrigin::Alb => LambdaResponse::Alb(AlbTargetGroupResponse {
                 body,
                 status_code: status_code as i64,
@@ -80,6 +90,7 @@ impl LambdaResponse {
                     parts.status.canonical_reason().unwrap_or_default()
                 )),
             }),
+            #[cfg(feature = "apigw_websockets")]
             RequestOrigin::WebSocket => LambdaResponse::ApiGatewayV1(ApiGatewayProxyResponse {
                 body,
                 status_code: status_code as i64,

@@ -4,11 +4,14 @@
 //! request extension method provided by [lambda_http::RequestExt](../trait.RequestExt.html)
 //!
 use crate::ext::{PathParameters, QueryStringParameters, RawHttpPath, StageVariables};
+#[cfg(feature = "alb")]
 use aws_lambda_events::alb::{AlbTargetGroupRequest, AlbTargetGroupRequestContext};
-use aws_lambda_events::apigw::{
-    ApiGatewayProxyRequest, ApiGatewayProxyRequestContext, ApiGatewayV2httpRequest, ApiGatewayV2httpRequestContext,
-    ApiGatewayWebsocketProxyRequest, ApiGatewayWebsocketProxyRequestContext,
-};
+#[cfg(feature = "apigw_rest")]
+use aws_lambda_events::apigw::{ApiGatewayProxyRequest, ApiGatewayProxyRequestContext};
+#[cfg(feature = "apigw_http")]
+use aws_lambda_events::apigw::{ApiGatewayV2httpRequest, ApiGatewayV2httpRequestContext};
+#[cfg(feature = "apigw_websockets")]
+use aws_lambda_events::apigw::{ApiGatewayWebsocketProxyRequest, ApiGatewayWebsocketProxyRequestContext};
 use aws_lambda_events::encodings::Body;
 use http::header::HeaderName;
 use query_map::QueryMap;
@@ -27,9 +30,13 @@ use std::{io::Read, mem};
 #[derive(Deserialize, Debug)]
 #[serde(untagged)]
 pub enum LambdaRequest {
+    #[cfg(feature = "apigw_rest")]
     ApiGatewayV1(ApiGatewayProxyRequest),
+    #[cfg(feature = "apigw_http")]
     ApiGatewayV2(ApiGatewayV2httpRequest),
+    #[cfg(feature = "alb")]
     Alb(AlbTargetGroupRequest),
+    #[cfg(feature = "apigw_websockets")]
     WebSocket(ApiGatewayWebsocketProxyRequest),
 }
 
@@ -39,9 +46,13 @@ impl LambdaRequest {
     /// type of response the request origin expects.
     pub fn request_origin(&self) -> RequestOrigin {
         match self {
+            #[cfg(feature = "apigw_rest")]
             LambdaRequest::ApiGatewayV1 { .. } => RequestOrigin::ApiGatewayV1,
+            #[cfg(feature = "apigw_http")]
             LambdaRequest::ApiGatewayV2 { .. } => RequestOrigin::ApiGatewayV2,
+            #[cfg(feature = "alb")]
             LambdaRequest::Alb { .. } => RequestOrigin::Alb,
+            #[cfg(feature = "apigw_websockets")]
             LambdaRequest::WebSocket { .. } => RequestOrigin::WebSocket,
         }
     }
@@ -55,12 +66,16 @@ pub type RequestFuture<'a, R, E> = Pin<Box<dyn Future<Output = Result<R, E>> + '
 #[derive(Debug)]
 pub enum RequestOrigin {
     /// API Gateway request origin
+    #[cfg(feature = "apigw_rest")]
     ApiGatewayV1,
     /// API Gateway v2 request origin
+    #[cfg(feature = "apigw_http")]
     ApiGatewayV2,
     /// ALB request origin
+    #[cfg(feature = "alb")]
     Alb,
     /// API Gateway WebSocket
+    #[cfg(feature = "apigw_websockets")]
     WebSocket,
 }
 
@@ -75,6 +90,7 @@ impl RequestOrigin {
     }
 }
 
+#[cfg(feature = "apigw_http")]
 fn into_api_gateway_v2_request(ag: ApiGatewayV2httpRequest) -> http::Request<Body> {
     let http_method = ag.request_context.http.method.clone();
     let raw_path = ag.raw_path.unwrap_or_default();
@@ -92,21 +108,24 @@ fn into_api_gateway_v2_request(ag: ApiGatewayV2httpRequest) -> http::Request<Bod
 
     let builder = http::Request::builder()
         .uri({
-            let scheme = ag
-                .headers
-                .get(x_forwarded_proto())
-                .and_then(|s| s.to_str().ok())
-                .unwrap_or("https");
             let host = ag
                 .headers
                 .get(http::header::HOST)
                 .and_then(|s| s.to_str().ok())
-                .or(ag.request_context.domain_name.as_deref())
-                .unwrap_or_default();
-
+                .or(ag.request_context.domain_name.as_deref());
             let path = apigw_path_with_stage(&ag.request_context.stage, &raw_path);
-            let mut url = format!("{}://{}{}", scheme, host, path);
 
+            let mut url = match host {
+                None => path,
+                Some(host) => {
+                    let scheme = ag
+                        .headers
+                        .get(x_forwarded_proto())
+                        .and_then(|s| s.to_str().ok())
+                        .unwrap_or("https");
+                    format!("{}://{}{}", scheme, host, path)
+                }
+            };
             if let Some(query) = ag.raw_query_string {
                 url.push('?');
                 url.push_str(&query);
@@ -143,6 +162,7 @@ fn into_api_gateway_v2_request(ag: ApiGatewayV2httpRequest) -> http::Request<Bod
     req
 }
 
+#[cfg(feature = "apigw_rest")]
 fn into_proxy_request(ag: ApiGatewayProxyRequest) -> http::Request<Body> {
     let http_method = ag.http_method;
     let raw_path = ag.path.unwrap_or_default();
@@ -209,24 +229,27 @@ fn into_proxy_request(ag: ApiGatewayProxyRequest) -> http::Request<Body> {
     req
 }
 
+#[cfg(feature = "alb")]
 fn into_alb_request(alb: AlbTargetGroupRequest) -> http::Request<Body> {
     let http_method = alb.http_method;
     let raw_path = alb.path.unwrap_or_default();
 
     let builder = http::Request::builder()
         .uri({
-            let scheme = alb
-                .headers
-                .get(x_forwarded_proto())
-                .and_then(|s| s.to_str().ok())
-                .unwrap_or("https");
-            let host = alb
-                .headers
-                .get(http::header::HOST)
-                .and_then(|s| s.to_str().ok())
-                .unwrap_or_default();
+            let host = alb.headers.get(http::header::HOST).and_then(|s| s.to_str().ok());
 
-            let mut url = format!("{}://{}{}", scheme, host, &raw_path);
+            let mut url = match host {
+                None => raw_path.clone(),
+                Some(host) => {
+                    let scheme = alb
+                        .headers
+                        .get(x_forwarded_proto())
+                        .and_then(|s| s.to_str().ok())
+                        .unwrap_or("https");
+                    format!("{}://{}{}", scheme, host, &raw_path)
+                }
+            };
+
             if !alb.multi_value_query_string_parameters.is_empty() {
                 url.push('?');
                 url.push_str(&alb.multi_value_query_string_parameters.to_query_string());
@@ -272,6 +295,7 @@ fn into_alb_request(alb: AlbTargetGroupRequest) -> http::Request<Body> {
     req
 }
 
+#[cfg(feature = "apigw_websockets")]
 fn into_websocket_request(ag: ApiGatewayWebsocketProxyRequest) -> http::Request<Body> {
     let http_method = ag.http_method;
     let builder = http::Request::builder()
@@ -349,12 +373,16 @@ fn apigw_path_with_stage(stage: &Option<String>, path: &str) -> String {
 #[serde(untagged)]
 pub enum RequestContext {
     /// API Gateway proxy request context
+    #[cfg(feature = "apigw_rest")]
     ApiGatewayV1(ApiGatewayProxyRequestContext),
     /// API Gateway v2 request context
+    #[cfg(feature = "apigw_http")]
     ApiGatewayV2(ApiGatewayV2httpRequestContext),
     /// ALB request context
+    #[cfg(feature = "alb")]
     Alb(AlbTargetGroupRequestContext),
     /// WebSocket request context
+    #[cfg(feature = "apigw_websockets")]
     WebSocket(ApiGatewayWebsocketProxyRequestContext),
 }
 
@@ -362,9 +390,13 @@ pub enum RequestContext {
 impl<'a> From<LambdaRequest> for http::Request<Body> {
     fn from(value: LambdaRequest) -> Self {
         match value {
-            LambdaRequest::ApiGatewayV2(ag) => into_api_gateway_v2_request(ag),
+            #[cfg(feature = "apigw_rest")]
             LambdaRequest::ApiGatewayV1(ag) => into_proxy_request(ag),
+            #[cfg(feature = "apigw_http")]
+            LambdaRequest::ApiGatewayV2(ag) => into_api_gateway_v2_request(ag),
+            #[cfg(feature = "alb")]
             LambdaRequest::Alb(alb) => into_alb_request(alb),
+            #[cfg(feature = "apigw_websockets")]
             LambdaRequest::WebSocket(ag) => into_websocket_request(ag),
         }
     }
@@ -433,7 +465,7 @@ mod tests {
     }
 
     #[test]
-    fn deserializes_minimal_apigw_v2_request_events() {
+    fn deserializes_minimal_apigw_http_request_events() {
         // from the docs
         // https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request
         let input = include_str!("../tests/data/apigw_v2_proxy_request_minimal.json");
@@ -461,7 +493,7 @@ mod tests {
     }
 
     #[test]
-    fn deserializes_apigw_v2_request_events() {
+    fn deserializes_apigw_http_request_events() {
         // from the docs
         // https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request
         let input = include_str!("../tests/data/apigw_v2_proxy_request.json");
@@ -604,7 +636,7 @@ mod tests {
     }
 
     #[test]
-    fn deserialize_apigw_v2_sam_local() {
+    fn deserialize_apigw_http_sam_local() {
         // manually generated from AWS SAM CLI
         // Steps to recreate:
         // * sam init
@@ -640,5 +672,21 @@ mod tests {
         let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "GET");
         assert_eq!(req.uri(), "/test/test/hello?name=me");
+    }
+
+    #[test]
+    fn deserialize_alb_no_host() {
+        // generated from ALB health checks
+        let input = include_str!("../tests/data/alb_no_host.json");
+        let result = from_str(input);
+        assert!(
+            result.is_ok(),
+            "event was not parsed as expected {:?} given {}",
+            result,
+            input
+        );
+        let req = result.expect("failed to parse request");
+        assert_eq!(req.method(), "GET");
+        assert_eq!(req.uri(), "/v1/health/");
     }
 }

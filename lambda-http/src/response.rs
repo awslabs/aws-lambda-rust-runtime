@@ -8,6 +8,7 @@ use aws_lambda_events::event::alb::AlbTargetGroupResponse;
 use aws_lambda_events::event::apigw::ApiGatewayProxyResponse;
 #[cfg(feature = "apigw_http")]
 use aws_lambda_events::event::apigw::ApiGatewayV2httpResponse;
+use encoding_rs::Encoding;
 use http::header::CONTENT_ENCODING;
 use http::HeaderMap;
 use http::{
@@ -16,9 +17,10 @@ use http::{
 };
 use http_body::Body as HttpBody;
 use hyper::body::to_bytes;
+use mime::{Mime, CHARSET};
 use serde::Serialize;
+use std::borrow::Cow;
 use std::future::ready;
-use std::str::from_utf8;
 use std::{fmt, future::Future, pin::Pin};
 
 /// Representation of Lambda response
@@ -183,7 +185,7 @@ where
             value.to_str().unwrap_or_default()
         } else {
             // Content-Type and Content-Encoding not set, passthrough as utf8 text
-            return convert_to_text(self);
+            return convert_to_text(self, "utf-8".to_string());
         };
 
         if content_type.starts_with("text")
@@ -191,7 +193,7 @@ where
             || content_type.starts_with("application/javascript")
             || content_type.starts_with("application/xml")
         {
-            return convert_to_text(self);
+            return convert_to_text(self, content_type.to_string());
         }
 
         convert_to_binary(self)
@@ -206,15 +208,30 @@ where
     Box::pin(async move { Body::from(to_bytes(body).await.expect("unable to read bytes from body").to_vec()) })
 }
 
-fn convert_to_text<B>(body: B) -> BodyFuture
+fn convert_to_text<B>(body: B, content_type: String) -> BodyFuture
 where
     B: HttpBody + Unpin + 'static,
     B::Error: fmt::Debug,
 {
+    let mime_type = content_type.parse::<Mime>();
+
+    let encoding = match mime_type.as_ref() {
+        Ok(mime) => mime.get_param(CHARSET).unwrap_or(mime::UTF_8),
+        Err(_) => mime::UTF_8,
+    };
+
+    let label = encoding.as_ref().as_bytes();
+    let encoding = Encoding::for_label(label).unwrap_or(encoding_rs::UTF_8);
+
     // assumes utf-8
     Box::pin(async move {
         let bytes = to_bytes(body).await.expect("unable to read bytes from body");
-        Body::from(from_utf8(&bytes).expect("response body not utf-8"))
+        let (content, _, _) = encoding.decode(&bytes);
+
+        match content {
+            Cow::Borrowed(content) => Body::from(content),
+            Cow::Owned(content) => Body::from(content),
+        }
     })
 }
 
@@ -297,6 +314,24 @@ mod tests {
         assert_eq!(
             json,
             r#"{"statusCode":200,"headers":{"content-type":"application/json"},"multiValueHeaders":{"content-type":["application/json"]},"body":"000000","isBase64Encoded":false,"cookies":[]}"#
+        )
+    }
+
+    #[tokio::test]
+    async fn charset_content_type_header() {
+        // Drive the implementation by using `hyper::Body` instead of
+        // of `aws_lambda_events::encodings::Body`
+        let response = Response::builder()
+            .header(CONTENT_TYPE, "application/json; charset=utf-16")
+            .body(HyperBody::from("000000".as_bytes()))
+            .expect("unable to build http::Response");
+        let response = response.into_response().await;
+        let response = LambdaResponse::from_response(&RequestOrigin::ApiGatewayV2, response);
+
+        let json = serde_json::to_string(&response).expect("failed to serialize to json");
+        assert_eq!(
+            json,
+            r#"{"statusCode":200,"headers":{"content-type":"application/json; charset=utf-16"},"multiValueHeaders":{"content-type":["application/json; charset=utf-16"]},"body":"〰〰〰","isBase64Encoded":false,"cookies":[]}"#
         )
     }
 

@@ -15,7 +15,9 @@ async fn main() -> Result<(), Error> {
 }
 
 async fn func(event: Request) -> Result<impl IntoResponse, Error> {
-    let res = format!("The raw path for this request is: {}", event.raw_http_path()).into_response();
+    let res = format!("The raw path for this request is: {}", event.raw_http_path())
+        .into_response()
+        .await;
 
     Ok(res)
 }

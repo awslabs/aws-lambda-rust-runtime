@@ -63,7 +63,7 @@ pub type RequestFuture<'a, R, E> = Pin<Box<dyn Future<Output = Result<R, E>> + '
 
 /// Represents the origin from which the lambda was requested from.
 #[doc(hidden)]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum RequestOrigin {
     /// API Gateway request origin
     #[cfg(feature = "apigw_rest")]
@@ -77,17 +77,6 @@ pub enum RequestOrigin {
     /// API Gateway WebSocket
     #[cfg(feature = "apigw_websockets")]
     WebSocket,
-}
-
-impl RequestOrigin {
-    pub(crate) fn clone(&self) -> RequestOrigin {
-        match self {
-            RequestOrigin::ApiGatewayV1 => RequestOrigin::ApiGatewayV1,
-            RequestOrigin::ApiGatewayV2 => RequestOrigin::ApiGatewayV2,
-            RequestOrigin::Alb => RequestOrigin::Alb,
-            RequestOrigin::WebSocket => RequestOrigin::WebSocket,
-        }
-    }
 }
 
 #[cfg(feature = "apigw_http")]

@@ -185,7 +185,7 @@ where
             value.to_str().unwrap_or_default()
         } else {
             // Content-Type and Content-Encoding not set, passthrough as utf8 text
-            return convert_to_text(self, "utf-8".to_string());
+            return convert_to_text(self, "utf-8");
         };
 
         if content_type.starts_with("text")
@@ -193,7 +193,7 @@ where
             || content_type.starts_with("application/javascript")
             || content_type.starts_with("application/xml")
         {
-            return convert_to_text(self, content_type.to_string());
+            return convert_to_text(self, content_type);
         }
 
         convert_to_binary(self)
@@ -208,7 +208,7 @@ where
     Box::pin(async move { Body::from(to_bytes(body).await.expect("unable to read bytes from body").to_vec()) })
 }
 
-fn convert_to_text<B>(body: B, content_type: String) -> BodyFuture
+fn convert_to_text<B>(body: B, content_type: &str) -> BodyFuture
 where
     B: HttpBody + Unpin + 'static,
     B::Error: fmt::Debug,

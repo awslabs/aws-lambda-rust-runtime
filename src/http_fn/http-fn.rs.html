@@ -29,14 +29,20 @@
 <span id="24">24</span>
 <span id="25">25</span>
 <span id="26">26</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">lambda_http</span>::{<span class="ident">service_fn</span>, <span class="ident">Error</span>, <span class="ident">IntoResponse</span>, <span class="ident">Request</span>, <span class="ident">RequestExt</span>, <span class="ident">Response</span>};
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">lambda_http</span>::{<span class="ident">service_fn</span>, <span class="ident">Body</span>, <span class="ident">Error</span>, <span class="ident">IntoResponse</span>, <span class="ident">Request</span>, <span class="ident">RequestExt</span>, <span class="ident">Response</span>};
 <span class="kw">use</span> <span class="ident">tracing::info</span>;
 
 <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">handler</span>(<span class="ident">event</span>: <span class="ident">Request</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">IntoResponse</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">_context</span> <span class="op">=</span> <span class="ident">event</span>.<span class="ident">lambda_context</span>();
     <span class="macro">info!</span>(<span class="string">&quot;[http-fn] Received event {} {}&quot;</span>, <span class="ident">event</span>.<span class="ident">method</span>(), <span class="ident">event</span>.<span class="ident">uri</span>().<span class="ident">path</span>());
 
-    <span class="prelude-val">Ok</span>(<span class="ident">Response::builder</span>().<span class="ident">status</span>(<span class="number">200</span>).<span class="ident">body</span>(<span class="string">&quot;Hello, world!&quot;</span>).<span class="ident">unwrap</span>())
+    <span class="prelude-val">Ok</span>(<span class="ident">Response::builder</span>()
+        .<span class="ident">status</span>(<span class="number">200</span>)
+        .<span class="ident">body</span>(<span class="ident">Body::from</span>(<span class="string">&quot;Hello, world!&quot;</span>))
+        .<span class="ident">unwrap</span>())
 }
 
 <span class="attribute">#[<span class="ident">tokio::main</span>]</span>

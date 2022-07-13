@@ -6,6 +6,10 @@ INTEG_EXTENSIONS := extension-fn extension-trait logs-trait
 # Using musl to run extensions on both AL1 and AL2
 INTEG_ARCH := x86_64-unknown-linux-musl
 
+define uppercase
+$(shell sed -r 's/(^|-)(\w)/\U\2/g' <<< $(1))
+endef
+
 pr-check:
 	cargo +1.54.0 check --all
 	cargo +stable fmt --all -- --check
@@ -15,7 +19,7 @@ pr-check:
 
 integration-tests:
 # Build Integration functions
-	cross build --release --target $(INTEG_ARCH) -p lambda_integration_tests
+	cargo zigbuild --release --target $(INTEG_ARCH) -p lambda_integration_tests
 	rm -rf ./build
 	mkdir -p ./build
 	${MAKE} ${MAKEOPTS} $(foreach function,${INTEG_FUNCTIONS_BUILD}, build-integration-function-${function})
@@ -37,7 +41,7 @@ build-integration-function-%:
 
 build-integration-extension-%:
 	mkdir -p ./build/$*/extensions
-	cp -v ./target/$(INTEG_ARCH)/release/$* ./build/$*/extensions/$*
+	cp -v ./target/$(INTEG_ARCH)/release/$* ./build/$*/extensions/$(call uppercase,$*)
 
 invoke-integration-function-%:
 	aws lambda invoke --function-name $$(aws cloudformation describe-stacks --stack-name $(INTEG_STACK_NAME) \
@@ -56,4 +60,3 @@ invoke-integration-api-%:
 	curl -X POST -d '{"command": "hello"}' $(API_URL)/trait/post
 	curl -X POST -d '{"command": "hello"}' $(API_URL)/al2/post
 	curl -X POST -d '{"command": "hello"}' $(API_URL)/al2-trait/post
-	

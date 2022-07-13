@@ -24,11 +24,14 @@ base64 = "0.13.0"
 bytes = "1"
 http = "0.2"
 http-body = "0.4"
+hyper = "0.14"
 lambda_runtime = { path = "../lambda-runtime", version = "0.5" }
 serde = { version = "^1", features = ["derive"] }
 serde_json = "^1"
 serde_urlencoded = "0.7.0"
 query_map = { version = "0.5", features = ["url-query"] }
+mime = "0.3.16"
+encoding_rs = "0.8.31"
 
 [dependencies.aws_lambda_events]
 version = "^0.6.3"

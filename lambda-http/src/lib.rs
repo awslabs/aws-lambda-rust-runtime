@@ -67,6 +67,8 @@ extern crate maplit;
 pub use http::{self, Response};
 use lambda_runtime::LambdaEvent;
 pub use lambda_runtime::{self, service_fn, tower, Context, Error, Service};
+use request::RequestFuture;
+use response::ResponseFuture;
 
 pub mod ext;
 pub mod request;
@@ -91,9 +93,9 @@ pub type Request = http::Request<Body>;
 ///
 /// This is used by the `Adapter` wrapper and is completely internal to the `lambda_http::run` function.
 #[doc(hidden)]
-pub struct TransformResponse<'a, R, E> {
-    request_origin: RequestOrigin,
-    fut: Pin<Box<dyn Future<Output = Result<R, E>> + 'a>>,
+pub enum TransformResponse<'a, R, E> {
+    Request(RequestOrigin, RequestFuture<'a, R, E>),
+    Response(RequestOrigin, ResponseFuture),
 }
 
 impl<'a, R, E> Future for TransformResponse<'a, R, E>
@@ -103,11 +105,19 @@ where
     type Output = Result<LambdaResponse, E>;
 
     fn poll(mut self: Pin<&mut Self>, cx: &mut TaskContext) -> Poll<Self::Output> {
-        match self.fut.as_mut().poll(cx) {
-            Poll::Ready(result) => Poll::Ready(
-                result.map(|resp| LambdaResponse::from_response(&self.request_origin, resp.into_response())),
-            ),
-            Poll::Pending => Poll::Pending,
+        match *self {
+            TransformResponse::Request(ref mut origin, ref mut request) => match request.as_mut().poll(cx) {
+                Poll::Ready(Ok(resp)) => {
+                    *self = TransformResponse::Response(origin.clone(), resp.into_response());
+                    self.poll(cx)
+                }
+                Poll::Ready(Err(err)) => Poll::Ready(Err(err)),
+                Poll::Pending => Poll::Pending,
+            },
+            TransformResponse::Response(ref mut origin, ref mut response) => match response.as_mut().poll(cx) {
+                Poll::Ready(resp) => Poll::Ready(Ok(LambdaResponse::from_response(origin, resp))),
+                Poll::Pending => Poll::Pending,
+            },
         }
     }
 }
@@ -153,7 +163,8 @@ where
         let request_origin = req.payload.request_origin();
         let event: Request = req.payload.into();
         let fut = Box::pin(self.service.call(event.with_lambda_context(req.context)));
-        TransformResponse { request_origin, fut }
+
+        TransformResponse::Request(request_origin, fut)
     }
 }
 

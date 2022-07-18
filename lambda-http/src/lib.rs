@@ -1,4 +1,4 @@
-#![warn(missing_docs)]
+#![warn(missing_docs, rust_2018_idioms)]
 //#![deny(warnings)]
 //! Enriches the `lambda` crate with [`http`](https://github.com/hyperium/http)
 //! types targeting AWS [ALB](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html), [API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html) REST and HTTP API lambda integrations.
@@ -104,7 +104,7 @@ where
 {
     type Output = Result<LambdaResponse, E>;
 
-    fn poll(mut self: Pin<&mut Self>, cx: &mut TaskContext) -> Poll<Self::Output> {
+    fn poll(mut self: Pin<&mut Self>, cx: &mut TaskContext<'_>) -> Poll<Self::Output> {
         match *self {
             TransformResponse::Request(ref mut origin, ref mut request) => match request.as_mut().poll(cx) {
                 Poll::Ready(Ok(resp)) => {

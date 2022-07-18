@@ -12,7 +12,7 @@ jobs:
           - ubuntu-latest
           - macOS-latest
         rust:
-          - "1.54.0" # Current MSRV
+          - "1.58.0" # Current MSRV
           - stable
           - beta
           - nightly
@@ -22,24 +22,6 @@ jobs:
         include:
           - rust: nightly
             allow_failure: true
-        # exclude:
-        #   - os: macOS-latest
-        #     target: x86_64-unknown-linux-musl
-        #   - os: ubuntu-latest
-        #     rust: 1.40.0
-        #     target: x86_64-unknown-linux-musl
-        #   - os: ubuntu-latest
-        #     rust: beta
-        #     target: x86_64-unknown-linux-musl
-        #   - os: ubuntu-latest
-        #     rust: nightly
-        #     target: x86_64-unknown-linux-musl
-        #   - os: macOS-latest
-        #     rust: 1.40.0
-        #   - os: macOS-latest
-        #     rust: beta
-        #   - os: macOS-latest
-        #     rust: nightly
     env:
       RUST_BACKTRACE: 1
     steps:

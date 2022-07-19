@@ -31,6 +31,7 @@ pub(crate) struct RawHttpPath(pub(crate) String);
 pub enum PayloadError {
     /// Returned when `application/json` bodies fail to deserialize a payload
     Json(serde_json::Error),
+    /// Returned when the payload's format is something we don't know how to handle
     UnsupportedFormat(Box<dyn std::error::Error + Send + Sync + 'static>),
     /// Returned when `application/x-www-form-urlencoded` bodies fail to deserialize a payload
     WwwFormUrlEncoded(SerdeError),
@@ -158,9 +159,9 @@ pub trait RequestExt {
     fn with_lambda_context(self, context: Context) -> Self;
 }
 
-impl <B> RequestExt for http::Request<B>
+impl<B> RequestExt for http::Request<B>
 where
-    B: HttpBody
+    B: HttpBody,
 {
     fn raw_http_path(&self) -> String {
         self.extensions()
@@ -260,7 +261,7 @@ where
 /// as well as `{"x":1, "y":2}` respectively.
 ///
 /// ```rust,no_run
-/// use lambda_http::{service_fn, Error, Context, Body, IntoResponse, Request, Response, RequestExt, RequestExtBody};
+/// use lambda_http::{service_fn, Error, Context, Body, IntoResponse, Request, Response, RequestExt, RequestBodyExt};
 /// use serde::Deserialize;
 ///
 /// #[derive(Debug,Deserialize,Default)]
@@ -295,7 +296,7 @@ where
 ///   )
 /// }
 /// ```
-pub trait RequestExtBody {
+pub trait RequestBodyExt {
     /// Return the Result of a payload parsed into a serde Deserializeable
     /// type
     ///
@@ -310,7 +311,7 @@ pub trait RequestExtBody {
         for<'de> D: Deserialize<'de>;
 }
 
-impl RequestExtBody for Request {
+impl RequestBodyExt for Request {
     fn payload<D>(&self) -> Result<Option<D>, PayloadError>
     where
         for<'de> D: Deserialize<'de>,
@@ -340,7 +341,7 @@ impl RequestExtBody for Request {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Body, Request, RequestExt, RequestExtBody};
+    use crate::{Body, Request, RequestBodyExt, RequestExt};
     use hyper::Body as HyperBody;
     use serde::Deserialize;
 
@@ -472,9 +473,9 @@ mod tests {
     #[test]
     fn requests_can_mock_raw_http_path_ext() {
         let request: http::Request<HyperBody> = http::Request::builder()
-        .body(HyperBody::from(r#"foo=bar"#))
-        .expect("failed to build request")
-        .with_raw_http_path("/raw-path");
+            .body(HyperBody::from(r#"foo=bar"#))
+            .expect("failed to build request")
+            .with_raw_http_path("/raw-path");
         assert_eq!("/raw-path", request.raw_http_path().as_str());
     }
 }

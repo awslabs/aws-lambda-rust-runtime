@@ -316,7 +316,6 @@ impl RequestBodyExt for Request {
     where
         for<'de> D: Deserialize<'de>,
     {
-        println!("RequestExtWithPayload::payload");
         self.headers()
             .get(http::header::CONTENT_TYPE)
             .map(|ct| match ct.to_str() {

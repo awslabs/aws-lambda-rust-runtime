@@ -1,6 +1,6 @@
 [package]
 name = "lambda_http"
-version = "0.5.2"
+version = "0.6.0"
 authors = ["Doug Tangren"]
 edition = "2021"
 description = "Application Load Balancer and API Gateway event types for AWS Lambda"
@@ -25,7 +25,7 @@ bytes = "1"
 http = "0.2"
 http-body = "0.4"
 hyper = "0.14"
-lambda_runtime = { path = "../lambda-runtime", version = "0.5" }
+lambda_runtime = { path = "../lambda-runtime", version = "0.6" }
 serde = { version = "^1", features = ["derive"] }
 serde_json = "^1"
 serde_urlencoded = "0.7.0"

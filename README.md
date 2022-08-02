@@ -297,11 +297,11 @@ your text fixtures into the structures, and call your handler directly:
 #[test]
 fn test_my_lambda_handler() {
   let input = serde_json::from_str("{\"command\": \"Say Hi!\"}").expect("failed to parse event");
-  let context = lambda_runtime::types::Context::default();
+  let context = lambda_runtime::Context::default();
 
-  let event = lambda_runtime::types::LambdaEvent::new(input, context);
+  let event = lambda_runtime::LambdaEvent::new(input, context);
 
-  my_lambda_handler(event).expect("failed to handle event");
+  my_lambda_handler(event).await.expect("failed to handle event");
 }
 ```
 
@@ -316,7 +316,7 @@ fn test_my_lambda_handler() {
   let request = lambda_http::request::from_str(input)
     .expect("failed to create request");
 
-  let response = my_lambda_handler(request).expect("failed to handle request");
+  let response = my_lambda_handler(request).await.expect("failed to handle request");
 }
 ```
 

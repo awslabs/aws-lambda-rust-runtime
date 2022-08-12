@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["handler",""],["main",""]],"struct":[["Request",""],["Response",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["handler",""],["main",""]],"struct":[["Request",""],["Response",""]]};

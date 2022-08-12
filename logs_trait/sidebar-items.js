@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["main",""]],"struct":[["MyLogsProcessor","Custom log processor that increments a counter for each log record."]],"type":[["MyLogsFuture",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["main",""]],"struct":[["MyLogsProcessor","Custom log processor that increments a counter for each log record."]],"type":[["MyLogsFuture",""]]};

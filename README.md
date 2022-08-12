@@ -11,26 +11,35 @@ This package makes it easy to run AWS Lambda Functions written in Rust. This wor
 
 ## Getting started
 
-The easiest way to start writing Lambda functions with Rust is by using Cargo-Lambda. This Cargo subcommand provides several commands to help you in your journey with Rust on AWS Lambda.
+The easiest way to start writing Lambda functions with Rust is by using Cargo Lambda. This Cargo subcommand provides several commands to help you in your journey with Rust on AWS Lambda.
 
-You can install `cargo-lambda` with a package manager like Homebrew:
+The preferred way to install Cargo Lambda is by using a package manager.
+
+1- Use Homebrew on [MacOS](https://brew.sh/):
 
 ```bash
 brew tap cargo-lambda/cargo-lambda
 brew install cargo-lambda
 ```
 
-Or by compiling it from source:
+2- Use [Scoop](https://scoop.sh/) on Windows:
 
 ```bash
-cargo install cargo-lambda
+scoop bucket add cargo-lambda https://github.com/cargo-lambda/scoop-cargo-lambda
+scoop install cargo-lambda/cargo-lambda
 ```
 
-See other installation options in [the cargo-lambda documentation](https://github.com/cargo-lambda/cargo-lambda#installation).
+Or PiP on any system with Python 3 installed:
+
+```bash
+pip3 install cargo-lambda
+```
+
+See other installation options in [the Cargo Lambda documentation](https://www.cargo-lambda.info/guide/installation.html).
 
 ### Your first function
 
-To create your first function, run `cargo-lambda` with the subcomand `new`. This command will generate a Rust package with the initial source code for your function:
+To create your first function, run Cargo Lambda with the [subcomand `new`](https://www.cargo-lambda.info/commands/new.html). This command will generate a Rust package with the initial source code for your function:
 
 ```
 cargo lambda new YOUR_FUNCTION_NAME
@@ -61,7 +70,7 @@ async fn func(event: LambdaEvent<Value>) -> Result<Value, Error> {
 
 ## Building and deploying your Lambda functions
 
-If you already have `cargo-lambda` installed in your machine, run the next command to build your function:
+If you already have Cargo Lambda installed in your machine, run the next command to build your function:
 
 ```
 cargo lambda build --release
@@ -72,7 +81,7 @@ There are other ways of building your function: manually with the AWS CLI, with 
 
 ### 1. Cross-compiling your Lambda functions
 
-By default, `cargo-lambda` builds your functions to run on x86_64 architectures. If you'd like to use a different architecture, use the options described below.
+By default, Cargo Lambda builds your functions to run on x86_64 architectures. If you'd like to use a different architecture, use the options described below.
 
 #### 1.2. Build your Lambda functions
 
@@ -86,7 +95,7 @@ cargo lambda build --release --arm64
 
 __Amazon Linux 1__
 
-Amazon Linux 1 uses glibc version 2.17, while Rust binaries need glibc version 2.18 or later by default. However, with `cargo-lambda`, you can specify a different version of glibc.
+Amazon Linux 1 uses glibc version 2.17, while Rust binaries need glibc version 2.18 or later by default. However, with Cargo Lambda, you can specify a different version of glibc.
 
 If you are building for Amazon Linux 1, or you want to support both Amazon Linux 2 and 1, run:
 
@@ -101,9 +110,9 @@ For [a custom runtime](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-cus
 
 You can find the `bootstrap` binary for your function under the `target/lambda` directory.
 
-#### 2.2. Deploying with cargo-lambda
+#### 2.2. Deploying with Cargo Lambda
 
-You can use `cargo-lambda` for simple function deployments. Once you've built your code with one of the options described earlier, use the `deploy` subcommand to upload your function to AWS:
+Once you've built your code with one of the options described earlier, use the `deploy` subcommand to upload your function to AWS:
 
 ```bash
 cargo lambda deploy \
@@ -124,9 +133,9 @@ cargo lambda deploy \
 ```
 
 > **info**
-> See other deployment options in [the cargo-lambda documentation](https://github.com/cargo-lambda/cargo-lambda#deploy).
+> See other deployment options in [the Cargo Lambda documentation](https://www.cargo-lambda.info/commands/deploy.html).
 
-You can test the function with `cargo-lambda`'s invoke subcommand:
+You can test the function with the [invoke subcommand](https://www.cargo-lambda.info/commands/invoke.html):
 
 ```bash
 cargo lambda invoke --remote \
@@ -137,7 +146,7 @@ cargo lambda invoke --remote \
 
 #### 2.2. Deploying with the AWS CLI
 
-You can also use the AWS CLI to deploy your Rust functions. First, you will need to create a ZIP archive of your  function. Cargo-lambda can do that for you automatically when it builds your binary if you add the `output-format` flag:
+You can also use the AWS CLI to deploy your Rust functions. First, you will need to create a ZIP archive of your  function. Cargo Lambda can do that for you automatically when it builds your binary if you add the `output-format` flag:
 
 ```bash
 cargo lambda build --release --arm64 --output-format zip
@@ -322,9 +331,9 @@ fn test_my_lambda_handler() {
 
 ### Cargo Lambda
 
-[Cargo Lambda](https://crates.io/crates/cargo-lambda) provides a local server that emulates the AWS Lambda control plane. This server works on Windows, Linux, and MacOS. In the root of your Lambda project, run the subcommand `cargo lambda start` to start the server. Your function will be compiled when the server receives the first request to process. Use the subcommand `cargo lambda invoke` to send requests to your function. The `start` subcommand will watch your function's code for changes, and it will compile it every time you save the source after making changes.
+[Cargo Lambda](https://www.cargo-lambda.info) provides a local server that emulates the AWS Lambda control plane. This server works on Windows, Linux, and MacOS. In the root of your Lambda project, run the subcommand `cargo lambda start` to start the server. Your function will be compiled when the server receives the first request to process. Use the subcommand `cargo lambda invoke` to send requests to your function. The `start` subcommand will watch your function's code for changes, and it will compile it every time you save the source after making changes.
 
-You can read more about how [cargo lambda start](https://github.com/calavera/cargo-lambda#start) and [cargo lambda invoke](https://github.com/calavera/cargo-lambda#invoke) work on the [project's README](https://github.com/calavera/cargo-lambda#cargo-lambda).
+You can read more about how [cargo lambda watch](https://www.cargo-lambda.info/commands/watch.html) and [cargo lambda invoke](https://www.cargo-lambda.info/commands/watch.html) work on the [project's documentation page](https://www.cargo-lambda.info).
 
 ### Lambda Debug Proxy
 

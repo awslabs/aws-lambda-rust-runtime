@@ -14,7 +14,7 @@ pub(crate) trait IntoResponse {
 }
 
 // /runtime/invocation/next
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub(crate) struct NextEventRequest;
 
 impl IntoRequest for NextEventRequest {
@@ -27,7 +27,7 @@ impl IntoRequest for NextEventRequest {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct NextEventResponse<'a> {
     // lambda-runtime-aws-request-id
     pub request_id: &'a str,

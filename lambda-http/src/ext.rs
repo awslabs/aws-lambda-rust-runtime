@@ -328,7 +328,7 @@ mod tests {
 
     #[test]
     fn requests_have_form_post_parsable_payloads() {
-        #[derive(Deserialize, PartialEq, Debug)]
+        #[derive(Deserialize, Eq, PartialEq, Debug)]
         struct Payload {
             foo: String,
             baz: usize,
@@ -349,7 +349,7 @@ mod tests {
 
     #[test]
     fn requests_have_json_parseable_payloads() {
-        #[derive(Deserialize, PartialEq, Debug)]
+        #[derive(Deserialize, Eq, PartialEq, Debug)]
         struct Payload {
             foo: String,
             baz: usize,
@@ -370,7 +370,7 @@ mod tests {
 
     #[test]
     fn requests_match_form_post_content_type_with_charset() {
-        #[derive(Deserialize, PartialEq, Debug)]
+        #[derive(Deserialize, Eq, PartialEq, Debug)]
         struct Payload {
             foo: String,
             baz: usize,
@@ -391,7 +391,7 @@ mod tests {
 
     #[test]
     fn requests_match_json_content_type_with_charset() {
-        #[derive(Deserialize, PartialEq, Debug)]
+        #[derive(Deserialize, Eq, PartialEq, Debug)]
         struct Payload {
             foo: String,
             baz: usize,
@@ -412,7 +412,7 @@ mod tests {
 
     #[test]
     fn requests_omiting_content_types_do_not_support_parseable_payloads() {
-        #[derive(Deserialize, PartialEq, Debug)]
+        #[derive(Deserialize, Eq, PartialEq, Debug)]
         struct Payload {
             foo: String,
             baz: usize,

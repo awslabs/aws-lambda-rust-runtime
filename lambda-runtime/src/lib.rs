@@ -31,7 +31,7 @@ pub use types::{Context, LambdaEvent};
 pub type Error = lambda_runtime_api_client::Error;
 
 /// Configuration derived from environment variables.
-#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Config {
     /// The name of the function.
     pub function_name: String,

@@ -12,7 +12,7 @@ struct Request {
 }
 
 /// Event types that tell our Lambda what to do do.
-#[derive(Deserialize, PartialEq)]
+#[derive(Deserialize, Eq, PartialEq)]
 enum EventType {
     Response,
     ExternalError,

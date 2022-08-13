@@ -376,7 +376,7 @@ pub enum RequestContext {
 }
 
 /// Converts LambdaRequest types into `http::Request<Body>` types
-impl<'a> From<LambdaRequest> for http::Request<Body> {
+impl From<LambdaRequest> for http::Request<Body> {
     fn from(value: LambdaRequest) -> Self {
         match value {
             #[cfg(feature = "apigw_rest")]

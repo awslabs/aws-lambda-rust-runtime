@@ -766,7 +766,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">requests_have_form_post_parsable_payloads</span>() {
-        <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
+        <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
         <span class="kw">struct</span> <span class="ident">Payload</span> {
             <span class="ident">foo</span>: <span class="ident">String</span>,
             <span class="ident">baz</span>: <span class="ident">usize</span>,
@@ -787,7 +787,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">requests_have_json_parseable_payloads</span>() {
-        <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
+        <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
         <span class="kw">struct</span> <span class="ident">Payload</span> {
             <span class="ident">foo</span>: <span class="ident">String</span>,
             <span class="ident">baz</span>: <span class="ident">usize</span>,
@@ -808,7 +808,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">requests_match_form_post_content_type_with_charset</span>() {
-        <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
+        <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
         <span class="kw">struct</span> <span class="ident">Payload</span> {
             <span class="ident">foo</span>: <span class="ident">String</span>,
             <span class="ident">baz</span>: <span class="ident">usize</span>,
@@ -829,7 +829,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">requests_match_json_content_type_with_charset</span>() {
-        <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
+        <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
         <span class="kw">struct</span> <span class="ident">Payload</span> {
             <span class="ident">foo</span>: <span class="ident">String</span>,
             <span class="ident">baz</span>: <span class="ident">usize</span>,
@@ -850,7 +850,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">requests_omiting_content_types_do_not_support_parseable_payloads</span>() {
-        <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
+        <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
         <span class="kw">struct</span> <span class="ident">Payload</span> {
             <span class="ident">foo</span>: <span class="ident">String</span>,
             <span class="ident">baz</span>: <span class="ident">usize</span>,

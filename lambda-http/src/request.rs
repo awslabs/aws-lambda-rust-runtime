@@ -472,10 +472,7 @@ mod tests {
         // Ensure this is an APIGWv2 request
         let req_context = req.request_context();
         assert!(
-            match req_context {
-                RequestContext::ApiGatewayV2(_) => true,
-                _ => false,
-            },
+            matches!(req_context, RequestContext::ApiGatewayV2(_)),
             "expected ApiGatewayV2 context, got {:?}",
             req_context
         );
@@ -507,10 +504,7 @@ mod tests {
         // Ensure this is an APIGWv2 request
         let req_context = req.request_context();
         assert!(
-            match req_context {
-                RequestContext::ApiGatewayV2(_) => true,
-                _ => false,
-            },
+            matches!(req_context, RequestContext::ApiGatewayV2(_)),
             "expected ApiGatewayV2 context, got {:?}",
             req_context
         );
@@ -539,10 +533,7 @@ mod tests {
         // Ensure this is an APIGW request
         let req_context = req.request_context();
         assert!(
-            match req_context {
-                RequestContext::ApiGatewayV1(_) => true,
-                _ => false,
-            },
+            matches!(req_context, RequestContext::ApiGatewayV1(_)),
             "expected ApiGateway context, got {:?}",
             req_context
         );
@@ -570,10 +561,7 @@ mod tests {
         // Ensure this is an ALB request
         let req_context = req.request_context();
         assert!(
-            match req_context {
-                RequestContext::Alb(_) => true,
-                _ => false,
-            },
+            matches!(req_context, RequestContext::Alb(_)),
             "expected Alb context, got {:?}",
             req_context
         );

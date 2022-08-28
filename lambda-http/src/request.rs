@@ -14,12 +14,14 @@ use aws_lambda_events::apigw::{ApiGatewayV2httpRequest, ApiGatewayV2httpRequestC
 use aws_lambda_events::apigw::{ApiGatewayWebsocketProxyRequest, ApiGatewayWebsocketProxyRequestContext};
 use aws_lambda_events::encodings::Body;
 use http::header::HeaderName;
+use http::HeaderMap;
 use query_map::QueryMap;
 use serde::Deserialize;
 use serde_json::error::Error as JsonError;
 use std::future::Future;
 use std::pin::Pin;
 use std::{io::Read, mem};
+use url::Url;
 
 /// Internal representation of an Lambda http event from
 /// ALB, API Gateway REST and HTTP API proxy event perspectives
@@ -82,7 +84,13 @@ pub enum RequestOrigin {
 #[cfg(feature = "apigw_http")]
 fn into_api_gateway_v2_request(ag: ApiGatewayV2httpRequest) -> http::Request<Body> {
     let http_method = ag.request_context.http.method.clone();
+    let host = ag
+        .headers
+        .get(http::header::HOST)
+        .and_then(|s| s.to_str().ok())
+        .or(ag.request_context.domain_name.as_deref());
     let raw_path = ag.raw_path.unwrap_or_default();
+    let path = apigw_path_with_stage(&ag.request_context.stage, &raw_path);
 
     // don't use the query_string_parameters from API GW v2 to
     // populate the QueryStringParameters extension because
@@ -95,32 +103,14 @@ fn into_api_gateway_v2_request(ag: ApiGatewayV2httpRequest) -> http::Request<Bod
         ag.query_string_parameters
     };
 
-    let builder = http::Request::builder()
-        .uri({
-            let host = ag
-                .headers
-                .get(http::header::HOST)
-                .and_then(|s| s.to_str().ok())
-                .or(ag.request_context.domain_name.as_deref());
-            let path = apigw_path_with_stage(&ag.request_context.stage, &raw_path);
+    let mut uri = build_request_uri(&path, &ag.headers, host, None);
+    if let Some(query) = ag.raw_query_string {
+        uri.push('?');
+        uri.push_str(&query);
+    }
 
-            let mut url = match host {
-                None => path,
-                Some(host) => {
-                    let scheme = ag
-                        .headers
-                        .get(x_forwarded_proto())
-                        .and_then(|s| s.to_str().ok())
-                        .unwrap_or("https");
-                    format!("{}://{}{}", scheme, host, path)
-                }
-            };
-            if let Some(query) = ag.raw_query_string {
-                url.push('?');
-                url.push_str(&query);
-            }
-            url
-        })
+    let builder = http::Request::builder()
+        .uri(uri)
         .extension(RawHttpPath(raw_path))
         .extension(QueryStringParameters(query_string_parameters))
         .extension(PathParameters(QueryMap::from(ag.path_parameters)))
@@ -154,34 +144,21 @@ fn into_api_gateway_v2_request(ag: ApiGatewayV2httpRequest) -> http::Request<Bod
 #[cfg(feature = "apigw_rest")]
 fn into_proxy_request(ag: ApiGatewayProxyRequest) -> http::Request<Body> {
     let http_method = ag.http_method;
+    let host = ag
+        .headers
+        .get(http::header::HOST)
+        .and_then(|s| s.to_str().ok())
+        .or(ag.request_context.domain_name.as_deref());
     let raw_path = ag.path.unwrap_or_default();
+    let path = apigw_path_with_stage(&ag.request_context.stage, &raw_path);
 
     let builder = http::Request::builder()
-        .uri({
-            let host = ag.headers.get(http::header::HOST).and_then(|s| s.to_str().ok());
-            let path = apigw_path_with_stage(&ag.request_context.stage, &raw_path);
-
-            let mut url = match host {
-                None => path,
-                Some(host) => {
-                    let scheme = ag
-                        .headers
-                        .get(x_forwarded_proto())
-                        .and_then(|s| s.to_str().ok())
-                        .unwrap_or("https");
-                    format!("{}://{}{}", scheme, host, path)
-                }
-            };
-
-            if !ag.multi_value_query_string_parameters.is_empty() {
-                url.push('?');
-                url.push_str(&ag.multi_value_query_string_parameters.to_query_string());
-            } else if !ag.query_string_parameters.is_empty() {
-                url.push('?');
-                url.push_str(&ag.query_string_parameters.to_query_string());
-            }
-            url
-        })
+        .uri(build_request_uri(
+            &path,
+            &ag.headers,
+            host,
+            Some((&ag.multi_value_query_string_parameters, &ag.query_string_parameters)),
+        ))
         .extension(RawHttpPath(raw_path))
         // multi-valued query string parameters are always a super
         // set of singly valued query string parameters,
@@ -221,34 +198,16 @@ fn into_proxy_request(ag: ApiGatewayProxyRequest) -> http::Request<Body> {
 #[cfg(feature = "alb")]
 fn into_alb_request(alb: AlbTargetGroupRequest) -> http::Request<Body> {
     let http_method = alb.http_method;
+    let host = alb.headers.get(http::header::HOST).and_then(|s| s.to_str().ok());
     let raw_path = alb.path.unwrap_or_default();
 
     let builder = http::Request::builder()
-        .uri({
-            let host = alb.headers.get(http::header::HOST).and_then(|s| s.to_str().ok());
-
-            let mut url = match host {
-                None => raw_path.clone(),
-                Some(host) => {
-                    let scheme = alb
-                        .headers
-                        .get(x_forwarded_proto())
-                        .and_then(|s| s.to_str().ok())
-                        .unwrap_or("https");
-                    format!("{}://{}{}", scheme, host, &raw_path)
-                }
-            };
-
-            if !alb.multi_value_query_string_parameters.is_empty() {
-                url.push('?');
-                url.push_str(&alb.multi_value_query_string_parameters.to_query_string());
-            } else if !alb.query_string_parameters.is_empty() {
-                url.push('?');
-                url.push_str(&alb.query_string_parameters.to_query_string());
-            }
-
-            url
-        })
+        .uri(build_request_uri(
+            &raw_path,
+            &alb.headers,
+            host,
+            Some((&alb.multi_value_query_string_parameters, &alb.query_string_parameters)),
+        ))
         .extension(RawHttpPath(raw_path))
         // multi valued query string parameters are always a super
         // set of singly valued query string parameters,
@@ -287,32 +246,20 @@ fn into_alb_request(alb: AlbTargetGroupRequest) -> http::Request<Body> {
 #[cfg(feature = "apigw_websockets")]
 fn into_websocket_request(ag: ApiGatewayWebsocketProxyRequest) -> http::Request<Body> {
     let http_method = ag.http_method;
+    let host = ag
+        .headers
+        .get(http::header::HOST)
+        .and_then(|s| s.to_str().ok())
+        .or(ag.request_context.domain_name.as_deref());
+    let path = apigw_path_with_stage(&ag.request_context.stage, &ag.path.unwrap_or_default());
+
     let builder = http::Request::builder()
-        .uri({
-            let host = ag.headers.get(http::header::HOST).and_then(|s| s.to_str().ok());
-            let path = apigw_path_with_stage(&ag.request_context.stage, &ag.path.unwrap_or_default());
-
-            let mut url = match host {
-                None => path,
-                Some(host) => {
-                    let scheme = ag
-                        .headers
-                        .get(x_forwarded_proto())
-                        .and_then(|s| s.to_str().ok())
-                        .unwrap_or("https");
-                    format!("{}://{}{}", scheme, host, path)
-                }
-            };
-
-            if !ag.multi_value_query_string_parameters.is_empty() {
-                url.push('?');
-                url.push_str(&ag.multi_value_query_string_parameters.to_query_string());
-            } else if !ag.query_string_parameters.is_empty() {
-                url.push('?');
-                url.push_str(&ag.query_string_parameters.to_query_string());
-            }
-            url
-        })
+        .uri(build_request_uri(
+            &path,
+            &ag.headers,
+            host,
+            Some((&ag.multi_value_query_string_parameters, &ag.query_string_parameters)),
+        ))
         // multi-valued query string parameters are always a super
         // set of singly valued query string parameters,
         // when present, multi-valued query string parameters are preferred
@@ -436,6 +383,40 @@ pub fn from_str(s: &str) -> Result<crate::Request, JsonError> {
 
 fn x_forwarded_proto() -> HeaderName {
     HeaderName::from_static("x-forwarded-proto")
+}
+
+fn build_request_uri(
+    path: &str,
+    headers: &HeaderMap,
+    host: Option<&str>,
+    queries: Option<(&QueryMap, &QueryMap)>,
+) -> String {
+    let mut url = match host {
+        None => {
+            let rel_url = Url::parse(&format!("http://localhost{}", path)).unwrap();
+            rel_url.path().to_string()
+        }
+        Some(host) => {
+            let scheme = headers
+                .get(x_forwarded_proto())
+                .and_then(|s| s.to_str().ok())
+                .unwrap_or("https");
+            let url = format!("{}://{}{}", scheme, host, path);
+            Url::parse(&url).unwrap().to_string()
+        }
+    };
+
+    if let Some((mv, sv)) = queries {
+        if !mv.is_empty() {
+            url.push('?');
+            url.push_str(&mv.to_query_string());
+        } else if !sv.is_empty() {
+            url.push('?');
+            url.push_str(&sv.to_query_string());
+        }
+    }
+
+    url
 }
 
 #[cfg(test)]
@@ -665,5 +646,26 @@ mod tests {
         let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "GET");
         assert_eq!(req.uri(), "/v1/health/");
+    }
+
+    #[test]
+    fn deserialize_apigw_path_with_space() {
+        // generated from ALB health checks
+        let input = include_str!("../tests/data/apigw_request_path_with_space.json");
+        let result = from_str(input);
+        assert!(
+            result.is_ok(),
+            "event was not parsed as expected {:?} given {}",
+            result,
+            input
+        );
+        let req = result.expect("failed to parse request");
+        assert_eq!(req.uri(), "https://id.execute-api.us-east-1.amazonaws.com/my/path-with%20space?parameter1=value1&parameter1=value2&parameter2=value");
+    }
+
+    #[test]
+    fn parse_paths_with_spaces() {
+        let url = build_request_uri("/path with spaces/and multiple segments", &HeaderMap::new(), None, None);
+        assert_eq!("/path%20with%20spaces/and%20multiple%20segments", url);
     }
 }

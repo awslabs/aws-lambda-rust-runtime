@@ -103,7 +103,7 @@ fn into_api_gateway_v2_request(ag: ApiGatewayV2httpRequest) -> http::Request<Bod
         ag.query_string_parameters
     };
 
-    let mut uri = build_request_uri(&path, &ag.headers, host, None, None);
+    let mut uri = build_request_uri(&path, &ag.headers, host, None);
     if let Some(query) = ag.raw_query_string {
         uri.push('?');
         uri.push_str(&query);
@@ -157,8 +157,7 @@ fn into_proxy_request(ag: ApiGatewayProxyRequest) -> http::Request<Body> {
             &path,
             &ag.headers,
             host,
-            Some(&ag.multi_value_query_string_parameters),
-            Some(&ag.query_string_parameters),
+            Some((&ag.multi_value_query_string_parameters, &ag.query_string_parameters)),
         ))
         .extension(RawHttpPath(raw_path))
         // multi-valued query string parameters are always a super
@@ -207,8 +206,7 @@ fn into_alb_request(alb: AlbTargetGroupRequest) -> http::Request<Body> {
             &raw_path,
             &alb.headers,
             host,
-            Some(&alb.multi_value_query_string_parameters),
-            Some(&alb.query_string_parameters),
+            Some((&alb.multi_value_query_string_parameters, &alb.query_string_parameters)),
         ))
         .extension(RawHttpPath(raw_path))
         // multi valued query string parameters are always a super
@@ -260,8 +258,7 @@ fn into_websocket_request(ag: ApiGatewayWebsocketProxyRequest) -> http::Request<
             &path,
             &ag.headers,
             host,
-            Some(&ag.multi_value_query_string_parameters),
-            Some(&ag.query_string_parameters),
+            Some((&ag.multi_value_query_string_parameters, &ag.query_string_parameters)),
         ))
         // multi-valued query string parameters are always a super
         // set of singly valued query string parameters,
@@ -392,11 +389,8 @@ fn build_request_uri(
     path: &str,
     headers: &HeaderMap,
     host: Option<&str>,
-    multi_value_query: Option<&QueryMap>,
-    single_value_query: Option<&QueryMap>,
+    queries: Option<(&QueryMap, &QueryMap)>,
 ) -> String {
-    // let host = headers.get(http::header::HOST).and_then(|s| s.to_str().ok());
-
     let mut url = match host {
         None => {
             let rel_url = Url::parse(&format!("http://localhost{}", path)).unwrap();
@@ -412,7 +406,7 @@ fn build_request_uri(
         }
     };
 
-    if let (Some(mv), Some(sv)) = (multi_value_query, single_value_query) {
+    if let Some((mv, sv)) = queries {
         if !mv.is_empty() {
             url.push('?');
             url.push_str(&mv.to_query_string());
@@ -671,13 +665,7 @@ mod tests {
 
     #[test]
     fn parse_paths_with_spaces() {
-        let url = build_request_uri(
-            "/path with spaces/and multiple segments",
-            &HeaderMap::new(),
-            None,
-            None,
-            None,
-        );
+        let url = build_request_uri("/path with spaces/and multiple segments", &HeaderMap::new(), None, None);
         assert_eq!("/path%20with%20spaces/and%20multiple%20segments", url);
     }
 }

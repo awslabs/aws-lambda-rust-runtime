@@ -7,10 +7,20 @@
 //! Create a type that conforms to the [`tower::Service`] trait. This type can
 //! then be passed to the the `lambda_runtime::run` function, which launches
 //! and runs the Lambda runtime.
-use hyper::client::{connect::Connection, HttpConnector};
+use hyper::{
+    client::{connect::Connection, HttpConnector},
+    http::Request,
+    Body,
+};
 use lambda_runtime_api_client::Client;
 use serde::{Deserialize, Serialize};
-use std::{convert::TryFrom, env, fmt, future::Future, panic};
+use std::{
+    convert::TryFrom,
+    env,
+    fmt::{self, Debug, Display},
+    future::Future,
+    panic,
+};
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio_stream::{Stream, StreamExt};
 pub use tower::{self, service_fn, Service};
@@ -24,7 +34,6 @@ mod simulated;
 mod types;
 
 use requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest};
-use types::Diagnostic;
 pub use types::{Context, LambdaEvent};
 
 /// Error type that lambdas may result in
@@ -121,12 +130,20 @@ where
 
             let ctx: Context = Context::try_from(parts.headers)?;
             let ctx: Context = ctx.with_config(config);
-            let body = serde_json::from_slice(&body)?;
+            let request_id = &ctx.request_id.clone();
 
             let xray_trace_id = &ctx.xray_trace_id.clone();
             env::set_var("_X_AMZN_TRACE_ID", xray_trace_id);
 
-            let request_id = &ctx.request_id.clone();
+            let body = match serde_json::from_slice(&body) {
+                Ok(body) => body,
+                Err(err) => {
+                    let req = build_event_error_request(request_id, err)?;
+                    client.call(req).await.expect("Unable to send response to Runtime APIs");
+                    return Ok(());
+                }
+            };
+
             let req = match handler.ready().await {
                 Ok(handler) => {
                     let task =
@@ -141,48 +158,23 @@ where
                                 }
                                 .into_req()
                             }
-                            Err(err) => {
-                                error!("{:?}", err); // logs the error in CloudWatch
-                                EventErrorRequest {
-                                    request_id,
-                                    diagnostic: Diagnostic {
-                                        error_type: type_name_of_val(&err).to_owned(),
-                                        error_message: format!("{}", err), // returns the error to the caller via Lambda API
-                                    },
-                                }
-                                .into_req()
-                            }
+                            Err(err) => build_event_error_request(request_id, err),
                         },
                         Err(err) => {
                             error!("{:?}", err);
-                            EventErrorRequest {
-                                request_id,
-                                diagnostic: Diagnostic {
-                                    error_type: type_name_of_val(&err).to_owned(),
-                                    error_message: if let Some(msg) = err.downcast_ref::<&str>() {
-                                        format!("Lambda panicked: {}", msg)
-                                    } else {
-                                        "Lambda panicked".to_string()
-                                    },
-                                },
-                            }
-                            .into_req()
+                            let error_type = type_name_of_val(&err);
+                            let msg = if let Some(msg) = err.downcast_ref::<&str>() {
+                                format!("Lambda panicked: {}", msg)
+                            } else {
+                                "Lambda panicked".to_string()
+                            };
+                            EventErrorRequest::new(request_id, error_type, &msg).into_req()
                         }
                     }
                 }
-                Err(err) => {
-                    error!("{:?}", err); // logs the error in CloudWatch
-                    EventErrorRequest {
-                        request_id,
-                        diagnostic: Diagnostic {
-                            error_type: type_name_of_val(&err).to_owned(),
-                            error_message: format!("{}", err), // returns the error to the caller via Lambda API
-                        },
-                    }
-                    .into_req()
-                }
-            };
-            let req = req?;
+                Err(err) => build_event_error_request(request_id, err),
+            }?;
+
             client.call(req).await.expect("Unable to send response to Runtime APIs");
         }
         Ok(())
@@ -245,6 +237,17 @@ where
 
 fn type_name_of_val<T>(_: T) -> &'static str {
     std::any::type_name::<T>()
+}
+
+fn build_event_error_request<T>(request_id: &str, err: T) -> Result<Request<Body>, Error>
+where
+    T: Display + Debug,
+{
+    error!("{:?}", err); // logs the error in CloudWatch
+    let error_type = type_name_of_val(&err);
+    let msg = format!("{}", err);
+
+    EventErrorRequest::new(request_id, error_type, &msg).into_req()
 }
 
 #[cfg(test)]
@@ -431,8 +434,8 @@ mod endpoint_tests {
         let req = EventErrorRequest {
             request_id: "156cb537-e2d4-11e8-9b34-d36013741fb9",
             diagnostic: Diagnostic {
-                error_type: "InvalidEventDataError".to_string(),
-                error_message: "Error parsing event data".to_string(),
+                error_type: "InvalidEventDataError",
+                error_message: "Error parsing event data",
             },
         };
         let req = req.into_req()?;

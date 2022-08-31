@@ -5,24 +5,9 @@ use std::{collections::HashMap, convert::TryFrom};
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct Diagnostic {
-    pub(crate) error_type: String,
-    pub(crate) error_message: String,
-}
-
-#[test]
-fn round_trip_lambda_error() -> Result<(), Error> {
-    use serde_json::{json, Value};
-    let expected = json!({
-        "errorType": "InvalidEventDataError",
-        "errorMessage": "Error parsing event data.",
-    });
-
-    let actual: Diagnostic = serde_json::from_value(expected.clone())?;
-    let actual: Value = serde_json::to_value(actual)?;
-    assert_eq!(expected, actual);
-
-    Ok(())
+pub(crate) struct Diagnostic<'a> {
+    pub(crate) error_type: &'a str,
+    pub(crate) error_message: &'a str,
 }
 
 /// The request ID, which identifies the request that triggered the function invocation. This header
@@ -190,6 +175,22 @@ impl<T> LambdaEvent<T> {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn round_trip_lambda_error() {
+        use serde_json::{json, Value};
+        let expected = json!({
+            "errorType": "InvalidEventDataError",
+            "errorMessage": "Error parsing event data.",
+        });
+
+        let actual = Diagnostic {
+            error_type: "InvalidEventDataError",
+            error_message: "Error parsing event data.",
+        };
+        let actual: Value = serde_json::to_value(actual).expect("failed to serialize diagnostic");
+        assert_eq!(expected, actual);
+    }
 
     #[test]
     fn context_with_expected_values_and_types_resolves() {

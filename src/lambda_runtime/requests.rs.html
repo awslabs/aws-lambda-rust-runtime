@@ -177,6 +177,18 @@
 <span id="171">171</span>
 <span id="172">172</span>
 <span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">types::Diagnostic</span>, <span class="ident">Error</span>};
 <span class="kw">use</span> <span class="ident">http</span>::{<span class="ident">Method</span>, <span class="ident">Request</span>, <span class="ident">Response</span>, <span class="ident">Uri</span>};
 <span class="kw">use</span> <span class="ident">hyper::Body</span>;
@@ -283,7 +295,19 @@
 <span class="comment">// /runtime/invocation/{AwsRequestId}/error</span>
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">EventErrorRequest</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">request_id</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">diagnostic</span>: <span class="ident">Diagnostic</span>,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">diagnostic</span>: <span class="ident">Diagnostic</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">EventErrorRequest</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">request_id</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="ident">error_type</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="ident">error_message</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>) -&gt; <span class="ident">EventErrorRequest</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+        <span class="ident">EventErrorRequest</span> {
+            <span class="ident">request_id</span>,
+            <span class="ident">diagnostic</span>: <span class="ident">Diagnostic</span> {
+                <span class="ident">error_type</span>,
+                <span class="ident">error_message</span>,
+            },
+        }
+    }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">IntoRequest</span> <span class="kw">for</span> <span class="ident">EventErrorRequest</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
@@ -307,8 +331,8 @@
     <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">EventErrorRequest</span> {
         <span class="ident">request_id</span>: <span class="string">&quot;id&quot;</span>,
         <span class="ident">diagnostic</span>: <span class="ident">Diagnostic</span> {
-            <span class="ident">error_type</span>: <span class="string">&quot;InvalidEventDataError&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">error_message</span>: <span class="string">&quot;Error parsing event data&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">error_type</span>: <span class="string">&quot;InvalidEventDataError&quot;</span>,
+            <span class="ident">error_message</span>: <span class="string">&quot;Error parsing event data&quot;</span>,
         },
     };
     <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">into_req</span>().<span class="ident">unwrap</span>();

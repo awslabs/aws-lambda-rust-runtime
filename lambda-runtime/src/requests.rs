@@ -104,7 +104,19 @@ fn test_event_completion_request() {
 // /runtime/invocation/{AwsRequestId}/error
 pub(crate) struct EventErrorRequest<'a> {
     pub(crate) request_id: &'a str,
-    pub(crate) diagnostic: Diagnostic,
+    pub(crate) diagnostic: Diagnostic<'a>,
+}
+
+impl<'a> EventErrorRequest<'a> {
+    pub(crate) fn new(request_id: &'a str, error_type: &'a str, error_message: &'a str) -> EventErrorRequest<'a> {
+        EventErrorRequest {
+            request_id,
+            diagnostic: Diagnostic {
+                error_type,
+                error_message,
+            },
+        }
+    }
 }
 
 impl<'a> IntoRequest for EventErrorRequest<'a> {
@@ -128,8 +140,8 @@ fn test_event_error_request() {
     let req = EventErrorRequest {
         request_id: "id",
         diagnostic: Diagnostic {
-            error_type: "InvalidEventDataError".to_string(),
-            error_message: "Error parsing event data".to_string(),
+            error_type: "InvalidEventDataError",
+            error_message: "Error parsing event data",
         },
     };
     let req = req.into_req().unwrap();

@@ -7,6 +7,7 @@
 //! Create a type that conforms to the [`tower::Service`] trait. This type can
 //! then be passed to the the `lambda_runtime::run` function, which launches
 //! and runs the Lambda runtime.
+use futures::FutureExt;
 use hyper::{
     client::{connect::Connection, HttpConnector},
     http::Request,
@@ -146,10 +147,18 @@ where
 
             let req = match handler.ready().await {
                 Ok(handler) => {
+                    // Catches panics outside of a `Future`
                     let task =
                         panic::catch_unwind(panic::AssertUnwindSafe(|| handler.call(LambdaEvent::new(body, ctx))));
+
+                    let task = match task {
+                        // Catches panics inside of the `Future`
+                        Ok(task) => panic::AssertUnwindSafe(task).catch_unwind().await,
+                        Err(err) => Err(err),
+                    };
+
                     match task {
-                        Ok(response) => match response.await {
+                        Ok(response) => match response {
                             Ok(response) => {
                                 trace!("Ok response from handler (run loop)");
                                 EventCompletionRequest {
@@ -261,6 +270,7 @@ mod endpoint_tests {
         types::Diagnostic,
         Error, Runtime,
     };
+    use futures::future::BoxFuture;
     use http::{uri::PathAndQuery, HeaderValue, Method, Request, Response, StatusCode, Uri};
     use hyper::{server::conn::Http, service::service_fn, Body};
     use lambda_runtime_api_client::Client;
@@ -507,5 +517,59 @@ mod endpoint_tests {
             Err(e) if e.is_panic() => Err::<(), Error>(e.into()),
             Err(_) => unreachable!("This branch shouldn't be reachable"),
         }
+    }
+
+    async fn run_panicking_handler<F>(func: F) -> Result<(), Error>
+    where
+        F: FnMut(crate::LambdaEvent<serde_json::Value>) -> BoxFuture<'static, Result<serde_json::Value, Error>>,
+    {
+        let (client, server) = io::duplex(64);
+        let (_tx, rx) = oneshot::channel();
+        let base = Uri::from_static("http://localhost:9001");
+
+        let server = tokio::spawn(async {
+            handle(server, rx).await.expect("Unable to handle request");
+        });
+        let conn = simulated::Connector::with(base.clone(), DuplexStreamWrapper::new(client))?;
+
+        let client = Client::builder()
+            .with_endpoint(base)
+            .with_connector(conn)
+            .build()
+            .expect("Unable to build client");
+
+        let f = crate::service_fn(func);
+
+        let config = crate::Config {
+            function_name: "test_fn".to_string(),
+            memory: 128,
+            version: "1".to_string(),
+            log_stream: "test_stream".to_string(),
+            log_group: "test_log".to_string(),
+        };
+
+        let runtime = Runtime { client };
+        let client = &runtime.client;
+        let incoming = incoming(client).take(1);
+        runtime.run(incoming, f, &config).await?;
+
+        match server.await {
+            Ok(_) => Ok(()),
+            Err(e) if e.is_panic() => Err::<(), Error>(e.into()),
+            Err(_) => unreachable!("This branch shouldn't be reachable"),
+        }
+    }
+
+    #[tokio::test]
+    async fn panic_in_async_run() -> Result<(), Error> {
+        run_panicking_handler(|_| Box::pin(async { panic!("This is intentionally here") })).await
+    }
+
+    #[tokio::test]
+    async fn panic_outside_async_run() -> Result<(), Error> {
+        run_panicking_handler(|_| {
+            panic!("This is intentionally here");
+        })
+        .await
     }
 }

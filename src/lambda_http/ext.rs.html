@@ -436,6 +436,17 @@
 <span id="430">430</span>
 <span id="431">431</span>
 <span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Extension methods for `http::Request` types</span>
 
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">request::RequestContext</span>, <span class="ident">Body</span>};
@@ -603,6 +614,11 @@
     <span class="doccomment">/// Return request context data assocaited with the ALB or API gateway request</span>
     <span class="kw">fn</span> <span class="ident">request_context</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">RequestContext</span>;
 
+    <span class="doccomment">/// Configures instance with request context</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This is intended for use in mock testing contexts.</span>
+    <span class="kw">fn</span> <span class="ident">with_request_context</span>(<span class="self">self</span>, <span class="ident">context</span>: <span class="ident">RequestContext</span>) -&gt; <span class="self">Self</span>;
+
     <span class="doccomment">/// Return the Result of a payload parsed into a serde Deserializeable</span>
     <span class="doccomment">/// type</span>
     <span class="doccomment">///</span>
@@ -691,6 +707,12 @@
             .<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">RequestContext</span><span class="op">&gt;</span>()
             .<span class="ident">cloned</span>()
             .<span class="ident">expect</span>(<span class="string">&quot;Request did not contain a request context&quot;</span>)
+    }
+
+    <span class="kw">fn</span> <span class="ident">with_request_context</span>(<span class="self">self</span>, <span class="ident">context</span>: <span class="ident">RequestContext</span>) -&gt; <span class="self">Self</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="self">self</span>;
+        <span class="ident">s</span>.<span class="ident">extensions_mut</span>().<span class="ident">insert</span>(<span class="ident">context</span>);
+        <span class="ident">s</span>
     }
 
     <span class="kw">fn</span> <span class="ident">lambda_context</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Context</span> {

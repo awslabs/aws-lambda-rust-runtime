@@ -162,7 +162,7 @@ pub trait RequestExt {
     where
         V: Into<QueryMap>;
 
-    /// Return request context data assocaited with the ALB or API gateway request
+    /// Return request context data associated with the ALB or API gateway request
     fn request_context(&self) -> RequestContext;
 
     /// Return the Result of a payload parsed into a serde Deserializeable

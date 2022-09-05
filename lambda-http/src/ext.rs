@@ -125,7 +125,7 @@ pub trait RequestExt {
     /// will yield an empty `QueryMap`.
     fn query_string_parameters(&self) -> QueryMap;
 
-    /// Configures instance with query string parameters under #[cfg(test)] configurations
+    /// Configures instance with query string parameters
     ///
     /// This is intended for use in mock testing contexts.
     fn with_query_string_parameters<Q>(self, parameters: Q) -> Self
@@ -140,7 +140,7 @@ pub trait RequestExt {
     /// These will always be empty for ALB triggered requests
     fn path_parameters(&self) -> QueryMap;
 
-    /// Configures instance with path parameters under #[cfg(test)] configurations
+    /// Configures instance with path parameters
     ///
     /// This is intended for use in mock testing contexts.
     fn with_path_parameters<P>(self, parameters: P) -> Self

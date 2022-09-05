@@ -563,7 +563,7 @@
     <span class="doccomment">/// will yield an empty `QueryMap`.</span>
     <span class="kw">fn</span> <span class="ident">query_string_parameters</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">QueryMap</span>;
 
-    <span class="doccomment">/// Configures instance with query string parameters under #[cfg(test)] configurations</span>
+    <span class="doccomment">/// Configures instance with query string parameters</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This is intended for use in mock testing contexts.</span>
     <span class="kw">fn</span> <span class="ident">with_query_string_parameters</span><span class="op">&lt;</span><span class="ident">Q</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">parameters</span>: <span class="ident">Q</span>) -&gt; <span class="self">Self</span>
@@ -578,7 +578,7 @@
     <span class="doccomment">/// These will always be empty for ALB triggered requests</span>
     <span class="kw">fn</span> <span class="ident">path_parameters</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">QueryMap</span>;
 
-    <span class="doccomment">/// Configures instance with path parameters under #[cfg(test)] configurations</span>
+    <span class="doccomment">/// Configures instance with path parameters</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This is intended for use in mock testing contexts.</span>
     <span class="kw">fn</span> <span class="ident">with_path_parameters</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">parameters</span>: <span class="ident">P</span>) -&gt; <span class="self">Self</span>

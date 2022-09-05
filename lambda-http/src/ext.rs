@@ -165,6 +165,11 @@ pub trait RequestExt {
     /// Return request context data assocaited with the ALB or API gateway request
     fn request_context(&self) -> RequestContext;
 
+    /// Configures instance with request context
+    ///
+    /// This is intended for use in mock testing contexts.
+    fn with_request_context(self, context: RequestContext) -> Self;
+
     /// Return the Result of a payload parsed into a serde Deserializeable
     /// type
     ///
@@ -253,6 +258,12 @@ impl RequestExt for http::Request<Body> {
             .get::<RequestContext>()
             .cloned()
             .expect("Request did not contain a request context")
+    }
+
+    fn with_request_context(self, context: RequestContext) -> Self {
+        let mut s = self;
+        s.extensions_mut().insert(context);
+        s
     }
 
     fn lambda_context(&self) -> Context {

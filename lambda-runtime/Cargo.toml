@@ -1,7 +1,10 @@
 [package]
 name = "lambda_runtime"
-version = "0.6.0"
-authors = ["David Barsky <dbarsky@amazon.com>"]
+version = "0.6.1"
+authors = [
+    "David Calavera <dcalaver@amazon.com>",
+    "Harold Sun <sunhua@amazon.com>"
+]
 description = "AWS Lambda Runtime"
 edition = "2021"
 license = "Apache-2.0"

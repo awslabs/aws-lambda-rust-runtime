@@ -2,7 +2,10 @@
 name = "lambda-extension"
 version = "0.6.0"
 edition = "2021"
-authors = ["David Calavera <david.calavera@gmail.com>"]
+authors = [
+    "David Calavera <dcalaver@amazon.com>",
+    "Harold Sun <sunhua@amazon.com>"
+]
 description = "AWS Lambda Extension API"
 license = "Apache-2.0"
 repository = "https://github.com/awslabs/aws-lambda-rust-runtime"

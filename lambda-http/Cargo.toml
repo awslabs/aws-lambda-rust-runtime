@@ -1,7 +1,10 @@
 [package]
 name = "lambda_http"
-version = "0.6.0"
-authors = ["Doug Tangren"]
+version = "0.6.1"
+authors = [
+    "David Calavera <dcalaver@amazon.com>",
+    "Harold Sun <sunhua@amazon.com>"
+]
 edition = "2021"
 description = "Application Load Balancer and API Gateway event types for AWS Lambda"
 keywords = ["AWS", "Lambda", "APIGateway", "ALB", "API"]

@@ -188,10 +188,13 @@ where
             return convert_to_text(self, "utf-8");
         };
 
+        // See list of common MIME types:
+        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
         if content_type.starts_with("text")
             || content_type.starts_with("application/json")
             || content_type.starts_with("application/javascript")
             || content_type.starts_with("application/xml")
+            || content_type.ends_with("+xml")
         {
             return convert_to_text(self, content_type);
         }

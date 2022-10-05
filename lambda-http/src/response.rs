@@ -23,6 +23,8 @@ use std::borrow::Cow;
 use std::future::ready;
 use std::{fmt, future::Future, pin::Pin};
 
+const X_LAMBDA_HTTP_CONTENT_ENCODING: &str = "x-lambda-http-content-encoding";
+
 /// Representation of Lambda response
 #[doc(hidden)]
 #[derive(Serialize, Debug)]
@@ -181,7 +183,7 @@ where
             return convert_to_binary(self);
         }
 
-        let content_type = if let Some(value) = headers.get(http::header::CONTENT_TYPE) {
+        let content_type = if let Some(value) = headers.get(CONTENT_TYPE) {
             value.to_str().unwrap_or_default()
         } else {
             // Content-Type and Content-Encoding not set, passthrough as utf8 text
@@ -197,6 +199,12 @@ where
             || content_type.ends_with("+xml")
         {
             return convert_to_text(self, content_type);
+        }
+
+        if let Some(value) = headers.get(X_LAMBDA_HTTP_CONTENT_ENCODING) {
+            if value == "text" {
+                return convert_to_text(self, content_type);
+            }
         }
 
         convert_to_binary(self)
@@ -242,13 +250,15 @@ pub type BodyFuture = Pin<Box<dyn Future<Output = Body>>>;
 
 #[cfg(test)]
 mod tests {
-    use super::{Body, IntoResponse, LambdaResponse, RequestOrigin};
+    use super::{Body, IntoResponse, LambdaResponse, RequestOrigin, X_LAMBDA_HTTP_CONTENT_ENCODING};
     use http::{
         header::{CONTENT_ENCODING, CONTENT_TYPE},
         Response,
     };
     use hyper::Body as HyperBody;
     use serde_json::{self, json};
+
+    const SVG_LOGO: &str = include_str!("../tests/data/svg_logo.svg");
 
     #[tokio::test]
     async fn json_into_response() {
@@ -386,6 +396,54 @@ mod tests {
         assert_eq!(
             "{\"statusCode\":200,\"headers\":{},\"multiValueHeaders\":{},\"isBase64Encoded\":false,\"cookies\":[\"cookie1=a\",\"cookie2=b\"]}",
             json
+        )
+    }
+
+    #[tokio::test]
+    async fn content_type_xml_as_text() {
+        // Drive the implementation by using `hyper::Body` instead of
+        // of `aws_lambda_events::encodings::Body`
+        let response = Response::builder()
+            .header(CONTENT_TYPE, "image/svg+xml")
+            .body(HyperBody::from(SVG_LOGO.as_bytes()))
+            .expect("unable to build http::Response");
+        let response = response.into_response().await;
+
+        match response.body() {
+            Body::Text(body) => assert_eq!(SVG_LOGO, body),
+            _ => panic!("invalid body"),
+        }
+        assert_eq!(
+            response
+                .headers()
+                .get(CONTENT_TYPE)
+                .map(|h| h.to_str().expect("invalid header")),
+            Some("image/svg+xml")
+        )
+    }
+
+    #[tokio::test]
+    async fn content_type_custom_encoding_as_text() {
+        // Drive the implementation by using `hyper::Body` instead of
+        // of `aws_lambda_events::encodings::Body`
+        let response = Response::builder()
+            // this CONTENT-TYPE is not standard, and would yield a binary response
+            .header(CONTENT_TYPE, "image/svg")
+            .header(X_LAMBDA_HTTP_CONTENT_ENCODING, "text")
+            .body(HyperBody::from(SVG_LOGO.as_bytes()))
+            .expect("unable to build http::Response");
+        let response = response.into_response().await;
+
+        match response.body() {
+            Body::Text(body) => assert_eq!(SVG_LOGO, body),
+            _ => panic!("invalid body"),
+        }
+        assert_eq!(
+            response
+                .headers()
+                .get(CONTENT_TYPE)
+                .map(|h| h.to_str().expect("invalid header")),
+            Some("image/svg")
         )
     }
 }

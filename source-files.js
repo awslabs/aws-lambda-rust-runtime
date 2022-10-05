@@ -1,13 +1,14 @@
-var sourcesIndex = {};
-sourcesIndex["extension_fn"] = {"name":"","files":["extension-fn.rs"]};
-sourcesIndex["extension_trait"] = {"name":"","files":["extension-trait.rs"]};
-sourcesIndex["http_fn"] = {"name":"","files":["http-fn.rs"]};
-sourcesIndex["http_trait"] = {"name":"","files":["http-trait.rs"]};
-sourcesIndex["lambda_extension"] = {"name":"","files":["error.rs","events.rs","extension.rs","lib.rs","logs.rs","requests.rs"]};
-sourcesIndex["lambda_http"] = {"name":"","files":["ext.rs","lib.rs","request.rs","response.rs"]};
-sourcesIndex["lambda_runtime"] = {"name":"","files":["lib.rs","requests.rs","types.rs"]};
-sourcesIndex["lambda_runtime_api_client"] = {"name":"","files":["lib.rs"]};
-sourcesIndex["logs_trait"] = {"name":"","files":["logs-trait.rs"]};
-sourcesIndex["runtime_fn"] = {"name":"","files":["runtime-fn.rs"]};
-sourcesIndex["runtime_trait"] = {"name":"","files":["runtime-trait.rs"]};
+var sourcesIndex = JSON.parse('{\
+"extension_fn":["",[],["extension-fn.rs"]],\
+"extension_trait":["",[],["extension-trait.rs"]],\
+"http_fn":["",[],["http-fn.rs"]],\
+"http_trait":["",[],["http-trait.rs"]],\
+"lambda_extension":["",[],["error.rs","events.rs","extension.rs","lib.rs","logs.rs","requests.rs"]],\
+"lambda_http":["",[],["ext.rs","lib.rs","request.rs","response.rs"]],\
+"lambda_runtime":["",[],["lib.rs","requests.rs","types.rs"]],\
+"lambda_runtime_api_client":["",[],["lib.rs"]],\
+"logs_trait":["",[],["logs-trait.rs"]],\
+"runtime_fn":["",[],["runtime-fn.rs"]],\
+"runtime_trait":["",[],["runtime-trait.rs"]]\
+}');
 createSourceSidebar();

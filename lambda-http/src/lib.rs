@@ -134,7 +134,7 @@ pub struct Adapter<'a, R, S> {
 impl<'a, R, S, E> From<S> for Adapter<'a, R, S>
 where
     S: Service<Request, Response = R, Error = E>,
-    S::Future: 'a,
+    S::Future: Send + 'a,
     R: IntoResponse,
 {
     fn from(service: S) -> Self {
@@ -148,7 +148,7 @@ where
 impl<'a, R, S, E> Service<LambdaEvent<LambdaRequest>> for Adapter<'a, R, S>
 where
     S: Service<Request, Response = R, Error = E>,
-    S::Future: 'a,
+    S::Future: Send + 'a,
     R: IntoResponse,
 {
     type Response = LambdaResponse;
@@ -176,9 +176,65 @@ where
 pub async fn run<'a, R, S, E>(handler: S) -> Result<(), Error>
 where
     S: Service<Request, Response = R, Error = E>,
-    S::Future: 'a,
+    S::Future: Send + 'a,
     R: IntoResponse,
     E: std::fmt::Debug + std::fmt::Display,
 {
     lambda_runtime::run(Adapter::from(handler)).await
+}
+
+#[cfg(test)]
+mod test_adapter {
+    use std::task::{Context, Poll};
+
+    use crate::{
+        http::{Response, StatusCode},
+        lambda_runtime::LambdaEvent,
+        request::LambdaRequest,
+        response::LambdaResponse,
+        tower::{util::BoxService, Service, ServiceBuilder, ServiceExt},
+        Adapter, Body, Request,
+    };
+
+    // A middleware that logs requests before forwarding them to another service
+    struct LogService<S> {
+        inner: S,
+    }
+
+    impl<S> Service<LambdaEvent<LambdaRequest>> for LogService<S>
+    where
+        S: Service<LambdaEvent<LambdaRequest>>,
+    {
+        type Response = S::Response;
+        type Error = S::Error;
+        type Future = S::Future;
+
+        fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+            self.inner.poll_ready(cx)
+        }
+
+        fn call(&mut self, event: LambdaEvent<LambdaRequest>) -> Self::Future {
+            // Log the request
+            println!("Lambda event: {:#?}", event);
+
+            self.inner.call(event)
+        }
+    }
+
+    /// This tests that `Adapter` can be used in a `tower::Service` where the user
+    /// may require additional middleware between `lambda_runtime::run` and where
+    /// the `LambdaEvent` is converted into a `Request`.
+    #[test]
+    fn adapter_is_boxable() {
+        let _service: BoxService<LambdaEvent<LambdaRequest>, LambdaResponse, http::Error> = ServiceBuilder::new()
+            .layer_fn(|service| {
+                // This could be any middleware that logs, inspects, or manipulates
+                // the `LambdaEvent` before it's converted to a `Request` by `Adapter`.
+
+                LogService { inner: service }
+            })
+            .layer_fn(Adapter::from)
+            .service_fn(|_event: Request| async move { Response::builder().status(StatusCode::OK).body(Body::Empty) })
+            .boxed();
+    }
 }

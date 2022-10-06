@@ -61,7 +61,7 @@ impl LambdaRequest {
 }
 
 /// RequestFuture type
-pub type RequestFuture<'a, R, E> = Pin<Box<dyn Future<Output = Result<R, E>> + 'a>>;
+pub type RequestFuture<'a, R, E> = Pin<Box<dyn Future<Output = Result<R, E>> + Send + 'a>>;
 
 /// Represents the origin from which the lambda was requested from.
 #[doc(hidden)]

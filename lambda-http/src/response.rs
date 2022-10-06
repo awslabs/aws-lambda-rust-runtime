@@ -25,6 +25,19 @@ use std::{fmt, future::Future, pin::Pin};
 
 const X_LAMBDA_HTTP_CONTENT_ENCODING: &str = "x-lambda-http-content-encoding";
 
+// See list of common MIME types:
+// - https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
+// - https://github.com/ietf-wg-httpapi/mediatypes/blob/main/draft-ietf-httpapi-yaml-mediatypes.md
+const TEXT_ENCODING_PREFIXES: [&'static str; 5] = [
+    "text",
+    "application/json",
+    "application/javascript",
+    "application/xml",
+    "application/yaml",
+];
+
+const TEXT_ENCODING_SUFFIXES: [&'static str; 3] = ["+xml", "+yaml", "+json"];
+
 /// Representation of Lambda response
 #[doc(hidden)]
 #[derive(Serialize, Debug)]
@@ -190,15 +203,16 @@ where
             return convert_to_text(self, "utf-8");
         };
 
-        // See list of common MIME types:
-        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
-        if content_type.starts_with("text")
-            || content_type.starts_with("application/json")
-            || content_type.starts_with("application/javascript")
-            || content_type.starts_with("application/xml")
-            || content_type.ends_with("+xml")
-        {
-            return convert_to_text(self, content_type);
+        for prefix in TEXT_ENCODING_PREFIXES {
+            if content_type.starts_with(prefix) {
+                return convert_to_text(self, content_type);
+            }
+        }
+
+        for suffix in TEXT_ENCODING_SUFFIXES {
+            if content_type.ends_with(suffix) {
+                return convert_to_text(self, content_type);
+            }
         }
 
         if let Some(value) = headers.get(X_LAMBDA_HTTP_CONTENT_ENCODING) {
@@ -445,5 +459,36 @@ mod tests {
                 .map(|h| h.to_str().expect("invalid header")),
             Some("image/svg")
         )
+    }
+
+    #[tokio::test]
+    async fn content_type_yaml_as_text() {
+        // Drive the implementation by using `hyper::Body` instead of
+        // of `aws_lambda_events::encodings::Body`
+        let yaml = r#"---
+foo: bar
+        "#;
+
+        let formats = ["application/yaml", "custom/vdn+yaml"];
+
+        for format in formats {
+            let response = Response::builder()
+                .header(CONTENT_TYPE, format)
+                .body(HyperBody::from(yaml.as_bytes()))
+                .expect("unable to build http::Response");
+            let response = response.into_response().await;
+
+            match response.body() {
+                Body::Text(body) => assert_eq!(yaml, body),
+                _ => panic!("invalid body"),
+            }
+            assert_eq!(
+                response
+                    .headers()
+                    .get(CONTENT_TYPE)
+                    .map(|h| h.to_str().expect("invalid header")),
+                Some(format)
+            )
+        }
     }
 }

@@ -1,13 +1,15 @@
-use crate::{logs::*, requests, Error, ExtensionError, LambdaEvent, NextEvent};
-use hyper::{server::conn::AddrStream, Server};
-use lambda_runtime_api_client::Client;
 use std::{
     convert::Infallible, fmt, future::ready, future::Future, net::SocketAddr, path::PathBuf, pin::Pin, sync::Arc,
 };
+
+use hyper::{server::conn::AddrStream, Server};
+use lambda_runtime_api_client::Client;
 use tokio::sync::Mutex;
 use tokio_stream::StreamExt;
-use tower::{service_fn, MakeService, Service};
+use tower::{service_fn, MakeService, Service, ServiceExt};
 use tracing::{error, trace};
+
+use crate::{logs::*, requests, Error, ExtensionError, LambdaEvent, NextEvent};
 
 const DEFAULT_LOG_PORT_NUMBER: u16 = 9002;
 
@@ -198,6 +200,21 @@ where
             let is_invoke = event.is_invoke();
 
             let event = LambdaEvent::new(extension_id, event);
+
+            let ep = match ep.ready().await {
+                Ok(ep) => ep,
+                Err(error) => {
+                    println!("Inner service is not ready: {:?}", error);
+                    let req = if is_invoke {
+                        requests::init_error(extension_id, &error.to_string(), None)?
+                    } else {
+                        requests::exit_error(extension_id, &error.to_string(), None)?
+                    };
+
+                    client.call(req).await?;
+                    return Err(error.into());
+                }
+            };
 
             let res = ep.call(event).await;
             if let Err(error) = res {

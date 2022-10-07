@@ -12,10 +12,9 @@ use aws_lambda_events::apigw::{ApiGatewayProxyRequest, ApiGatewayProxyRequestCon
 use aws_lambda_events::apigw::{ApiGatewayV2httpRequest, ApiGatewayV2httpRequestContext};
 #[cfg(feature = "apigw_websockets")]
 use aws_lambda_events::apigw::{ApiGatewayWebsocketProxyRequest, ApiGatewayWebsocketProxyRequestContext};
-use aws_lambda_events::encodings::Body;
+use aws_lambda_events::{encodings::Body, query_map::QueryMap};
 use http::header::HeaderName;
 use http::HeaderMap;
-use query_map::QueryMap;
 use serde::Deserialize;
 use serde_json::error::Error as JsonError;
 use std::future::Future;

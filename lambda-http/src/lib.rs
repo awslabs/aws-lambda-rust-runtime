@@ -155,8 +155,8 @@ where
     type Error = E;
     type Future = TransformResponse<'a, R, Self::Error>;
 
-    fn poll_ready(&mut self, _cx: &mut core::task::Context<'_>) -> core::task::Poll<Result<(), Self::Error>> {
-        core::task::Poll::Ready(Ok(()))
+    fn poll_ready(&mut self, cx: &mut core::task::Context<'_>) -> core::task::Poll<Result<(), Self::Error>> {
+        self.service.poll_ready(cx)
     }
 
     fn call(&mut self, req: LambdaEvent<LambdaRequest>) -> Self::Future {

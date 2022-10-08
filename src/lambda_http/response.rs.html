@@ -495,13 +495,13 @@
 </pre><pre class="rust"><code><span class="doccomment">//! Response types</span>
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::request::RequestOrigin</span>;
-<span class="kw">use</span> <span class="ident">aws_lambda_events::encodings::Body</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;alb&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">aws_lambda_events::event::alb::AlbTargetGroupResponse</span>;
+<span class="kw">use</span> <span class="ident">aws_lambda_events::alb::AlbTargetGroupResponse</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_rest&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_websockets&quot;</span>))]</span>
-<span class="kw">use</span> <span class="ident">aws_lambda_events::event::apigw::ApiGatewayProxyResponse</span>;
+<span class="kw">use</span> <span class="ident">aws_lambda_events::apigw::ApiGatewayProxyResponse</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_http&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">aws_lambda_events::event::apigw::ApiGatewayV2httpResponse</span>;
+<span class="kw">use</span> <span class="ident">aws_lambda_events::apigw::ApiGatewayV2httpResponse</span>;
+<span class="kw">use</span> <span class="ident">aws_lambda_events::encodings::Body</span>;
 <span class="kw">use</span> <span class="ident">encoding_rs::Encoding</span>;
 <span class="kw">use</span> <span class="ident">http::header::CONTENT_ENCODING</span>;
 <span class="kw">use</span> <span class="ident">http::HeaderMap</span>;

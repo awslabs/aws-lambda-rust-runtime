@@ -1,13 +1,13 @@
 //! Response types
 
 use crate::request::RequestOrigin;
-use aws_lambda_events::encodings::Body;
 #[cfg(feature = "alb")]
-use aws_lambda_events::event::alb::AlbTargetGroupResponse;
+use aws_lambda_events::alb::AlbTargetGroupResponse;
 #[cfg(any(feature = "apigw_rest", feature = "apigw_websockets"))]
-use aws_lambda_events::event::apigw::ApiGatewayProxyResponse;
+use aws_lambda_events::apigw::ApiGatewayProxyResponse;
 #[cfg(feature = "apigw_http")]
-use aws_lambda_events::event::apigw::ApiGatewayV2httpResponse;
+use aws_lambda_events::apigw::ApiGatewayV2httpResponse;
+use aws_lambda_events::encodings::Body;
 use encoding_rs::Encoding;
 use http::header::CONTENT_ENCODING;
 use http::HeaderMap;

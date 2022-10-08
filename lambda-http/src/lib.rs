@@ -78,6 +78,12 @@ use crate::{
     request::{LambdaRequest, RequestOrigin},
     response::LambdaResponse,
 };
+
+#[cfg(feature = "alb")]
+pub use aws_lambda_events::alb;
+#[cfg(any(feature = "apigw_rest", feature = "apigw_http", feature = "apigw_websockets"))]
+pub use aws_lambda_events::apigw;
+
 pub use aws_lambda_events::encodings::Body;
 use std::{
     future::Future,

@@ -728,7 +728,6 @@
 <span id="728">728</span>
 <span id="729">729</span>
 <span id="730">730</span>
-<span id="731">731</span>
 </pre><pre class="rust"><code><span class="doccomment">//! ALB and API Gateway request adaptations</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! Typically these are exposed via the `request_context`</span>
@@ -743,10 +742,9 @@
 <span class="kw">use</span> <span class="ident">aws_lambda_events::apigw</span>::{<span class="ident">ApiGatewayV2httpRequest</span>, <span class="ident">ApiGatewayV2httpRequestContext</span>};
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_websockets&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">aws_lambda_events::apigw</span>::{<span class="ident">ApiGatewayWebsocketProxyRequest</span>, <span class="ident">ApiGatewayWebsocketProxyRequestContext</span>};
-<span class="kw">use</span> <span class="ident">aws_lambda_events::encodings::Body</span>;
+<span class="kw">use</span> <span class="ident">aws_lambda_events</span>::{<span class="ident">encodings::Body</span>, <span class="ident">query_map::QueryMap</span>};
 <span class="kw">use</span> <span class="ident">http::header::HeaderName</span>;
 <span class="kw">use</span> <span class="ident">http::HeaderMap</span>;
-<span class="kw">use</span> <span class="ident">query_map::QueryMap</span>;
 <span class="kw">use</span> <span class="ident">serde::Deserialize</span>;
 <span class="kw">use</span> <span class="ident">serde_json::error::Error</span> <span class="kw">as</span> <span class="ident">JsonError</span>;
 <span class="kw">use</span> <span class="ident">std::future::Future</span>;

@@ -269,10 +269,10 @@
     <span class="ident">response::LambdaResponse</span>,
 };
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;alb&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">aws_lambda_events::alb</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_rest&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_http&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_websockets&quot;</span>))]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">aws_lambda_events::apigw</span>;
+<span class="comment">// Reexported in its entirety, regardless of what feature flags are enabled</span>
+<span class="comment">// because working with many of these types requires other types in, or</span>
+<span class="comment">// reexported by, this crate.</span>
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">aws_lambda_events</span>;
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">aws_lambda_events::encodings::Body</span>;
 <span class="kw">use</span> <span class="ident">std</span>::{

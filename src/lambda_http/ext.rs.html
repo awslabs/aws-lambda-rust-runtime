@@ -444,8 +444,8 @@
 </pre><pre class="rust"><code><span class="doccomment">//! Extension methods for `http::Request` types</span>
 
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">request::RequestContext</span>, <span class="ident">Body</span>};
+<span class="kw">use</span> <span class="ident">aws_lambda_events::query_map::QueryMap</span>;
 <span class="kw">use</span> <span class="ident">lambda_runtime::Context</span>;
-<span class="kw">use</span> <span class="ident">query_map::QueryMap</span>;
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">de::value::Error</span> <span class="kw">as</span> <span class="ident">SerdeError</span>, <span class="ident">Deserialize</span>};
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">error::Error</span>, <span class="ident">fmt</span>};
 

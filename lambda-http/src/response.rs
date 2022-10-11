@@ -129,7 +129,7 @@ pub trait IntoResponse {
 
 impl<B> IntoResponse for Response<B>
 where
-    B: ConvertBody + 'static,
+    B: ConvertBody + Send + 'static,
 {
     fn into_response(self) -> ResponseFuture {
         let (parts, body) = self.into_parts();
@@ -180,7 +180,7 @@ impl IntoResponse for serde_json::Value {
     }
 }
 
-pub type ResponseFuture = Pin<Box<dyn Future<Output = Response<Body>>>>;
+pub type ResponseFuture = Pin<Box<dyn Future<Output = Response<Body>> + Send>>;
 
 pub trait ConvertBody {
     fn convert(self, parts: HeaderMap) -> BodyFuture;
@@ -188,7 +188,8 @@ pub trait ConvertBody {
 
 impl<B> ConvertBody for B
 where
-    B: HttpBody + Unpin + 'static,
+    B: HttpBody + Unpin + Send + 'static,
+    B::Data: Send,
     B::Error: fmt::Debug,
 {
     fn convert(self, headers: HeaderMap) -> BodyFuture {
@@ -227,7 +228,8 @@ where
 
 fn convert_to_binary<B>(body: B) -> BodyFuture
 where
-    B: HttpBody + Unpin + 'static,
+    B: HttpBody + Unpin + Send + 'static,
+    B::Data: Send,
     B::Error: fmt::Debug,
 {
     Box::pin(async move { Body::from(to_bytes(body).await.expect("unable to read bytes from body").to_vec()) })
@@ -235,7 +237,8 @@ where
 
 fn convert_to_text<B>(body: B, content_type: &str) -> BodyFuture
 where
-    B: HttpBody + Unpin + 'static,
+    B: HttpBody + Unpin + Send + 'static,
+    B::Data: Send,
     B::Error: fmt::Debug,
 {
     let mime_type = content_type.parse::<Mime>();
@@ -260,7 +263,7 @@ where
     })
 }
 
-pub type BodyFuture = Pin<Box<dyn Future<Output = Body>>>;
+pub type BodyFuture = Pin<Box<dyn Future<Output = Body> + Send>>;
 
 #[cfg(test)]
 mod tests {

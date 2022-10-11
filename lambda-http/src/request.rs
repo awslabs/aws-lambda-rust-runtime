@@ -20,6 +20,7 @@ use serde::Deserialize;
 use serde_json::error::Error as JsonError;
 use std::future::Future;
 use std::pin::Pin;
+use std::str::FromStr;
 use std::{io::Read, mem};
 use url::Url;
 
@@ -201,22 +202,25 @@ fn into_alb_request(alb: AlbTargetGroupRequest) -> http::Request<Body> {
     let host = alb.headers.get(http::header::HOST).and_then(|s| s.to_str().ok());
     let raw_path = alb.path.unwrap_or_default();
 
+    let query_string_parameters = decode_query_map(alb.query_string_parameters);
+    let multi_value_query_string_parameters = decode_query_map(alb.multi_value_query_string_parameters);
+
     let builder = http::Request::builder()
         .uri(build_request_uri(
             &raw_path,
             &alb.headers,
             host,
-            Some((&alb.multi_value_query_string_parameters, &alb.query_string_parameters)),
+            Some((&multi_value_query_string_parameters, &query_string_parameters)),
         ))
         .extension(RawHttpPath(raw_path))
         // multi valued query string parameters are always a super
         // set of singly valued query string parameters,
         // when present, multi-valued query string parameters are preferred
         .extension(QueryStringParameters(
-            if alb.multi_value_query_string_parameters.is_empty() {
-                alb.query_string_parameters
+            if multi_value_query_string_parameters.is_empty() {
+                query_string_parameters
             } else {
-                alb.multi_value_query_string_parameters
+                multi_value_query_string_parameters
             },
         ))
         .extension(RequestContext::Alb(alb.request_context));
@@ -241,6 +245,12 @@ fn into_alb_request(alb: AlbTargetGroupRequest) -> http::Request<Body> {
     let _ = mem::replace(req.method_mut(), http_method);
 
     req
+}
+
+fn decode_query_map(query_map: QueryMap) -> QueryMap {
+    let query_string = query_map.to_query_string();
+    let decoded = percent_encoding::percent_decode(query_string.as_bytes()).decode_utf8_lossy();
+    QueryMap::from_str(&decoded).unwrap_or_default()
 }
 
 #[cfg(feature = "apigw_websockets")]
@@ -549,6 +559,34 @@ mod tests {
     }
 
     #[test]
+    fn deserializes_alb_request_encoded_query_parameters_events() {
+        // from the docs
+        // https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html#multi-value-headers
+        let input = include_str!("../tests/data/alb_request_encoded_query_parameters.json");
+        let result = from_str(input);
+        assert!(
+            result.is_ok(),
+            "event was not parsed as expected {:?} given {}",
+            result,
+            input
+        );
+        let req = result.expect("failed to parse request");
+        assert_eq!(req.method(), "GET");
+        assert_eq!(
+            req.uri(),
+            "https://lambda-846800462-us-east-2.elb.amazonaws.com/?myKey=%3FshowAll%3Dtrue"
+        );
+
+        // Ensure this is an ALB request
+        let req_context = req.request_context();
+        assert!(
+            matches!(req_context, RequestContext::Alb(_)),
+            "expected Alb context, got {:?}",
+            req_context
+        );
+    }
+
+    #[test]
     fn deserializes_apigw_multi_value_request_events() {
         // from docs
         // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
@@ -590,6 +628,28 @@ mod tests {
         assert_eq!(
             request.query_string_parameters().all("myKey"),
             Some(vec!["val1", "val2"])
+        );
+    }
+
+    #[test]
+    fn deserializes_alb_multi_value_request_encoded_query_parameters_events() {
+        // from docs
+        // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
+        let input = include_str!("../tests/data/alb_multi_value_request_encoded_query_parameters.json");
+        let result = from_str(input);
+        assert!(
+            result.is_ok(),
+            "event is was not parsed as expected {:?} given {}",
+            result,
+            input
+        );
+        let request = result.expect("failed to parse request");
+        assert!(!request.query_string_parameters().is_empty());
+
+        // test RequestExt#query_string_parameters does the right thing
+        assert_eq!(
+            request.query_string_parameters().all("myKey"),
+            Some(vec!["?showAll=true", "?showAll=false"])
         );
     }
 

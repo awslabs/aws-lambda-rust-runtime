@@ -20,8 +20,8 @@ use serde::Deserialize;
 use serde_json::error::Error as JsonError;
 use std::future::Future;
 use std::pin::Pin;
-use std::{io::Read, mem};
 use std::str::FromStr;
+use std::{io::Read, mem};
 use url::Url;
 
 /// Internal representation of an Lambda http event from

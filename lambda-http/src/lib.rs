@@ -79,10 +79,10 @@ use crate::{
     response::LambdaResponse,
 };
 
-#[cfg(feature = "alb")]
-pub use aws_lambda_events::alb;
-#[cfg(any(feature = "apigw_rest", feature = "apigw_http", feature = "apigw_websockets"))]
-pub use aws_lambda_events::apigw;
+// Reexported in its entirety, regardless of what feature flags are enabled
+// because working with many of these types requires other types in, or
+// reexported by, this crate.
+pub use aws_lambda_events;
 
 pub use aws_lambda_events::encodings::Body;
 use std::{

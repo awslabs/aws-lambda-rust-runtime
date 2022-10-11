@@ -1,8 +1,8 @@
 //! Extension methods for `http::Request` types
 
 use crate::{request::RequestContext, Body};
+use aws_lambda_events::query_map::QueryMap;
 use lambda_runtime::Context;
-use query_map::QueryMap;
 use serde::{de::value::Error as SerdeError, Deserialize};
 use std::{error::Error, fmt};
 

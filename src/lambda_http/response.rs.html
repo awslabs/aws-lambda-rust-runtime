@@ -494,7 +494,6 @@
 <span id="494">494</span>
 <span id="495">495</span>
 <span id="496">496</span>
-<span id="497">497</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Response types</span>
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::request::RequestOrigin</span>;
@@ -508,10 +507,7 @@
 <span class="kw">use</span> <span class="ident">encoding_rs::Encoding</span>;
 <span class="kw">use</span> <span class="ident">http::header::CONTENT_ENCODING</span>;
 <span class="kw">use</span> <span class="ident">http::HeaderMap</span>;
-<span class="kw">use</span> <span class="ident">http</span>::{
-    <span class="ident">header</span>::{<span class="ident">CONTENT_TYPE</span>, <span class="ident">SET_COOKIE</span>},
-    <span class="ident">Response</span>,
-};
+<span class="kw">use</span> <span class="ident">http</span>::{<span class="ident">header::CONTENT_TYPE</span>, <span class="ident">Response</span>};
 <span class="kw">use</span> <span class="ident">http_body::Body</span> <span class="kw">as</span> <span class="ident">HttpBody</span>;
 <span class="kw">use</span> <span class="ident">hyper::body::to_bytes</span>;
 <span class="kw">use</span> <span class="ident">mime</span>::{<span class="ident">Mime</span>, <span class="ident">CHARSET</span>};
@@ -525,7 +521,7 @@
 <span class="comment">// See list of common MIME types:</span>
 <span class="comment">// - https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types</span>
 <span class="comment">// - https://github.com/ietf-wg-httpapi/mediatypes/blob/main/draft-ietf-httpapi-yaml-mediatypes.md</span>
-<span class="kw">const</span> <span class="ident">TEXT_ENCODING_PREFIXES</span>: [<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>; <span class="number">5</span>] <span class="op">=</span> [
+<span class="kw">const</span> <span class="ident">TEXT_ENCODING_PREFIXES</span>: [<span class="kw-2">&amp;</span><span class="ident">str</span>; <span class="number">5</span>] <span class="op">=</span> [
     <span class="string">&quot;text&quot;</span>,
     <span class="string">&quot;application/json&quot;</span>,
     <span class="string">&quot;application/javascript&quot;</span>,
@@ -533,7 +529,7 @@
     <span class="string">&quot;application/yaml&quot;</span>,
 ];
 
-<span class="kw">const</span> <span class="ident">TEXT_ENCODING_SUFFIXES</span>: [<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>; <span class="number">3</span>] <span class="op">=</span> [<span class="string">&quot;+xml&quot;</span>, <span class="string">&quot;+yaml&quot;</span>, <span class="string">&quot;+json&quot;</span>];
+<span class="kw">const</span> <span class="ident">TEXT_ENCODING_SUFFIXES</span>: [<span class="kw-2">&amp;</span><span class="ident">str</span>; <span class="number">3</span>] <span class="op">=</span> [<span class="string">&quot;+xml&quot;</span>, <span class="string">&quot;+yaml&quot;</span>, <span class="string">&quot;+json&quot;</span>];
 
 <span class="doccomment">/// Representation of Lambda response</span>
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
@@ -558,7 +554,7 @@
             <span class="ident">b</span> @ <span class="ident">Body::Binary</span>(<span class="kw">_</span>) =&gt; (<span class="bool-val">true</span>, <span class="prelude-val">Some</span>(<span class="ident">b</span>)),
         };
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">parts</span>.<span class="ident">headers</span>;
+        <span class="kw">let</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">parts</span>.<span class="ident">headers</span>;
         <span class="kw">let</span> <span class="ident">status_code</span> <span class="op">=</span> <span class="ident">parts</span>.<span class="ident">status</span>.<span class="ident">as_u16</span>();
 
         <span class="kw">match</span> <span class="ident">request_origin</span> {
@@ -572,6 +568,8 @@
             }),
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_http&quot;</span>)]</span>
             <span class="ident">RequestOrigin::ApiGatewayV2</span> =&gt; {
+                <span class="kw">use</span> <span class="ident">http::header::SET_COOKIE</span>;
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">headers</span>;
                 <span class="comment">// ApiGatewayV2 expects the set-cookies headers to be in the &quot;cookies&quot; attribute,</span>
                 <span class="comment">// so remove them from the headers.</span>
                 <span class="kw">let</span> <span class="ident">cookies</span> <span class="op">=</span> <span class="ident">headers</span>

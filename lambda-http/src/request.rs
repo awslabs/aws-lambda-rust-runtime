@@ -3,7 +3,9 @@
 //! Typically these are exposed via the `request_context`
 //! request extension method provided by [lambda_http::RequestExt](../trait.RequestExt.html)
 //!
-use crate::ext::{PathParameters, QueryStringParameters, RawHttpPath, StageVariables};
+#[cfg(any(feature = "apigw_rest", feature = "apigw_http", feature = "apigw_websockets"))]
+use crate::ext::{PathParameters, StageVariables};
+use crate::ext::{QueryStringParameters, RawHttpPath};
 #[cfg(feature = "alb")]
 use aws_lambda_events::alb::{AlbTargetGroupRequest, AlbTargetGroupRequestContext};
 #[cfg(feature = "apigw_rest")]
@@ -19,7 +21,6 @@ use serde::Deserialize;
 use serde_json::error::Error as JsonError;
 use std::future::Future;
 use std::pin::Pin;
-use std::str::FromStr;
 use std::{io::Read, mem};
 use url::Url;
 
@@ -246,7 +247,10 @@ fn into_alb_request(alb: AlbTargetGroupRequest) -> http::Request<Body> {
     req
 }
 
+#[cfg(feature = "alb")]
 fn decode_query_map(query_map: QueryMap) -> QueryMap {
+    use std::str::FromStr;
+
     let query_string = query_map.to_query_string();
     let decoded = percent_encoding::percent_decode(query_string.as_bytes()).decode_utf8_lossy();
     QueryMap::from_str(&decoded).unwrap_or_default()
@@ -304,6 +308,7 @@ fn into_websocket_request(ag: ApiGatewayWebsocketProxyRequest) -> http::Request<
     req
 }
 
+#[cfg(any(feature = "apigw_rest", feature = "apigw_http", feature = "apigw_websockets"))]
 fn apigw_path_with_stage(stage: &Option<String>, path: &str) -> String {
     match stage {
         None => path.into(),

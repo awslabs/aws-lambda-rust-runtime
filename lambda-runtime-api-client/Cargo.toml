@@ -1,6 +1,6 @@
 [package]
 name = "lambda_runtime_api_client"
-version = "0.6.0"
+version = "0.7.0"
 edition = "2021"
 authors = [
     "David Calavera <dcalaver@amazon.com>",

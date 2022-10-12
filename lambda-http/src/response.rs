@@ -11,10 +11,7 @@ use aws_lambda_events::encodings::Body;
 use encoding_rs::Encoding;
 use http::header::CONTENT_ENCODING;
 use http::HeaderMap;
-use http::{
-    header::{CONTENT_TYPE, SET_COOKIE},
-    Response,
-};
+use http::{header::CONTENT_TYPE, Response};
 use http_body::Body as HttpBody;
 use hyper::body::to_bytes;
 use mime::{Mime, CHARSET};
@@ -28,7 +25,7 @@ const X_LAMBDA_HTTP_CONTENT_ENCODING: &str = "x-lambda-http-content-encoding";
 // See list of common MIME types:
 // - https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
 // - https://github.com/ietf-wg-httpapi/mediatypes/blob/main/draft-ietf-httpapi-yaml-mediatypes.md
-const TEXT_ENCODING_PREFIXES: [&'static str; 5] = [
+const TEXT_ENCODING_PREFIXES: [&str; 5] = [
     "text",
     "application/json",
     "application/javascript",
@@ -36,7 +33,7 @@ const TEXT_ENCODING_PREFIXES: [&'static str; 5] = [
     "application/yaml",
 ];
 
-const TEXT_ENCODING_SUFFIXES: [&'static str; 3] = ["+xml", "+yaml", "+json"];
+const TEXT_ENCODING_SUFFIXES: [&str; 3] = ["+xml", "+yaml", "+json"];
 
 /// Representation of Lambda response
 #[doc(hidden)]
@@ -61,7 +58,7 @@ impl LambdaResponse {
             b @ Body::Binary(_) => (true, Some(b)),
         };
 
-        let mut headers = parts.headers;
+        let headers = parts.headers;
         let status_code = parts.status.as_u16();
 
         match request_origin {
@@ -75,6 +72,8 @@ impl LambdaResponse {
             }),
             #[cfg(feature = "apigw_http")]
             RequestOrigin::ApiGatewayV2 => {
+                use http::header::SET_COOKIE;
+                let mut headers = headers;
                 // ApiGatewayV2 expects the set-cookies headers to be in the "cookies" attribute,
                 // so remove them from the headers.
                 let cookies = headers

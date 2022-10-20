@@ -17,6 +17,8 @@ mod events;
 pub use events::*;
 mod logs;
 pub use logs::*;
+mod telemetry;
+pub use telemetry::*;
 
 /// Include several request builders to interact with the Extension API.
 pub mod requests;

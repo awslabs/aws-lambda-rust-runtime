@@ -207,13 +207,14 @@ pub async fn function_handler(dynamodb_client: &aws_sdk_dynamodb::Client, event:
 
     let name = event.query_string_parameters()
         .first("name")
-        .unwrap_or_else(|| "stranger");
+        .unwrap_or_else(|| "stranger")
+        .to_string();
 
-    let result = client
+    dynamodb_client
         .put_item()
         .table_name(table)
         .item("ID", AttributeValue::S(Utc::now().timestamp().to_string()))
-        .item("name", AttributeValue::S(name.into()))
+        .item("name", AttributeValue::S(name.to_owned()))
         .send()
         .await?;
 

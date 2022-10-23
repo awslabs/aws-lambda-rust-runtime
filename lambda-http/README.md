@@ -29,13 +29,15 @@ Here you will find a few examples to handle basic scenarions:
 * Reading a JSON from a body and deserialise into a structure
 * Reading querystring parameters
 * Lambda Request Authorizer
+* Passing the Lambda execution context initialisation to the handler
 
 ### Reading a JSON from a body and deserialise into a structure
 
 The code below creates a simple API Gateway proxy (HTTP, REST) that accept in input a JSON payload.
 
 ```rust
-use lambda_http::{http::StatusCode, service_fn, Error, IntoResponse, Request};
+use http::Response;
+use lambda_http::{run, http::StatusCode, service_fn, Error, IntoResponse, Request, RequestExt};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -75,7 +77,9 @@ pub struct MyPayload {
 ### Reading querystring parameters
 
 ```rust
-use lambda_http::{http::StatusCode, service_fn, Error, IntoResponse, Request, RequestExt};
+use http::Response;
+use lambda_http::{run, http::StatusCode, service_fn, Error, IntoResponse, Request, RequestExt};
+use serde_json::json;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -91,9 +95,10 @@ async fn main() -> Result<(), Error> {
 pub async fn function_handler(event: Request) -> Result<impl IntoResponse, Error> {
     let name = event.query_string_parameters()
         .first("name")
-        .unwrap_or_else(|| "stranger");
+        .unwrap_or_else(|| "stranger")
+        .to_string();
 
-    /// Represents an HTTP response
+    // Represents an HTTP response
     let response = Response::builder()
         .status(StatusCode::OK)
         .header("Content-Type", "application/json")
@@ -114,9 +119,10 @@ If you remove the abstraction, you need to handle the request/response for your 
 
 ```rust
 use aws_lambda_events::apigw::{
-    ApiGatewayCustomAuthorizerRequestTypeRequest, ApiGatewayCustomAuthorizerResponse,
+    ApiGatewayCustomAuthorizerRequestTypeRequest, ApiGatewayCustomAuthorizerResponse, ApiGatewayCustomAuthorizerPolicy, IamPolicyStatement,
 };
-use lambda_runtime::{self, service_fn, Error, LambdaEvent};
+use lambda_runtime::{run, service_fn, Error, LambdaEvent};
+use serde_json::json;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -131,8 +137,7 @@ async fn main() -> Result<(), Error> {
 
 pub async fn function_handler(event: LambdaEvent<ApiGatewayCustomAuthorizerRequestTypeRequest>) -> Result<ApiGatewayCustomAuthorizerResponse, Error> {
     // do something with the event payload
-    let method_arn = event.payload.method_arn
-        .map_err(Box::new)?;
+    let method_arn = event.payload.method_arn.unwrap();
     // for example we could het the header authorization
     if let Some(token) = event.payload.headers.get("authorization") {
         // do something
@@ -145,7 +150,7 @@ pub async fn function_handler(event: LambdaEvent<ApiGatewayCustomAuthorizerReque
     }
 
     Ok(custom_authorizer_response(
-      "DENY".to_string(), 
+      &"DENY".to_string(), 
       "", 
       &method_arn))
 }
@@ -163,8 +168,64 @@ pub fn custom_authorizer_response(effect: &str, principal: &str, method_arn: &st
     ApiGatewayCustomAuthorizerResponse {
         principal_id: Some(principal.to_owned()),
         policy_document: policy,
-        // context: json!({ "email": principal }), https://github.com/awslabs/aws-lambda-rust-runtime/discussions/548
+        context: json!({ "email": principal }), // https://github.com/awslabs/aws-lambda-rust-runtime/discussions/548
         usage_identifier_key: None,
     }
+}
+```
+
+## Passing the Lambda execution context initialisation to the handler
+
+One of the [best practices](https://docs.aws.amazon.com/lambda/latest/dg/best-practices.html) is to take advantage of execution environment reuse to improve the performance of your function. Initialize SDK clients and database connections outside the function handler. Subsequent invocations processed by the same instance of your function can reuse these resources. This saves cost by reducing function run time.
+
+```rust
+use aws_sdk_dynamodb::model::AttributeValue;
+use chrono::Utc;
+use http::Response;
+use lambda_http::{run, http::StatusCode, service_fn, Error, IntoResponse, Request, RequestExt};
+use serde_json::json;
+
+#[tokio::main]
+async fn main() -> Result<(), Error> {
+    tracing_subscriber::fmt()
+        .with_ansi(false)
+        .without_time()
+        .with_max_level(tracing_subscriber::filter::LevelFilter::INFO)
+        .init();
+
+    let config = aws_config::from_env()
+        .load()
+        .await;
+
+    let dynamodb_client = aws_sdk_dynamodb::Client::new(&config);
+
+    run(service_fn(|event: Request| function_handler(&dynamodb_client, event))).await
+}
+
+pub async fn function_handler(dynamodb_client: &aws_sdk_dynamodb::Client, event: Request) -> Result<impl IntoResponse, Error> {
+    let table = std::env::var("TABLE_NAME").expect("TABLE_NAME must be set");
+
+    let name = event.query_string_parameters()
+        .first("name")
+        .unwrap_or_else(|| "stranger");
+
+    let result = client
+        .put_item()
+        .table_name(table)
+        .item("ID", AttributeValue::S(Utc::now().timestamp().to_string()))
+        .item("name", AttributeValue::S(name.into()))
+        .send()
+        .await?;
+
+    // Represents an HTTP response
+    let response = Response::builder()
+        .status(StatusCode::OK)
+        .header("Content-Type", "application/json")
+        .body(json!({
+            "message": format!("Hello, {}!", name),
+          }).to_string())
+        .map_err(Box::new)?;
+
+    Ok(response)
 }
 ```

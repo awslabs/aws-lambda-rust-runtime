@@ -9,7 +9,7 @@ lambda-http handler is made of:
 * IntoResponse - Future that will convert an [`IntoResponse`] into an actual [`LambdaResponse`]
 
 We are able to handle requests from:
-* [API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html) REST and HTTP API lambda integrations
+* [API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html) REST, HTTP and WebSockets API lambda integrations
 * AWS [ALB](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html)
 
 Thanks to the Request type we can seemsly handle proxy integrations without the worry to specify the specific service type.
@@ -47,11 +47,10 @@ async fn main() -> Result<(), Error> {
         .with_max_level(tracing_subscriber::filter::LevelFilter::INFO)
         .init();
 
-    lambda_http::run(service_fn(|event: Request| handler(event))).await?;
-    Ok(())
+    run(service_fn(function_handler)).await
 }
 
-pub async fn execute(event: Request) -> Result<impl IntoResponse, Error> {
+pub async fn function_handler(event: Request) -> Result<impl IntoResponse, Error> {
     let body = event.payload::<MyPayload>()?;
 
     let response = Response::builder()
@@ -61,7 +60,7 @@ pub async fn execute(event: Request) -> Result<impl IntoResponse, Error> {
             "message": "Hello World",
             "payload": body, 
           }).to_string())
-        .unwrap();
+        .map_err(Box::new)?;
 
     Ok(response)
 }
@@ -86,11 +85,10 @@ async fn main() -> Result<(), Error> {
         .with_max_level(tracing_subscriber::filter::LevelFilter::INFO)
         .init();
 
-    lambda_http::run(service_fn(|event: Request| handler(event))).await?;
-    Ok(())
+    run(service_fn(function_handler)).await
 }
 
-pub async fn execute(event: Request) -> Result<impl IntoResponse, Error> {
+pub async fn function_handler(event: Request) -> Result<impl IntoResponse, Error> {
     let name = event.query_string_parameters()
         .first("name")
         .unwrap_or_else(|| "stranger");
@@ -102,7 +100,7 @@ pub async fn execute(event: Request) -> Result<impl IntoResponse, Error> {
         .body(json!({
             "message": format!("Hello, {}!", name),
           }).to_string())
-        .unwrap();
+        .map_err(Box::new)?;
 
     Ok(response)
 }
@@ -128,13 +126,13 @@ async fn main() -> Result<(), Error> {
         .with_max_level(tracing_subscriber::filter::LevelFilter::INFO)
         .init();
 
-    lambda_http::run(service_fn(|event: Request| handler(event))).await?;
-    Ok(())
+    run(service_fn(function_handler)).await
 }
 
-pub async fn execute(event: LambdaEvent<ApiGatewayCustomAuthorizerRequestTypeRequest>) -> Result<ApiGatewayCustomAuthorizerResponse, Error> {
+pub async fn function_handler(event: LambdaEvent<ApiGatewayCustomAuthorizerRequestTypeRequest>) -> Result<ApiGatewayCustomAuthorizerResponse, Error> {
     // do something with the event payload
-    let method_arn = event.payload.method_arn.unwrap();
+    let method_arn = event.payload.method_arn
+        .map_err(Box::new)?;
     // for example we could het the header authorization
     if let Some(token) = event.payload.headers.get("authorization") {
         // do something

@@ -11,6 +11,7 @@ lambda-http handler is made of:
 We are able to handle requests from:
 * [API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html) REST, HTTP and WebSockets API lambda integrations
 * AWS [ALB](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html)
+* AWS [Lambda function URLs](https://docs.aws.amazon.com/lambda/latest/dg/lambda-urls.html)
 
 Thanks to the Request type we can seemsly handle proxy integrations without the worry to specify the specific service type.
 
@@ -138,7 +139,7 @@ async fn main() -> Result<(), Error> {
 pub async fn function_handler(event: LambdaEvent<ApiGatewayCustomAuthorizerRequestTypeRequest>) -> Result<ApiGatewayCustomAuthorizerResponse, Error> {
     // do something with the event payload
     let method_arn = event.payload.method_arn.unwrap();
-    // for example we could het the header authorization
+    // for example we could use the authorization header
     if let Some(token) = event.payload.headers.get("authorization") {
         // do something
 

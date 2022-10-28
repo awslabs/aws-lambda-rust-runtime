@@ -90,7 +90,7 @@ pub struct Context {
     /// The ARN of the Lambda function being invoked.
     pub invoked_function_arn: String,
     /// The X-Ray trace ID for the current invocation.
-    pub xray_trace_id: String,
+    pub xray_trace_id: Option<String>,
     /// The client context object sent by the AWS mobile SDK. This field is
     /// empty unless the function is invoked using an AWS mobile SDK.
     pub client_context: Option<ClientContext>,
@@ -139,9 +139,7 @@ impl TryFrom<HeaderMap> for Context {
                 .to_owned(),
             xray_trace_id: headers
                 .get("lambda-runtime-trace-id")
-                .unwrap_or(&HeaderValue::from_static(""))
-                .to_str()?
-                .to_owned(),
+                .map(|v| String::from_utf8_lossy(v.as_bytes()).to_string()),
             client_context,
             identity,
             ..Default::default()

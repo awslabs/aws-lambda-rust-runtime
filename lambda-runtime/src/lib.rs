@@ -137,7 +137,7 @@ where
             /*Github issue #552*/
             match xray_trace_id {
                 Some(trace_id) => env::set_var("_X_AMZN_TRACE_ID", trace_id),
-                None => env::remove_var("_X_AMZN_TRACE_ID")
+                None => env::remove_var("_X_AMZN_TRACE_ID"),
             }
             let body = match serde_json::from_slice(&body) {
                 Ok(body) => body,

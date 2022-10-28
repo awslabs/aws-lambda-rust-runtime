@@ -733,6 +733,17 @@
 <span id="733">733</span>
 <span id="734">734</span>
 <span id="735">735</span>
+<span id="736">736</span>
+<span id="737">737</span>
+<span id="738">738</span>
+<span id="739">739</span>
+<span id="740">740</span>
+<span id="741">741</span>
+<span id="742">742</span>
+<span id="743">743</span>
+<span id="744">744</span>
+<span id="745">745</span>
+<span id="746">746</span>
 </pre><pre class="rust"><code><span class="doccomment">//! ALB and API Gateway request adaptations</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! Typically these are exposed via the `request_context`</span>
@@ -751,12 +762,12 @@
 <span class="kw">use</span> <span class="ident">aws_lambda_events::apigw</span>::{<span class="ident">ApiGatewayWebsocketProxyRequest</span>, <span class="ident">ApiGatewayWebsocketProxyRequestContext</span>};
 <span class="kw">use</span> <span class="ident">aws_lambda_events</span>::{<span class="ident">encodings::Body</span>, <span class="ident">query_map::QueryMap</span>};
 <span class="kw">use</span> <span class="ident">http::header::HeaderName</span>;
-<span class="kw">use</span> <span class="ident">http::HeaderMap</span>;
+<span class="kw">use</span> <span class="ident">http</span>::{<span class="ident">HeaderMap</span>, <span class="ident">HeaderValue</span>};
 <span class="kw">use</span> <span class="ident">serde::Deserialize</span>;
 <span class="kw">use</span> <span class="ident">serde_json::error::Error</span> <span class="kw">as</span> <span class="ident">JsonError</span>;
 <span class="kw">use</span> <span class="ident">std::future::Future</span>;
 <span class="kw">use</span> <span class="ident">std::pin::Pin</span>;
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">io::Read</span>, <span class="ident">mem</span>};
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">env</span>, <span class="ident">io::Read</span>, <span class="ident">mem</span>};
 <span class="kw">use</span> <span class="ident">url::Url</span>;
 
 <span class="doccomment">/// Internal representation of an Lambda http event from</span>
@@ -854,8 +865,9 @@
         .<span class="ident">extension</span>(<span class="ident">RequestContext::ApiGatewayV2</span>(<span class="ident">ag</span>.<span class="ident">request_context</span>));
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">ag</span>.<span class="ident">headers</span>;
+    <span class="ident">update_xray_trace_id_header</span>(<span class="kw-2">&amp;mut</span> <span class="ident">headers</span>);
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">cookies</span>) <span class="op">=</span> <span class="ident">ag</span>.<span class="ident">cookies</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">header_value</span>) <span class="op">=</span> <span class="ident">http::header::HeaderValue::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">cookies</span>.<span class="ident">join</span>(<span class="string">&quot;;&quot;</span>)) {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">header_value</span>) <span class="op">=</span> <span class="ident">HeaderValue::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">cookies</span>.<span class="ident">join</span>(<span class="string">&quot;;&quot;</span>)) {
             <span class="ident">headers</span>.<span class="ident">append</span>(<span class="ident">http::header::COOKIE</span>, <span class="ident">header_value</span>);
         }
     }
@@ -877,6 +889,13 @@
     <span class="ident">req</span>
 }
 
+<span class="kw">fn</span> <span class="ident">update_xray_trace_id_header</span>(<span class="ident">headers</span>: <span class="kw-2">&amp;mut</span> <span class="ident">HeaderMap</span>) {
+    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">xray_trace_id</span>) <span class="op">=</span> <span class="ident">env::var</span>(<span class="string">&quot;_X_AMZN_TRACE_ID&quot;</span>) {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">header_value</span>) <span class="op">=</span> <span class="ident">HeaderValue::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">xray_trace_id</span>) {
+            <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="ident">HeaderName::from_static</span>(<span class="string">&quot;x-amzn-trace-id&quot;</span>), <span class="ident">header_value</span>);
+        }
+    }
+}
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_rest&quot;</span>)]</span>
 <span class="kw">fn</span> <span class="ident">into_proxy_request</span>(<span class="ident">ag</span>: <span class="ident">ApiGatewayProxyRequest</span>) -&gt; <span class="ident">http::Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">http_method</span> <span class="op">=</span> <span class="ident">ag</span>.<span class="ident">http_method</span>;
@@ -914,6 +933,7 @@
     <span class="comment">// multi-value_headers our cannoncial source of request headers</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">ag</span>.<span class="ident">multi_value_headers</span>;
     <span class="ident">headers</span>.<span class="ident">extend</span>(<span class="ident">ag</span>.<span class="ident">headers</span>);
+    <span class="ident">update_xray_trace_id_header</span>(<span class="kw-2">&amp;mut</span> <span class="ident">headers</span>);
 
     <span class="kw">let</span> <span class="ident">base64</span> <span class="op">=</span> <span class="ident">ag</span>.<span class="ident">is_base64_encoded</span>.<span class="ident">unwrap_or_default</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">builder</span>
@@ -964,6 +984,7 @@
     <span class="comment">// multi-value_headers our cannoncial source of request headers</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">alb</span>.<span class="ident">multi_value_headers</span>;
     <span class="ident">headers</span>.<span class="ident">extend</span>(<span class="ident">alb</span>.<span class="ident">headers</span>);
+    <span class="ident">update_xray_trace_id_header</span>(<span class="kw-2">&amp;mut</span> <span class="ident">headers</span>);
 
     <span class="kw">let</span> <span class="ident">base64</span> <span class="op">=</span> <span class="ident">alb</span>.<span class="ident">is_base64_encoded</span>;
 
@@ -1026,6 +1047,7 @@
     <span class="comment">// multi-value_headers our cannoncial source of request headers</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">ag</span>.<span class="ident">multi_value_headers</span>;
     <span class="ident">headers</span>.<span class="ident">extend</span>(<span class="ident">ag</span>.<span class="ident">headers</span>);
+    <span class="ident">update_xray_trace_id_header</span>(<span class="kw-2">&amp;mut</span> <span class="ident">headers</span>);
 
     <span class="kw">let</span> <span class="ident">base64</span> <span class="op">=</span> <span class="ident">ag</span>.<span class="ident">is_base64_encoded</span>.<span class="ident">unwrap_or_default</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">builder</span>

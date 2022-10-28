@@ -39,7 +39,7 @@ See other installation options in [the Cargo Lambda documentation](https://www.c
 
 ### Your first function
 
-To create your first function, run Cargo Lambda with the [subcomand `new`](https://www.cargo-lambda.info/commands/new.html). This command will generate a Rust package with the initial source code for your function:
+To create your first function, run Cargo Lambda with the [subcommand `new`](https://www.cargo-lambda.info/commands/new.html). This command will generate a Rust package with the initial source code for your function:
 
 ```
 cargo lambda new YOUR_FUNCTION_NAME

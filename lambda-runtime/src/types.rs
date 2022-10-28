@@ -139,8 +139,7 @@ impl TryFrom<HeaderMap> for Context {
                 .to_owned(),
             xray_trace_id: headers
                 .get("lambda-runtime-trace-id")
-                .map(|v| String::from_utf8_lossy(v.as_bytes()).to_string()) //Github issue #552
-                .to_owned(),
+                .map(|v| String::from_utf8_lossy(v.as_bytes()).to_string()), //Github issue #552
             client_context,
             identity,
             ..Default::default()

@@ -1,0 +1,24 @@
+[package]
+name = "skunks"
+version = "0.1.0"
+edition = "2021"
+
+
+# Use cargo-edit(https://github.com/killercup/cargo-edit#installation)
+# to manage dependencies.
+# Running `cargo add DEPENDENCY_NAME` will
+# add the latest version of a dependency to the list,
+# and it will keep the alphabetic ordering for you.
+
+[dependencies]
+serde_json = "1.0"
+lambda_http = { git = "https://github.com/awslabs/aws-lambda-rust-runtime.git" }
+lambda_runtime = { git = "https://github.com/awslabs/aws-lambda-rust-runtime.git" }
+aws-sdk-dynamodb = { git = "https://github.com/awslabs/aws-sdk-rust.git" }
+aws-sdk-config = { git = "https://github.com/awslabs/aws-sdk-rust.git" }
+aws-config = { git = "https://github.com/awslabs/aws-sdk-rust.git" }
+tokio = { version = "1", features = ["macros"] }
+tracing = { version = "0.1.37"}
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+

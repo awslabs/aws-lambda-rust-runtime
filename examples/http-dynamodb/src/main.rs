@@ -1,10 +1,11 @@
-use lambda_http::{run, service_fn, Error, IntoResponse, Request, RequestExt, Response};
+use lambda_http::{run, service_fn, Error, IntoResponse, Request};
 use aws_sdk_dynamodb::model::AttributeValue;
 use aws_sdk_dynamodb::{Client, Error as OtherError};
 use tracing::info;
 
 #[derive(serde::Deserialize, serde::Serialize)]
-pub struct Item {   pub p_type: String,
+pub struct Item {
+    pub p_type: String,
     pub age: String,
     pub username: String,
     pub first: String,
@@ -24,19 +25,16 @@ async fn function_handler(event: Request) -> Result<impl IntoResponse, Error> {
     info!(payload = %s, "JSON Payload received");
    
     let item: Item = serde_json::from_str(s).map_err(Box::new)?;
+    let copy_item: Item = serde_json::from_str(s).map_err(Box::new)?;  
 
     let config = aws_config::load_from_env().await; 
     let client = Client::new(&config);
 
-    add_item(&client, item, &"lambda_dyno_example".to_string()).await?;
-    
-    Ok(match event.query_string_parameters().first("first_name") {
-        Some(first_name) => format!("Hello, {}!", first_name).into_response().await,
-        _ => Response::builder()
-            .status(400)
-            .body("Empty first name".into())
-            .expect("failed to render response"),
-    })
+    add_item(&client, item, "lambda_dyno_example").await?;   
+  
+    let j = serde_json::to_string(&copy_item)?;
+ 
+    Ok(j)
 }
 
 #[tokio::main]

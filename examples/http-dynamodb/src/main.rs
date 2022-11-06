@@ -17,21 +17,26 @@ pub struct Item {
 /// You can see more examples in Runtime's repository:
 /// - https://github.com/awslabs/aws-lambda-rust-runtime/tree/main/examples
 async fn function_handler(event: Request) -> Result<impl IntoResponse, Error> {
+  
     // Extract some useful information from the request
-
     let body = event.body();
     let s = std::str::from_utf8(&body).expect("invalid utf-8 sequence");
-    // Parse the string of data into serde_json::Value.
+    //Log into Cloudwatch
     info!(payload = %s, "JSON Payload received");
-   
+  
+    //Serialize the data into the struct.
     let item: Item = serde_json::from_str(s).map_err(Box::new)?;
+    //Create a copy to send back via the Response.
     let copy_item: Item = serde_json::from_str(s).map_err(Box::new)?;  
 
+    //Setup the client to write to DynamoDB
     let config = aws_config::load_from_env().await; 
     let client = Client::new(&config);
 
+    //Insert into the table.
     add_item(&client, item, "lambda_dyno_example").await?;   
-  
+ 
+    //Deserialize into json to return in the Response
     let j = serde_json::to_string(&copy_item)?;
  
     Ok(j)

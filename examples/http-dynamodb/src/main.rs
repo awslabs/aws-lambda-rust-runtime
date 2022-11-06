@@ -1,11 +1,10 @@
 use lambda_http::{run, service_fn, Error, IntoResponse, Request, RequestExt, Response};
-use serde_json::Value;
 use aws_sdk_dynamodb::model::AttributeValue;
 use aws_sdk_dynamodb::{Client, Error as OtherError};
 use tracing::info;
 
-pub struct Item {
-    pub p_type: String,
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct Item {   pub p_type: String,
     pub age: String,
     pub username: String,
     pub first: String,
@@ -24,15 +23,7 @@ async fn function_handler(event: Request) -> Result<impl IntoResponse, Error> {
     // Parse the string of data into serde_json::Value.
     info!(payload = %s, "JSON Payload received");
    
-    let parsed: Value = serde_json::from_str(s).unwrap();
-    
-    let item = Item {
-        p_type : parsed["ptype"].as_str().unwrap().to_string(),
-        age : parsed["age"].as_str().unwrap().to_string(), 
-        username : parsed["username"].as_str().unwrap().to_string(),
-        first : parsed["firstname"].as_str().unwrap().to_string(),
-        last : parsed["lastname"].as_str().unwrap().to_string() 
-    };
+    let item: Item = serde_json::from_str(s).map_err(Box::new)?;
 
     let config = aws_config::load_from_env().await; 
     let client = Client::new(&config);
@@ -61,8 +52,8 @@ async fn main() -> Result<(), Error> {
 
 // Add an item to a table.
 // snippet-start:[dynamodb.rust.add-item]
-pub async fn add_item(client: &Client, item: Item, table: &String) -> Result<(), OtherError> {
-    let user_av = AttributeValue::S(item.username);
+pub async fn add_item(client: &Client, item: Item, table: &str) -> Result<(), OtherError> 
+{   let user_av = AttributeValue::S(item.username);
     let type_av = AttributeValue::S(item.p_type);
     let age_av = AttributeValue::S(item.age);
     let first_av = AttributeValue::S(item.first);

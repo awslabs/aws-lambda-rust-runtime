@@ -66,8 +66,8 @@ pub async fn add_item(client: &Client, item: Item, table: &str) -> Result<(), Ot
         .item("first_name", first_av)
         .item("last_name", last_av);
 
-    println!("Executing request [{request:?}] to add item...\n\n\n\n");
-
+    info!("adding item to DynamoDB");
+   
     let _resp = request.send().await?;
 
     Ok(())

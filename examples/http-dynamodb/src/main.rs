@@ -2,7 +2,6 @@ use lambda_http::{run, service_fn, Error, IntoResponse, Request, RequestExt, Res
 use serde_json::Value;
 use aws_sdk_dynamodb::model::AttributeValue;
 use aws_sdk_dynamodb::{Client, Error as OtherError};
-use aws_sdk_config::Region;
 use tracing::info;
 
 pub struct Item {
@@ -23,8 +22,8 @@ async fn function_handler(event: Request) -> Result<impl IntoResponse, Error> {
     let body = event.body();
     let s = std::str::from_utf8(&body).expect("invalid utf-8 sequence");
     // Parse the string of data into serde_json::Value.
-
-    info!("JSON Payload sent: {}", s);
+    info!(payload = %s, "JSON Payload received");
+   
     let parsed: Value = serde_json::from_str(s).unwrap();
     
     let item = Item {
@@ -35,10 +34,9 @@ async fn function_handler(event: Request) -> Result<impl IntoResponse, Error> {
         last : parsed["lastname"].as_str().unwrap().to_string() 
     };
 
-    let region =  Region::new("ca-central-1");
-    let shared_config = aws_config::from_env().region(region).load().await;
-    let client = Client::new(&shared_config);
-  
+    let config = aws_config::load_from_env().await; 
+    let client = Client::new(&config);
+
     add_item(&client, item, &"lambda_dyno_example".to_string()).await?;
     
     Ok(match event.query_string_parameters().first("first_name") {

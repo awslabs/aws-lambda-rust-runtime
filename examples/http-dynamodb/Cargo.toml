@@ -12,11 +12,10 @@ edition = "2021"
 
 [dependencies]
 serde_json = "1.0"
-lambda_http = { git = "https://github.com/awslabs/aws-lambda-rust-runtime.git" }
-lambda_runtime = { git = "https://github.com/awslabs/aws-lambda-rust-runtime.git" }
-aws-sdk-dynamodb = { git = "https://github.com/awslabs/aws-sdk-rust.git" }
-aws-sdk-config = { git = "https://github.com/awslabs/aws-sdk-rust.git" }
-aws-config = { git = "https://github.com/awslabs/aws-sdk-rust.git" }
+lambda_http = { path = "../../lambda-http" }
+lambda_runtime = { path = "../../lambda-runtime" }
+aws-sdk-dynamodb = "0.21.0"
+aws-config = "0.51.0"
 tokio = { version = "1", features = ["macros"] }
 tracing = { version = "0.1.37"}
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }

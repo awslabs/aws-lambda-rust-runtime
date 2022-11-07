@@ -3,7 +3,7 @@ use aws_sdk_dynamodb::{Client, Error as OtherError};
 use lambda_http::{run, service_fn, Error, IntoResponse, Request};
 use tracing::info;
 
-#[derive(serde::Deserialize, serde::Serialize)]
+#[derive(Clone, serde::Deserialize, serde::Serialize)]
 pub struct Item {
     pub p_type: String,
     pub age: String,
@@ -12,17 +12,6 @@ pub struct Item {
     pub last: String,
 }
 
-impl Clone for Item {
-    fn clone(&self) -> Item {
-        return Item {
-            p_type: self.p_type.clone(),
-            age: self.age.clone(),
-            username: self.username.clone(),
-            first: self.first.clone(),
-            last: self.last.clone(),
-        };
-    }
-}
 /// This is the main body for the function.
 /// Write your code inside it.
 /// You can see more examples in Runtime's repository:

@@ -1,9 +1,9 @@
 use aws_sdk_dynamodb::model::AttributeValue;
 use aws_sdk_dynamodb::{Client, Error as OtherError};
-use lambda_http::{run, service_fn, Error, IntoResponse, Request};
+use lambda_http::{run, service_fn, Body, Error, Request, Response};
 use tracing::info;
 
-#[derive(Clone, serde::Deserialize, serde::Serialize)]
+#[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
 pub struct Item {
     pub p_type: String,
     pub age: String,
@@ -16,18 +16,30 @@ pub struct Item {
 /// Write your code inside it.
 /// You can see more examples in Runtime's repository:
 /// - https://github.com/awslabs/aws-lambda-rust-runtime/tree/main/examples
-async fn function_handler(event: Request) -> Result<impl IntoResponse, Error> {
+async fn function_handler(event: Request) -> Result<Response<Body>, Error> {
     // Extract some useful information from the request
     let body = event.body();
     let s = std::str::from_utf8(&body).expect("invalid utf-8 sequence");
     //Log into Cloudwatch
     info!(payload = %s, "JSON Payload received");
 
-    //Serialize the data into the struct.
-    let item: Item = serde_json::from_str(s).map_err(Box::new)?;
-
-    //Setup the client to write to DynamoDB
+    //Serialze JSON into struct.
+    //If JSON is incorrect, send back 400 with error.
+    let item = match serde_json::from_str::<Item>(s) {
+        Ok(item) => item,
+        Err(err) => {
+            let resp = Response::builder()
+                .status(400)
+                .header("content-type", "text/html")
+                .body(err.to_string().into())
+                .map_err(Box::new)?;
+            return Ok(resp);
+        }
+    };
+    
+    //Get config from environment.
     let config = aws_config::load_from_env().await;
+    //Create the DynamoDB client.
     let client = Client::new(&config);
 
     //Insert into the table.
@@ -36,7 +48,13 @@ async fn function_handler(event: Request) -> Result<impl IntoResponse, Error> {
     //Deserialize into json to return in the Response
     let j = serde_json::to_string(&item)?;
 
-    Ok(j)
+    //Send back a 200 - success
+    let resp = Response::builder()
+        .status(200)
+        .header("content-type", "text/html")
+        .body(j.into())
+        .map_err(Box::new)?;
+    Ok(resp)
 }
 
 #[tokio::main]

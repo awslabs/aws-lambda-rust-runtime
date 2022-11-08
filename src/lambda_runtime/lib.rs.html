@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lambda-runtime/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../lambda_runtime/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../lambda_runtime/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../lambda_runtime/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lambda-runtime/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../lambda_runtime/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../lambda_runtime/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../lambda_runtime/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -575,582 +575,582 @@
 <span id="575">575</span>
 <span id="576">576</span>
 <span id="577">577</span>
-</pre><pre class="rust"><code><span class="attribute">#![<span class="ident">deny</span>(<span class="ident">clippy::all</span>, <span class="ident">clippy::cargo</span>)]</span>
-<span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::multiple_crate_versions</span>)]</span>
-<span class="attribute">#![<span class="ident">warn</span>(<span class="ident">missing_docs</span>, <span class="ident">nonstandard_style</span>, <span class="ident">rust_2018_idioms</span>)]</span>
+</pre><pre class="rust"><code><span class="attribute">#![deny(clippy::all, clippy::cargo)]
+#![allow(clippy::multiple_crate_versions)]
+#![warn(missing_docs, nonstandard_style, rust_2018_idioms)]
 
-<span class="doccomment">//! The mechanism available for defining a Lambda function is as follows:</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Create a type that conforms to the [`tower::Service`] trait. This type can</span>
-<span class="doccomment">//! then be passed to the the `lambda_runtime::run` function, which launches</span>
-<span class="doccomment">//! and runs the Lambda runtime.</span>
-<span class="kw">use</span> <span class="ident">futures::FutureExt</span>;
-<span class="kw">use</span> <span class="ident">hyper</span>::{
-    <span class="ident">client</span>::{<span class="ident">connect::Connection</span>, <span class="ident">HttpConnector</span>},
-    <span class="ident">http::Request</span>,
-    <span class="ident">Body</span>,
+</span><span class="doccomment">//! The mechanism available for defining a Lambda function is as follows:
+//!
+//! Create a type that conforms to the [`tower::Service`] trait. This type can
+//! then be passed to the the `lambda_runtime::run` function, which launches
+//! and runs the Lambda runtime.
+</span><span class="kw">use </span>futures::FutureExt;
+<span class="kw">use </span>hyper::{
+    client::{connect::Connection, HttpConnector},
+    http::Request,
+    Body,
 };
-<span class="kw">use</span> <span class="ident">lambda_runtime_api_client::Client</span>;
-<span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
-<span class="kw">use</span> <span class="ident">std</span>::{
-    <span class="ident">convert::TryFrom</span>,
-    <span class="ident">env</span>,
-    <span class="ident">fmt</span>::{<span class="self">self</span>, <span class="ident">Debug</span>, <span class="ident">Display</span>},
-    <span class="ident">future::Future</span>,
-    <span class="ident">panic</span>,
+<span class="kw">use </span>lambda_runtime_api_client::Client;
+<span class="kw">use </span>serde::{Deserialize, Serialize};
+<span class="kw">use </span>std::{
+    convert::TryFrom,
+    env,
+    fmt::{<span class="self">self</span>, Debug, Display},
+    future::Future,
+    panic,
 };
-<span class="kw">use</span> <span class="ident">tokio::io</span>::{<span class="ident">AsyncRead</span>, <span class="ident">AsyncWrite</span>};
-<span class="kw">use</span> <span class="ident">tokio_stream</span>::{<span class="ident">Stream</span>, <span class="ident">StreamExt</span>};
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">tower</span>::{<span class="self">self</span>, <span class="ident">service_fn</span>, <span class="ident">Service</span>};
-<span class="kw">use</span> <span class="ident">tower</span>::{<span class="ident">util::ServiceFn</span>, <span class="ident">ServiceExt</span>};
-<span class="kw">use</span> <span class="ident">tracing</span>::{<span class="ident">error</span>, <span class="ident">trace</span>};
+<span class="kw">use </span>tokio::io::{AsyncRead, AsyncWrite};
+<span class="kw">use </span>tokio_stream::{Stream, StreamExt};
+<span class="kw">pub use </span>tower::{<span class="self">self</span>, service_fn, Service};
+<span class="kw">use </span>tower::{util::ServiceFn, ServiceExt};
+<span class="kw">use </span>tracing::{error, trace};
 
-<span class="kw">mod</span> <span class="ident">requests</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">simulated</span>;
-<span class="doccomment">/// Types available to a Lambda function.</span>
-<span class="kw">mod</span> <span class="ident">types</span>;
+<span class="kw">mod </span>requests;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>simulated;
+<span class="doccomment">/// Types available to a Lambda function.
+</span><span class="kw">mod </span>types;
 
-<span class="kw">use</span> <span class="ident">requests</span>::{<span class="ident">EventCompletionRequest</span>, <span class="ident">EventErrorRequest</span>, <span class="ident">IntoRequest</span>, <span class="ident">NextEventRequest</span>};
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">types</span>::{<span class="ident">Context</span>, <span class="ident">LambdaEvent</span>};
+<span class="kw">use </span>requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest};
+<span class="kw">pub use </span>types::{Context, LambdaEvent};
 
-<span class="doccomment">/// Error type that lambdas may result in</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">lambda_runtime_api_client::Error</span>;
+<span class="doccomment">/// Error type that lambdas may result in
+</span><span class="kw">pub type </span>Error = lambda_runtime_api_client::Error;
 
-<span class="doccomment">/// Configuration derived from environment variables.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Clone</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Config</span> {
-    <span class="doccomment">/// The name of the function.</span>
-    <span class="kw">pub</span> <span class="ident">function_name</span>: <span class="ident">String</span>,
-    <span class="doccomment">/// The amount of memory available to the function in MB.</span>
-    <span class="kw">pub</span> <span class="ident">memory</span>: <span class="ident">i32</span>,
-    <span class="doccomment">/// The version of the function being executed.</span>
-    <span class="kw">pub</span> <span class="ident">version</span>: <span class="ident">String</span>,
-    <span class="doccomment">/// The name of the Amazon CloudWatch Logs stream for the function.</span>
-    <span class="kw">pub</span> <span class="ident">log_stream</span>: <span class="ident">String</span>,
-    <span class="doccomment">/// The name of the Amazon CloudWatch Logs group for the function.</span>
-    <span class="kw">pub</span> <span class="ident">log_group</span>: <span class="ident">String</span>,
+<span class="doccomment">/// Configuration derived from environment variables.
+</span><span class="attribute">#[derive(Debug, Default, Clone, Eq, PartialEq, Serialize, Deserialize)]
+</span><span class="kw">pub struct </span>Config {
+    <span class="doccomment">/// The name of the function.
+    </span><span class="kw">pub </span>function_name: String,
+    <span class="doccomment">/// The amount of memory available to the function in MB.
+    </span><span class="kw">pub </span>memory: i32,
+    <span class="doccomment">/// The version of the function being executed.
+    </span><span class="kw">pub </span>version: String,
+    <span class="doccomment">/// The name of the Amazon CloudWatch Logs stream for the function.
+    </span><span class="kw">pub </span>log_stream: String,
+    <span class="doccomment">/// The name of the Amazon CloudWatch Logs group for the function.
+    </span><span class="kw">pub </span>log_group: String,
 }
 
-<span class="kw">impl</span> <span class="ident">Config</span> {
-    <span class="doccomment">/// Attempts to read configuration from environment variables.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_env</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">conf</span> <span class="op">=</span> <span class="ident">Config</span> {
-            <span class="ident">function_name</span>: <span class="ident">env::var</span>(<span class="string">&quot;AWS_LAMBDA_FUNCTION_NAME&quot;</span>).<span class="ident">expect</span>(<span class="string">&quot;Missing AWS_LAMBDA_FUNCTION_NAME env var&quot;</span>),
-            <span class="ident">memory</span>: <span class="ident">env::var</span>(<span class="string">&quot;AWS_LAMBDA_FUNCTION_MEMORY_SIZE&quot;</span>)
-                .<span class="ident">expect</span>(<span class="string">&quot;Missing AWS_LAMBDA_FUNCTION_MEMORY_SIZE env var&quot;</span>)
-                .<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>()
-                .<span class="ident">expect</span>(<span class="string">&quot;AWS_LAMBDA_FUNCTION_MEMORY_SIZE env var is not &lt;i32&gt;&quot;</span>),
-            <span class="ident">version</span>: <span class="ident">env::var</span>(<span class="string">&quot;AWS_LAMBDA_FUNCTION_VERSION&quot;</span>).<span class="ident">expect</span>(<span class="string">&quot;Missing AWS_LAMBDA_FUNCTION_VERSION env var&quot;</span>),
-            <span class="ident">log_stream</span>: <span class="ident">env::var</span>(<span class="string">&quot;AWS_LAMBDA_LOG_STREAM_NAME&quot;</span>).<span class="ident">unwrap_or_default</span>(),
-            <span class="ident">log_group</span>: <span class="ident">env::var</span>(<span class="string">&quot;AWS_LAMBDA_LOG_GROUP_NAME&quot;</span>).<span class="ident">unwrap_or_default</span>(),
+<span class="kw">impl </span>Config {
+    <span class="doccomment">/// Attempts to read configuration from environment variables.
+    </span><span class="kw">pub fn </span>from_env() -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
+        <span class="kw">let </span>conf = Config {
+            function_name: env::var(<span class="string">&quot;AWS_LAMBDA_FUNCTION_NAME&quot;</span>).expect(<span class="string">&quot;Missing AWS_LAMBDA_FUNCTION_NAME env var&quot;</span>),
+            memory: env::var(<span class="string">&quot;AWS_LAMBDA_FUNCTION_MEMORY_SIZE&quot;</span>)
+                .expect(<span class="string">&quot;Missing AWS_LAMBDA_FUNCTION_MEMORY_SIZE env var&quot;</span>)
+                .parse::&lt;i32&gt;()
+                .expect(<span class="string">&quot;AWS_LAMBDA_FUNCTION_MEMORY_SIZE env var is not &lt;i32&gt;&quot;</span>),
+            version: env::var(<span class="string">&quot;AWS_LAMBDA_FUNCTION_VERSION&quot;</span>).expect(<span class="string">&quot;Missing AWS_LAMBDA_FUNCTION_VERSION env var&quot;</span>),
+            log_stream: env::var(<span class="string">&quot;AWS_LAMBDA_LOG_STREAM_NAME&quot;</span>).unwrap_or_default(),
+            log_group: env::var(<span class="string">&quot;AWS_LAMBDA_LOG_GROUP_NAME&quot;</span>).unwrap_or_default(),
         };
-        <span class="prelude-val">Ok</span>(<span class="ident">conf</span>)
+        <span class="prelude-val">Ok</span>(conf)
     }
 }
 
-<span class="doccomment">/// Return a new [`ServiceFn`] with a closure that takes an event and context as separate arguments.</span>
-<span class="attribute">#[<span class="ident">deprecated</span>(<span class="ident">since</span> <span class="op">=</span> <span class="string">&quot;0.5.0&quot;</span>, <span class="ident">note</span> <span class="op">=</span> <span class="string">&quot;Use `service_fn` and `LambdaEvent` instead&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">handler_fn</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">F</span>, <span class="ident">Fut</span><span class="op">&gt;</span>(<span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="ident">ServiceFn</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">Fn</span>(<span class="ident">LambdaEvent</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>) -&gt; <span class="ident">Fut</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">A</span>, <span class="ident">Context</span>) -&gt; <span class="ident">Fut</span>,
+<span class="doccomment">/// Return a new [`ServiceFn`] with a closure that takes an event and context as separate arguments.
+</span><span class="attribute">#[deprecated(since = <span class="string">&quot;0.5.0&quot;</span>, note = <span class="string">&quot;Use `service_fn` and `LambdaEvent` instead&quot;</span>)]
+</span><span class="kw">pub fn </span>handler_fn&lt;A, F, Fut&gt;(f: F) -&gt; ServiceFn&lt;<span class="kw">impl </span>Fn(LambdaEvent&lt;A&gt;) -&gt; Fut&gt;
+<span class="kw">where
+    </span>F: Fn(A, Context) -&gt; Fut,
 {
-    <span class="ident">service_fn</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">req</span>: <span class="ident">LambdaEvent</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span><span class="op">|</span> <span class="ident">f</span>(<span class="ident">req</span>.<span class="ident">payload</span>, <span class="ident">req</span>.<span class="ident">context</span>))
+    service_fn(<span class="kw">move </span>|req: LambdaEvent&lt;A&gt;| f(req.payload, req.context))
 }
 
-<span class="kw">struct</span> <span class="ident">Runtime</span><span class="op">&lt;</span><span class="ident">C</span>: <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">http::Uri</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">HttpConnector</span><span class="op">&gt;</span> {
-    <span class="ident">client</span>: <span class="ident">Client</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>,
+<span class="kw">struct </span>Runtime&lt;C: Service&lt;http::Uri&gt; = HttpConnector&gt; {
+    client: Client&lt;C&gt;,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span> <span class="ident">Runtime</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">C</span>: <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">http::Uri</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="ident">Unpin</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
-    <span class="ident">C::Future</span>: <span class="ident">Unpin</span> <span class="op">+</span> <span class="ident">Send</span>,
-    <span class="ident">C::Error</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">std::error::Error</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="ident">C::Response</span>: <span class="ident">AsyncRead</span> <span class="op">+</span> <span class="ident">AsyncWrite</span> <span class="op">+</span> <span class="ident">Connection</span> <span class="op">+</span> <span class="ident">Unpin</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
+<span class="kw">impl</span>&lt;C&gt; Runtime&lt;C&gt;
+<span class="kw">where
+    </span>C: Service&lt;http::Uri&gt; + Clone + Send + Sync + Unpin + <span class="lifetime">&#39;static</span>,
+    C::Future: Unpin + Send,
+    C::Error: Into&lt;Box&lt;<span class="kw">dyn </span>std::error::Error + Send + Sync&gt;&gt;,
+    C::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + <span class="lifetime">&#39;static</span>,
 {
-    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">run</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span>(
+    <span class="kw">pub async fn </span>run&lt;F, A, B&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">incoming</span>: <span class="kw">impl</span> <span class="ident">Stream</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">http::Response</span><span class="op">&lt;</span><span class="ident">hyper::Body</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span>,
-        <span class="kw-2">mut</span> <span class="ident">handler</span>: <span class="ident">F</span>,
-        <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">LambdaEvent</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-        <span class="ident">F::Future</span>: <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">F::Error</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-        <span class="ident">F::Error</span>: <span class="ident">fmt::Debug</span> <span class="op">+</span> <span class="ident">fmt::Display</span>,
-        <span class="ident">A</span>: <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
-        <span class="ident">B</span>: <span class="ident">Serialize</span>,
+        incoming: <span class="kw">impl </span>Stream&lt;Item = <span class="prelude-ty">Result</span>&lt;http::Response&lt;hyper::Body&gt;, Error&gt;&gt; + Send,
+        <span class="kw-2">mut </span>handler: F,
+        config: <span class="kw-2">&amp;</span>Config,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt;
+    <span class="kw">where
+        </span>F: Service&lt;LambdaEvent&lt;A&gt;&gt;,
+        F::Future: Future&lt;Output = <span class="prelude-ty">Result</span>&lt;B, F::Error&gt;&gt;,
+        F::Error: fmt::Debug + fmt::Display,
+        A: <span class="kw">for</span>&lt;<span class="lifetime">&#39;de</span>&gt; Deserialize&lt;<span class="lifetime">&#39;de</span>&gt;,
+        B: Serialize,
     {
-        <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">client</span>;
-        <span class="macro">tokio::pin!</span>(<span class="ident">incoming</span>);
-        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">next_event_response</span>) <span class="op">=</span> <span class="ident">incoming</span>.<span class="ident">next</span>().<span class="kw">await</span> {
+        <span class="kw">let </span>client = <span class="kw-2">&amp;</span><span class="self">self</span>.client;
+        <span class="macro">tokio::pin!</span>(incoming);
+        <span class="kw">while let </span><span class="prelude-val">Some</span>(next_event_response) = incoming.next().<span class="kw">await </span>{
             <span class="macro">trace!</span>(<span class="string">&quot;New event arrived (run loop)&quot;</span>);
-            <span class="kw">let</span> <span class="ident">event</span> <span class="op">=</span> <span class="ident">next_event_response</span><span class="question-mark">?</span>;
-            <span class="kw">let</span> (<span class="ident">parts</span>, <span class="ident">body</span>) <span class="op">=</span> <span class="ident">event</span>.<span class="ident">into_parts</span>();
+            <span class="kw">let </span>event = next_event_response<span class="question-mark">?</span>;
+            <span class="kw">let </span>(parts, body) = event.into_parts();
 
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">debug_assertions</span>)]</span>
-            <span class="kw">if</span> <span class="ident">parts</span>.<span class="ident">status</span> <span class="op">==</span> <span class="ident">http::StatusCode::NO_CONTENT</span> {
-                <span class="comment">// Ignore the event if the status code is 204.</span>
-                <span class="comment">// This is a way to keep the runtime alive when</span>
-                <span class="comment">// there are no events pending to be processed.</span>
-                <span class="kw">continue</span>;
+            <span class="attribute">#[cfg(debug_assertions)]
+            </span><span class="kw">if </span>parts.status == http::StatusCode::NO_CONTENT {
+                <span class="comment">// Ignore the event if the status code is 204.
+                // This is a way to keep the runtime alive when
+                // there are no events pending to be processed.
+                </span><span class="kw">continue</span>;
             }
 
-            <span class="kw">let</span> <span class="ident">body</span> <span class="op">=</span> <span class="ident">hyper::body::to_bytes</span>(<span class="ident">body</span>).<span class="kw">await</span><span class="question-mark">?</span>;
-            <span class="macro">trace!</span>(<span class="string">&quot;response body - {}&quot;</span>, <span class="ident">std::str::from_utf8</span>(<span class="kw-2">&amp;</span><span class="ident">body</span>)<span class="question-mark">?</span>);
+            <span class="kw">let </span>body = hyper::body::to_bytes(body).<span class="kw">await</span><span class="question-mark">?</span>;
+            <span class="macro">trace!</span>(<span class="string">&quot;response body - {}&quot;</span>, std::str::from_utf8(<span class="kw-2">&amp;</span>body)<span class="question-mark">?</span>);
 
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">debug_assertions</span>)]</span>
-            <span class="kw">if</span> <span class="ident">parts</span>.<span class="ident">status</span>.<span class="ident">is_server_error</span>() {
+            <span class="attribute">#[cfg(debug_assertions)]
+            </span><span class="kw">if </span>parts.status.is_server_error() {
                 <span class="macro">error!</span>(<span class="string">&quot;Lambda Runtime server returned an unexpected error&quot;</span>);
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">parts</span>.<span class="ident">status</span>.<span class="ident">to_string</span>().<span class="ident">into</span>());
+                <span class="kw">return </span><span class="prelude-val">Err</span>(parts.status.to_string().into());
             }
 
-            <span class="kw">let</span> <span class="ident">ctx</span>: <span class="ident">Context</span> <span class="op">=</span> <span class="ident">Context::try_from</span>(<span class="ident">parts</span>.<span class="ident">headers</span>)<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">ctx</span>: <span class="ident">Context</span> <span class="op">=</span> <span class="ident">ctx</span>.<span class="ident">with_config</span>(<span class="ident">config</span>);
-            <span class="kw">let</span> <span class="ident">request_id</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">ctx</span>.<span class="ident">request_id</span>.<span class="ident">clone</span>();
+            <span class="kw">let </span>ctx: Context = Context::try_from(parts.headers)<span class="question-mark">?</span>;
+            <span class="kw">let </span>ctx: Context = ctx.with_config(config);
+            <span class="kw">let </span>request_id = <span class="kw-2">&amp;</span>ctx.request_id.clone();
 
-            <span class="kw">let</span> <span class="ident">xray_trace_id</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">ctx</span>.<span class="ident">xray_trace_id</span>.<span class="ident">clone</span>();
-            <span class="kw">match</span> <span class="ident">xray_trace_id</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">trace_id</span>) =&gt; <span class="ident">env::set_var</span>(<span class="string">&quot;_X_AMZN_TRACE_ID&quot;</span>, <span class="ident">trace_id</span>),
-                <span class="prelude-val">None</span> =&gt; <span class="ident">env::remove_var</span>(<span class="string">&quot;_X_AMZN_TRACE_ID&quot;</span>),
+            <span class="kw">let </span>xray_trace_id = <span class="kw-2">&amp;</span>ctx.xray_trace_id.clone();
+            <span class="kw">match </span>xray_trace_id {
+                <span class="prelude-val">Some</span>(trace_id) =&gt; env::set_var(<span class="string">&quot;_X_AMZN_TRACE_ID&quot;</span>, trace_id),
+                <span class="prelude-val">None </span>=&gt; env::remove_var(<span class="string">&quot;_X_AMZN_TRACE_ID&quot;</span>),
             }
-            <span class="kw">let</span> <span class="ident">body</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">serde_json::from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">body</span>) {
-                <span class="prelude-val">Ok</span>(<span class="ident">body</span>) =&gt; <span class="ident">body</span>,
-                <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; {
-                    <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">build_event_error_request</span>(<span class="ident">request_id</span>, <span class="ident">err</span>)<span class="question-mark">?</span>;
-                    <span class="ident">client</span>.<span class="ident">call</span>(<span class="ident">req</span>).<span class="kw">await</span>.<span class="ident">expect</span>(<span class="string">&quot;Unable to send response to Runtime APIs&quot;</span>);
-                    <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+            <span class="kw">let </span>body = <span class="kw">match </span>serde_json::from_slice(<span class="kw-2">&amp;</span>body) {
+                <span class="prelude-val">Ok</span>(body) =&gt; body,
+                <span class="prelude-val">Err</span>(err) =&gt; {
+                    <span class="kw">let </span>req = build_event_error_request(request_id, err)<span class="question-mark">?</span>;
+                    client.call(req).<span class="kw">await</span>.expect(<span class="string">&quot;Unable to send response to Runtime APIs&quot;</span>);
+                    <span class="kw">return </span><span class="prelude-val">Ok</span>(());
                 }
             };
 
-            <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">handler</span>.<span class="ident">ready</span>().<span class="kw">await</span> {
-                <span class="prelude-val">Ok</span>(<span class="ident">handler</span>) =&gt; {
-                    <span class="comment">// Catches panics outside of a `Future`</span>
-                    <span class="kw">let</span> <span class="ident">task</span> <span class="op">=</span>
-                        <span class="ident">panic::catch_unwind</span>(<span class="ident">panic::AssertUnwindSafe</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">handler</span>.<span class="ident">call</span>(<span class="ident">LambdaEvent::new</span>(<span class="ident">body</span>, <span class="ident">ctx</span>))));
+            <span class="kw">let </span>req = <span class="kw">match </span>handler.ready().<span class="kw">await </span>{
+                <span class="prelude-val">Ok</span>(handler) =&gt; {
+                    <span class="comment">// Catches panics outside of a `Future`
+                    </span><span class="kw">let </span>task =
+                        panic::catch_unwind(panic::AssertUnwindSafe(|| handler.call(LambdaEvent::new(body, ctx))));
 
-                    <span class="kw">let</span> <span class="ident">task</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">task</span> {
-                        <span class="comment">// Catches panics inside of the `Future`</span>
-                        <span class="prelude-val">Ok</span>(<span class="ident">task</span>) =&gt; <span class="ident">panic::AssertUnwindSafe</span>(<span class="ident">task</span>).<span class="ident">catch_unwind</span>().<span class="kw">await</span>,
-                        <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; <span class="prelude-val">Err</span>(<span class="ident">err</span>),
+                    <span class="kw">let </span>task = <span class="kw">match </span>task {
+                        <span class="comment">// Catches panics inside of the `Future`
+                        </span><span class="prelude-val">Ok</span>(task) =&gt; panic::AssertUnwindSafe(task).catch_unwind().<span class="kw">await</span>,
+                        <span class="prelude-val">Err</span>(err) =&gt; <span class="prelude-val">Err</span>(err),
                     };
 
-                    <span class="kw">match</span> <span class="ident">task</span> {
-                        <span class="prelude-val">Ok</span>(<span class="ident">response</span>) =&gt; <span class="kw">match</span> <span class="ident">response</span> {
-                            <span class="prelude-val">Ok</span>(<span class="ident">response</span>) =&gt; {
+                    <span class="kw">match </span>task {
+                        <span class="prelude-val">Ok</span>(response) =&gt; <span class="kw">match </span>response {
+                            <span class="prelude-val">Ok</span>(response) =&gt; {
                                 <span class="macro">trace!</span>(<span class="string">&quot;Ok response from handler (run loop)&quot;</span>);
-                                <span class="ident">EventCompletionRequest</span> {
-                                    <span class="ident">request_id</span>,
-                                    <span class="ident">body</span>: <span class="ident">response</span>,
+                                EventCompletionRequest {
+                                    request_id,
+                                    body: response,
                                 }
-                                .<span class="ident">into_req</span>()
+                                .into_req()
                             }
-                            <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; <span class="ident">build_event_error_request</span>(<span class="ident">request_id</span>, <span class="ident">err</span>),
+                            <span class="prelude-val">Err</span>(err) =&gt; build_event_error_request(request_id, err),
                         },
-                        <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; {
-                            <span class="macro">error!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">err</span>);
-                            <span class="kw">let</span> <span class="ident">error_type</span> <span class="op">=</span> <span class="ident">type_name_of_val</span>(<span class="kw-2">&amp;</span><span class="ident">err</span>);
-                            <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">msg</span>) <span class="op">=</span> <span class="ident">err</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>() {
-                                <span class="macro">format!</span>(<span class="string">&quot;Lambda panicked: {}&quot;</span>, <span class="ident">msg</span>)
-                            } <span class="kw">else</span> {
-                                <span class="string">&quot;Lambda panicked&quot;</span>.<span class="ident">to_string</span>()
+                        <span class="prelude-val">Err</span>(err) =&gt; {
+                            <span class="macro">error!</span>(<span class="string">&quot;{:?}&quot;</span>, err);
+                            <span class="kw">let </span>error_type = type_name_of_val(<span class="kw-2">&amp;</span>err);
+                            <span class="kw">let </span>msg = <span class="kw">if let </span><span class="prelude-val">Some</span>(msg) = err.downcast_ref::&lt;<span class="kw-2">&amp;</span>str&gt;() {
+                                <span class="macro">format!</span>(<span class="string">&quot;Lambda panicked: {}&quot;</span>, msg)
+                            } <span class="kw">else </span>{
+                                <span class="string">&quot;Lambda panicked&quot;</span>.to_string()
                             };
-                            <span class="ident">EventErrorRequest::new</span>(<span class="ident">request_id</span>, <span class="ident">error_type</span>, <span class="kw-2">&amp;</span><span class="ident">msg</span>).<span class="ident">into_req</span>()
+                            EventErrorRequest::new(request_id, error_type, <span class="kw-2">&amp;</span>msg).into_req()
                         }
                     }
                 }
-                <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; <span class="ident">build_event_error_request</span>(<span class="ident">request_id</span>, <span class="ident">err</span>),
+                <span class="prelude-val">Err</span>(err) =&gt; build_event_error_request(request_id, err),
             }<span class="question-mark">?</span>;
 
-            <span class="ident">client</span>.<span class="ident">call</span>(<span class="ident">req</span>).<span class="kw">await</span>.<span class="ident">expect</span>(<span class="string">&quot;Unable to send response to Runtime APIs&quot;</span>);
+            client.call(req).<span class="kw">await</span>.expect(<span class="string">&quot;Unable to send response to Runtime APIs&quot;</span>);
         }
         <span class="prelude-val">Ok</span>(())
     }
 }
 
-<span class="kw">fn</span> <span class="ident">incoming</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>(<span class="ident">client</span>: <span class="kw-2">&amp;</span><span class="ident">Client</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>) -&gt; <span class="kw">impl</span> <span class="ident">Stream</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">http::Response</span><span class="op">&lt;</span><span class="ident">hyper::Body</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="lifetime">&#39;_</span>
-<span class="kw">where</span>
-    <span class="ident">C</span>: <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">http::Uri</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="ident">Unpin</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
-    <span class="op">&lt;</span><span class="ident">C</span> <span class="kw">as</span> <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">http::Uri</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="ident">::Future</span>: <span class="ident">Unpin</span> <span class="op">+</span> <span class="ident">Send</span>,
-    <span class="op">&lt;</span><span class="ident">C</span> <span class="kw">as</span> <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">http::Uri</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="ident">::Error</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">std::error::Error</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="op">&lt;</span><span class="ident">C</span> <span class="kw">as</span> <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">http::Uri</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="ident">::Response</span>: <span class="ident">AsyncRead</span> <span class="op">+</span> <span class="ident">AsyncWrite</span> <span class="op">+</span> <span class="ident">Connection</span> <span class="op">+</span> <span class="ident">Unpin</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
+<span class="kw">fn </span>incoming&lt;C&gt;(client: <span class="kw-2">&amp;</span>Client&lt;C&gt;) -&gt; <span class="kw">impl </span>Stream&lt;Item = <span class="prelude-ty">Result</span>&lt;http::Response&lt;hyper::Body&gt;, Error&gt;&gt; + Send + <span class="lifetime">&#39;_
+</span><span class="kw">where
+    </span>C: Service&lt;http::Uri&gt; + Clone + Send + Sync + Unpin + <span class="lifetime">&#39;static</span>,
+    &lt;C <span class="kw">as </span>Service&lt;http::Uri&gt;&gt;::Future: Unpin + Send,
+    &lt;C <span class="kw">as </span>Service&lt;http::Uri&gt;&gt;::Error: Into&lt;Box&lt;<span class="kw">dyn </span>std::error::Error + Send + Sync&gt;&gt;,
+    &lt;C <span class="kw">as </span>Service&lt;http::Uri&gt;&gt;::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + <span class="lifetime">&#39;static</span>,
 {
-    <span class="macro">async_stream::stream!</span> {
-        <span class="kw">loop</span> {
+    <span class="macro">async_stream::stream! </span>{
+        <span class="kw">loop </span>{
             <span class="macro">trace!</span>(<span class="string">&quot;Waiting for next event (incoming loop)&quot;</span>);
-            <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">NextEventRequest</span>.<span class="ident">into_req</span>().<span class="ident">expect</span>(<span class="string">&quot;Unable to construct request&quot;</span>);
-            <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">client</span>.<span class="ident">call</span>(<span class="ident">req</span>).<span class="kw">await</span>;
-            <span class="kw">yield</span> <span class="ident">res</span>;
+            <span class="kw">let </span>req = NextEventRequest.into_req().expect(<span class="string">&quot;Unable to construct request&quot;</span>);
+            <span class="kw">let </span>res = client.call(req).<span class="kw">await</span>;
+            <span class="kw">yield </span>res;
         }
     }
 }
 
-<span class="doccomment">/// Starts the Lambda Rust runtime and begins polling for events on the [Lambda</span>
-<span class="doccomment">/// Runtime APIs](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Example</span>
-<span class="doccomment">/// ```no_run</span>
-<span class="doccomment">/// use lambda_runtime::{Error, service_fn, LambdaEvent};</span>
-<span class="doccomment">/// use serde_json::Value;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// #[tokio::main]</span>
-<span class="doccomment">/// async fn main() -&gt; Result&lt;(), Error&gt; {</span>
-<span class="doccomment">///     let func = service_fn(func);</span>
-<span class="doccomment">///     lambda_runtime::run(func).await?;</span>
-<span class="doccomment">///     Ok(())</span>
-<span class="doccomment">/// }</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// async fn func(event: LambdaEvent&lt;Value&gt;) -&gt; Result&lt;Value, Error&gt; {</span>
-<span class="doccomment">///     Ok(event.payload)</span>
-<span class="doccomment">/// }</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">run</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">handler</span>: <span class="ident">F</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">F</span>: <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">LambdaEvent</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="ident">F::Future</span>: <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">F::Error</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="ident">F::Error</span>: <span class="ident">fmt::Debug</span> <span class="op">+</span> <span class="ident">fmt::Display</span>,
-    <span class="ident">A</span>: <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
-    <span class="ident">B</span>: <span class="ident">Serialize</span>,
+<span class="doccomment">/// Starts the Lambda Rust runtime and begins polling for events on the [Lambda
+/// Runtime APIs](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html).
+///
+/// # Example
+/// ```no_run
+/// use lambda_runtime::{Error, service_fn, LambdaEvent};
+/// use serde_json::Value;
+///
+/// #[tokio::main]
+/// async fn main() -&gt; Result&lt;(), Error&gt; {
+///     let func = service_fn(func);
+///     lambda_runtime::run(func).await?;
+///     Ok(())
+/// }
+///
+/// async fn func(event: LambdaEvent&lt;Value&gt;) -&gt; Result&lt;Value, Error&gt; {
+///     Ok(event.payload)
+/// }
+/// ```
+</span><span class="kw">pub async fn </span>run&lt;A, B, F&gt;(handler: F) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt;
+<span class="kw">where
+    </span>F: Service&lt;LambdaEvent&lt;A&gt;&gt;,
+    F::Future: Future&lt;Output = <span class="prelude-ty">Result</span>&lt;B, F::Error&gt;&gt;,
+    F::Error: fmt::Debug + fmt::Display,
+    A: <span class="kw">for</span>&lt;<span class="lifetime">&#39;de</span>&gt; Deserialize&lt;<span class="lifetime">&#39;de</span>&gt;,
+    B: Serialize,
 {
     <span class="macro">trace!</span>(<span class="string">&quot;Loading config from env&quot;</span>);
-    <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="ident">Config::from_env</span>()<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="ident">Client::builder</span>().<span class="ident">build</span>().<span class="ident">expect</span>(<span class="string">&quot;Unable to create a runtime client&quot;</span>);
-    <span class="kw">let</span> <span class="ident">runtime</span> <span class="op">=</span> <span class="ident">Runtime</span> { <span class="ident">client</span> };
+    <span class="kw">let </span>config = Config::from_env()<span class="question-mark">?</span>;
+    <span class="kw">let </span>client = Client::builder().build().expect(<span class="string">&quot;Unable to create a runtime client&quot;</span>);
+    <span class="kw">let </span>runtime = Runtime { client };
 
-    <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">runtime</span>.<span class="ident">client</span>;
-    <span class="kw">let</span> <span class="ident">incoming</span> <span class="op">=</span> <span class="ident">incoming</span>(<span class="ident">client</span>);
-    <span class="ident">runtime</span>.<span class="ident">run</span>(<span class="ident">incoming</span>, <span class="ident">handler</span>, <span class="kw-2">&amp;</span><span class="ident">config</span>).<span class="kw">await</span>
+    <span class="kw">let </span>client = <span class="kw-2">&amp;</span>runtime.client;
+    <span class="kw">let </span>incoming = incoming(client);
+    runtime.run(incoming, handler, <span class="kw-2">&amp;</span>config).<span class="kw">await
+</span>}
+
+<span class="kw">fn </span>type_name_of_val&lt;T&gt;(<span class="kw">_</span>: T) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str {
+    std::any::type_name::&lt;T&gt;()
 }
 
-<span class="kw">fn</span> <span class="ident">type_name_of_val</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="kw">_</span>: <span class="ident">T</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
-    <span class="ident">std::any::type_name</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>()
-}
-
-<span class="kw">fn</span> <span class="ident">build_event_error_request</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">request_id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">err</span>: <span class="ident">T</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Display</span> <span class="op">+</span> <span class="ident">Debug</span>,
+<span class="kw">fn </span>build_event_error_request&lt;T&gt;(request_id: <span class="kw-2">&amp;</span>str, err: T) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;Body&gt;, Error&gt;
+<span class="kw">where
+    </span>T: Display + Debug,
 {
-    <span class="macro">error!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">err</span>); <span class="comment">// logs the error in CloudWatch</span>
-    <span class="kw">let</span> <span class="ident">error_type</span> <span class="op">=</span> <span class="ident">type_name_of_val</span>(<span class="kw-2">&amp;</span><span class="ident">err</span>);
-    <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">err</span>);
+    <span class="macro">error!</span>(<span class="string">&quot;{:?}&quot;</span>, err); <span class="comment">// logs the error in CloudWatch
+    </span><span class="kw">let </span>error_type = type_name_of_val(<span class="kw-2">&amp;</span>err);
+    <span class="kw">let </span>msg = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, err);
 
-    <span class="ident">EventErrorRequest::new</span>(<span class="ident">request_id</span>, <span class="ident">error_type</span>, <span class="kw-2">&amp;</span><span class="ident">msg</span>).<span class="ident">into_req</span>()
+    EventErrorRequest::new(request_id, error_type, <span class="kw-2">&amp;</span>msg).into_req()
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">endpoint_tests</span> {
-    <span class="kw">use</span> <span class="kw">crate</span>::{
-        <span class="ident">incoming</span>,
-        <span class="ident">requests</span>::{
-            <span class="ident">EventCompletionRequest</span>, <span class="ident">EventErrorRequest</span>, <span class="ident">IntoRequest</span>, <span class="ident">IntoResponse</span>, <span class="ident">NextEventRequest</span>, <span class="ident">NextEventResponse</span>,
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>endpoint_tests {
+    <span class="kw">use crate</span>::{
+        incoming,
+        requests::{
+            EventCompletionRequest, EventErrorRequest, IntoRequest, IntoResponse, NextEventRequest, NextEventResponse,
         },
-        <span class="ident">simulated</span>,
-        <span class="ident">types::Diagnostic</span>,
-        <span class="ident">Error</span>, <span class="ident">Runtime</span>,
+        simulated,
+        types::Diagnostic,
+        Error, Runtime,
     };
-    <span class="kw">use</span> <span class="ident">futures::future::BoxFuture</span>;
-    <span class="kw">use</span> <span class="ident">http</span>::{<span class="ident">uri::PathAndQuery</span>, <span class="ident">HeaderValue</span>, <span class="ident">Method</span>, <span class="ident">Request</span>, <span class="ident">Response</span>, <span class="ident">StatusCode</span>, <span class="ident">Uri</span>};
-    <span class="kw">use</span> <span class="ident">hyper</span>::{<span class="ident">server::conn::Http</span>, <span class="ident">service::service_fn</span>, <span class="ident">Body</span>};
-    <span class="kw">use</span> <span class="ident">lambda_runtime_api_client::Client</span>;
-    <span class="kw">use</span> <span class="ident">serde_json::json</span>;
-    <span class="kw">use</span> <span class="ident">simulated::DuplexStreamWrapper</span>;
-    <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">convert::TryFrom</span>, <span class="ident">env</span>};
-    <span class="kw">use</span> <span class="ident">tokio</span>::{
-        <span class="ident">io</span>::{<span class="self">self</span>, <span class="ident">AsyncRead</span>, <span class="ident">AsyncWrite</span>},
-        <span class="ident">select</span>,
-        <span class="ident">sync</span>::{<span class="self">self</span>, <span class="ident">oneshot</span>},
+    <span class="kw">use </span>futures::future::BoxFuture;
+    <span class="kw">use </span>http::{uri::PathAndQuery, HeaderValue, Method, Request, Response, StatusCode, Uri};
+    <span class="kw">use </span>hyper::{server::conn::Http, service::service_fn, Body};
+    <span class="kw">use </span>lambda_runtime_api_client::Client;
+    <span class="kw">use </span>serde_json::json;
+    <span class="kw">use </span>simulated::DuplexStreamWrapper;
+    <span class="kw">use </span>std::{convert::TryFrom, env};
+    <span class="kw">use </span>tokio::{
+        io::{<span class="self">self</span>, AsyncRead, AsyncWrite},
+        select,
+        sync::{<span class="self">self</span>, oneshot},
     };
-    <span class="kw">use</span> <span class="ident">tokio_stream::StreamExt</span>;
+    <span class="kw">use </span>tokio_stream::StreamExt;
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">next_event</span>(<span class="ident">req</span>: <span class="kw-2">&amp;</span><span class="ident">Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Response</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="string">&quot;/2018-06-01/runtime/invocation/next&quot;</span>;
-        <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="ident">Method::GET</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">uri</span>().<span class="ident">path_and_query</span>().<span class="ident">unwrap</span>(), <span class="kw-2">&amp;</span><span class="ident">PathAndQuery::from_static</span>(<span class="ident">path</span>));
-        <span class="kw">let</span> <span class="ident">body</span> <span class="op">=</span> <span class="macro">json!</span>({<span class="string">&quot;message&quot;</span>: <span class="string">&quot;hello&quot;</span>});
+    <span class="attribute">#[cfg(test)]
+    </span><span class="kw">async fn </span>next_event(req: <span class="kw-2">&amp;</span>Request&lt;Body&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Body&gt;, Error&gt; {
+        <span class="kw">let </span>path = <span class="string">&quot;/2018-06-01/runtime/invocation/next&quot;</span>;
+        <span class="macro">assert_eq!</span>(req.method(), Method::GET);
+        <span class="macro">assert_eq!</span>(req.uri().path_and_query().unwrap(), <span class="kw-2">&amp;</span>PathAndQuery::from_static(path));
+        <span class="kw">let </span>body = <span class="macro">json!</span>({<span class="string">&quot;message&quot;</span>: <span class="string">&quot;hello&quot;</span>});
 
-        <span class="kw">let</span> <span class="ident">rsp</span> <span class="op">=</span> <span class="ident">NextEventResponse</span> {
-            <span class="ident">request_id</span>: <span class="string">&quot;8476a536-e9f4-11e8-9739-2dfe598c3fcd&quot;</span>,
-            <span class="ident">deadline</span>: <span class="number">1_542_409_706_888</span>,
-            <span class="ident">arn</span>: <span class="string">&quot;arn:aws:lambda:us-east-2:123456789012:function:custom-runtime&quot;</span>,
-            <span class="ident">trace_id</span>: <span class="string">&quot;Root=1-5bef4de7-ad49b0e87f6ef6c87fc2e700;Parent=9a9197af755a6419&quot;</span>,
-            <span class="ident">body</span>: <span class="ident">serde_json::to_vec</span>(<span class="kw-2">&amp;</span><span class="ident">body</span>)<span class="question-mark">?</span>,
+        <span class="kw">let </span>rsp = NextEventResponse {
+            request_id: <span class="string">&quot;8476a536-e9f4-11e8-9739-2dfe598c3fcd&quot;</span>,
+            deadline: <span class="number">1_542_409_706_888</span>,
+            arn: <span class="string">&quot;arn:aws:lambda:us-east-2:123456789012:function:custom-runtime&quot;</span>,
+            trace_id: <span class="string">&quot;Root=1-5bef4de7-ad49b0e87f6ef6c87fc2e700;Parent=9a9197af755a6419&quot;</span>,
+            body: serde_json::to_vec(<span class="kw-2">&amp;</span>body)<span class="question-mark">?</span>,
         };
-        <span class="ident">rsp</span>.<span class="ident">into_rsp</span>()
+        rsp.into_rsp()
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">complete_event</span>(<span class="ident">req</span>: <span class="kw-2">&amp;</span><span class="ident">Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Response</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="macro">assert_eq!</span>(<span class="ident">Method::POST</span>, <span class="ident">req</span>.<span class="ident">method</span>());
-        <span class="kw">let</span> <span class="ident">rsp</span> <span class="op">=</span> <span class="ident">Response::builder</span>()
-            .<span class="ident">status</span>(<span class="ident">StatusCode::ACCEPTED</span>)
-            .<span class="ident">body</span>(<span class="ident">Body::empty</span>())
-            .<span class="ident">expect</span>(<span class="string">&quot;Unable to construct response&quot;</span>);
+    <span class="attribute">#[cfg(test)]
+    </span><span class="kw">async fn </span>complete_event(req: <span class="kw-2">&amp;</span>Request&lt;Body&gt;, id: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Body&gt;, Error&gt; {
+        <span class="macro">assert_eq!</span>(Method::POST, req.method());
+        <span class="kw">let </span>rsp = Response::builder()
+            .status(StatusCode::ACCEPTED)
+            .body(Body::empty())
+            .expect(<span class="string">&quot;Unable to construct response&quot;</span>);
 
-        <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;/2018-06-01/runtime/invocation/{}/response&quot;</span>, <span class="ident">id</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">req</span>.<span class="ident">uri</span>().<span class="ident">path</span>());
+        <span class="kw">let </span>expected = <span class="macro">format!</span>(<span class="string">&quot;/2018-06-01/runtime/invocation/{}/response&quot;</span>, id);
+        <span class="macro">assert_eq!</span>(expected, req.uri().path());
 
-        <span class="prelude-val">Ok</span>(<span class="ident">rsp</span>)
+        <span class="prelude-val">Ok</span>(rsp)
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">event_err</span>(<span class="ident">req</span>: <span class="kw-2">&amp;</span><span class="ident">Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Response</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;/2018-06-01/runtime/invocation/{}/error&quot;</span>, <span class="ident">id</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">req</span>.<span class="ident">uri</span>().<span class="ident">path</span>());
+    <span class="attribute">#[cfg(test)]
+    </span><span class="kw">async fn </span>event_err(req: <span class="kw-2">&amp;</span>Request&lt;Body&gt;, id: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Body&gt;, Error&gt; {
+        <span class="kw">let </span>expected = <span class="macro">format!</span>(<span class="string">&quot;/2018-06-01/runtime/invocation/{}/error&quot;</span>, id);
+        <span class="macro">assert_eq!</span>(expected, req.uri().path());
 
-        <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="ident">Method::POST</span>);
-        <span class="kw">let</span> <span class="ident">header</span> <span class="op">=</span> <span class="string">&quot;lambda-runtime-function-error-type&quot;</span>;
-        <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="string">&quot;unhandled&quot;</span>;
-        <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">headers</span>()[<span class="ident">header</span>], <span class="ident">HeaderValue::try_from</span>(<span class="ident">expected</span>)<span class="question-mark">?</span>);
+        <span class="macro">assert_eq!</span>(req.method(), Method::POST);
+        <span class="kw">let </span>header = <span class="string">&quot;lambda-runtime-function-error-type&quot;</span>;
+        <span class="kw">let </span>expected = <span class="string">&quot;unhandled&quot;</span>;
+        <span class="macro">assert_eq!</span>(req.headers()[header], HeaderValue::try_from(expected)<span class="question-mark">?</span>);
 
-        <span class="kw">let</span> <span class="ident">rsp</span> <span class="op">=</span> <span class="ident">Response::builder</span>().<span class="ident">status</span>(<span class="ident">StatusCode::ACCEPTED</span>).<span class="ident">body</span>(<span class="ident">Body::empty</span>())<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="ident">rsp</span>)
+        <span class="kw">let </span>rsp = Response::builder().status(StatusCode::ACCEPTED).body(Body::empty())<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(rsp)
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">handle_incoming</span>(<span class="ident">req</span>: <span class="ident">Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Response</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">path</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">req</span>
-            .<span class="ident">uri</span>()
-            .<span class="ident">path_and_query</span>()
-            .<span class="ident">expect</span>(<span class="string">&quot;PathAndQuery not found&quot;</span>)
-            .<span class="ident">as_str</span>()
-            .<span class="ident">split</span>(<span class="string">&#39;/&#39;</span>)
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>();
-        <span class="kw">match</span> <span class="ident">path</span>[<span class="number">1</span>..] {
-            [<span class="string">&quot;2018-06-01&quot;</span>, <span class="string">&quot;runtime&quot;</span>, <span class="string">&quot;invocation&quot;</span>, <span class="string">&quot;next&quot;</span>] =&gt; <span class="ident">next_event</span>(<span class="kw-2">&amp;</span><span class="ident">req</span>).<span class="kw">await</span>,
-            [<span class="string">&quot;2018-06-01&quot;</span>, <span class="string">&quot;runtime&quot;</span>, <span class="string">&quot;invocation&quot;</span>, <span class="ident">id</span>, <span class="string">&quot;response&quot;</span>] =&gt; <span class="ident">complete_event</span>(<span class="kw-2">&amp;</span><span class="ident">req</span>, <span class="ident">id</span>).<span class="kw">await</span>,
-            [<span class="string">&quot;2018-06-01&quot;</span>, <span class="string">&quot;runtime&quot;</span>, <span class="string">&quot;invocation&quot;</span>, <span class="ident">id</span>, <span class="string">&quot;error&quot;</span>] =&gt; <span class="ident">event_err</span>(<span class="kw-2">&amp;</span><span class="ident">req</span>, <span class="ident">id</span>).<span class="kw">await</span>,
+    <span class="attribute">#[cfg(test)]
+    </span><span class="kw">async fn </span>handle_incoming(req: Request&lt;Body&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;Response&lt;Body&gt;, Error&gt; {
+        <span class="kw">let </span>path: Vec&lt;<span class="kw-2">&amp;</span>str&gt; = req
+            .uri()
+            .path_and_query()
+            .expect(<span class="string">&quot;PathAndQuery not found&quot;</span>)
+            .as_str()
+            .split(<span class="string">&#39;/&#39;</span>)
+            .collect::&lt;Vec&lt;<span class="kw-2">&amp;</span>str&gt;&gt;();
+        <span class="kw">match </span>path[<span class="number">1</span>..] {
+            [<span class="string">&quot;2018-06-01&quot;</span>, <span class="string">&quot;runtime&quot;</span>, <span class="string">&quot;invocation&quot;</span>, <span class="string">&quot;next&quot;</span>] =&gt; next_event(<span class="kw-2">&amp;</span>req).<span class="kw">await</span>,
+            [<span class="string">&quot;2018-06-01&quot;</span>, <span class="string">&quot;runtime&quot;</span>, <span class="string">&quot;invocation&quot;</span>, id, <span class="string">&quot;response&quot;</span>] =&gt; complete_event(<span class="kw-2">&amp;</span>req, id).<span class="kw">await</span>,
+            [<span class="string">&quot;2018-06-01&quot;</span>, <span class="string">&quot;runtime&quot;</span>, <span class="string">&quot;invocation&quot;</span>, id, <span class="string">&quot;error&quot;</span>] =&gt; event_err(<span class="kw-2">&amp;</span>req, id).<span class="kw">await</span>,
             [<span class="string">&quot;2018-06-01&quot;</span>, <span class="string">&quot;runtime&quot;</span>, <span class="string">&quot;init&quot;</span>, <span class="string">&quot;error&quot;</span>] =&gt; <span class="macro">unimplemented!</span>(),
-            <span class="kw">_</span> =&gt; <span class="macro">unimplemented!</span>(),
+            <span class="kw">_ </span>=&gt; <span class="macro">unimplemented!</span>(),
         }
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">handle</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span>(<span class="ident">io</span>: <span class="ident">I</span>, <span class="ident">rx</span>: <span class="ident">oneshot::Receiver</span><span class="op">&lt;</span>()<span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">hyper::Error</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">I</span>: <span class="ident">AsyncRead</span> <span class="op">+</span> <span class="ident">AsyncWrite</span> <span class="op">+</span> <span class="ident">Unpin</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
+    <span class="attribute">#[cfg(test)]
+    </span><span class="kw">async fn </span>handle&lt;I&gt;(io: I, rx: oneshot::Receiver&lt;()&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), hyper::Error&gt;
+    <span class="kw">where
+        </span>I: AsyncRead + AsyncWrite + Unpin + <span class="lifetime">&#39;static</span>,
     {
-        <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">Http::new</span>().<span class="ident">serve_connection</span>(<span class="ident">io</span>, <span class="ident">service_fn</span>(<span class="ident">handle_incoming</span>));
-        <span class="macro">select!</span> {
-            <span class="kw">_</span> <span class="op">=</span> <span class="ident">rx</span> =&gt; {
+        <span class="kw">let </span>conn = Http::new().serve_connection(io, service_fn(handle_incoming));
+        <span class="macro">select! </span>{
+            <span class="kw">_ </span>= rx =&gt; {
                 <span class="prelude-val">Ok</span>(())
             }
-            <span class="ident">res</span> <span class="op">=</span> <span class="ident">conn</span> =&gt; {
-                <span class="kw">match</span> <span class="ident">res</span> {
+            res = conn =&gt; {
+                <span class="kw">match </span>res {
                     <span class="prelude-val">Ok</span>(()) =&gt; <span class="prelude-val">Ok</span>(()),
-                    <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; {
-                        <span class="prelude-val">Err</span>(<span class="ident">e</span>)
+                    <span class="prelude-val">Err</span>(e) =&gt; {
+                        <span class="prelude-val">Err</span>(e)
                     }
                 }
             }
         }
     }
 
-    <span class="attribute">#[<span class="ident">tokio::test</span>]</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">test_next_event</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">base</span> <span class="op">=</span> <span class="ident">Uri::from_static</span>(<span class="string">&quot;http://localhost:9001&quot;</span>);
-        <span class="kw">let</span> (<span class="ident">client</span>, <span class="ident">server</span>) <span class="op">=</span> <span class="ident">io::duplex</span>(<span class="number">64</span>);
+    <span class="attribute">#[tokio::test]
+    </span><span class="kw">async fn </span>test_next_event() -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+        <span class="kw">let </span>base = Uri::from_static(<span class="string">&quot;http://localhost:9001&quot;</span>);
+        <span class="kw">let </span>(client, server) = io::duplex(<span class="number">64</span>);
 
-        <span class="kw">let</span> (<span class="ident">tx</span>, <span class="ident">rx</span>) <span class="op">=</span> <span class="ident">sync::oneshot::channel</span>();
-        <span class="kw">let</span> <span class="ident">server</span> <span class="op">=</span> <span class="ident">tokio::spawn</span>(<span class="kw">async</span> {
-            <span class="ident">handle</span>(<span class="ident">server</span>, <span class="ident">rx</span>).<span class="kw">await</span>.<span class="ident">expect</span>(<span class="string">&quot;Unable to handle request&quot;</span>);
+        <span class="kw">let </span>(tx, rx) = sync::oneshot::channel();
+        <span class="kw">let </span>server = tokio::spawn(<span class="kw">async </span>{
+            handle(server, rx).<span class="kw">await</span>.expect(<span class="string">&quot;Unable to handle request&quot;</span>);
         });
 
-        <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">simulated::Connector::with</span>(<span class="ident">base</span>.<span class="ident">clone</span>(), <span class="ident">DuplexStreamWrapper::new</span>(<span class="ident">client</span>))<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="ident">Client::with</span>(<span class="ident">base</span>, <span class="ident">conn</span>);
+        <span class="kw">let </span>conn = simulated::Connector::with(base.clone(), DuplexStreamWrapper::new(client))<span class="question-mark">?</span>;
+        <span class="kw">let </span>client = Client::with(base, conn);
 
-        <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">NextEventRequest</span>.<span class="ident">into_req</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">rsp</span> <span class="op">=</span> <span class="ident">client</span>.<span class="ident">call</span>(<span class="ident">req</span>).<span class="kw">await</span>.<span class="ident">expect</span>(<span class="string">&quot;Unable to send request&quot;</span>);
+        <span class="kw">let </span>req = NextEventRequest.into_req()<span class="question-mark">?</span>;
+        <span class="kw">let </span>rsp = client.call(req).<span class="kw">await</span>.expect(<span class="string">&quot;Unable to send request&quot;</span>);
 
-        <span class="macro">assert_eq!</span>(<span class="ident">rsp</span>.<span class="ident">status</span>(), <span class="ident">StatusCode::OK</span>);
-        <span class="kw">let</span> <span class="ident">header</span> <span class="op">=</span> <span class="string">&quot;lambda-runtime-deadline-ms&quot;</span>;
-        <span class="macro">assert_eq!</span>(<span class="ident">rsp</span>.<span class="ident">headers</span>()[<span class="ident">header</span>], <span class="kw-2">&amp;</span><span class="ident">HeaderValue::try_from</span>(<span class="string">&quot;1542409706888&quot;</span>)<span class="question-mark">?</span>);
+        <span class="macro">assert_eq!</span>(rsp.status(), StatusCode::OK);
+        <span class="kw">let </span>header = <span class="string">&quot;lambda-runtime-deadline-ms&quot;</span>;
+        <span class="macro">assert_eq!</span>(rsp.headers()[header], <span class="kw-2">&amp;</span>HeaderValue::try_from(<span class="string">&quot;1542409706888&quot;</span>)<span class="question-mark">?</span>);
 
-        <span class="comment">// shutdown server...</span>
-        <span class="ident">tx</span>.<span class="ident">send</span>(()).<span class="ident">expect</span>(<span class="string">&quot;Receiver has been dropped&quot;</span>);
-        <span class="kw">match</span> <span class="ident">server</span>.<span class="kw">await</span> {
+        <span class="comment">// shutdown server...
+        </span>tx.send(()).expect(<span class="string">&quot;Receiver has been dropped&quot;</span>);
+        <span class="kw">match </span>server.<span class="kw">await </span>{
             <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="kw">if</span> <span class="ident">e</span>.<span class="ident">is_panic</span>() =&gt; <span class="prelude-val">Err</span>::<span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span>(<span class="ident">e</span>.<span class="ident">into</span>()),
+            <span class="prelude-val">Err</span>(e) <span class="kw">if </span>e.is_panic() =&gt; <span class="prelude-val">Err</span>::&lt;(), Error&gt;(e.into()),
             <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;This branch shouldn&#39;t be reachable&quot;</span>),
         }
     }
 
-    <span class="attribute">#[<span class="ident">tokio::test</span>]</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">test_ok_response</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="ident">client</span>, <span class="ident">server</span>) <span class="op">=</span> <span class="ident">io::duplex</span>(<span class="number">64</span>);
-        <span class="kw">let</span> (<span class="ident">tx</span>, <span class="ident">rx</span>) <span class="op">=</span> <span class="ident">sync::oneshot::channel</span>();
-        <span class="kw">let</span> <span class="ident">base</span> <span class="op">=</span> <span class="ident">Uri::from_static</span>(<span class="string">&quot;http://localhost:9001&quot;</span>);
+    <span class="attribute">#[tokio::test]
+    </span><span class="kw">async fn </span>test_ok_response() -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+        <span class="kw">let </span>(client, server) = io::duplex(<span class="number">64</span>);
+        <span class="kw">let </span>(tx, rx) = sync::oneshot::channel();
+        <span class="kw">let </span>base = Uri::from_static(<span class="string">&quot;http://localhost:9001&quot;</span>);
 
-        <span class="kw">let</span> <span class="ident">server</span> <span class="op">=</span> <span class="ident">tokio::spawn</span>(<span class="kw">async</span> {
-            <span class="ident">handle</span>(<span class="ident">server</span>, <span class="ident">rx</span>).<span class="kw">await</span>.<span class="ident">expect</span>(<span class="string">&quot;Unable to handle request&quot;</span>);
+        <span class="kw">let </span>server = tokio::spawn(<span class="kw">async </span>{
+            handle(server, rx).<span class="kw">await</span>.expect(<span class="string">&quot;Unable to handle request&quot;</span>);
         });
 
-        <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">simulated::Connector::with</span>(<span class="ident">base</span>.<span class="ident">clone</span>(), <span class="ident">DuplexStreamWrapper::new</span>(<span class="ident">client</span>))<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="ident">Client::with</span>(<span class="ident">base</span>, <span class="ident">conn</span>);
+        <span class="kw">let </span>conn = simulated::Connector::with(base.clone(), DuplexStreamWrapper::new(client))<span class="question-mark">?</span>;
+        <span class="kw">let </span>client = Client::with(base, conn);
 
-        <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">EventCompletionRequest</span> {
-            <span class="ident">request_id</span>: <span class="string">&quot;156cb537-e2d4-11e8-9b34-d36013741fb9&quot;</span>,
-            <span class="ident">body</span>: <span class="string">&quot;done&quot;</span>,
+        <span class="kw">let </span>req = EventCompletionRequest {
+            request_id: <span class="string">&quot;156cb537-e2d4-11e8-9b34-d36013741fb9&quot;</span>,
+            body: <span class="string">&quot;done&quot;</span>,
         };
-        <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">into_req</span>()<span class="question-mark">?</span>;
+        <span class="kw">let </span>req = req.into_req()<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">rsp</span> <span class="op">=</span> <span class="ident">client</span>.<span class="ident">call</span>(<span class="ident">req</span>).<span class="kw">await</span><span class="question-mark">?</span>;
-        <span class="macro">assert_eq!</span>(<span class="ident">rsp</span>.<span class="ident">status</span>(), <span class="ident">StatusCode::ACCEPTED</span>);
+        <span class="kw">let </span>rsp = client.call(req).<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="macro">assert_eq!</span>(rsp.status(), StatusCode::ACCEPTED);
 
-        <span class="comment">// shutdown server</span>
-        <span class="ident">tx</span>.<span class="ident">send</span>(()).<span class="ident">expect</span>(<span class="string">&quot;Receiver has been dropped&quot;</span>);
-        <span class="kw">match</span> <span class="ident">server</span>.<span class="kw">await</span> {
+        <span class="comment">// shutdown server
+        </span>tx.send(()).expect(<span class="string">&quot;Receiver has been dropped&quot;</span>);
+        <span class="kw">match </span>server.<span class="kw">await </span>{
             <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="kw">if</span> <span class="ident">e</span>.<span class="ident">is_panic</span>() =&gt; <span class="prelude-val">Err</span>::<span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span>(<span class="ident">e</span>.<span class="ident">into</span>()),
+            <span class="prelude-val">Err</span>(e) <span class="kw">if </span>e.is_panic() =&gt; <span class="prelude-val">Err</span>::&lt;(), Error&gt;(e.into()),
             <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;This branch shouldn&#39;t be reachable&quot;</span>),
         }
     }
 
-    <span class="attribute">#[<span class="ident">tokio::test</span>]</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">test_error_response</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="ident">client</span>, <span class="ident">server</span>) <span class="op">=</span> <span class="ident">io::duplex</span>(<span class="number">200</span>);
-        <span class="kw">let</span> (<span class="ident">tx</span>, <span class="ident">rx</span>) <span class="op">=</span> <span class="ident">sync::oneshot::channel</span>();
-        <span class="kw">let</span> <span class="ident">base</span> <span class="op">=</span> <span class="ident">Uri::from_static</span>(<span class="string">&quot;http://localhost:9001&quot;</span>);
+    <span class="attribute">#[tokio::test]
+    </span><span class="kw">async fn </span>test_error_response() -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+        <span class="kw">let </span>(client, server) = io::duplex(<span class="number">200</span>);
+        <span class="kw">let </span>(tx, rx) = sync::oneshot::channel();
+        <span class="kw">let </span>base = Uri::from_static(<span class="string">&quot;http://localhost:9001&quot;</span>);
 
-        <span class="kw">let</span> <span class="ident">server</span> <span class="op">=</span> <span class="ident">tokio::spawn</span>(<span class="kw">async</span> {
-            <span class="ident">handle</span>(<span class="ident">server</span>, <span class="ident">rx</span>).<span class="kw">await</span>.<span class="ident">expect</span>(<span class="string">&quot;Unable to handle request&quot;</span>);
+        <span class="kw">let </span>server = tokio::spawn(<span class="kw">async </span>{
+            handle(server, rx).<span class="kw">await</span>.expect(<span class="string">&quot;Unable to handle request&quot;</span>);
         });
 
-        <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">simulated::Connector::with</span>(<span class="ident">base</span>.<span class="ident">clone</span>(), <span class="ident">DuplexStreamWrapper::new</span>(<span class="ident">client</span>))<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="ident">Client::with</span>(<span class="ident">base</span>, <span class="ident">conn</span>);
+        <span class="kw">let </span>conn = simulated::Connector::with(base.clone(), DuplexStreamWrapper::new(client))<span class="question-mark">?</span>;
+        <span class="kw">let </span>client = Client::with(base, conn);
 
-        <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">EventErrorRequest</span> {
-            <span class="ident">request_id</span>: <span class="string">&quot;156cb537-e2d4-11e8-9b34-d36013741fb9&quot;</span>,
-            <span class="ident">diagnostic</span>: <span class="ident">Diagnostic</span> {
-                <span class="ident">error_type</span>: <span class="string">&quot;InvalidEventDataError&quot;</span>,
-                <span class="ident">error_message</span>: <span class="string">&quot;Error parsing event data&quot;</span>,
+        <span class="kw">let </span>req = EventErrorRequest {
+            request_id: <span class="string">&quot;156cb537-e2d4-11e8-9b34-d36013741fb9&quot;</span>,
+            diagnostic: Diagnostic {
+                error_type: <span class="string">&quot;InvalidEventDataError&quot;</span>,
+                error_message: <span class="string">&quot;Error parsing event data&quot;</span>,
             },
         };
-        <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">into_req</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">rsp</span> <span class="op">=</span> <span class="ident">client</span>.<span class="ident">call</span>(<span class="ident">req</span>).<span class="kw">await</span><span class="question-mark">?</span>;
-        <span class="macro">assert_eq!</span>(<span class="ident">rsp</span>.<span class="ident">status</span>(), <span class="ident">StatusCode::ACCEPTED</span>);
+        <span class="kw">let </span>req = req.into_req()<span class="question-mark">?</span>;
+        <span class="kw">let </span>rsp = client.call(req).<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="macro">assert_eq!</span>(rsp.status(), StatusCode::ACCEPTED);
 
-        <span class="comment">// shutdown server</span>
-        <span class="ident">tx</span>.<span class="ident">send</span>(()).<span class="ident">expect</span>(<span class="string">&quot;Receiver has been dropped&quot;</span>);
-        <span class="kw">match</span> <span class="ident">server</span>.<span class="kw">await</span> {
+        <span class="comment">// shutdown server
+        </span>tx.send(()).expect(<span class="string">&quot;Receiver has been dropped&quot;</span>);
+        <span class="kw">match </span>server.<span class="kw">await </span>{
             <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="kw">if</span> <span class="ident">e</span>.<span class="ident">is_panic</span>() =&gt; <span class="prelude-val">Err</span>::<span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span>(<span class="ident">e</span>.<span class="ident">into</span>()),
+            <span class="prelude-val">Err</span>(e) <span class="kw">if </span>e.is_panic() =&gt; <span class="prelude-val">Err</span>::&lt;(), Error&gt;(e.into()),
             <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;This branch shouldn&#39;t be reachable&quot;</span>),
         }
     }
 
-    <span class="attribute">#[<span class="ident">tokio::test</span>]</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">successful_end_to_end_run</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="ident">client</span>, <span class="ident">server</span>) <span class="op">=</span> <span class="ident">io::duplex</span>(<span class="number">64</span>);
-        <span class="kw">let</span> (<span class="ident">tx</span>, <span class="ident">rx</span>) <span class="op">=</span> <span class="ident">sync::oneshot::channel</span>();
-        <span class="kw">let</span> <span class="ident">base</span> <span class="op">=</span> <span class="ident">Uri::from_static</span>(<span class="string">&quot;http://localhost:9001&quot;</span>);
+    <span class="attribute">#[tokio::test]
+    </span><span class="kw">async fn </span>successful_end_to_end_run() -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+        <span class="kw">let </span>(client, server) = io::duplex(<span class="number">64</span>);
+        <span class="kw">let </span>(tx, rx) = sync::oneshot::channel();
+        <span class="kw">let </span>base = Uri::from_static(<span class="string">&quot;http://localhost:9001&quot;</span>);
 
-        <span class="kw">let</span> <span class="ident">server</span> <span class="op">=</span> <span class="ident">tokio::spawn</span>(<span class="kw">async</span> {
-            <span class="ident">handle</span>(<span class="ident">server</span>, <span class="ident">rx</span>).<span class="kw">await</span>.<span class="ident">expect</span>(<span class="string">&quot;Unable to handle request&quot;</span>);
+        <span class="kw">let </span>server = tokio::spawn(<span class="kw">async </span>{
+            handle(server, rx).<span class="kw">await</span>.expect(<span class="string">&quot;Unable to handle request&quot;</span>);
         });
-        <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">simulated::Connector::with</span>(<span class="ident">base</span>.<span class="ident">clone</span>(), <span class="ident">DuplexStreamWrapper::new</span>(<span class="ident">client</span>))<span class="question-mark">?</span>;
+        <span class="kw">let </span>conn = simulated::Connector::with(base.clone(), DuplexStreamWrapper::new(client))<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="ident">Client::builder</span>()
-            .<span class="ident">with_endpoint</span>(<span class="ident">base</span>)
-            .<span class="ident">with_connector</span>(<span class="ident">conn</span>)
-            .<span class="ident">build</span>()
-            .<span class="ident">expect</span>(<span class="string">&quot;Unable to build client&quot;</span>);
+        <span class="kw">let </span>client = Client::builder()
+            .with_endpoint(base)
+            .with_connector(conn)
+            .build()
+            .expect(<span class="string">&quot;Unable to build client&quot;</span>);
 
-        <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">func</span>(<span class="ident">event</span>: <span class="ident"><span class="kw">crate</span>::LambdaEvent</span><span class="op">&lt;</span><span class="ident">serde_json::Value</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">serde_json::Value</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-            <span class="kw">let</span> (<span class="ident">event</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">event</span>.<span class="ident">into_parts</span>();
-            <span class="prelude-val">Ok</span>(<span class="ident">event</span>)
+        <span class="kw">async fn </span>func(event: <span class="kw">crate</span>::LambdaEvent&lt;serde_json::Value&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;serde_json::Value, Error&gt; {
+            <span class="kw">let </span>(event, <span class="kw">_</span>) = event.into_parts();
+            <span class="prelude-val">Ok</span>(event)
         }
-        <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::service_fn</span>(<span class="ident">func</span>);
+        <span class="kw">let </span>f = <span class="kw">crate</span>::service_fn(func);
 
-        <span class="comment">// set env vars needed to init Config if they are not already set in the environment</span>
-        <span class="kw">if</span> <span class="ident">env::var</span>(<span class="string">&quot;AWS_LAMBDA_RUNTIME_API&quot;</span>).<span class="ident">is_err</span>() {
-            <span class="ident">env::set_var</span>(<span class="string">&quot;AWS_LAMBDA_RUNTIME_API&quot;</span>, <span class="string">&quot;http://localhost:9001&quot;</span>);
+        <span class="comment">// set env vars needed to init Config if they are not already set in the environment
+        </span><span class="kw">if </span>env::var(<span class="string">&quot;AWS_LAMBDA_RUNTIME_API&quot;</span>).is_err() {
+            env::set_var(<span class="string">&quot;AWS_LAMBDA_RUNTIME_API&quot;</span>, <span class="string">&quot;http://localhost:9001&quot;</span>);
         }
-        <span class="kw">if</span> <span class="ident">env::var</span>(<span class="string">&quot;AWS_LAMBDA_FUNCTION_NAME&quot;</span>).<span class="ident">is_err</span>() {
-            <span class="ident">env::set_var</span>(<span class="string">&quot;AWS_LAMBDA_FUNCTION_NAME&quot;</span>, <span class="string">&quot;test_fn&quot;</span>);
+        <span class="kw">if </span>env::var(<span class="string">&quot;AWS_LAMBDA_FUNCTION_NAME&quot;</span>).is_err() {
+            env::set_var(<span class="string">&quot;AWS_LAMBDA_FUNCTION_NAME&quot;</span>, <span class="string">&quot;test_fn&quot;</span>);
         }
-        <span class="kw">if</span> <span class="ident">env::var</span>(<span class="string">&quot;AWS_LAMBDA_FUNCTION_MEMORY_SIZE&quot;</span>).<span class="ident">is_err</span>() {
-            <span class="ident">env::set_var</span>(<span class="string">&quot;AWS_LAMBDA_FUNCTION_MEMORY_SIZE&quot;</span>, <span class="string">&quot;128&quot;</span>);
+        <span class="kw">if </span>env::var(<span class="string">&quot;AWS_LAMBDA_FUNCTION_MEMORY_SIZE&quot;</span>).is_err() {
+            env::set_var(<span class="string">&quot;AWS_LAMBDA_FUNCTION_MEMORY_SIZE&quot;</span>, <span class="string">&quot;128&quot;</span>);
         }
-        <span class="kw">if</span> <span class="ident">env::var</span>(<span class="string">&quot;AWS_LAMBDA_FUNCTION_VERSION&quot;</span>).<span class="ident">is_err</span>() {
-            <span class="ident">env::set_var</span>(<span class="string">&quot;AWS_LAMBDA_FUNCTION_VERSION&quot;</span>, <span class="string">&quot;1&quot;</span>);
+        <span class="kw">if </span>env::var(<span class="string">&quot;AWS_LAMBDA_FUNCTION_VERSION&quot;</span>).is_err() {
+            env::set_var(<span class="string">&quot;AWS_LAMBDA_FUNCTION_VERSION&quot;</span>, <span class="string">&quot;1&quot;</span>);
         }
-        <span class="kw">if</span> <span class="ident">env::var</span>(<span class="string">&quot;AWS_LAMBDA_LOG_STREAM_NAME&quot;</span>).<span class="ident">is_err</span>() {
-            <span class="ident">env::set_var</span>(<span class="string">&quot;AWS_LAMBDA_LOG_STREAM_NAME&quot;</span>, <span class="string">&quot;test_stream&quot;</span>);
+        <span class="kw">if </span>env::var(<span class="string">&quot;AWS_LAMBDA_LOG_STREAM_NAME&quot;</span>).is_err() {
+            env::set_var(<span class="string">&quot;AWS_LAMBDA_LOG_STREAM_NAME&quot;</span>, <span class="string">&quot;test_stream&quot;</span>);
         }
-        <span class="kw">if</span> <span class="ident">env::var</span>(<span class="string">&quot;AWS_LAMBDA_LOG_GROUP_NAME&quot;</span>).<span class="ident">is_err</span>() {
-            <span class="ident">env::set_var</span>(<span class="string">&quot;AWS_LAMBDA_LOG_GROUP_NAME&quot;</span>, <span class="string">&quot;test_log&quot;</span>);
+        <span class="kw">if </span>env::var(<span class="string">&quot;AWS_LAMBDA_LOG_GROUP_NAME&quot;</span>).is_err() {
+            env::set_var(<span class="string">&quot;AWS_LAMBDA_LOG_GROUP_NAME&quot;</span>, <span class="string">&quot;test_log&quot;</span>);
         }
-        <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::Config::from_env</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to read env vars&quot;</span>);
+        <span class="kw">let </span>config = <span class="kw">crate</span>::Config::from_env().expect(<span class="string">&quot;Failed to read env vars&quot;</span>);
 
-        <span class="kw">let</span> <span class="ident">runtime</span> <span class="op">=</span> <span class="ident">Runtime</span> { <span class="ident">client</span> };
-        <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">runtime</span>.<span class="ident">client</span>;
-        <span class="kw">let</span> <span class="ident">incoming</span> <span class="op">=</span> <span class="ident">incoming</span>(<span class="ident">client</span>).<span class="ident">take</span>(<span class="number">1</span>);
-        <span class="ident">runtime</span>.<span class="ident">run</span>(<span class="ident">incoming</span>, <span class="ident">f</span>, <span class="kw-2">&amp;</span><span class="ident">config</span>).<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="kw">let </span>runtime = Runtime { client };
+        <span class="kw">let </span>client = <span class="kw-2">&amp;</span>runtime.client;
+        <span class="kw">let </span>incoming = incoming(client).take(<span class="number">1</span>);
+        runtime.run(incoming, f, <span class="kw-2">&amp;</span>config).<span class="kw">await</span><span class="question-mark">?</span>;
 
-        <span class="comment">// shutdown server</span>
-        <span class="ident">tx</span>.<span class="ident">send</span>(()).<span class="ident">expect</span>(<span class="string">&quot;Receiver has been dropped&quot;</span>);
-        <span class="kw">match</span> <span class="ident">server</span>.<span class="kw">await</span> {
+        <span class="comment">// shutdown server
+        </span>tx.send(()).expect(<span class="string">&quot;Receiver has been dropped&quot;</span>);
+        <span class="kw">match </span>server.<span class="kw">await </span>{
             <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="kw">if</span> <span class="ident">e</span>.<span class="ident">is_panic</span>() =&gt; <span class="prelude-val">Err</span>::<span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span>(<span class="ident">e</span>.<span class="ident">into</span>()),
+            <span class="prelude-val">Err</span>(e) <span class="kw">if </span>e.is_panic() =&gt; <span class="prelude-val">Err</span>::&lt;(), Error&gt;(e.into()),
             <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;This branch shouldn&#39;t be reachable&quot;</span>),
         }
     }
 
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">run_panicking_handler</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">func</span>: <span class="ident">F</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident"><span class="kw">crate</span>::LambdaEvent</span><span class="op">&lt;</span><span class="ident">serde_json::Value</span><span class="op">&gt;</span>) -&gt; <span class="ident">BoxFuture</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">serde_json::Value</span>, <span class="ident">Error</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="kw">async fn </span>run_panicking_handler&lt;F&gt;(func: F) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt;
+    <span class="kw">where
+        </span>F: FnMut(<span class="kw">crate</span>::LambdaEvent&lt;serde_json::Value&gt;) -&gt; BoxFuture&lt;<span class="lifetime">&#39;static</span>, <span class="prelude-ty">Result</span>&lt;serde_json::Value, Error&gt;&gt;,
     {
-        <span class="kw">let</span> (<span class="ident">client</span>, <span class="ident">server</span>) <span class="op">=</span> <span class="ident">io::duplex</span>(<span class="number">64</span>);
-        <span class="kw">let</span> (<span class="ident">_tx</span>, <span class="ident">rx</span>) <span class="op">=</span> <span class="ident">oneshot::channel</span>();
-        <span class="kw">let</span> <span class="ident">base</span> <span class="op">=</span> <span class="ident">Uri::from_static</span>(<span class="string">&quot;http://localhost:9001&quot;</span>);
+        <span class="kw">let </span>(client, server) = io::duplex(<span class="number">64</span>);
+        <span class="kw">let </span>(_tx, rx) = oneshot::channel();
+        <span class="kw">let </span>base = Uri::from_static(<span class="string">&quot;http://localhost:9001&quot;</span>);
 
-        <span class="kw">let</span> <span class="ident">server</span> <span class="op">=</span> <span class="ident">tokio::spawn</span>(<span class="kw">async</span> {
-            <span class="ident">handle</span>(<span class="ident">server</span>, <span class="ident">rx</span>).<span class="kw">await</span>.<span class="ident">expect</span>(<span class="string">&quot;Unable to handle request&quot;</span>);
+        <span class="kw">let </span>server = tokio::spawn(<span class="kw">async </span>{
+            handle(server, rx).<span class="kw">await</span>.expect(<span class="string">&quot;Unable to handle request&quot;</span>);
         });
-        <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">simulated::Connector::with</span>(<span class="ident">base</span>.<span class="ident">clone</span>(), <span class="ident">DuplexStreamWrapper::new</span>(<span class="ident">client</span>))<span class="question-mark">?</span>;
+        <span class="kw">let </span>conn = simulated::Connector::with(base.clone(), DuplexStreamWrapper::new(client))<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="ident">Client::builder</span>()
-            .<span class="ident">with_endpoint</span>(<span class="ident">base</span>)
-            .<span class="ident">with_connector</span>(<span class="ident">conn</span>)
-            .<span class="ident">build</span>()
-            .<span class="ident">expect</span>(<span class="string">&quot;Unable to build client&quot;</span>);
+        <span class="kw">let </span>client = Client::builder()
+            .with_endpoint(base)
+            .with_connector(conn)
+            .build()
+            .expect(<span class="string">&quot;Unable to build client&quot;</span>);
 
-        <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::service_fn</span>(<span class="ident">func</span>);
+        <span class="kw">let </span>f = <span class="kw">crate</span>::service_fn(func);
 
-        <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::Config</span> {
-            <span class="ident">function_name</span>: <span class="string">&quot;test_fn&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">memory</span>: <span class="number">128</span>,
-            <span class="ident">version</span>: <span class="string">&quot;1&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">log_stream</span>: <span class="string">&quot;test_stream&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">log_group</span>: <span class="string">&quot;test_log&quot;</span>.<span class="ident">to_string</span>(),
+        <span class="kw">let </span>config = <span class="kw">crate</span>::Config {
+            function_name: <span class="string">&quot;test_fn&quot;</span>.to_string(),
+            memory: <span class="number">128</span>,
+            version: <span class="string">&quot;1&quot;</span>.to_string(),
+            log_stream: <span class="string">&quot;test_stream&quot;</span>.to_string(),
+            log_group: <span class="string">&quot;test_log&quot;</span>.to_string(),
         };
 
-        <span class="kw">let</span> <span class="ident">runtime</span> <span class="op">=</span> <span class="ident">Runtime</span> { <span class="ident">client</span> };
-        <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">runtime</span>.<span class="ident">client</span>;
-        <span class="kw">let</span> <span class="ident">incoming</span> <span class="op">=</span> <span class="ident">incoming</span>(<span class="ident">client</span>).<span class="ident">take</span>(<span class="number">1</span>);
-        <span class="ident">runtime</span>.<span class="ident">run</span>(<span class="ident">incoming</span>, <span class="ident">f</span>, <span class="kw-2">&amp;</span><span class="ident">config</span>).<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="kw">let </span>runtime = Runtime { client };
+        <span class="kw">let </span>client = <span class="kw-2">&amp;</span>runtime.client;
+        <span class="kw">let </span>incoming = incoming(client).take(<span class="number">1</span>);
+        runtime.run(incoming, f, <span class="kw-2">&amp;</span>config).<span class="kw">await</span><span class="question-mark">?</span>;
 
-        <span class="kw">match</span> <span class="ident">server</span>.<span class="kw">await</span> {
+        <span class="kw">match </span>server.<span class="kw">await </span>{
             <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="kw">if</span> <span class="ident">e</span>.<span class="ident">is_panic</span>() =&gt; <span class="prelude-val">Err</span>::<span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span>(<span class="ident">e</span>.<span class="ident">into</span>()),
+            <span class="prelude-val">Err</span>(e) <span class="kw">if </span>e.is_panic() =&gt; <span class="prelude-val">Err</span>::&lt;(), Error&gt;(e.into()),
             <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;This branch shouldn&#39;t be reachable&quot;</span>),
         }
     }
 
-    <span class="attribute">#[<span class="ident">tokio::test</span>]</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">panic_in_async_run</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="ident">run_panicking_handler</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">Box::pin</span>(<span class="kw">async</span> { <span class="macro">panic!</span>(<span class="string">&quot;This is intentionally here&quot;</span>) })).<span class="kw">await</span>
-    }
+    <span class="attribute">#[tokio::test]
+    </span><span class="kw">async fn </span>panic_in_async_run() -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+        run_panicking_handler(|<span class="kw">_</span>| Box::pin(<span class="kw">async </span>{ <span class="macro">panic!</span>(<span class="string">&quot;This is intentionally here&quot;</span>) })).<span class="kw">await
+    </span>}
 
-    <span class="attribute">#[<span class="ident">tokio::test</span>]</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">panic_outside_async_run</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="ident">run_panicking_handler</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> {
+    <span class="attribute">#[tokio::test]
+    </span><span class="kw">async fn </span>panic_outside_async_run() -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+        run_panicking_handler(|<span class="kw">_</span>| {
             <span class="macro">panic!</span>(<span class="string">&quot;This is intentionally here&quot;</span>);
         })
-        .<span class="kw">await</span>
-    }
+        .<span class="kw">await
+    </span>}
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lambda_runtime" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lambda_runtime" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

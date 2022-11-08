@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lambda-http/src/request.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>request.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../lambda_http/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../lambda_http/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../lambda_http/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lambda-http/src/request.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>request.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../lambda_http/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../lambda_http/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../lambda_http/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -744,751 +744,751 @@
 <span id="744">744</span>
 <span id="745">745</span>
 <span id="746">746</span>
-</pre><pre class="rust"><code><span class="doccomment">//! ALB and API Gateway request adaptations</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Typically these are exposed via the `request_context`</span>
-<span class="doccomment">//! request extension method provided by [lambda_http::RequestExt](../trait.RequestExt.html)</span>
-<span class="doccomment">//!</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_rest&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_http&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_websockets&quot;</span>))]</span>
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::ext</span>::{<span class="ident">PathParameters</span>, <span class="ident">StageVariables</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::ext</span>::{<span class="ident">QueryStringParameters</span>, <span class="ident">RawHttpPath</span>};
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;alb&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">aws_lambda_events::alb</span>::{<span class="ident">AlbTargetGroupRequest</span>, <span class="ident">AlbTargetGroupRequestContext</span>};
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_rest&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">aws_lambda_events::apigw</span>::{<span class="ident">ApiGatewayProxyRequest</span>, <span class="ident">ApiGatewayProxyRequestContext</span>};
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_http&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">aws_lambda_events::apigw</span>::{<span class="ident">ApiGatewayV2httpRequest</span>, <span class="ident">ApiGatewayV2httpRequestContext</span>};
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_websockets&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">aws_lambda_events::apigw</span>::{<span class="ident">ApiGatewayWebsocketProxyRequest</span>, <span class="ident">ApiGatewayWebsocketProxyRequestContext</span>};
-<span class="kw">use</span> <span class="ident">aws_lambda_events</span>::{<span class="ident">encodings::Body</span>, <span class="ident">query_map::QueryMap</span>};
-<span class="kw">use</span> <span class="ident">http::header::HeaderName</span>;
-<span class="kw">use</span> <span class="ident">http</span>::{<span class="ident">HeaderMap</span>, <span class="ident">HeaderValue</span>};
-<span class="kw">use</span> <span class="ident">serde::Deserialize</span>;
-<span class="kw">use</span> <span class="ident">serde_json::error::Error</span> <span class="kw">as</span> <span class="ident">JsonError</span>;
-<span class="kw">use</span> <span class="ident">std::future::Future</span>;
-<span class="kw">use</span> <span class="ident">std::pin::Pin</span>;
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">env</span>, <span class="ident">io::Read</span>, <span class="ident">mem</span>};
-<span class="kw">use</span> <span class="ident">url::Url</span>;
+</pre><pre class="rust"><code><span class="doccomment">//! ALB and API Gateway request adaptations
+//!
+//! Typically these are exposed via the `request_context`
+//! request extension method provided by [lambda_http::RequestExt](../trait.RequestExt.html)
+//!
+</span><span class="attribute">#[cfg(any(feature = <span class="string">&quot;apigw_rest&quot;</span>, feature = <span class="string">&quot;apigw_http&quot;</span>, feature = <span class="string">&quot;apigw_websockets&quot;</span>))]
+</span><span class="kw">use </span><span class="kw">crate</span>::ext::{PathParameters, StageVariables};
+<span class="kw">use </span><span class="kw">crate</span>::ext::{QueryStringParameters, RawHttpPath};
+<span class="attribute">#[cfg(feature = <span class="string">&quot;alb&quot;</span>)]
+</span><span class="kw">use </span>aws_lambda_events::alb::{AlbTargetGroupRequest, AlbTargetGroupRequestContext};
+<span class="attribute">#[cfg(feature = <span class="string">&quot;apigw_rest&quot;</span>)]
+</span><span class="kw">use </span>aws_lambda_events::apigw::{ApiGatewayProxyRequest, ApiGatewayProxyRequestContext};
+<span class="attribute">#[cfg(feature = <span class="string">&quot;apigw_http&quot;</span>)]
+</span><span class="kw">use </span>aws_lambda_events::apigw::{ApiGatewayV2httpRequest, ApiGatewayV2httpRequestContext};
+<span class="attribute">#[cfg(feature = <span class="string">&quot;apigw_websockets&quot;</span>)]
+</span><span class="kw">use </span>aws_lambda_events::apigw::{ApiGatewayWebsocketProxyRequest, ApiGatewayWebsocketProxyRequestContext};
+<span class="kw">use </span>aws_lambda_events::{encodings::Body, query_map::QueryMap};
+<span class="kw">use </span>http::header::HeaderName;
+<span class="kw">use </span>http::{HeaderMap, HeaderValue};
+<span class="kw">use </span>serde::Deserialize;
+<span class="kw">use </span>serde_json::error::Error <span class="kw">as </span>JsonError;
+<span class="kw">use </span>std::future::Future;
+<span class="kw">use </span>std::pin::Pin;
+<span class="kw">use </span>std::{env, io::Read, mem};
+<span class="kw">use </span>url::Url;
 
-<span class="doccomment">/// Internal representation of an Lambda http event from</span>
-<span class="doccomment">/// ALB, API Gateway REST and HTTP API proxy event perspectives</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is not intended to be a type consumed by crate users directly. The order</span>
-<span class="doccomment">/// of the variants are notable. Serde will try to deserialize in this order.</span>
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>, <span class="ident">Debug</span>)]</span>
-<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">untagged</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">LambdaRequest</span> {
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_rest&quot;</span>)]</span>
-    <span class="ident">ApiGatewayV1</span>(<span class="ident">ApiGatewayProxyRequest</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_http&quot;</span>)]</span>
-    <span class="ident">ApiGatewayV2</span>(<span class="ident">ApiGatewayV2httpRequest</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;alb&quot;</span>)]</span>
-    <span class="ident">Alb</span>(<span class="ident">AlbTargetGroupRequest</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_websockets&quot;</span>)]</span>
-    <span class="ident">WebSocket</span>(<span class="ident">ApiGatewayWebsocketProxyRequest</span>),
+<span class="doccomment">/// Internal representation of an Lambda http event from
+/// ALB, API Gateway REST and HTTP API proxy event perspectives
+///
+/// This is not intended to be a type consumed by crate users directly. The order
+/// of the variants are notable. Serde will try to deserialize in this order.
+</span><span class="attribute">#[doc(hidden)]
+#[derive(Deserialize, Debug)]
+#[serde(untagged)]
+</span><span class="kw">pub enum </span>LambdaRequest {
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;apigw_rest&quot;</span>)]
+    </span>ApiGatewayV1(ApiGatewayProxyRequest),
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;apigw_http&quot;</span>)]
+    </span>ApiGatewayV2(ApiGatewayV2httpRequest),
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;alb&quot;</span>)]
+    </span>Alb(AlbTargetGroupRequest),
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;apigw_websockets&quot;</span>)]
+    </span>WebSocket(ApiGatewayWebsocketProxyRequest),
 }
 
-<span class="kw">impl</span> <span class="ident">LambdaRequest</span> {
-    <span class="doccomment">/// Return the `RequestOrigin` of the request to determine where the `LambdaRequest`</span>
-    <span class="doccomment">/// originated from, so that the appropriate response can be selected based on what</span>
-    <span class="doccomment">/// type of response the request origin expects.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">request_origin</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">RequestOrigin</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_rest&quot;</span>)]</span>
-            <span class="ident">LambdaRequest::ApiGatewayV1</span> { .. } =&gt; <span class="ident">RequestOrigin::ApiGatewayV1</span>,
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_http&quot;</span>)]</span>
-            <span class="ident">LambdaRequest::ApiGatewayV2</span> { .. } =&gt; <span class="ident">RequestOrigin::ApiGatewayV2</span>,
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;alb&quot;</span>)]</span>
-            <span class="ident">LambdaRequest::Alb</span> { .. } =&gt; <span class="ident">RequestOrigin::Alb</span>,
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_websockets&quot;</span>)]</span>
-            <span class="ident">LambdaRequest::WebSocket</span> { .. } =&gt; <span class="ident">RequestOrigin::WebSocket</span>,
+<span class="kw">impl </span>LambdaRequest {
+    <span class="doccomment">/// Return the `RequestOrigin` of the request to determine where the `LambdaRequest`
+    /// originated from, so that the appropriate response can be selected based on what
+    /// type of response the request origin expects.
+    </span><span class="kw">pub fn </span>request_origin(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; RequestOrigin {
+        <span class="kw">match </span><span class="self">self </span>{
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;apigw_rest&quot;</span>)]
+            </span>LambdaRequest::ApiGatewayV1 { .. } =&gt; RequestOrigin::ApiGatewayV1,
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;apigw_http&quot;</span>)]
+            </span>LambdaRequest::ApiGatewayV2 { .. } =&gt; RequestOrigin::ApiGatewayV2,
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;alb&quot;</span>)]
+            </span>LambdaRequest::Alb { .. } =&gt; RequestOrigin::Alb,
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;apigw_websockets&quot;</span>)]
+            </span>LambdaRequest::WebSocket { .. } =&gt; RequestOrigin::WebSocket,
         }
     }
 }
 
-<span class="doccomment">/// RequestFuture type</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">RequestFuture</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">R</span>, <span class="ident">E</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Pin</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+<span class="doccomment">/// RequestFuture type
+</span><span class="kw">pub type </span>RequestFuture&lt;<span class="lifetime">&#39;a</span>, R, E&gt; = Pin&lt;Box&lt;<span class="kw">dyn </span>Future&lt;Output = <span class="prelude-ty">Result</span>&lt;R, E&gt;&gt; + Send + <span class="lifetime">&#39;a</span>&gt;&gt;;
 
-<span class="doccomment">/// Represents the origin from which the lambda was requested from.</span>
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">RequestOrigin</span> {
-    <span class="doccomment">/// API Gateway request origin</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_rest&quot;</span>)]</span>
-    <span class="ident">ApiGatewayV1</span>,
-    <span class="doccomment">/// API Gateway v2 request origin</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_http&quot;</span>)]</span>
-    <span class="ident">ApiGatewayV2</span>,
-    <span class="doccomment">/// ALB request origin</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;alb&quot;</span>)]</span>
-    <span class="ident">Alb</span>,
-    <span class="doccomment">/// API Gateway WebSocket</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_websockets&quot;</span>)]</span>
-    <span class="ident">WebSocket</span>,
+<span class="doccomment">/// Represents the origin from which the lambda was requested from.
+</span><span class="attribute">#[doc(hidden)]
+#[derive(Debug, Clone)]
+</span><span class="kw">pub enum </span>RequestOrigin {
+    <span class="doccomment">/// API Gateway request origin
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;apigw_rest&quot;</span>)]
+    </span>ApiGatewayV1,
+    <span class="doccomment">/// API Gateway v2 request origin
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;apigw_http&quot;</span>)]
+    </span>ApiGatewayV2,
+    <span class="doccomment">/// ALB request origin
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;alb&quot;</span>)]
+    </span>Alb,
+    <span class="doccomment">/// API Gateway WebSocket
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;apigw_websockets&quot;</span>)]
+    </span>WebSocket,
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_http&quot;</span>)]</span>
-<span class="kw">fn</span> <span class="ident">into_api_gateway_v2_request</span>(<span class="ident">ag</span>: <span class="ident">ApiGatewayV2httpRequest</span>) -&gt; <span class="ident">http::Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">http_method</span> <span class="op">=</span> <span class="ident">ag</span>.<span class="ident">request_context</span>.<span class="ident">http</span>.<span class="ident">method</span>.<span class="ident">clone</span>();
-    <span class="kw">let</span> <span class="ident">host</span> <span class="op">=</span> <span class="ident">ag</span>
-        .<span class="ident">headers</span>
-        .<span class="ident">get</span>(<span class="ident">http::header::HOST</span>)
-        .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_str</span>().<span class="ident">ok</span>())
-        .<span class="ident">or</span>(<span class="ident">ag</span>.<span class="ident">request_context</span>.<span class="ident">domain_name</span>.<span class="ident">as_deref</span>());
-    <span class="kw">let</span> <span class="ident">raw_path</span> <span class="op">=</span> <span class="ident">ag</span>.<span class="ident">raw_path</span>.<span class="ident">unwrap_or_default</span>();
-    <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">apigw_path_with_stage</span>(<span class="kw-2">&amp;</span><span class="ident">ag</span>.<span class="ident">request_context</span>.<span class="ident">stage</span>, <span class="kw-2">&amp;</span><span class="ident">raw_path</span>);
+<span class="attribute">#[cfg(feature = <span class="string">&quot;apigw_http&quot;</span>)]
+</span><span class="kw">fn </span>into_api_gateway_v2_request(ag: ApiGatewayV2httpRequest) -&gt; http::Request&lt;Body&gt; {
+    <span class="kw">let </span>http_method = ag.request_context.http.method.clone();
+    <span class="kw">let </span>host = ag
+        .headers
+        .get(http::header::HOST)
+        .and_then(|s| s.to_str().ok())
+        .or(ag.request_context.domain_name.as_deref());
+    <span class="kw">let </span>raw_path = ag.raw_path.unwrap_or_default();
+    <span class="kw">let </span>path = apigw_path_with_stage(<span class="kw-2">&amp;</span>ag.request_context.stage, <span class="kw-2">&amp;</span>raw_path);
 
-    <span class="comment">// don&#39;t use the query_string_parameters from API GW v2 to</span>
-    <span class="comment">// populate the QueryStringParameters extension because</span>
-    <span class="comment">// the value is not compatible with the whatgw specification.</span>
-    <span class="comment">// See: https://github.com/awslabs/aws-lambda-rust-runtime/issues/470</span>
-    <span class="comment">// See: https://url.spec.whatwg.org/#urlencoded-parsing</span>
-    <span class="kw">let</span> <span class="ident">query_string_parameters</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">query</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">ag</span>.<span class="ident">raw_query_string</span> {
-        <span class="ident">query</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>() <span class="comment">// this is Infallible</span>
-    } <span class="kw">else</span> {
-        <span class="ident">ag</span>.<span class="ident">query_string_parameters</span>
+    <span class="comment">// don&#39;t use the query_string_parameters from API GW v2 to
+    // populate the QueryStringParameters extension because
+    // the value is not compatible with the whatgw specification.
+    // See: https://github.com/awslabs/aws-lambda-rust-runtime/issues/470
+    // See: https://url.spec.whatwg.org/#urlencoded-parsing
+    </span><span class="kw">let </span>query_string_parameters = <span class="kw">if let </span><span class="prelude-val">Some</span>(query) = <span class="kw-2">&amp;</span>ag.raw_query_string {
+        query.parse().unwrap() <span class="comment">// this is Infallible
+    </span>} <span class="kw">else </span>{
+        ag.query_string_parameters
     };
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">uri</span> <span class="op">=</span> <span class="ident">build_request_uri</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>, <span class="kw-2">&amp;</span><span class="ident">ag</span>.<span class="ident">headers</span>, <span class="ident">host</span>, <span class="prelude-val">None</span>);
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">query</span>) <span class="op">=</span> <span class="ident">ag</span>.<span class="ident">raw_query_string</span> {
-        <span class="ident">uri</span>.<span class="ident">push</span>(<span class="string">&#39;?&#39;</span>);
-        <span class="ident">uri</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">query</span>);
+    <span class="kw">let </span><span class="kw-2">mut </span>uri = build_request_uri(<span class="kw-2">&amp;</span>path, <span class="kw-2">&amp;</span>ag.headers, host, <span class="prelude-val">None</span>);
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(query) = ag.raw_query_string {
+        uri.push(<span class="string">&#39;?&#39;</span>);
+        uri.push_str(<span class="kw-2">&amp;</span>query);
     }
 
-    <span class="kw">let</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">http::Request::builder</span>()
-        .<span class="ident">uri</span>(<span class="ident">uri</span>)
-        .<span class="ident">extension</span>(<span class="ident">RawHttpPath</span>(<span class="ident">raw_path</span>))
-        .<span class="ident">extension</span>(<span class="ident">QueryStringParameters</span>(<span class="ident">query_string_parameters</span>))
-        .<span class="ident">extension</span>(<span class="ident">PathParameters</span>(<span class="ident">QueryMap::from</span>(<span class="ident">ag</span>.<span class="ident">path_parameters</span>)))
-        .<span class="ident">extension</span>(<span class="ident">StageVariables</span>(<span class="ident">QueryMap::from</span>(<span class="ident">ag</span>.<span class="ident">stage_variables</span>)))
-        .<span class="ident">extension</span>(<span class="ident">RequestContext::ApiGatewayV2</span>(<span class="ident">ag</span>.<span class="ident">request_context</span>));
+    <span class="kw">let </span>builder = http::Request::builder()
+        .uri(uri)
+        .extension(RawHttpPath(raw_path))
+        .extension(QueryStringParameters(query_string_parameters))
+        .extension(PathParameters(QueryMap::from(ag.path_parameters)))
+        .extension(StageVariables(QueryMap::from(ag.stage_variables)))
+        .extension(RequestContext::ApiGatewayV2(ag.request_context));
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">ag</span>.<span class="ident">headers</span>;
-    <span class="ident">update_xray_trace_id_header</span>(<span class="kw-2">&amp;mut</span> <span class="ident">headers</span>);
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">cookies</span>) <span class="op">=</span> <span class="ident">ag</span>.<span class="ident">cookies</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">header_value</span>) <span class="op">=</span> <span class="ident">HeaderValue::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">cookies</span>.<span class="ident">join</span>(<span class="string">&quot;;&quot;</span>)) {
-            <span class="ident">headers</span>.<span class="ident">append</span>(<span class="ident">http::header::COOKIE</span>, <span class="ident">header_value</span>);
+    <span class="kw">let </span><span class="kw-2">mut </span>headers = ag.headers;
+    update_xray_trace_id_header(<span class="kw-2">&amp;mut </span>headers);
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(cookies) = ag.cookies {
+        <span class="kw">if let </span><span class="prelude-val">Ok</span>(header_value) = HeaderValue::from_str(<span class="kw-2">&amp;</span>cookies.join(<span class="string">&quot;;&quot;</span>)) {
+            headers.append(http::header::COOKIE, header_value);
         }
     }
 
-    <span class="kw">let</span> <span class="ident">base64</span> <span class="op">=</span> <span class="ident">ag</span>.<span class="ident">is_base64_encoded</span>;
+    <span class="kw">let </span>base64 = ag.is_base64_encoded;
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">builder</span>
-        .<span class="ident">body</span>(
-            <span class="ident">ag</span>.<span class="ident">body</span>
-                .<span class="ident">as_deref</span>()
-                .<span class="ident">map_or_else</span>(<span class="ident">Body::default</span>, <span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="ident">Body::from_maybe_encoded</span>(<span class="ident">base64</span>, <span class="ident">b</span>)),
+    <span class="kw">let </span><span class="kw-2">mut </span>req = builder
+        .body(
+            ag.body
+                .as_deref()
+                .map_or_else(Body::default, |b| Body::from_maybe_encoded(base64, b)),
         )
-        .<span class="ident">expect</span>(<span class="string">&quot;failed to build request&quot;</span>);
+        .expect(<span class="string">&quot;failed to build request&quot;</span>);
 
-    <span class="comment">// no builder method that sets headers in batch</span>
-    <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">mem::replace</span>(<span class="ident">req</span>.<span class="ident">headers_mut</span>(), <span class="ident">headers</span>);
-    <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">mem::replace</span>(<span class="ident">req</span>.<span class="ident">method_mut</span>(), <span class="ident">http_method</span>);
+    <span class="comment">// no builder method that sets headers in batch
+    </span><span class="kw">let _ </span>= mem::replace(req.headers_mut(), headers);
+    <span class="kw">let _ </span>= mem::replace(req.method_mut(), http_method);
 
-    <span class="ident">req</span>
+    req
 }
 
-<span class="kw">fn</span> <span class="ident">update_xray_trace_id_header</span>(<span class="ident">headers</span>: <span class="kw-2">&amp;mut</span> <span class="ident">HeaderMap</span>) {
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">xray_trace_id</span>) <span class="op">=</span> <span class="ident">env::var</span>(<span class="string">&quot;_X_AMZN_TRACE_ID&quot;</span>) {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">header_value</span>) <span class="op">=</span> <span class="ident">HeaderValue::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">xray_trace_id</span>) {
-            <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="ident">HeaderName::from_static</span>(<span class="string">&quot;x-amzn-trace-id&quot;</span>), <span class="ident">header_value</span>);
+<span class="kw">fn </span>update_xray_trace_id_header(headers: <span class="kw-2">&amp;mut </span>HeaderMap) {
+    <span class="kw">if let </span><span class="prelude-val">Ok</span>(xray_trace_id) = env::var(<span class="string">&quot;_X_AMZN_TRACE_ID&quot;</span>) {
+        <span class="kw">if let </span><span class="prelude-val">Ok</span>(header_value) = HeaderValue::from_str(<span class="kw-2">&amp;</span>xray_trace_id) {
+            headers.insert(HeaderName::from_static(<span class="string">&quot;x-amzn-trace-id&quot;</span>), header_value);
         }
     }
 }
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_rest&quot;</span>)]</span>
-<span class="kw">fn</span> <span class="ident">into_proxy_request</span>(<span class="ident">ag</span>: <span class="ident">ApiGatewayProxyRequest</span>) -&gt; <span class="ident">http::Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">http_method</span> <span class="op">=</span> <span class="ident">ag</span>.<span class="ident">http_method</span>;
-    <span class="kw">let</span> <span class="ident">host</span> <span class="op">=</span> <span class="ident">ag</span>
-        .<span class="ident">headers</span>
-        .<span class="ident">get</span>(<span class="ident">http::header::HOST</span>)
-        .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_str</span>().<span class="ident">ok</span>())
-        .<span class="ident">or</span>(<span class="ident">ag</span>.<span class="ident">request_context</span>.<span class="ident">domain_name</span>.<span class="ident">as_deref</span>());
-    <span class="kw">let</span> <span class="ident">raw_path</span> <span class="op">=</span> <span class="ident">ag</span>.<span class="ident">path</span>.<span class="ident">unwrap_or_default</span>();
-    <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">apigw_path_with_stage</span>(<span class="kw-2">&amp;</span><span class="ident">ag</span>.<span class="ident">request_context</span>.<span class="ident">stage</span>, <span class="kw-2">&amp;</span><span class="ident">raw_path</span>);
+<span class="attribute">#[cfg(feature = <span class="string">&quot;apigw_rest&quot;</span>)]
+</span><span class="kw">fn </span>into_proxy_request(ag: ApiGatewayProxyRequest) -&gt; http::Request&lt;Body&gt; {
+    <span class="kw">let </span>http_method = ag.http_method;
+    <span class="kw">let </span>host = ag
+        .headers
+        .get(http::header::HOST)
+        .and_then(|s| s.to_str().ok())
+        .or(ag.request_context.domain_name.as_deref());
+    <span class="kw">let </span>raw_path = ag.path.unwrap_or_default();
+    <span class="kw">let </span>path = apigw_path_with_stage(<span class="kw-2">&amp;</span>ag.request_context.stage, <span class="kw-2">&amp;</span>raw_path);
 
-    <span class="kw">let</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">http::Request::builder</span>()
-        .<span class="ident">uri</span>(<span class="ident">build_request_uri</span>(
-            <span class="kw-2">&amp;</span><span class="ident">path</span>,
-            <span class="kw-2">&amp;</span><span class="ident">ag</span>.<span class="ident">headers</span>,
-            <span class="ident">host</span>,
-            <span class="prelude-val">Some</span>((<span class="kw-2">&amp;</span><span class="ident">ag</span>.<span class="ident">multi_value_query_string_parameters</span>, <span class="kw-2">&amp;</span><span class="ident">ag</span>.<span class="ident">query_string_parameters</span>)),
+    <span class="kw">let </span>builder = http::Request::builder()
+        .uri(build_request_uri(
+            <span class="kw-2">&amp;</span>path,
+            <span class="kw-2">&amp;</span>ag.headers,
+            host,
+            <span class="prelude-val">Some</span>((<span class="kw-2">&amp;</span>ag.multi_value_query_string_parameters, <span class="kw-2">&amp;</span>ag.query_string_parameters)),
         ))
-        .<span class="ident">extension</span>(<span class="ident">RawHttpPath</span>(<span class="ident">raw_path</span>))
-        <span class="comment">// multi-valued query string parameters are always a super</span>
-        <span class="comment">// set of singly valued query string parameters,</span>
-        <span class="comment">// when present, multi-valued query string parameters are preferred</span>
-        .<span class="ident">extension</span>(<span class="ident">QueryStringParameters</span>(
-            <span class="kw">if</span> <span class="ident">ag</span>.<span class="ident">multi_value_query_string_parameters</span>.<span class="ident">is_empty</span>() {
-                <span class="ident">ag</span>.<span class="ident">query_string_parameters</span>
-            } <span class="kw">else</span> {
-                <span class="ident">ag</span>.<span class="ident">multi_value_query_string_parameters</span>
+        .extension(RawHttpPath(raw_path))
+        <span class="comment">// multi-valued query string parameters are always a super
+        // set of singly valued query string parameters,
+        // when present, multi-valued query string parameters are preferred
+        </span>.extension(QueryStringParameters(
+            <span class="kw">if </span>ag.multi_value_query_string_parameters.is_empty() {
+                ag.query_string_parameters
+            } <span class="kw">else </span>{
+                ag.multi_value_query_string_parameters
             },
         ))
-        .<span class="ident">extension</span>(<span class="ident">PathParameters</span>(<span class="ident">QueryMap::from</span>(<span class="ident">ag</span>.<span class="ident">path_parameters</span>)))
-        .<span class="ident">extension</span>(<span class="ident">StageVariables</span>(<span class="ident">QueryMap::from</span>(<span class="ident">ag</span>.<span class="ident">stage_variables</span>)))
-        .<span class="ident">extension</span>(<span class="ident">RequestContext::ApiGatewayV1</span>(<span class="ident">ag</span>.<span class="ident">request_context</span>));
+        .extension(PathParameters(QueryMap::from(ag.path_parameters)))
+        .extension(StageVariables(QueryMap::from(ag.stage_variables)))
+        .extension(RequestContext::ApiGatewayV1(ag.request_context));
 
-    <span class="comment">// merge headers into multi_value_headers and make</span>
-    <span class="comment">// multi-value_headers our cannoncial source of request headers</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">ag</span>.<span class="ident">multi_value_headers</span>;
-    <span class="ident">headers</span>.<span class="ident">extend</span>(<span class="ident">ag</span>.<span class="ident">headers</span>);
-    <span class="ident">update_xray_trace_id_header</span>(<span class="kw-2">&amp;mut</span> <span class="ident">headers</span>);
+    <span class="comment">// merge headers into multi_value_headers and make
+    // multi-value_headers our cannoncial source of request headers
+    </span><span class="kw">let </span><span class="kw-2">mut </span>headers = ag.multi_value_headers;
+    headers.extend(ag.headers);
+    update_xray_trace_id_header(<span class="kw-2">&amp;mut </span>headers);
 
-    <span class="kw">let</span> <span class="ident">base64</span> <span class="op">=</span> <span class="ident">ag</span>.<span class="ident">is_base64_encoded</span>.<span class="ident">unwrap_or_default</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">builder</span>
-        .<span class="ident">body</span>(
-            <span class="ident">ag</span>.<span class="ident">body</span>
-                .<span class="ident">as_deref</span>()
-                .<span class="ident">map_or_else</span>(<span class="ident">Body::default</span>, <span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="ident">Body::from_maybe_encoded</span>(<span class="ident">base64</span>, <span class="ident">b</span>)),
+    <span class="kw">let </span>base64 = ag.is_base64_encoded.unwrap_or_default();
+    <span class="kw">let </span><span class="kw-2">mut </span>req = builder
+        .body(
+            ag.body
+                .as_deref()
+                .map_or_else(Body::default, |b| Body::from_maybe_encoded(base64, b)),
         )
-        .<span class="ident">expect</span>(<span class="string">&quot;failed to build request&quot;</span>);
+        .expect(<span class="string">&quot;failed to build request&quot;</span>);
 
-    <span class="comment">// no builder method that sets headers in batch</span>
-    <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">mem::replace</span>(<span class="ident">req</span>.<span class="ident">headers_mut</span>(), <span class="ident">headers</span>);
-    <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">mem::replace</span>(<span class="ident">req</span>.<span class="ident">method_mut</span>(), <span class="ident">http_method</span>);
+    <span class="comment">// no builder method that sets headers in batch
+    </span><span class="kw">let _ </span>= mem::replace(req.headers_mut(), headers);
+    <span class="kw">let _ </span>= mem::replace(req.method_mut(), http_method);
 
-    <span class="ident">req</span>
+    req
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;alb&quot;</span>)]</span>
-<span class="kw">fn</span> <span class="ident">into_alb_request</span>(<span class="ident">alb</span>: <span class="ident">AlbTargetGroupRequest</span>) -&gt; <span class="ident">http::Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">http_method</span> <span class="op">=</span> <span class="ident">alb</span>.<span class="ident">http_method</span>;
-    <span class="kw">let</span> <span class="ident">host</span> <span class="op">=</span> <span class="ident">alb</span>.<span class="ident">headers</span>.<span class="ident">get</span>(<span class="ident">http::header::HOST</span>).<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_str</span>().<span class="ident">ok</span>());
-    <span class="kw">let</span> <span class="ident">raw_path</span> <span class="op">=</span> <span class="ident">alb</span>.<span class="ident">path</span>.<span class="ident">unwrap_or_default</span>();
+<span class="attribute">#[cfg(feature = <span class="string">&quot;alb&quot;</span>)]
+</span><span class="kw">fn </span>into_alb_request(alb: AlbTargetGroupRequest) -&gt; http::Request&lt;Body&gt; {
+    <span class="kw">let </span>http_method = alb.http_method;
+    <span class="kw">let </span>host = alb.headers.get(http::header::HOST).and_then(|s| s.to_str().ok());
+    <span class="kw">let </span>raw_path = alb.path.unwrap_or_default();
 
-    <span class="kw">let</span> <span class="ident">query_string_parameters</span> <span class="op">=</span> <span class="ident">decode_query_map</span>(<span class="ident">alb</span>.<span class="ident">query_string_parameters</span>);
-    <span class="kw">let</span> <span class="ident">multi_value_query_string_parameters</span> <span class="op">=</span> <span class="ident">decode_query_map</span>(<span class="ident">alb</span>.<span class="ident">multi_value_query_string_parameters</span>);
+    <span class="kw">let </span>query_string_parameters = decode_query_map(alb.query_string_parameters);
+    <span class="kw">let </span>multi_value_query_string_parameters = decode_query_map(alb.multi_value_query_string_parameters);
 
-    <span class="kw">let</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">http::Request::builder</span>()
-        .<span class="ident">uri</span>(<span class="ident">build_request_uri</span>(
-            <span class="kw-2">&amp;</span><span class="ident">raw_path</span>,
-            <span class="kw-2">&amp;</span><span class="ident">alb</span>.<span class="ident">headers</span>,
-            <span class="ident">host</span>,
-            <span class="prelude-val">Some</span>((<span class="kw-2">&amp;</span><span class="ident">multi_value_query_string_parameters</span>, <span class="kw-2">&amp;</span><span class="ident">query_string_parameters</span>)),
+    <span class="kw">let </span>builder = http::Request::builder()
+        .uri(build_request_uri(
+            <span class="kw-2">&amp;</span>raw_path,
+            <span class="kw-2">&amp;</span>alb.headers,
+            host,
+            <span class="prelude-val">Some</span>((<span class="kw-2">&amp;</span>multi_value_query_string_parameters, <span class="kw-2">&amp;</span>query_string_parameters)),
         ))
-        .<span class="ident">extension</span>(<span class="ident">RawHttpPath</span>(<span class="ident">raw_path</span>))
-        <span class="comment">// multi valued query string parameters are always a super</span>
-        <span class="comment">// set of singly valued query string parameters,</span>
-        <span class="comment">// when present, multi-valued query string parameters are preferred</span>
-        .<span class="ident">extension</span>(<span class="ident">QueryStringParameters</span>(
-            <span class="kw">if</span> <span class="ident">multi_value_query_string_parameters</span>.<span class="ident">is_empty</span>() {
-                <span class="ident">query_string_parameters</span>
-            } <span class="kw">else</span> {
-                <span class="ident">multi_value_query_string_parameters</span>
+        .extension(RawHttpPath(raw_path))
+        <span class="comment">// multi valued query string parameters are always a super
+        // set of singly valued query string parameters,
+        // when present, multi-valued query string parameters are preferred
+        </span>.extension(QueryStringParameters(
+            <span class="kw">if </span>multi_value_query_string_parameters.is_empty() {
+                query_string_parameters
+            } <span class="kw">else </span>{
+                multi_value_query_string_parameters
             },
         ))
-        .<span class="ident">extension</span>(<span class="ident">RequestContext::Alb</span>(<span class="ident">alb</span>.<span class="ident">request_context</span>));
+        .extension(RequestContext::Alb(alb.request_context));
 
-    <span class="comment">// merge headers into multi_value_headers and make</span>
-    <span class="comment">// multi-value_headers our cannoncial source of request headers</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">alb</span>.<span class="ident">multi_value_headers</span>;
-    <span class="ident">headers</span>.<span class="ident">extend</span>(<span class="ident">alb</span>.<span class="ident">headers</span>);
-    <span class="ident">update_xray_trace_id_header</span>(<span class="kw-2">&amp;mut</span> <span class="ident">headers</span>);
+    <span class="comment">// merge headers into multi_value_headers and make
+    // multi-value_headers our cannoncial source of request headers
+    </span><span class="kw">let </span><span class="kw-2">mut </span>headers = alb.multi_value_headers;
+    headers.extend(alb.headers);
+    update_xray_trace_id_header(<span class="kw-2">&amp;mut </span>headers);
 
-    <span class="kw">let</span> <span class="ident">base64</span> <span class="op">=</span> <span class="ident">alb</span>.<span class="ident">is_base64_encoded</span>;
+    <span class="kw">let </span>base64 = alb.is_base64_encoded;
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">builder</span>
-        .<span class="ident">body</span>(
-            <span class="ident">alb</span>.<span class="ident">body</span>
-                .<span class="ident">as_deref</span>()
-                .<span class="ident">map_or_else</span>(<span class="ident">Body::default</span>, <span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="ident">Body::from_maybe_encoded</span>(<span class="ident">base64</span>, <span class="ident">b</span>)),
+    <span class="kw">let </span><span class="kw-2">mut </span>req = builder
+        .body(
+            alb.body
+                .as_deref()
+                .map_or_else(Body::default, |b| Body::from_maybe_encoded(base64, b)),
         )
-        .<span class="ident">expect</span>(<span class="string">&quot;failed to build request&quot;</span>);
+        .expect(<span class="string">&quot;failed to build request&quot;</span>);
 
-    <span class="comment">// no builder method that sets headers in batch</span>
-    <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">mem::replace</span>(<span class="ident">req</span>.<span class="ident">headers_mut</span>(), <span class="ident">headers</span>);
-    <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">mem::replace</span>(<span class="ident">req</span>.<span class="ident">method_mut</span>(), <span class="ident">http_method</span>);
+    <span class="comment">// no builder method that sets headers in batch
+    </span><span class="kw">let _ </span>= mem::replace(req.headers_mut(), headers);
+    <span class="kw">let _ </span>= mem::replace(req.method_mut(), http_method);
 
-    <span class="ident">req</span>
+    req
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;alb&quot;</span>)]</span>
-<span class="kw">fn</span> <span class="ident">decode_query_map</span>(<span class="ident">query_map</span>: <span class="ident">QueryMap</span>) -&gt; <span class="ident">QueryMap</span> {
-    <span class="kw">use</span> <span class="ident">std::str::FromStr</span>;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;alb&quot;</span>)]
+</span><span class="kw">fn </span>decode_query_map(query_map: QueryMap) -&gt; QueryMap {
+    <span class="kw">use </span>std::str::FromStr;
 
-    <span class="kw">let</span> <span class="ident">query_string</span> <span class="op">=</span> <span class="ident">query_map</span>.<span class="ident">to_query_string</span>();
-    <span class="kw">let</span> <span class="ident">decoded</span> <span class="op">=</span> <span class="ident">percent_encoding::percent_decode</span>(<span class="ident">query_string</span>.<span class="ident">as_bytes</span>()).<span class="ident">decode_utf8_lossy</span>();
-    <span class="ident">QueryMap::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">decoded</span>).<span class="ident">unwrap_or_default</span>()
+    <span class="kw">let </span>query_string = query_map.to_query_string();
+    <span class="kw">let </span>decoded = percent_encoding::percent_decode(query_string.as_bytes()).decode_utf8_lossy();
+    QueryMap::from_str(<span class="kw-2">&amp;</span>decoded).unwrap_or_default()
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_websockets&quot;</span>)]</span>
-<span class="kw">fn</span> <span class="ident">into_websocket_request</span>(<span class="ident">ag</span>: <span class="ident">ApiGatewayWebsocketProxyRequest</span>) -&gt; <span class="ident">http::Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">http_method</span> <span class="op">=</span> <span class="ident">ag</span>.<span class="ident">http_method</span>;
-    <span class="kw">let</span> <span class="ident">host</span> <span class="op">=</span> <span class="ident">ag</span>
-        .<span class="ident">headers</span>
-        .<span class="ident">get</span>(<span class="ident">http::header::HOST</span>)
-        .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_str</span>().<span class="ident">ok</span>())
-        .<span class="ident">or</span>(<span class="ident">ag</span>.<span class="ident">request_context</span>.<span class="ident">domain_name</span>.<span class="ident">as_deref</span>());
-    <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">apigw_path_with_stage</span>(<span class="kw-2">&amp;</span><span class="ident">ag</span>.<span class="ident">request_context</span>.<span class="ident">stage</span>, <span class="kw-2">&amp;</span><span class="ident">ag</span>.<span class="ident">path</span>.<span class="ident">unwrap_or_default</span>());
+<span class="attribute">#[cfg(feature = <span class="string">&quot;apigw_websockets&quot;</span>)]
+</span><span class="kw">fn </span>into_websocket_request(ag: ApiGatewayWebsocketProxyRequest) -&gt; http::Request&lt;Body&gt; {
+    <span class="kw">let </span>http_method = ag.http_method;
+    <span class="kw">let </span>host = ag
+        .headers
+        .get(http::header::HOST)
+        .and_then(|s| s.to_str().ok())
+        .or(ag.request_context.domain_name.as_deref());
+    <span class="kw">let </span>path = apigw_path_with_stage(<span class="kw-2">&amp;</span>ag.request_context.stage, <span class="kw-2">&amp;</span>ag.path.unwrap_or_default());
 
-    <span class="kw">let</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">http::Request::builder</span>()
-        .<span class="ident">uri</span>(<span class="ident">build_request_uri</span>(
-            <span class="kw-2">&amp;</span><span class="ident">path</span>,
-            <span class="kw-2">&amp;</span><span class="ident">ag</span>.<span class="ident">headers</span>,
-            <span class="ident">host</span>,
-            <span class="prelude-val">Some</span>((<span class="kw-2">&amp;</span><span class="ident">ag</span>.<span class="ident">multi_value_query_string_parameters</span>, <span class="kw-2">&amp;</span><span class="ident">ag</span>.<span class="ident">query_string_parameters</span>)),
+    <span class="kw">let </span>builder = http::Request::builder()
+        .uri(build_request_uri(
+            <span class="kw-2">&amp;</span>path,
+            <span class="kw-2">&amp;</span>ag.headers,
+            host,
+            <span class="prelude-val">Some</span>((<span class="kw-2">&amp;</span>ag.multi_value_query_string_parameters, <span class="kw-2">&amp;</span>ag.query_string_parameters)),
         ))
-        <span class="comment">// multi-valued query string parameters are always a super</span>
-        <span class="comment">// set of singly valued query string parameters,</span>
-        <span class="comment">// when present, multi-valued query string parameters are preferred</span>
-        .<span class="ident">extension</span>(<span class="ident">QueryStringParameters</span>(
-            <span class="kw">if</span> <span class="ident">ag</span>.<span class="ident">multi_value_query_string_parameters</span>.<span class="ident">is_empty</span>() {
-                <span class="ident">ag</span>.<span class="ident">query_string_parameters</span>
-            } <span class="kw">else</span> {
-                <span class="ident">ag</span>.<span class="ident">multi_value_query_string_parameters</span>
+        <span class="comment">// multi-valued query string parameters are always a super
+        // set of singly valued query string parameters,
+        // when present, multi-valued query string parameters are preferred
+        </span>.extension(QueryStringParameters(
+            <span class="kw">if </span>ag.multi_value_query_string_parameters.is_empty() {
+                ag.query_string_parameters
+            } <span class="kw">else </span>{
+                ag.multi_value_query_string_parameters
             },
         ))
-        .<span class="ident">extension</span>(<span class="ident">PathParameters</span>(<span class="ident">QueryMap::from</span>(<span class="ident">ag</span>.<span class="ident">path_parameters</span>)))
-        .<span class="ident">extension</span>(<span class="ident">StageVariables</span>(<span class="ident">QueryMap::from</span>(<span class="ident">ag</span>.<span class="ident">stage_variables</span>)))
-        .<span class="ident">extension</span>(<span class="ident">RequestContext::WebSocket</span>(<span class="ident">ag</span>.<span class="ident">request_context</span>));
+        .extension(PathParameters(QueryMap::from(ag.path_parameters)))
+        .extension(StageVariables(QueryMap::from(ag.stage_variables)))
+        .extension(RequestContext::WebSocket(ag.request_context));
 
-    <span class="comment">// merge headers into multi_value_headers and make</span>
-    <span class="comment">// multi-value_headers our cannoncial source of request headers</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">ag</span>.<span class="ident">multi_value_headers</span>;
-    <span class="ident">headers</span>.<span class="ident">extend</span>(<span class="ident">ag</span>.<span class="ident">headers</span>);
-    <span class="ident">update_xray_trace_id_header</span>(<span class="kw-2">&amp;mut</span> <span class="ident">headers</span>);
+    <span class="comment">// merge headers into multi_value_headers and make
+    // multi-value_headers our cannoncial source of request headers
+    </span><span class="kw">let </span><span class="kw-2">mut </span>headers = ag.multi_value_headers;
+    headers.extend(ag.headers);
+    update_xray_trace_id_header(<span class="kw-2">&amp;mut </span>headers);
 
-    <span class="kw">let</span> <span class="ident">base64</span> <span class="op">=</span> <span class="ident">ag</span>.<span class="ident">is_base64_encoded</span>.<span class="ident">unwrap_or_default</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">builder</span>
-        .<span class="ident">body</span>(
-            <span class="ident">ag</span>.<span class="ident">body</span>
-                .<span class="ident">as_deref</span>()
-                .<span class="ident">map_or_else</span>(<span class="ident">Body::default</span>, <span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="ident">Body::from_maybe_encoded</span>(<span class="ident">base64</span>, <span class="ident">b</span>)),
+    <span class="kw">let </span>base64 = ag.is_base64_encoded.unwrap_or_default();
+    <span class="kw">let </span><span class="kw-2">mut </span>req = builder
+        .body(
+            ag.body
+                .as_deref()
+                .map_or_else(Body::default, |b| Body::from_maybe_encoded(base64, b)),
         )
-        .<span class="ident">expect</span>(<span class="string">&quot;failed to build request&quot;</span>);
+        .expect(<span class="string">&quot;failed to build request&quot;</span>);
 
-    <span class="comment">// no builder method that sets headers in batch</span>
-    <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">mem::replace</span>(<span class="ident">req</span>.<span class="ident">headers_mut</span>(), <span class="ident">headers</span>);
-    <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">mem::replace</span>(<span class="ident">req</span>.<span class="ident">method_mut</span>(), <span class="ident">http_method</span>.<span class="ident">unwrap_or</span>(<span class="ident">http::Method::GET</span>));
+    <span class="comment">// no builder method that sets headers in batch
+    </span><span class="kw">let _ </span>= mem::replace(req.headers_mut(), headers);
+    <span class="kw">let _ </span>= mem::replace(req.method_mut(), http_method.unwrap_or(http::Method::GET));
 
-    <span class="ident">req</span>
+    req
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_rest&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_http&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_websockets&quot;</span>))]</span>
-<span class="kw">fn</span> <span class="ident">apigw_path_with_stage</span>(<span class="ident">stage</span>: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
-    <span class="kw">match</span> <span class="ident">stage</span> {
-        <span class="prelude-val">None</span> =&gt; <span class="ident">path</span>.<span class="ident">into</span>(),
-        <span class="prelude-val">Some</span>(<span class="ident">stage</span>) <span class="kw">if</span> <span class="ident">stage</span> <span class="op">==</span> <span class="string">&quot;$default&quot;</span> =&gt; <span class="ident">path</span>.<span class="ident">into</span>(),
-        <span class="prelude-val">Some</span>(<span class="ident">stage</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;/{}{}&quot;</span>, <span class="ident">stage</span>, <span class="ident">path</span>),
+<span class="attribute">#[cfg(any(feature = <span class="string">&quot;apigw_rest&quot;</span>, feature = <span class="string">&quot;apigw_http&quot;</span>, feature = <span class="string">&quot;apigw_websockets&quot;</span>))]
+</span><span class="kw">fn </span>apigw_path_with_stage(stage: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;String&gt;, path: <span class="kw-2">&amp;</span>str) -&gt; String {
+    <span class="kw">match </span>stage {
+        <span class="prelude-val">None </span>=&gt; path.into(),
+        <span class="prelude-val">Some</span>(stage) <span class="kw">if </span>stage == <span class="string">&quot;$default&quot; </span>=&gt; path.into(),
+        <span class="prelude-val">Some</span>(stage) =&gt; <span class="macro">format!</span>(<span class="string">&quot;/{}{}&quot;</span>, stage, path),
     }
 }
 
-<span class="doccomment">/// Event request context as an enumeration of request contexts</span>
-<span class="doccomment">/// for both ALB and API Gateway and HTTP API events</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>, <span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
-<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">untagged</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">RequestContext</span> {
-    <span class="doccomment">/// API Gateway proxy request context</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_rest&quot;</span>)]</span>
-    <span class="ident">ApiGatewayV1</span>(<span class="ident">ApiGatewayProxyRequestContext</span>),
-    <span class="doccomment">/// API Gateway v2 request context</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_http&quot;</span>)]</span>
-    <span class="ident">ApiGatewayV2</span>(<span class="ident">ApiGatewayV2httpRequestContext</span>),
-    <span class="doccomment">/// ALB request context</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;alb&quot;</span>)]</span>
-    <span class="ident">Alb</span>(<span class="ident">AlbTargetGroupRequestContext</span>),
-    <span class="doccomment">/// WebSocket request context</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_websockets&quot;</span>)]</span>
-    <span class="ident">WebSocket</span>(<span class="ident">ApiGatewayWebsocketProxyRequestContext</span>),
+<span class="doccomment">/// Event request context as an enumeration of request contexts
+/// for both ALB and API Gateway and HTTP API events
+</span><span class="attribute">#[derive(Deserialize, Debug, Clone)]
+#[serde(untagged)]
+</span><span class="kw">pub enum </span>RequestContext {
+    <span class="doccomment">/// API Gateway proxy request context
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;apigw_rest&quot;</span>)]
+    </span>ApiGatewayV1(ApiGatewayProxyRequestContext),
+    <span class="doccomment">/// API Gateway v2 request context
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;apigw_http&quot;</span>)]
+    </span>ApiGatewayV2(ApiGatewayV2httpRequestContext),
+    <span class="doccomment">/// ALB request context
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;alb&quot;</span>)]
+    </span>Alb(AlbTargetGroupRequestContext),
+    <span class="doccomment">/// WebSocket request context
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;apigw_websockets&quot;</span>)]
+    </span>WebSocket(ApiGatewayWebsocketProxyRequestContext),
 }
 
-<span class="doccomment">/// Converts LambdaRequest types into `http::Request&lt;Body&gt;` types</span>
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">LambdaRequest</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">http::Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">value</span>: <span class="ident">LambdaRequest</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">match</span> <span class="ident">value</span> {
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_rest&quot;</span>)]</span>
-            <span class="ident">LambdaRequest::ApiGatewayV1</span>(<span class="ident">ag</span>) =&gt; <span class="ident">into_proxy_request</span>(<span class="ident">ag</span>),
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_http&quot;</span>)]</span>
-            <span class="ident">LambdaRequest::ApiGatewayV2</span>(<span class="ident">ag</span>) =&gt; <span class="ident">into_api_gateway_v2_request</span>(<span class="ident">ag</span>),
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;alb&quot;</span>)]</span>
-            <span class="ident">LambdaRequest::Alb</span>(<span class="ident">alb</span>) =&gt; <span class="ident">into_alb_request</span>(<span class="ident">alb</span>),
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_websockets&quot;</span>)]</span>
-            <span class="ident">LambdaRequest::WebSocket</span>(<span class="ident">ag</span>) =&gt; <span class="ident">into_websocket_request</span>(<span class="ident">ag</span>),
+<span class="doccomment">/// Converts LambdaRequest types into `http::Request&lt;Body&gt;` types
+</span><span class="kw">impl </span>From&lt;LambdaRequest&gt; <span class="kw">for </span>http::Request&lt;Body&gt; {
+    <span class="kw">fn </span>from(value: LambdaRequest) -&gt; <span class="self">Self </span>{
+        <span class="kw">match </span>value {
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;apigw_rest&quot;</span>)]
+            </span>LambdaRequest::ApiGatewayV1(ag) =&gt; into_proxy_request(ag),
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;apigw_http&quot;</span>)]
+            </span>LambdaRequest::ApiGatewayV2(ag) =&gt; into_api_gateway_v2_request(ag),
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;alb&quot;</span>)]
+            </span>LambdaRequest::Alb(alb) =&gt; into_alb_request(alb),
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;apigw_websockets&quot;</span>)]
+            </span>LambdaRequest::WebSocket(ag) =&gt; into_websocket_request(ag),
         }
     }
 }
 
-<span class="doccomment">/// Deserializes a `Request` from a `Read` impl providing JSON events.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Example</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```rust,no_run</span>
-<span class="doccomment">/// use lambda_http::request::from_reader;</span>
-<span class="doccomment">/// use std::fs::File;</span>
-<span class="doccomment">/// use std::error::Error;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// fn main() -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {</span>
-<span class="doccomment">///     let request = from_reader(</span>
-<span class="doccomment">///         File::open(&quot;path/to/request.json&quot;)?</span>
-<span class="doccomment">///     )?;</span>
-<span class="doccomment">///     Ok(println!(&quot;{:#?}&quot;, request))</span>
-<span class="doccomment">/// }</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_reader</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">rdr</span>: <span class="ident">R</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="kw">crate</span>::Request</span>, <span class="ident">JsonError</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">R</span>: <span class="ident">Read</span>,
+<span class="doccomment">/// Deserializes a `Request` from a `Read` impl providing JSON events.
+///
+/// # Example
+///
+/// ```rust,no_run
+/// use lambda_http::request::from_reader;
+/// use std::fs::File;
+/// use std::error::Error;
+///
+/// fn main() -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
+///     let request = from_reader(
+///         File::open(&quot;path/to/request.json&quot;)?
+///     )?;
+///     Ok(println!(&quot;{:#?}&quot;, request))
+/// }
+/// ```
+</span><span class="kw">pub fn </span>from_reader&lt;R&gt;(rdr: R) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">crate</span>::Request, JsonError&gt;
+<span class="kw">where
+    </span>R: Read,
 {
-    <span class="ident">serde_json::from_reader</span>(<span class="ident">rdr</span>).<span class="ident">map</span>(<span class="ident">LambdaRequest::into</span>)
+    serde_json::from_reader(rdr).map(LambdaRequest::into)
 }
 
-<span class="doccomment">/// Deserializes a `Request` from a string of JSON text.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Example</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```rust,no_run</span>
-<span class="doccomment">/// use lambda_http::request::from_str;</span>
-<span class="doccomment">/// use std::fs::File;</span>
-<span class="doccomment">/// use std::error::Error;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// fn main() -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {</span>
-<span class="doccomment">///     let request = from_str(</span>
-<span class="doccomment">///         r#&quot;{ ...raw json here... }&quot;#</span>
-<span class="doccomment">///     )?;</span>
-<span class="doccomment">///     Ok(println!(&quot;{:#?}&quot;, request))</span>
-<span class="doccomment">/// }</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="kw">crate</span>::Request</span>, <span class="ident">JsonError</span><span class="op">&gt;</span> {
-    <span class="ident">serde_json::from_str</span>(<span class="ident">s</span>).<span class="ident">map</span>(<span class="ident">LambdaRequest::into</span>)
+<span class="doccomment">/// Deserializes a `Request` from a string of JSON text.
+///
+/// # Example
+///
+/// ```rust,no_run
+/// use lambda_http::request::from_str;
+/// use std::fs::File;
+/// use std::error::Error;
+///
+/// fn main() -&gt; Result&lt;(), Box&lt;dyn Error&gt;&gt; {
+///     let request = from_str(
+///         r#&quot;{ ...raw json here... }&quot;#
+///     )?;
+///     Ok(println!(&quot;{:#?}&quot;, request))
+/// }
+/// ```
+</span><span class="kw">pub fn </span>from_str(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">crate</span>::Request, JsonError&gt; {
+    serde_json::from_str(s).map(LambdaRequest::into)
 }
 
-<span class="kw">fn</span> <span class="ident">x_forwarded_proto</span>() -&gt; <span class="ident">HeaderName</span> {
-    <span class="ident">HeaderName::from_static</span>(<span class="string">&quot;x-forwarded-proto&quot;</span>)
+<span class="kw">fn </span>x_forwarded_proto() -&gt; HeaderName {
+    HeaderName::from_static(<span class="string">&quot;x-forwarded-proto&quot;</span>)
 }
 
-<span class="kw">fn</span> <span class="ident">build_request_uri</span>(
-    <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-    <span class="ident">headers</span>: <span class="kw-2">&amp;</span><span class="ident">HeaderMap</span>,
-    <span class="ident">host</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>,
-    <span class="ident">queries</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="ident">QueryMap</span>, <span class="kw-2">&amp;</span><span class="ident">QueryMap</span>)<span class="op">&gt;</span>,
-) -&gt; <span class="ident">String</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">url</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">host</span> {
-        <span class="prelude-val">None</span> =&gt; {
-            <span class="kw">let</span> <span class="ident">rel_url</span> <span class="op">=</span> <span class="ident">Url::parse</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;http://localhost{}&quot;</span>, <span class="ident">path</span>)).<span class="ident">unwrap</span>();
-            <span class="ident">rel_url</span>.<span class="ident">path</span>().<span class="ident">to_string</span>()
+<span class="kw">fn </span>build_request_uri(
+    path: <span class="kw-2">&amp;</span>str,
+    headers: <span class="kw-2">&amp;</span>HeaderMap,
+    host: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;,
+    queries: <span class="prelude-ty">Option</span>&lt;(<span class="kw-2">&amp;</span>QueryMap, <span class="kw-2">&amp;</span>QueryMap)&gt;,
+) -&gt; String {
+    <span class="kw">let </span><span class="kw-2">mut </span>url = <span class="kw">match </span>host {
+        <span class="prelude-val">None </span>=&gt; {
+            <span class="kw">let </span>rel_url = Url::parse(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;http://localhost{}&quot;</span>, path)).unwrap();
+            rel_url.path().to_string()
         }
-        <span class="prelude-val">Some</span>(<span class="ident">host</span>) =&gt; {
-            <span class="kw">let</span> <span class="ident">scheme</span> <span class="op">=</span> <span class="ident">headers</span>
-                .<span class="ident">get</span>(<span class="ident">x_forwarded_proto</span>())
-                .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_str</span>().<span class="ident">ok</span>())
-                .<span class="ident">unwrap_or</span>(<span class="string">&quot;https&quot;</span>);
-            <span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}://{}{}&quot;</span>, <span class="ident">scheme</span>, <span class="ident">host</span>, <span class="ident">path</span>);
-            <span class="ident">Url::parse</span>(<span class="kw-2">&amp;</span><span class="ident">url</span>).<span class="ident">unwrap</span>().<span class="ident">to_string</span>()
+        <span class="prelude-val">Some</span>(host) =&gt; {
+            <span class="kw">let </span>scheme = headers
+                .get(x_forwarded_proto())
+                .and_then(|s| s.to_str().ok())
+                .unwrap_or(<span class="string">&quot;https&quot;</span>);
+            <span class="kw">let </span>url = <span class="macro">format!</span>(<span class="string">&quot;{}://{}{}&quot;</span>, scheme, host, path);
+            Url::parse(<span class="kw-2">&amp;</span>url).unwrap().to_string()
         }
     };
 
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">mv</span>, <span class="ident">sv</span>)) <span class="op">=</span> <span class="ident">queries</span> {
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">mv</span>.<span class="ident">is_empty</span>() {
-            <span class="ident">url</span>.<span class="ident">push</span>(<span class="string">&#39;?&#39;</span>);
-            <span class="ident">url</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">mv</span>.<span class="ident">to_query_string</span>());
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">sv</span>.<span class="ident">is_empty</span>() {
-            <span class="ident">url</span>.<span class="ident">push</span>(<span class="string">&#39;?&#39;</span>);
-            <span class="ident">url</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">sv</span>.<span class="ident">to_query_string</span>());
+    <span class="kw">if let </span><span class="prelude-val">Some</span>((mv, sv)) = queries {
+        <span class="kw">if </span>!mv.is_empty() {
+            url.push(<span class="string">&#39;?&#39;</span>);
+            url.push_str(<span class="kw-2">&amp;</span>mv.to_query_string());
+        } <span class="kw">else if </span>!sv.is_empty() {
+            url.push(<span class="string">&#39;?&#39;</span>);
+            url.push_str(<span class="kw-2">&amp;</span>sv.to_query_string());
         }
     }
 
-    <span class="ident">url</span>
+    url
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::RequestExt</span>;
-    <span class="kw">use</span> <span class="ident">std::fs::File</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use </span><span class="kw">crate</span>::RequestExt;
+    <span class="kw">use </span>std::fs::File;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">deserializes_apigw_request_events_from_readables</span>() {
-        <span class="comment">// from the docs</span>
-        <span class="comment">// https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request</span>
-        <span class="comment">// note: file paths are relative to the directory of the crate at runtime</span>
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_reader</span>(<span class="ident">File::open</span>(<span class="string">&quot;tests/data/apigw_proxy_request.json&quot;</span>).<span class="ident">expect</span>(<span class="string">&quot;expected file&quot;</span>));
-        <span class="macro">assert!</span>(<span class="ident">result</span>.<span class="ident">is_ok</span>(), <span class="string">&quot;event was not parsed as expected {:?}&quot;</span>, <span class="ident">result</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>deserializes_apigw_request_events_from_readables() {
+        <span class="comment">// from the docs
+        // https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request
+        // note: file paths are relative to the directory of the crate at runtime
+        </span><span class="kw">let </span>result = from_reader(File::open(<span class="string">&quot;tests/data/apigw_proxy_request.json&quot;</span>).expect(<span class="string">&quot;expected file&quot;</span>));
+        <span class="macro">assert!</span>(result.is_ok(), <span class="string">&quot;event was not parsed as expected {:?}&quot;</span>, result);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">deserializes_minimal_apigw_http_request_events</span>() {
-        <span class="comment">// from the docs</span>
-        <span class="comment">// https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request</span>
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/apigw_v2_proxy_request_minimal.json&quot;</span>);
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_str</span>(<span class="ident">input</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>deserializes_minimal_apigw_http_request_events() {
+        <span class="comment">// from the docs
+        // https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request
+        </span><span class="kw">let </span>input = <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/apigw_v2_proxy_request_minimal.json&quot;</span>);
+        <span class="kw">let </span>result = from_str(input);
         <span class="macro">assert!</span>(
-            <span class="ident">result</span>.<span class="ident">is_ok</span>(),
+            result.is_ok(),
             <span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>,
-            <span class="ident">result</span>,
-            <span class="ident">input</span>
+            result,
+            input
         );
-        <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">expect</span>(<span class="string">&quot;failed to parse request&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="string">&quot;GET&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">uri</span>(), <span class="string">&quot;https://xxx.execute-api.us-east-1.amazonaws.com/&quot;</span>);
+        <span class="kw">let </span>req = result.expect(<span class="string">&quot;failed to parse request&quot;</span>);
+        <span class="macro">assert_eq!</span>(req.method(), <span class="string">&quot;GET&quot;</span>);
+        <span class="macro">assert_eq!</span>(req.uri(), <span class="string">&quot;https://xxx.execute-api.us-east-1.amazonaws.com/&quot;</span>);
 
-        <span class="comment">// Ensure this is an APIGWv2 request</span>
-        <span class="kw">let</span> <span class="ident">req_context</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">request_context</span>();
+        <span class="comment">// Ensure this is an APIGWv2 request
+        </span><span class="kw">let </span>req_context = req.request_context();
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">req_context</span>, <span class="ident">RequestContext::ApiGatewayV2</span>(<span class="kw">_</span>)),
+            <span class="macro">matches!</span>(req_context, RequestContext::ApiGatewayV2(<span class="kw">_</span>)),
             <span class="string">&quot;expected ApiGatewayV2 context, got {:?}&quot;</span>,
-            <span class="ident">req_context</span>
+            req_context
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">deserializes_apigw_http_request_events</span>() {
-        <span class="comment">// from the docs</span>
-        <span class="comment">// https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request</span>
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/apigw_v2_proxy_request.json&quot;</span>);
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_str</span>(<span class="ident">input</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>deserializes_apigw_http_request_events() {
+        <span class="comment">// from the docs
+        // https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request
+        </span><span class="kw">let </span>input = <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/apigw_v2_proxy_request.json&quot;</span>);
+        <span class="kw">let </span>result = from_str(input);
         <span class="macro">assert!</span>(
-            <span class="ident">result</span>.<span class="ident">is_ok</span>(),
+            result.is_ok(),
             <span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>,
-            <span class="ident">result</span>,
-            <span class="ident">input</span>
+            result,
+            input
         );
-        <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">expect</span>(<span class="string">&quot;failed to parse request&quot;</span>);
-        <span class="kw">let</span> <span class="ident">cookie_header</span> <span class="op">=</span> <span class="ident">req</span>
-            .<span class="ident">headers</span>()
-            .<span class="ident">get</span>(<span class="ident">http::header::COOKIE</span>)
-            .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;Cookie header not found&quot;</span>.<span class="ident">to_string</span>())
-            .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">to_str</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">to_string</span>()));
+        <span class="kw">let </span>req = result.expect(<span class="string">&quot;failed to parse request&quot;</span>);
+        <span class="kw">let </span>cookie_header = req
+            .headers()
+            .get(http::header::COOKIE)
+            .ok_or_else(|| <span class="string">&quot;Cookie header not found&quot;</span>.to_string())
+            .and_then(|v| v.to_str().map_err(|e| e.to_string()));
 
-        <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="string">&quot;POST&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">uri</span>(), <span class="string">&quot;https://id.execute-api.us-east-1.amazonaws.com/my/path?parameter1=value1&amp;parameter1=value2&amp;parameter2=value&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">cookie_header</span>, <span class="prelude-val">Ok</span>(<span class="string">&quot;cookie1=value1;cookie2=value2&quot;</span>));
+        <span class="macro">assert_eq!</span>(req.method(), <span class="string">&quot;POST&quot;</span>);
+        <span class="macro">assert_eq!</span>(req.uri(), <span class="string">&quot;https://id.execute-api.us-east-1.amazonaws.com/my/path?parameter1=value1&amp;parameter1=value2&amp;parameter2=value&quot;</span>);
+        <span class="macro">assert_eq!</span>(cookie_header, <span class="prelude-val">Ok</span>(<span class="string">&quot;cookie1=value1;cookie2=value2&quot;</span>));
 
-        <span class="comment">// Ensure this is an APIGWv2 request</span>
-        <span class="kw">let</span> <span class="ident">req_context</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">request_context</span>();
+        <span class="comment">// Ensure this is an APIGWv2 request
+        </span><span class="kw">let </span>req_context = req.request_context();
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">req_context</span>, <span class="ident">RequestContext::ApiGatewayV2</span>(<span class="kw">_</span>)),
+            <span class="macro">matches!</span>(req_context, RequestContext::ApiGatewayV2(<span class="kw">_</span>)),
             <span class="string">&quot;expected ApiGatewayV2 context, got {:?}&quot;</span>,
-            <span class="ident">req_context</span>
+            req_context
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">deserializes_apigw_request_events</span>() {
-        <span class="comment">// from the docs</span>
-        <span class="comment">// https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format</span>
-        <span class="comment">// https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html</span>
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/apigw_proxy_request.json&quot;</span>);
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_str</span>(<span class="ident">input</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>deserializes_apigw_request_events() {
+        <span class="comment">// from the docs
+        // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
+        // https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html
+        </span><span class="kw">let </span>input = <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/apigw_proxy_request.json&quot;</span>);
+        <span class="kw">let </span>result = from_str(input);
         <span class="macro">assert!</span>(
-            <span class="ident">result</span>.<span class="ident">is_ok</span>(),
+            result.is_ok(),
             <span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>,
-            <span class="ident">result</span>,
-            <span class="ident">input</span>
+            result,
+            input
         );
-        <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">expect</span>(<span class="string">&quot;failed to parse request&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="string">&quot;GET&quot;</span>);
+        <span class="kw">let </span>req = result.expect(<span class="string">&quot;failed to parse request&quot;</span>);
+        <span class="macro">assert_eq!</span>(req.method(), <span class="string">&quot;GET&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">req</span>.<span class="ident">uri</span>(),
-            <span class="string">&quot;https://wt6mne2s9k.execute-api.us-west-2.amazonaws.com/test/test/hello?name=me&quot;</span>
-        );
+            req.uri(),
+            <span class="string">&quot;https://wt6mne2s9k.execute-api.us-west-2.amazonaws.com/test/test/hello?name=me&quot;
+        </span>);
 
-        <span class="comment">// Ensure this is an APIGW request</span>
-        <span class="kw">let</span> <span class="ident">req_context</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">request_context</span>();
+        <span class="comment">// Ensure this is an APIGW request
+        </span><span class="kw">let </span>req_context = req.request_context();
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">req_context</span>, <span class="ident">RequestContext::ApiGatewayV1</span>(<span class="kw">_</span>)),
+            <span class="macro">matches!</span>(req_context, RequestContext::ApiGatewayV1(<span class="kw">_</span>)),
             <span class="string">&quot;expected ApiGateway context, got {:?}&quot;</span>,
-            <span class="ident">req_context</span>
+            req_context
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">deserializes_alb_request_events</span>() {
-        <span class="comment">// from the docs</span>
-        <span class="comment">// https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html#multi-value-headers</span>
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/alb_request.json&quot;</span>);
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_str</span>(<span class="ident">input</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>deserializes_alb_request_events() {
+        <span class="comment">// from the docs
+        // https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html#multi-value-headers
+        </span><span class="kw">let </span>input = <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/alb_request.json&quot;</span>);
+        <span class="kw">let </span>result = from_str(input);
         <span class="macro">assert!</span>(
-            <span class="ident">result</span>.<span class="ident">is_ok</span>(),
+            result.is_ok(),
             <span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>,
-            <span class="ident">result</span>,
-            <span class="ident">input</span>
+            result,
+            input
         );
-        <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">expect</span>(<span class="string">&quot;failed to parse request&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="string">&quot;GET&quot;</span>);
+        <span class="kw">let </span>req = result.expect(<span class="string">&quot;failed to parse request&quot;</span>);
+        <span class="macro">assert_eq!</span>(req.method(), <span class="string">&quot;GET&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">req</span>.<span class="ident">uri</span>(),
-            <span class="string">&quot;https://lambda-846800462-us-east-2.elb.amazonaws.com/?myKey=val2&quot;</span>
-        );
+            req.uri(),
+            <span class="string">&quot;https://lambda-846800462-us-east-2.elb.amazonaws.com/?myKey=val2&quot;
+        </span>);
 
-        <span class="comment">// Ensure this is an ALB request</span>
-        <span class="kw">let</span> <span class="ident">req_context</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">request_context</span>();
+        <span class="comment">// Ensure this is an ALB request
+        </span><span class="kw">let </span>req_context = req.request_context();
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">req_context</span>, <span class="ident">RequestContext::Alb</span>(<span class="kw">_</span>)),
+            <span class="macro">matches!</span>(req_context, RequestContext::Alb(<span class="kw">_</span>)),
             <span class="string">&quot;expected Alb context, got {:?}&quot;</span>,
-            <span class="ident">req_context</span>
+            req_context
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">deserializes_alb_request_encoded_query_parameters_events</span>() {
-        <span class="comment">// from the docs</span>
-        <span class="comment">// https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html#multi-value-headers</span>
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/alb_request_encoded_query_parameters.json&quot;</span>);
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_str</span>(<span class="ident">input</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>deserializes_alb_request_encoded_query_parameters_events() {
+        <span class="comment">// from the docs
+        // https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html#multi-value-headers
+        </span><span class="kw">let </span>input = <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/alb_request_encoded_query_parameters.json&quot;</span>);
+        <span class="kw">let </span>result = from_str(input);
         <span class="macro">assert!</span>(
-            <span class="ident">result</span>.<span class="ident">is_ok</span>(),
+            result.is_ok(),
             <span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>,
-            <span class="ident">result</span>,
-            <span class="ident">input</span>
+            result,
+            input
         );
-        <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">expect</span>(<span class="string">&quot;failed to parse request&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="string">&quot;GET&quot;</span>);
+        <span class="kw">let </span>req = result.expect(<span class="string">&quot;failed to parse request&quot;</span>);
+        <span class="macro">assert_eq!</span>(req.method(), <span class="string">&quot;GET&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">req</span>.<span class="ident">uri</span>(),
-            <span class="string">&quot;https://lambda-846800462-us-east-2.elb.amazonaws.com/?myKey=%3FshowAll%3Dtrue&quot;</span>
-        );
+            req.uri(),
+            <span class="string">&quot;https://lambda-846800462-us-east-2.elb.amazonaws.com/?myKey=%3FshowAll%3Dtrue&quot;
+        </span>);
 
-        <span class="comment">// Ensure this is an ALB request</span>
-        <span class="kw">let</span> <span class="ident">req_context</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">request_context</span>();
+        <span class="comment">// Ensure this is an ALB request
+        </span><span class="kw">let </span>req_context = req.request_context();
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="ident">req_context</span>, <span class="ident">RequestContext::Alb</span>(<span class="kw">_</span>)),
+            <span class="macro">matches!</span>(req_context, RequestContext::Alb(<span class="kw">_</span>)),
             <span class="string">&quot;expected Alb context, got {:?}&quot;</span>,
-            <span class="ident">req_context</span>
+            req_context
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">deserializes_apigw_multi_value_request_events</span>() {
-        <span class="comment">// from docs</span>
-        <span class="comment">// https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format</span>
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/apigw_multi_value_proxy_request.json&quot;</span>);
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_str</span>(<span class="ident">input</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>deserializes_apigw_multi_value_request_events() {
+        <span class="comment">// from docs
+        // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
+        </span><span class="kw">let </span>input = <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/apigw_multi_value_proxy_request.json&quot;</span>);
+        <span class="kw">let </span>result = from_str(input);
         <span class="macro">assert!</span>(
-            <span class="ident">result</span>.<span class="ident">is_ok</span>(),
+            result.is_ok(),
             <span class="string">&quot;event is was not parsed as expected {:?} given {}&quot;</span>,
-            <span class="ident">result</span>,
-            <span class="ident">input</span>
+            result,
+            input
         );
-        <span class="kw">let</span> <span class="ident">request</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">expect</span>(<span class="string">&quot;failed to parse request&quot;</span>);
+        <span class="kw">let </span>request = result.expect(<span class="string">&quot;failed to parse request&quot;</span>);
 
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">request</span>.<span class="ident">query_string_parameters</span>().<span class="ident">is_empty</span>());
+        <span class="macro">assert!</span>(!request.query_string_parameters().is_empty());
 
-        <span class="comment">// test RequestExt#query_string_parameters does the right thing</span>
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">request</span>.<span class="ident">query_string_parameters</span>().<span class="ident">all</span>(<span class="string">&quot;multivalueName&quot;</span>),
+        <span class="comment">// test RequestExt#query_string_parameters does the right thing
+        </span><span class="macro">assert_eq!</span>(
+            request.query_string_parameters().all(<span class="string">&quot;multivalueName&quot;</span>),
             <span class="prelude-val">Some</span>(<span class="macro">vec!</span>[<span class="string">&quot;you&quot;</span>, <span class="string">&quot;me&quot;</span>])
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">deserializes_alb_multi_value_request_events</span>() {
-        <span class="comment">// from docs</span>
-        <span class="comment">// https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format</span>
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/alb_multi_value_request.json&quot;</span>);
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_str</span>(<span class="ident">input</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>deserializes_alb_multi_value_request_events() {
+        <span class="comment">// from docs
+        // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
+        </span><span class="kw">let </span>input = <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/alb_multi_value_request.json&quot;</span>);
+        <span class="kw">let </span>result = from_str(input);
         <span class="macro">assert!</span>(
-            <span class="ident">result</span>.<span class="ident">is_ok</span>(),
+            result.is_ok(),
             <span class="string">&quot;event is was not parsed as expected {:?} given {}&quot;</span>,
-            <span class="ident">result</span>,
-            <span class="ident">input</span>
+            result,
+            input
         );
-        <span class="kw">let</span> <span class="ident">request</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">expect</span>(<span class="string">&quot;failed to parse request&quot;</span>);
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">request</span>.<span class="ident">query_string_parameters</span>().<span class="ident">is_empty</span>());
+        <span class="kw">let </span>request = result.expect(<span class="string">&quot;failed to parse request&quot;</span>);
+        <span class="macro">assert!</span>(!request.query_string_parameters().is_empty());
 
-        <span class="comment">// test RequestExt#query_string_parameters does the right thing</span>
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">request</span>.<span class="ident">query_string_parameters</span>().<span class="ident">all</span>(<span class="string">&quot;myKey&quot;</span>),
+        <span class="comment">// test RequestExt#query_string_parameters does the right thing
+        </span><span class="macro">assert_eq!</span>(
+            request.query_string_parameters().all(<span class="string">&quot;myKey&quot;</span>),
             <span class="prelude-val">Some</span>(<span class="macro">vec!</span>[<span class="string">&quot;val1&quot;</span>, <span class="string">&quot;val2&quot;</span>])
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">deserializes_alb_multi_value_request_encoded_query_parameters_events</span>() {
-        <span class="comment">// from docs</span>
-        <span class="comment">// https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format</span>
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/alb_multi_value_request_encoded_query_parameters.json&quot;</span>);
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_str</span>(<span class="ident">input</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>deserializes_alb_multi_value_request_encoded_query_parameters_events() {
+        <span class="comment">// from docs
+        // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
+        </span><span class="kw">let </span>input = <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/alb_multi_value_request_encoded_query_parameters.json&quot;</span>);
+        <span class="kw">let </span>result = from_str(input);
         <span class="macro">assert!</span>(
-            <span class="ident">result</span>.<span class="ident">is_ok</span>(),
+            result.is_ok(),
             <span class="string">&quot;event is was not parsed as expected {:?} given {}&quot;</span>,
-            <span class="ident">result</span>,
-            <span class="ident">input</span>
+            result,
+            input
         );
-        <span class="kw">let</span> <span class="ident">request</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">expect</span>(<span class="string">&quot;failed to parse request&quot;</span>);
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">request</span>.<span class="ident">query_string_parameters</span>().<span class="ident">is_empty</span>());
+        <span class="kw">let </span>request = result.expect(<span class="string">&quot;failed to parse request&quot;</span>);
+        <span class="macro">assert!</span>(!request.query_string_parameters().is_empty());
 
-        <span class="comment">// test RequestExt#query_string_parameters does the right thing</span>
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">request</span>.<span class="ident">query_string_parameters</span>().<span class="ident">all</span>(<span class="string">&quot;myKey&quot;</span>),
+        <span class="comment">// test RequestExt#query_string_parameters does the right thing
+        </span><span class="macro">assert_eq!</span>(
+            request.query_string_parameters().all(<span class="string">&quot;myKey&quot;</span>),
             <span class="prelude-val">Some</span>(<span class="macro">vec!</span>[<span class="string">&quot;?showAll=true&quot;</span>, <span class="string">&quot;?showAll=false&quot;</span>])
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">deserialize_apigw_http_sam_local</span>() {
-        <span class="comment">// manually generated from AWS SAM CLI</span>
-        <span class="comment">// Steps to recreate:</span>
-        <span class="comment">// * sam init</span>
-        <span class="comment">// * Use, Zip Python 3.9, and Hello World example</span>
-        <span class="comment">// * Change the template to use HttpApi instead of Api</span>
-        <span class="comment">// * Change the function code to return the Lambda event serialized</span>
-        <span class="comment">// * sam local start-api</span>
-        <span class="comment">// * Invoke the API</span>
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/apigw_v2_sam_local.json&quot;</span>);
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_str</span>(<span class="ident">input</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>deserialize_apigw_http_sam_local() {
+        <span class="comment">// manually generated from AWS SAM CLI
+        // Steps to recreate:
+        // * sam init
+        // * Use, Zip Python 3.9, and Hello World example
+        // * Change the template to use HttpApi instead of Api
+        // * Change the function code to return the Lambda event serialized
+        // * sam local start-api
+        // * Invoke the API
+        </span><span class="kw">let </span>input = <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/apigw_v2_sam_local.json&quot;</span>);
+        <span class="kw">let </span>result = from_str(input);
         <span class="macro">assert!</span>(
-            <span class="ident">result</span>.<span class="ident">is_ok</span>(),
+            result.is_ok(),
             <span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>,
-            <span class="ident">result</span>,
-            <span class="ident">input</span>
+            result,
+            input
         );
-        <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">expect</span>(<span class="string">&quot;failed to parse request&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="string">&quot;GET&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">uri</span>(), <span class="string">&quot;http://127.0.0.1:3000/hello&quot;</span>);
+        <span class="kw">let </span>req = result.expect(<span class="string">&quot;failed to parse request&quot;</span>);
+        <span class="macro">assert_eq!</span>(req.method(), <span class="string">&quot;GET&quot;</span>);
+        <span class="macro">assert_eq!</span>(req.uri(), <span class="string">&quot;http://127.0.0.1:3000/hello&quot;</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">deserialize_apigw_no_host</span>() {
-        <span class="comment">// generated from the &#39;apigateway-aws-proxy&#39; test event template in the Lambda console</span>
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/apigw_no_host.json&quot;</span>);
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_str</span>(<span class="ident">input</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>deserialize_apigw_no_host() {
+        <span class="comment">// generated from the &#39;apigateway-aws-proxy&#39; test event template in the Lambda console
+        </span><span class="kw">let </span>input = <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/apigw_no_host.json&quot;</span>);
+        <span class="kw">let </span>result = from_str(input);
         <span class="macro">assert!</span>(
-            <span class="ident">result</span>.<span class="ident">is_ok</span>(),
+            result.is_ok(),
             <span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>,
-            <span class="ident">result</span>,
-            <span class="ident">input</span>
+            result,
+            input
         );
-        <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">expect</span>(<span class="string">&quot;failed to parse request&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="string">&quot;GET&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">uri</span>(), <span class="string">&quot;/test/test/hello?name=me&quot;</span>);
+        <span class="kw">let </span>req = result.expect(<span class="string">&quot;failed to parse request&quot;</span>);
+        <span class="macro">assert_eq!</span>(req.method(), <span class="string">&quot;GET&quot;</span>);
+        <span class="macro">assert_eq!</span>(req.uri(), <span class="string">&quot;/test/test/hello?name=me&quot;</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">deserialize_alb_no_host</span>() {
-        <span class="comment">// generated from ALB health checks</span>
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/alb_no_host.json&quot;</span>);
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_str</span>(<span class="ident">input</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>deserialize_alb_no_host() {
+        <span class="comment">// generated from ALB health checks
+        </span><span class="kw">let </span>input = <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/alb_no_host.json&quot;</span>);
+        <span class="kw">let </span>result = from_str(input);
         <span class="macro">assert!</span>(
-            <span class="ident">result</span>.<span class="ident">is_ok</span>(),
+            result.is_ok(),
             <span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>,
-            <span class="ident">result</span>,
-            <span class="ident">input</span>
+            result,
+            input
         );
-        <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">expect</span>(<span class="string">&quot;failed to parse request&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">method</span>(), <span class="string">&quot;GET&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">uri</span>(), <span class="string">&quot;/v1/health/&quot;</span>);
+        <span class="kw">let </span>req = result.expect(<span class="string">&quot;failed to parse request&quot;</span>);
+        <span class="macro">assert_eq!</span>(req.method(), <span class="string">&quot;GET&quot;</span>);
+        <span class="macro">assert_eq!</span>(req.uri(), <span class="string">&quot;/v1/health/&quot;</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">deserialize_apigw_path_with_space</span>() {
-        <span class="comment">// generated from ALB health checks</span>
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/apigw_request_path_with_space.json&quot;</span>);
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">from_str</span>(<span class="ident">input</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>deserialize_apigw_path_with_space() {
+        <span class="comment">// generated from ALB health checks
+        </span><span class="kw">let </span>input = <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/apigw_request_path_with_space.json&quot;</span>);
+        <span class="kw">let </span>result = from_str(input);
         <span class="macro">assert!</span>(
-            <span class="ident">result</span>.<span class="ident">is_ok</span>(),
+            result.is_ok(),
             <span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>,
-            <span class="ident">result</span>,
-            <span class="ident">input</span>
+            result,
+            input
         );
-        <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">expect</span>(<span class="string">&quot;failed to parse request&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">req</span>.<span class="ident">uri</span>(), <span class="string">&quot;https://id.execute-api.us-east-1.amazonaws.com/my/path-with%20space?parameter1=value1&amp;parameter1=value2&amp;parameter2=value&quot;</span>);
+        <span class="kw">let </span>req = result.expect(<span class="string">&quot;failed to parse request&quot;</span>);
+        <span class="macro">assert_eq!</span>(req.uri(), <span class="string">&quot;https://id.execute-api.us-east-1.amazonaws.com/my/path-with%20space?parameter1=value1&amp;parameter1=value2&amp;parameter2=value&quot;</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">parse_paths_with_spaces</span>() {
-        <span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> <span class="ident">build_request_uri</span>(<span class="string">&quot;/path with spaces/and multiple segments&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">HeaderMap::new</span>(), <span class="prelude-val">None</span>, <span class="prelude-val">None</span>);
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;/path%20with%20spaces/and%20multiple%20segments&quot;</span>, <span class="ident">url</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>parse_paths_with_spaces() {
+        <span class="kw">let </span>url = build_request_uri(<span class="string">&quot;/path with spaces/and multiple segments&quot;</span>, <span class="kw-2">&amp;</span>HeaderMap::new(), <span class="prelude-val">None</span>, <span class="prelude-val">None</span>);
+        <span class="macro">assert_eq!</span>(<span class="string">&quot;/path%20with%20spaces/and%20multiple%20segments&quot;</span>, url);
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lambda_http" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lambda_http" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lambda-http/src/ext.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>ext.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../lambda_http/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../lambda_http/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../lambda_http/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lambda-http/src/ext.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>ext.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../lambda_http/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../lambda_http/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../lambda_http/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -441,448 +441,448 @@
 <span id="441">441</span>
 <span id="442">442</span>
 <span id="443">443</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Extension methods for `http::Request` types</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Extension methods for `http::Request` types
 
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">request::RequestContext</span>, <span class="ident">Body</span>};
-<span class="kw">use</span> <span class="ident">aws_lambda_events::query_map::QueryMap</span>;
-<span class="kw">use</span> <span class="ident">lambda_runtime::Context</span>;
-<span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">de::value::Error</span> <span class="kw">as</span> <span class="ident">SerdeError</span>, <span class="ident">Deserialize</span>};
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">error::Error</span>, <span class="ident">fmt</span>};
+</span><span class="kw">use crate</span>::{request::RequestContext, Body};
+<span class="kw">use </span>aws_lambda_events::query_map::QueryMap;
+<span class="kw">use </span>lambda_runtime::Context;
+<span class="kw">use </span>serde::{de::value::Error <span class="kw">as </span>SerdeError, Deserialize};
+<span class="kw">use </span>std::{error::Error, fmt};
 
-<span class="doccomment">/// ALB/API gateway pre-parsed http query string parameters</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">QueryStringParameters</span>(<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">QueryMap</span>);
+<span class="doccomment">/// ALB/API gateway pre-parsed http query string parameters
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>QueryStringParameters(<span class="kw">pub</span>(<span class="kw">crate</span>) QueryMap);
 
-<span class="doccomment">/// API gateway pre-extracted url path parameters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// These will always be empty for ALB requests</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">PathParameters</span>(<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">QueryMap</span>);
+<span class="doccomment">/// API gateway pre-extracted url path parameters
+///
+/// These will always be empty for ALB requests
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>PathParameters(<span class="kw">pub</span>(<span class="kw">crate</span>) QueryMap);
 
-<span class="doccomment">/// API gateway configured</span>
-<span class="doccomment">/// [stage variables](https://docs.aws.amazon.com/apigateway/latest/developerguide/stage-variables.html)</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// These will always be empty for ALB requests</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">StageVariables</span>(<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">QueryMap</span>);
+<span class="doccomment">/// API gateway configured
+/// [stage variables](https://docs.aws.amazon.com/apigateway/latest/developerguide/stage-variables.html)
+///
+/// These will always be empty for ALB requests
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>StageVariables(<span class="kw">pub</span>(<span class="kw">crate</span>) QueryMap);
 
-<span class="doccomment">/// ALB/API gateway raw http path without any stage information</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">RawHttpPath</span>(<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">String</span>);
+<span class="doccomment">/// ALB/API gateway raw http path without any stage information
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>RawHttpPath(<span class="kw">pub</span>(<span class="kw">crate</span>) String);
 
-<span class="doccomment">/// Request payload deserialization errors</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Returned by [`RequestExt#payload()`](trait.RequestExt.html#tymethod.payload)</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">PayloadError</span> {
-    <span class="doccomment">/// Returned when `application/json` bodies fail to deserialize a payload</span>
-    <span class="ident">Json</span>(<span class="ident">serde_json::Error</span>),
-    <span class="doccomment">/// Returned when `application/x-www-form-urlencoded` bodies fail to deserialize a payload</span>
-    <span class="ident">WwwFormUrlEncoded</span>(<span class="ident">SerdeError</span>),
+<span class="doccomment">/// Request payload deserialization errors
+///
+/// Returned by [`RequestExt#payload()`](trait.RequestExt.html#tymethod.payload)
+</span><span class="attribute">#[derive(Debug)]
+</span><span class="kw">pub enum </span>PayloadError {
+    <span class="doccomment">/// Returned when `application/json` bodies fail to deserialize a payload
+    </span>Json(serde_json::Error),
+    <span class="doccomment">/// Returned when `application/x-www-form-urlencoded` bodies fail to deserialize a payload
+    </span>WwwFormUrlEncoded(SerdeError),
 }
 
-<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">PayloadError</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">PayloadError::Json</span>(<span class="ident">json</span>) =&gt; <span class="macro">writeln!</span>(<span class="ident">f</span>, <span class="string">&quot;failed to parse payload from application/json {}&quot;</span>, <span class="ident">json</span>),
-            <span class="ident">PayloadError::WwwFormUrlEncoded</span>(<span class="ident">form</span>) =&gt; <span class="macro">writeln!</span>(
-                <span class="ident">f</span>,
+<span class="kw">impl </span>fmt::Display <span class="kw">for </span>PayloadError {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        <span class="kw">match </span><span class="self">self </span>{
+            PayloadError::Json(json) =&gt; <span class="macro">writeln!</span>(f, <span class="string">&quot;failed to parse payload from application/json {}&quot;</span>, json),
+            PayloadError::WwwFormUrlEncoded(form) =&gt; <span class="macro">writeln!</span>(
+                f,
                 <span class="string">&quot;failed to parse payload from application/x-www-form-urlencoded {}&quot;</span>,
-                <span class="ident">form</span>
+                form
             ),
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Error</span> <span class="kw">for</span> <span class="ident">PayloadError</span> {
-    <span class="kw">fn</span> <span class="ident">source</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>(<span class="kw">dyn</span> <span class="ident">Error</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>)<span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">PayloadError::Json</span>(<span class="ident">json</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">json</span>),
-            <span class="ident">PayloadError::WwwFormUrlEncoded</span>(<span class="ident">form</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">form</span>),
+<span class="kw">impl </span>Error <span class="kw">for </span>PayloadError {
+    <span class="kw">fn </span>source(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>(<span class="kw">dyn </span>Error + <span class="lifetime">&#39;static</span>)&gt; {
+        <span class="kw">match </span><span class="self">self </span>{
+            PayloadError::Json(json) =&gt; <span class="prelude-val">Some</span>(json),
+            PayloadError::WwwFormUrlEncoded(form) =&gt; <span class="prelude-val">Some</span>(form),
         }
     }
 }
 
-<span class="doccomment">/// Extentions for `lambda_http::Request` structs that</span>
-<span class="doccomment">/// provide access to [API gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format)</span>
-<span class="doccomment">/// and [ALB](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html)</span>
-<span class="doccomment">/// features.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// A request&#39;s body can be deserialized if its correctly encoded as per  </span>
-<span class="doccomment">/// the request&#39;s `Content-Type` header. The two supported content types are</span>
-<span class="doccomment">/// `application/x-www-form-urlencoded` and `application/json`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The following handler will work an http request body of `x=1&amp;y=2`</span>
-<span class="doccomment">/// as well as `{&quot;x&quot;:1, &quot;y&quot;:2}` respectively.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```rust,no_run</span>
-<span class="doccomment">/// use lambda_http::{service_fn, Error, Context, Body, IntoResponse, Request, Response, RequestExt};</span>
-<span class="doccomment">/// use serde::Deserialize;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// #[derive(Debug,Deserialize,Default)]</span>
-<span class="doccomment">/// struct Args {</span>
-<span class="doccomment">///   #[serde(default)]</span>
-<span class="doccomment">///   x: usize,</span>
-<span class="doccomment">///   #[serde(default)]</span>
-<span class="doccomment">///   y: usize</span>
-<span class="doccomment">/// }</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// #[tokio::main]</span>
-<span class="doccomment">/// async fn main() -&gt; Result&lt;(), Error&gt; {</span>
-<span class="doccomment">///   lambda_http::run(service_fn(add)).await?;</span>
-<span class="doccomment">///   Ok(())</span>
-<span class="doccomment">/// }</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// async fn add(</span>
-<span class="doccomment">///   request: Request</span>
-<span class="doccomment">/// ) -&gt; Result&lt;Response&lt;Body&gt;, Error&gt; {</span>
-<span class="doccomment">///   let args: Args = request.payload()</span>
-<span class="doccomment">///     .unwrap_or_else(|_parse_err| None)</span>
-<span class="doccomment">///     .unwrap_or_default();</span>
-<span class="doccomment">///   Ok(</span>
-<span class="doccomment">///      Response::new(</span>
-<span class="doccomment">///        format!(</span>
-<span class="doccomment">///          &quot;{} + {} = {}&quot;,</span>
-<span class="doccomment">///          args.x,</span>
-<span class="doccomment">///          args.y,</span>
-<span class="doccomment">///          args.x + args.y</span>
-<span class="doccomment">///        ).into()</span>
-<span class="doccomment">///      )</span>
-<span class="doccomment">///   )</span>
-<span class="doccomment">/// }</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">RequestExt</span> {
-    <span class="doccomment">/// Return the raw http path for a request without any stage information.</span>
-    <span class="kw">fn</span> <span class="ident">raw_http_path</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span>;
+<span class="doccomment">/// Extentions for `lambda_http::Request` structs that
+/// provide access to [API gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format)
+/// and [ALB](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html)
+/// features.
+///
+/// # Examples
+///
+/// A request&#39;s body can be deserialized if its correctly encoded as per  
+/// the request&#39;s `Content-Type` header. The two supported content types are
+/// `application/x-www-form-urlencoded` and `application/json`.
+///
+/// The following handler will work an http request body of `x=1&amp;y=2`
+/// as well as `{&quot;x&quot;:1, &quot;y&quot;:2}` respectively.
+///
+/// ```rust,no_run
+/// use lambda_http::{service_fn, Error, Context, Body, IntoResponse, Request, Response, RequestExt};
+/// use serde::Deserialize;
+///
+/// #[derive(Debug,Deserialize,Default)]
+/// struct Args {
+///   #[serde(default)]
+///   x: usize,
+///   #[serde(default)]
+///   y: usize
+/// }
+///
+/// #[tokio::main]
+/// async fn main() -&gt; Result&lt;(), Error&gt; {
+///   lambda_http::run(service_fn(add)).await?;
+///   Ok(())
+/// }
+///
+/// async fn add(
+///   request: Request
+/// ) -&gt; Result&lt;Response&lt;Body&gt;, Error&gt; {
+///   let args: Args = request.payload()
+///     .unwrap_or_else(|_parse_err| None)
+///     .unwrap_or_default();
+///   Ok(
+///      Response::new(
+///        format!(
+///          &quot;{} + {} = {}&quot;,
+///          args.x,
+///          args.y,
+///          args.x + args.y
+///        ).into()
+///      )
+///   )
+/// }
+/// ```
+</span><span class="kw">pub trait </span>RequestExt {
+    <span class="doccomment">/// Return the raw http path for a request without any stage information.
+    </span><span class="kw">fn </span>raw_http_path(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String;
 
-    <span class="doccomment">/// Configures instance with the raw http path.</span>
-    <span class="kw">fn</span> <span class="ident">with_raw_http_path</span>(<span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="self">Self</span>;
+    <span class="doccomment">/// Configures instance with the raw http path.
+    </span><span class="kw">fn </span>with_raw_http_path(<span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="self">Self</span>;
 
-    <span class="doccomment">/// Return pre-parsed http query string parameters, parameters</span>
-    <span class="doccomment">/// provided after the `?` portion of a url,</span>
-    <span class="doccomment">/// associated with the API gateway request.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The yielded value represents both single and multi-valued</span>
-    <span class="doccomment">/// parameters alike. When multiple query string parameters with the same</span>
-    <span class="doccomment">/// name are expected, `query_string_parameters().get_all(&quot;many&quot;)` to retrieve them all.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// No query parameters</span>
-    <span class="doccomment">/// will yield an empty `QueryMap`.</span>
-    <span class="kw">fn</span> <span class="ident">query_string_parameters</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">QueryMap</span>;
+    <span class="doccomment">/// Return pre-parsed http query string parameters, parameters
+    /// provided after the `?` portion of a url,
+    /// associated with the API gateway request.
+    ///
+    /// The yielded value represents both single and multi-valued
+    /// parameters alike. When multiple query string parameters with the same
+    /// name are expected, `query_string_parameters().get_all(&quot;many&quot;)` to retrieve them all.
+    ///
+    /// No query parameters
+    /// will yield an empty `QueryMap`.
+    </span><span class="kw">fn </span>query_string_parameters(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; QueryMap;
 
-    <span class="doccomment">/// Configures instance with query string parameters</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This is intended for use in mock testing contexts.</span>
-    <span class="kw">fn</span> <span class="ident">with_query_string_parameters</span><span class="op">&lt;</span><span class="ident">Q</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">parameters</span>: <span class="ident">Q</span>) -&gt; <span class="self">Self</span>
-    <span class="kw">where</span>
-        <span class="ident">Q</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">QueryMap</span><span class="op">&gt;</span>;
+    <span class="doccomment">/// Configures instance with query string parameters
+    ///
+    /// This is intended for use in mock testing contexts.
+    </span><span class="kw">fn </span>with_query_string_parameters&lt;Q&gt;(<span class="self">self</span>, parameters: Q) -&gt; <span class="self">Self
+    </span><span class="kw">where
+        </span>Q: Into&lt;QueryMap&gt;;
 
-    <span class="doccomment">/// Return pre-extracted path parameters, parameter provided in url placeholders</span>
-    <span class="doccomment">/// `/foo/{bar}/baz/{boom}`,</span>
-    <span class="doccomment">/// associated with the API gateway request. No path parameters</span>
-    <span class="doccomment">/// will yield an empty `QueryMap`</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// These will always be empty for ALB triggered requests</span>
-    <span class="kw">fn</span> <span class="ident">path_parameters</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">QueryMap</span>;
+    <span class="doccomment">/// Return pre-extracted path parameters, parameter provided in url placeholders
+    /// `/foo/{bar}/baz/{boom}`,
+    /// associated with the API gateway request. No path parameters
+    /// will yield an empty `QueryMap`
+    ///
+    /// These will always be empty for ALB triggered requests
+    </span><span class="kw">fn </span>path_parameters(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; QueryMap;
 
-    <span class="doccomment">/// Configures instance with path parameters</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This is intended for use in mock testing contexts.</span>
-    <span class="kw">fn</span> <span class="ident">with_path_parameters</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">parameters</span>: <span class="ident">P</span>) -&gt; <span class="self">Self</span>
-    <span class="kw">where</span>
-        <span class="ident">P</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">QueryMap</span><span class="op">&gt;</span>;
+    <span class="doccomment">/// Configures instance with path parameters
+    ///
+    /// This is intended for use in mock testing contexts.
+    </span><span class="kw">fn </span>with_path_parameters&lt;P&gt;(<span class="self">self</span>, parameters: P) -&gt; <span class="self">Self
+    </span><span class="kw">where
+        </span>P: Into&lt;QueryMap&gt;;
 
-    <span class="doccomment">/// Return [stage variables](https://docs.aws.amazon.com/apigateway/latest/developerguide/stage-variables.html)</span>
-    <span class="doccomment">/// associated with the API gateway request. No stage parameters</span>
-    <span class="doccomment">/// will yield an empty `QueryMap`</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// These will always be empty for ALB triggered requests</span>
-    <span class="kw">fn</span> <span class="ident">stage_variables</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">QueryMap</span>;
+    <span class="doccomment">/// Return [stage variables](https://docs.aws.amazon.com/apigateway/latest/developerguide/stage-variables.html)
+    /// associated with the API gateway request. No stage parameters
+    /// will yield an empty `QueryMap`
+    ///
+    /// These will always be empty for ALB triggered requests
+    </span><span class="kw">fn </span>stage_variables(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; QueryMap;
 
-    <span class="doccomment">/// Configures instance with stage variables under #[cfg(test)] configurations</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This is intended for use in mock testing contexts.</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">with_stage_variables</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">variables</span>: <span class="ident">V</span>) -&gt; <span class="self">Self</span>
-    <span class="kw">where</span>
-        <span class="ident">V</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">QueryMap</span><span class="op">&gt;</span>;
+    <span class="doccomment">/// Configures instance with stage variables under #[cfg(test)] configurations
+    ///
+    /// This is intended for use in mock testing contexts.
+    </span><span class="attribute">#[cfg(test)]
+    </span><span class="kw">fn </span>with_stage_variables&lt;V&gt;(<span class="self">self</span>, variables: V) -&gt; <span class="self">Self
+    </span><span class="kw">where
+        </span>V: Into&lt;QueryMap&gt;;
 
-    <span class="doccomment">/// Return request context data associated with the ALB or API gateway request</span>
-    <span class="kw">fn</span> <span class="ident">request_context</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">RequestContext</span>;
+    <span class="doccomment">/// Return request context data associated with the ALB or API gateway request
+    </span><span class="kw">fn </span>request_context(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; RequestContext;
 
-    <span class="doccomment">/// Configures instance with request context</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This is intended for use in mock testing contexts.</span>
-    <span class="kw">fn</span> <span class="ident">with_request_context</span>(<span class="self">self</span>, <span class="ident">context</span>: <span class="ident">RequestContext</span>) -&gt; <span class="self">Self</span>;
+    <span class="doccomment">/// Configures instance with request context
+    ///
+    /// This is intended for use in mock testing contexts.
+    </span><span class="kw">fn </span>with_request_context(<span class="self">self</span>, context: RequestContext) -&gt; <span class="self">Self</span>;
 
-    <span class="doccomment">/// Return the Result of a payload parsed into a serde Deserializeable</span>
-    <span class="doccomment">/// type</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Currently only `application/x-www-form-urlencoded`</span>
-    <span class="doccomment">/// and `application/json` flavors of content type</span>
-    <span class="doccomment">/// are supported</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// A [PayloadError](enum.PayloadError.html) will be returned for undeserializable</span>
-    <span class="doccomment">/// payloads. If no body is provided, `Ok(None)` will be returned.</span>
-    <span class="kw">fn</span> <span class="ident">payload</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>, <span class="ident">PayloadError</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">D</span>: <span class="ident">Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>;
+    <span class="doccomment">/// Return the Result of a payload parsed into a serde Deserializeable
+    /// type
+    ///
+    /// Currently only `application/x-www-form-urlencoded`
+    /// and `application/json` flavors of content type
+    /// are supported
+    ///
+    /// A [PayloadError](enum.PayloadError.html) will be returned for undeserializable
+    /// payloads. If no body is provided, `Ok(None)` will be returned.
+    </span><span class="kw">fn </span>payload&lt;D&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;D&gt;, PayloadError&gt;
+    <span class="kw">where
+        for</span>&lt;<span class="lifetime">&#39;de</span>&gt; D: Deserialize&lt;<span class="lifetime">&#39;de</span>&gt;;
 
-    <span class="doccomment">/// Return the Lambda function context associated with the request</span>
-    <span class="kw">fn</span> <span class="ident">lambda_context</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Context</span>;
+    <span class="doccomment">/// Return the Lambda function context associated with the request
+    </span><span class="kw">fn </span>lambda_context(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Context;
 
-    <span class="doccomment">/// Configures instance with lambda context</span>
-    <span class="kw">fn</span> <span class="ident">with_lambda_context</span>(<span class="self">self</span>, <span class="ident">context</span>: <span class="ident">Context</span>) -&gt; <span class="self">Self</span>;
+    <span class="doccomment">/// Configures instance with lambda context
+    </span><span class="kw">fn </span>with_lambda_context(<span class="self">self</span>, context: Context) -&gt; <span class="self">Self</span>;
 }
 
-<span class="kw">impl</span> <span class="ident">RequestExt</span> <span class="kw">for</span> <span class="ident">http::Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">raw_http_path</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
-        <span class="self">self</span>.<span class="ident">extensions</span>()
-            .<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">RawHttpPath</span><span class="op">&gt;</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">ext</span><span class="op">|</span> <span class="ident">ext</span>.<span class="number">0</span>.<span class="ident">clone</span>())
-            .<span class="ident">unwrap_or_default</span>()
+<span class="kw">impl </span>RequestExt <span class="kw">for </span>http::Request&lt;Body&gt; {
+    <span class="kw">fn </span>raw_http_path(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+        <span class="self">self</span>.extensions()
+            .get::&lt;RawHttpPath&gt;()
+            .map(|ext| ext.<span class="number">0</span>.clone())
+            .unwrap_or_default()
     }
 
-    <span class="kw">fn</span> <span class="ident">with_raw_http_path</span>(<span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="self">self</span>;
-        <span class="ident">s</span>.<span class="ident">extensions_mut</span>().<span class="ident">insert</span>(<span class="ident">RawHttpPath</span>(<span class="ident">path</span>.<span class="ident">into</span>()));
-        <span class="ident">s</span>
+    <span class="kw">fn </span>with_raw_http_path(<span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span><span class="kw-2">mut </span>s = <span class="self">self</span>;
+        s.extensions_mut().insert(RawHttpPath(path.into()));
+        s
     }
 
-    <span class="kw">fn</span> <span class="ident">query_string_parameters</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">QueryMap</span> {
-        <span class="self">self</span>.<span class="ident">extensions</span>()
-            .<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">QueryStringParameters</span><span class="op">&gt;</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">ext</span><span class="op">|</span> <span class="ident">ext</span>.<span class="number">0</span>.<span class="ident">clone</span>())
-            .<span class="ident">unwrap_or_default</span>()
+    <span class="kw">fn </span>query_string_parameters(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; QueryMap {
+        <span class="self">self</span>.extensions()
+            .get::&lt;QueryStringParameters&gt;()
+            .map(|ext| ext.<span class="number">0</span>.clone())
+            .unwrap_or_default()
     }
 
-    <span class="kw">fn</span> <span class="ident">with_query_string_parameters</span><span class="op">&lt;</span><span class="ident">Q</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">parameters</span>: <span class="ident">Q</span>) -&gt; <span class="self">Self</span>
-    <span class="kw">where</span>
-        <span class="ident">Q</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">QueryMap</span><span class="op">&gt;</span>,
+    <span class="kw">fn </span>with_query_string_parameters&lt;Q&gt;(<span class="self">self</span>, parameters: Q) -&gt; <span class="self">Self
+    </span><span class="kw">where
+        </span>Q: Into&lt;QueryMap&gt;,
     {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="self">self</span>;
-        <span class="ident">s</span>.<span class="ident">extensions_mut</span>().<span class="ident">insert</span>(<span class="ident">QueryStringParameters</span>(<span class="ident">parameters</span>.<span class="ident">into</span>()));
-        <span class="ident">s</span>
+        <span class="kw">let </span><span class="kw-2">mut </span>s = <span class="self">self</span>;
+        s.extensions_mut().insert(QueryStringParameters(parameters.into()));
+        s
     }
 
-    <span class="kw">fn</span> <span class="ident">path_parameters</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">QueryMap</span> {
-        <span class="self">self</span>.<span class="ident">extensions</span>()
-            .<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">PathParameters</span><span class="op">&gt;</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">ext</span><span class="op">|</span> <span class="ident">ext</span>.<span class="number">0</span>.<span class="ident">clone</span>())
-            .<span class="ident">unwrap_or_default</span>()
+    <span class="kw">fn </span>path_parameters(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; QueryMap {
+        <span class="self">self</span>.extensions()
+            .get::&lt;PathParameters&gt;()
+            .map(|ext| ext.<span class="number">0</span>.clone())
+            .unwrap_or_default()
     }
 
-    <span class="kw">fn</span> <span class="ident">with_path_parameters</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">parameters</span>: <span class="ident">P</span>) -&gt; <span class="self">Self</span>
-    <span class="kw">where</span>
-        <span class="ident">P</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">QueryMap</span><span class="op">&gt;</span>,
+    <span class="kw">fn </span>with_path_parameters&lt;P&gt;(<span class="self">self</span>, parameters: P) -&gt; <span class="self">Self
+    </span><span class="kw">where
+        </span>P: Into&lt;QueryMap&gt;,
     {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="self">self</span>;
-        <span class="ident">s</span>.<span class="ident">extensions_mut</span>().<span class="ident">insert</span>(<span class="ident">PathParameters</span>(<span class="ident">parameters</span>.<span class="ident">into</span>()));
-        <span class="ident">s</span>
+        <span class="kw">let </span><span class="kw-2">mut </span>s = <span class="self">self</span>;
+        s.extensions_mut().insert(PathParameters(parameters.into()));
+        s
     }
 
-    <span class="kw">fn</span> <span class="ident">stage_variables</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">QueryMap</span> {
-        <span class="self">self</span>.<span class="ident">extensions</span>()
-            .<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">StageVariables</span><span class="op">&gt;</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">ext</span><span class="op">|</span> <span class="ident">ext</span>.<span class="number">0</span>.<span class="ident">clone</span>())
-            .<span class="ident">unwrap_or_default</span>()
+    <span class="kw">fn </span>stage_variables(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; QueryMap {
+        <span class="self">self</span>.extensions()
+            .get::&lt;StageVariables&gt;()
+            .map(|ext| ext.<span class="number">0</span>.clone())
+            .unwrap_or_default()
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">with_stage_variables</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">variables</span>: <span class="ident">V</span>) -&gt; <span class="self">Self</span>
-    <span class="kw">where</span>
-        <span class="ident">V</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">QueryMap</span><span class="op">&gt;</span>,
+    <span class="attribute">#[cfg(test)]
+    </span><span class="kw">fn </span>with_stage_variables&lt;V&gt;(<span class="self">self</span>, variables: V) -&gt; <span class="self">Self
+    </span><span class="kw">where
+        </span>V: Into&lt;QueryMap&gt;,
     {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="self">self</span>;
-        <span class="ident">s</span>.<span class="ident">extensions_mut</span>().<span class="ident">insert</span>(<span class="ident">StageVariables</span>(<span class="ident">variables</span>.<span class="ident">into</span>()));
-        <span class="ident">s</span>
+        <span class="kw">let </span><span class="kw-2">mut </span>s = <span class="self">self</span>;
+        s.extensions_mut().insert(StageVariables(variables.into()));
+        s
     }
 
-    <span class="kw">fn</span> <span class="ident">request_context</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">RequestContext</span> {
-        <span class="self">self</span>.<span class="ident">extensions</span>()
-            .<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">RequestContext</span><span class="op">&gt;</span>()
-            .<span class="ident">cloned</span>()
-            .<span class="ident">expect</span>(<span class="string">&quot;Request did not contain a request context&quot;</span>)
+    <span class="kw">fn </span>request_context(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; RequestContext {
+        <span class="self">self</span>.extensions()
+            .get::&lt;RequestContext&gt;()
+            .cloned()
+            .expect(<span class="string">&quot;Request did not contain a request context&quot;</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">with_request_context</span>(<span class="self">self</span>, <span class="ident">context</span>: <span class="ident">RequestContext</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="self">self</span>;
-        <span class="ident">s</span>.<span class="ident">extensions_mut</span>().<span class="ident">insert</span>(<span class="ident">context</span>);
-        <span class="ident">s</span>
+    <span class="kw">fn </span>with_request_context(<span class="self">self</span>, context: RequestContext) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span><span class="kw-2">mut </span>s = <span class="self">self</span>;
+        s.extensions_mut().insert(context);
+        s
     }
 
-    <span class="kw">fn</span> <span class="ident">lambda_context</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Context</span> {
-        <span class="self">self</span>.<span class="ident">extensions</span>()
-            .<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">Context</span><span class="op">&gt;</span>()
-            .<span class="ident">cloned</span>()
-            .<span class="ident">expect</span>(<span class="string">&quot;Request did not contain a lambda context&quot;</span>)
+    <span class="kw">fn </span>lambda_context(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Context {
+        <span class="self">self</span>.extensions()
+            .get::&lt;Context&gt;()
+            .cloned()
+            .expect(<span class="string">&quot;Request did not contain a lambda context&quot;</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">with_lambda_context</span>(<span class="self">self</span>, <span class="ident">context</span>: <span class="ident">Context</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="self">self</span>;
-        <span class="ident">s</span>.<span class="ident">extensions_mut</span>().<span class="ident">insert</span>(<span class="ident">context</span>);
-        <span class="ident">s</span>
+    <span class="kw">fn </span>with_lambda_context(<span class="self">self</span>, context: Context) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span><span class="kw-2">mut </span>s = <span class="self">self</span>;
+        s.extensions_mut().insert(context);
+        s
     }
 
-    <span class="kw">fn</span> <span class="ident">payload</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>, <span class="ident">PayloadError</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">D</span>: <span class="ident">Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
+    <span class="kw">fn </span>payload&lt;D&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;D&gt;, PayloadError&gt;
+    <span class="kw">where
+        for</span>&lt;<span class="lifetime">&#39;de</span>&gt; D: Deserialize&lt;<span class="lifetime">&#39;de</span>&gt;,
     {
-        <span class="self">self</span>.<span class="ident">headers</span>()
-            .<span class="ident">get</span>(<span class="ident">http::header::CONTENT_TYPE</span>)
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">ct</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">ct</span>.<span class="ident">to_str</span>() {
-                <span class="prelude-val">Ok</span>(<span class="ident">content_type</span>) =&gt; {
-                    <span class="kw">if</span> <span class="ident">content_type</span>.<span class="ident">starts_with</span>(<span class="string">&quot;application/x-www-form-urlencoded&quot;</span>) {
-                        <span class="kw">return</span> <span class="ident">serde_urlencoded::from_bytes</span>::<span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="self">self</span>.<span class="ident">body</span>().<span class="ident">as_ref</span>())
-                            .<span class="ident">map_err</span>(<span class="ident">PayloadError::WwwFormUrlEncoded</span>)
-                            .<span class="ident">map</span>(<span class="prelude-val">Some</span>);
-                    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">content_type</span>.<span class="ident">starts_with</span>(<span class="string">&quot;application/json&quot;</span>) {
-                        <span class="kw">return</span> <span class="ident">serde_json::from_slice</span>::<span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="self">self</span>.<span class="ident">body</span>().<span class="ident">as_ref</span>())
-                            .<span class="ident">map_err</span>(<span class="ident">PayloadError::Json</span>)
-                            .<span class="ident">map</span>(<span class="prelude-val">Some</span>);
+        <span class="self">self</span>.headers()
+            .get(http::header::CONTENT_TYPE)
+            .map(|ct| <span class="kw">match </span>ct.to_str() {
+                <span class="prelude-val">Ok</span>(content_type) =&gt; {
+                    <span class="kw">if </span>content_type.starts_with(<span class="string">&quot;application/x-www-form-urlencoded&quot;</span>) {
+                        <span class="kw">return </span>serde_urlencoded::from_bytes::&lt;D&gt;(<span class="self">self</span>.body().as_ref())
+                            .map_err(PayloadError::WwwFormUrlEncoded)
+                            .map(<span class="prelude-val">Some</span>);
+                    } <span class="kw">else if </span>content_type.starts_with(<span class="string">&quot;application/json&quot;</span>) {
+                        <span class="kw">return </span>serde_json::from_slice::&lt;D&gt;(<span class="self">self</span>.body().as_ref())
+                            .map_err(PayloadError::Json)
+                            .map(<span class="prelude-val">Some</span>);
                     }
 
                     <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
                 }
-                <span class="kw">_</span> =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+                <span class="kw">_ </span>=&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
             })
-            .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>))
+            .unwrap_or_else(|| <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>))
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Body</span>, <span class="ident">Request</span>, <span class="ident">RequestExt</span>};
-    <span class="kw">use</span> <span class="ident">serde::Deserialize</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use crate</span>::{Body, Request, RequestExt};
+    <span class="kw">use </span>serde::Deserialize;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">requests_can_mock_query_string_parameters_ext</span>() {
-        <span class="kw">let</span> <span class="ident">mocked</span> <span class="op">=</span> <span class="macro">hashmap!</span> {
-            <span class="string">&quot;foo&quot;</span>.<span class="ident">into</span>() =&gt; <span class="macro">vec!</span>[<span class="string">&quot;bar&quot;</span>.<span class="ident">into</span>()]
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>requests_can_mock_query_string_parameters_ext() {
+        <span class="kw">let </span>mocked = <span class="macro">hashmap! </span>{
+            <span class="string">&quot;foo&quot;</span>.into() =&gt; <span class="macro">vec!</span>[<span class="string">&quot;bar&quot;</span>.into()]
         };
-        <span class="kw">let</span> <span class="ident">request</span> <span class="op">=</span> <span class="ident">Request::default</span>().<span class="ident">with_query_string_parameters</span>(<span class="ident">mocked</span>.<span class="ident">clone</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">request</span>.<span class="ident">query_string_parameters</span>(), <span class="ident">mocked</span>.<span class="ident">into</span>());
+        <span class="kw">let </span>request = Request::default().with_query_string_parameters(mocked.clone());
+        <span class="macro">assert_eq!</span>(request.query_string_parameters(), mocked.into());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">requests_can_mock_path_parameters_ext</span>() {
-        <span class="kw">let</span> <span class="ident">mocked</span> <span class="op">=</span> <span class="macro">hashmap!</span> {
-            <span class="string">&quot;foo&quot;</span>.<span class="ident">into</span>() =&gt; <span class="macro">vec!</span>[<span class="string">&quot;bar&quot;</span>.<span class="ident">into</span>()]
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>requests_can_mock_path_parameters_ext() {
+        <span class="kw">let </span>mocked = <span class="macro">hashmap! </span>{
+            <span class="string">&quot;foo&quot;</span>.into() =&gt; <span class="macro">vec!</span>[<span class="string">&quot;bar&quot;</span>.into()]
         };
-        <span class="kw">let</span> <span class="ident">request</span> <span class="op">=</span> <span class="ident">Request::default</span>().<span class="ident">with_path_parameters</span>(<span class="ident">mocked</span>.<span class="ident">clone</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">request</span>.<span class="ident">path_parameters</span>(), <span class="ident">mocked</span>.<span class="ident">into</span>());
+        <span class="kw">let </span>request = Request::default().with_path_parameters(mocked.clone());
+        <span class="macro">assert_eq!</span>(request.path_parameters(), mocked.into());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">requests_can_mock_stage_variables_ext</span>() {
-        <span class="kw">let</span> <span class="ident">mocked</span> <span class="op">=</span> <span class="macro">hashmap!</span> {
-            <span class="string">&quot;foo&quot;</span>.<span class="ident">into</span>() =&gt; <span class="macro">vec!</span>[<span class="string">&quot;bar&quot;</span>.<span class="ident">into</span>()]
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>requests_can_mock_stage_variables_ext() {
+        <span class="kw">let </span>mocked = <span class="macro">hashmap! </span>{
+            <span class="string">&quot;foo&quot;</span>.into() =&gt; <span class="macro">vec!</span>[<span class="string">&quot;bar&quot;</span>.into()]
         };
-        <span class="kw">let</span> <span class="ident">request</span> <span class="op">=</span> <span class="ident">Request::default</span>().<span class="ident">with_stage_variables</span>(<span class="ident">mocked</span>.<span class="ident">clone</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">request</span>.<span class="ident">stage_variables</span>(), <span class="ident">mocked</span>.<span class="ident">into</span>());
+        <span class="kw">let </span>request = Request::default().with_stage_variables(mocked.clone());
+        <span class="macro">assert_eq!</span>(request.stage_variables(), mocked.into());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">requests_have_form_post_parsable_payloads</span>() {
-        <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
-        <span class="kw">struct</span> <span class="ident">Payload</span> {
-            <span class="ident">foo</span>: <span class="ident">String</span>,
-            <span class="ident">baz</span>: <span class="ident">usize</span>,
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>requests_have_form_post_parsable_payloads() {
+        <span class="attribute">#[derive(Deserialize, Eq, PartialEq, Debug)]
+        </span><span class="kw">struct </span>Payload {
+            foo: String,
+            baz: usize,
         }
-        <span class="kw">let</span> <span class="ident">request</span> <span class="op">=</span> <span class="ident">http::Request::builder</span>()
-            .<span class="ident">header</span>(<span class="string">&quot;Content-Type&quot;</span>, <span class="string">&quot;application/x-www-form-urlencoded&quot;</span>)
-            .<span class="ident">body</span>(<span class="ident">Body::from</span>(<span class="string">&quot;foo=bar&amp;baz=2&quot;</span>))
-            .<span class="ident">expect</span>(<span class="string">&quot;failed to build request&quot;</span>);
-        <span class="kw">let</span> <span class="ident">payload</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Payload</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">payload</span>().<span class="ident">unwrap_or_default</span>();
+        <span class="kw">let </span>request = http::Request::builder()
+            .header(<span class="string">&quot;Content-Type&quot;</span>, <span class="string">&quot;application/x-www-form-urlencoded&quot;</span>)
+            .body(Body::from(<span class="string">&quot;foo=bar&amp;baz=2&quot;</span>))
+            .expect(<span class="string">&quot;failed to build request&quot;</span>);
+        <span class="kw">let </span>payload: <span class="prelude-ty">Option</span>&lt;Payload&gt; = request.payload().unwrap_or_default();
         <span class="macro">assert_eq!</span>(
-            <span class="ident">payload</span>,
-            <span class="prelude-val">Some</span>(<span class="ident">Payload</span> {
-                <span class="ident">foo</span>: <span class="string">&quot;bar&quot;</span>.<span class="ident">into</span>(),
-                <span class="ident">baz</span>: <span class="number">2</span>
-            })
+            payload,
+            <span class="prelude-val">Some</span>(Payload {
+                foo: <span class="string">&quot;bar&quot;</span>.into(),
+                baz: <span class="number">2
+            </span>})
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">requests_have_json_parseable_payloads</span>() {
-        <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
-        <span class="kw">struct</span> <span class="ident">Payload</span> {
-            <span class="ident">foo</span>: <span class="ident">String</span>,
-            <span class="ident">baz</span>: <span class="ident">usize</span>,
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>requests_have_json_parseable_payloads() {
+        <span class="attribute">#[derive(Deserialize, Eq, PartialEq, Debug)]
+        </span><span class="kw">struct </span>Payload {
+            foo: String,
+            baz: usize,
         }
-        <span class="kw">let</span> <span class="ident">request</span> <span class="op">=</span> <span class="ident">http::Request::builder</span>()
-            .<span class="ident">header</span>(<span class="string">&quot;Content-Type&quot;</span>, <span class="string">&quot;application/json&quot;</span>)
-            .<span class="ident">body</span>(<span class="ident">Body::from</span>(<span class="string">r#&quot;{&quot;foo&quot;:&quot;bar&quot;, &quot;baz&quot;: 2}&quot;#</span>))
-            .<span class="ident">expect</span>(<span class="string">&quot;failed to build request&quot;</span>);
-        <span class="kw">let</span> <span class="ident">payload</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Payload</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">payload</span>().<span class="ident">unwrap_or_default</span>();
+        <span class="kw">let </span>request = http::Request::builder()
+            .header(<span class="string">&quot;Content-Type&quot;</span>, <span class="string">&quot;application/json&quot;</span>)
+            .body(Body::from(<span class="string">r#&quot;{&quot;foo&quot;:&quot;bar&quot;, &quot;baz&quot;: 2}&quot;#</span>))
+            .expect(<span class="string">&quot;failed to build request&quot;</span>);
+        <span class="kw">let </span>payload: <span class="prelude-ty">Option</span>&lt;Payload&gt; = request.payload().unwrap_or_default();
         <span class="macro">assert_eq!</span>(
-            <span class="ident">payload</span>,
-            <span class="prelude-val">Some</span>(<span class="ident">Payload</span> {
-                <span class="ident">foo</span>: <span class="string">&quot;bar&quot;</span>.<span class="ident">into</span>(),
-                <span class="ident">baz</span>: <span class="number">2</span>
-            })
+            payload,
+            <span class="prelude-val">Some</span>(Payload {
+                foo: <span class="string">&quot;bar&quot;</span>.into(),
+                baz: <span class="number">2
+            </span>})
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">requests_match_form_post_content_type_with_charset</span>() {
-        <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
-        <span class="kw">struct</span> <span class="ident">Payload</span> {
-            <span class="ident">foo</span>: <span class="ident">String</span>,
-            <span class="ident">baz</span>: <span class="ident">usize</span>,
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>requests_match_form_post_content_type_with_charset() {
+        <span class="attribute">#[derive(Deserialize, Eq, PartialEq, Debug)]
+        </span><span class="kw">struct </span>Payload {
+            foo: String,
+            baz: usize,
         }
-        <span class="kw">let</span> <span class="ident">request</span> <span class="op">=</span> <span class="ident">http::Request::builder</span>()
-            .<span class="ident">header</span>(<span class="string">&quot;Content-Type&quot;</span>, <span class="string">&quot;application/x-www-form-urlencoded; charset=UTF-8&quot;</span>)
-            .<span class="ident">body</span>(<span class="ident">Body::from</span>(<span class="string">&quot;foo=bar&amp;baz=2&quot;</span>))
-            .<span class="ident">expect</span>(<span class="string">&quot;failed to build request&quot;</span>);
-        <span class="kw">let</span> <span class="ident">payload</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Payload</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">payload</span>().<span class="ident">unwrap_or_default</span>();
+        <span class="kw">let </span>request = http::Request::builder()
+            .header(<span class="string">&quot;Content-Type&quot;</span>, <span class="string">&quot;application/x-www-form-urlencoded; charset=UTF-8&quot;</span>)
+            .body(Body::from(<span class="string">&quot;foo=bar&amp;baz=2&quot;</span>))
+            .expect(<span class="string">&quot;failed to build request&quot;</span>);
+        <span class="kw">let </span>payload: <span class="prelude-ty">Option</span>&lt;Payload&gt; = request.payload().unwrap_or_default();
         <span class="macro">assert_eq!</span>(
-            <span class="ident">payload</span>,
-            <span class="prelude-val">Some</span>(<span class="ident">Payload</span> {
-                <span class="ident">foo</span>: <span class="string">&quot;bar&quot;</span>.<span class="ident">into</span>(),
-                <span class="ident">baz</span>: <span class="number">2</span>
-            })
+            payload,
+            <span class="prelude-val">Some</span>(Payload {
+                foo: <span class="string">&quot;bar&quot;</span>.into(),
+                baz: <span class="number">2
+            </span>})
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">requests_match_json_content_type_with_charset</span>() {
-        <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
-        <span class="kw">struct</span> <span class="ident">Payload</span> {
-            <span class="ident">foo</span>: <span class="ident">String</span>,
-            <span class="ident">baz</span>: <span class="ident">usize</span>,
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>requests_match_json_content_type_with_charset() {
+        <span class="attribute">#[derive(Deserialize, Eq, PartialEq, Debug)]
+        </span><span class="kw">struct </span>Payload {
+            foo: String,
+            baz: usize,
         }
-        <span class="kw">let</span> <span class="ident">request</span> <span class="op">=</span> <span class="ident">http::Request::builder</span>()
-            .<span class="ident">header</span>(<span class="string">&quot;Content-Type&quot;</span>, <span class="string">&quot;application/json; charset=UTF-8&quot;</span>)
-            .<span class="ident">body</span>(<span class="ident">Body::from</span>(<span class="string">r#&quot;{&quot;foo&quot;:&quot;bar&quot;, &quot;baz&quot;: 2}&quot;#</span>))
-            .<span class="ident">expect</span>(<span class="string">&quot;failed to build request&quot;</span>);
-        <span class="kw">let</span> <span class="ident">payload</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Payload</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">payload</span>().<span class="ident">unwrap_or_default</span>();
+        <span class="kw">let </span>request = http::Request::builder()
+            .header(<span class="string">&quot;Content-Type&quot;</span>, <span class="string">&quot;application/json; charset=UTF-8&quot;</span>)
+            .body(Body::from(<span class="string">r#&quot;{&quot;foo&quot;:&quot;bar&quot;, &quot;baz&quot;: 2}&quot;#</span>))
+            .expect(<span class="string">&quot;failed to build request&quot;</span>);
+        <span class="kw">let </span>payload: <span class="prelude-ty">Option</span>&lt;Payload&gt; = request.payload().unwrap_or_default();
         <span class="macro">assert_eq!</span>(
-            <span class="ident">payload</span>,
-            <span class="prelude-val">Some</span>(<span class="ident">Payload</span> {
-                <span class="ident">foo</span>: <span class="string">&quot;bar&quot;</span>.<span class="ident">into</span>(),
-                <span class="ident">baz</span>: <span class="number">2</span>
-            })
+            payload,
+            <span class="prelude-val">Some</span>(Payload {
+                foo: <span class="string">&quot;bar&quot;</span>.into(),
+                baz: <span class="number">2
+            </span>})
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">requests_omiting_content_types_do_not_support_parseable_payloads</span>() {
-        <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
-        <span class="kw">struct</span> <span class="ident">Payload</span> {
-            <span class="ident">foo</span>: <span class="ident">String</span>,
-            <span class="ident">baz</span>: <span class="ident">usize</span>,
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>requests_omiting_content_types_do_not_support_parseable_payloads() {
+        <span class="attribute">#[derive(Deserialize, Eq, PartialEq, Debug)]
+        </span><span class="kw">struct </span>Payload {
+            foo: String,
+            baz: usize,
         }
-        <span class="kw">let</span> <span class="ident">request</span> <span class="op">=</span> <span class="ident">http::Request::builder</span>()
-            .<span class="ident">body</span>(<span class="ident">Body::from</span>(<span class="string">r#&quot;{&quot;foo&quot;:&quot;bar&quot;, &quot;baz&quot;: 2}&quot;#</span>))
-            .<span class="ident">expect</span>(<span class="string">&quot;failed to bulid request&quot;</span>);
-        <span class="kw">let</span> <span class="ident">payload</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Payload</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">payload</span>().<span class="ident">unwrap_or_default</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">payload</span>, <span class="prelude-val">None</span>);
+        <span class="kw">let </span>request = http::Request::builder()
+            .body(Body::from(<span class="string">r#&quot;{&quot;foo&quot;:&quot;bar&quot;, &quot;baz&quot;: 2}&quot;#</span>))
+            .expect(<span class="string">&quot;failed to bulid request&quot;</span>);
+        <span class="kw">let </span>payload: <span class="prelude-ty">Option</span>&lt;Payload&gt; = request.payload().unwrap_or_default();
+        <span class="macro">assert_eq!</span>(payload, <span class="prelude-val">None</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">requests_can_mock_raw_http_path_ext</span>() {
-        <span class="kw">let</span> <span class="ident">request</span> <span class="op">=</span> <span class="ident">Request::default</span>().<span class="ident">with_raw_http_path</span>(<span class="string">&quot;/raw-path&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;/raw-path&quot;</span>, <span class="ident">request</span>.<span class="ident">raw_http_path</span>().<span class="ident">as_str</span>());
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>requests_can_mock_raw_http_path_ext() {
+        <span class="kw">let </span>request = Request::default().with_raw_http_path(<span class="string">&quot;/raw-path&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="string">&quot;/raw-path&quot;</span>, request.raw_http_path().as_str());
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lambda_http" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lambda_http" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

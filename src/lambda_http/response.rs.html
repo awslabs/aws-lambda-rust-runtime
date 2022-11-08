@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lambda-http/src/response.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>response.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../lambda_http/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../lambda_http/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../lambda_http/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lambda-http/src/response.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>response.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../lambda_http/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../lambda_http/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../lambda_http/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -494,34 +494,34 @@
 <span id="494">494</span>
 <span id="495">495</span>
 <span id="496">496</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Response types</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Response types
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::request::RequestOrigin</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;alb&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">aws_lambda_events::alb::AlbTargetGroupResponse</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_rest&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_websockets&quot;</span>))]</span>
-<span class="kw">use</span> <span class="ident">aws_lambda_events::apigw::ApiGatewayProxyResponse</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_http&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">aws_lambda_events::apigw::ApiGatewayV2httpResponse</span>;
-<span class="kw">use</span> <span class="ident">aws_lambda_events::encodings::Body</span>;
-<span class="kw">use</span> <span class="ident">encoding_rs::Encoding</span>;
-<span class="kw">use</span> <span class="ident">http::header::CONTENT_ENCODING</span>;
-<span class="kw">use</span> <span class="ident">http::HeaderMap</span>;
-<span class="kw">use</span> <span class="ident">http</span>::{<span class="ident">header::CONTENT_TYPE</span>, <span class="ident">Response</span>};
-<span class="kw">use</span> <span class="ident">http_body::Body</span> <span class="kw">as</span> <span class="ident">HttpBody</span>;
-<span class="kw">use</span> <span class="ident">hyper::body::to_bytes</span>;
-<span class="kw">use</span> <span class="ident">mime</span>::{<span class="ident">Mime</span>, <span class="ident">CHARSET</span>};
-<span class="kw">use</span> <span class="ident">serde::Serialize</span>;
-<span class="kw">use</span> <span class="ident">std::borrow::Cow</span>;
-<span class="kw">use</span> <span class="ident">std::future::ready</span>;
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">fmt</span>, <span class="ident">future::Future</span>, <span class="ident">pin::Pin</span>};
+</span><span class="kw">use </span><span class="kw">crate</span>::request::RequestOrigin;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;alb&quot;</span>)]
+</span><span class="kw">use </span>aws_lambda_events::alb::AlbTargetGroupResponse;
+<span class="attribute">#[cfg(any(feature = <span class="string">&quot;apigw_rest&quot;</span>, feature = <span class="string">&quot;apigw_websockets&quot;</span>))]
+</span><span class="kw">use </span>aws_lambda_events::apigw::ApiGatewayProxyResponse;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;apigw_http&quot;</span>)]
+</span><span class="kw">use </span>aws_lambda_events::apigw::ApiGatewayV2httpResponse;
+<span class="kw">use </span>aws_lambda_events::encodings::Body;
+<span class="kw">use </span>encoding_rs::Encoding;
+<span class="kw">use </span>http::header::CONTENT_ENCODING;
+<span class="kw">use </span>http::HeaderMap;
+<span class="kw">use </span>http::{header::CONTENT_TYPE, Response};
+<span class="kw">use </span>http_body::Body <span class="kw">as </span>HttpBody;
+<span class="kw">use </span>hyper::body::to_bytes;
+<span class="kw">use </span>mime::{Mime, CHARSET};
+<span class="kw">use </span>serde::Serialize;
+<span class="kw">use </span>std::borrow::Cow;
+<span class="kw">use </span>std::future::ready;
+<span class="kw">use </span>std::{fmt, future::Future, pin::Pin};
 
-<span class="kw">const</span> <span class="ident">X_LAMBDA_HTTP_CONTENT_ENCODING</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;x-lambda-http-content-encoding&quot;</span>;
+<span class="kw">const </span>X_LAMBDA_HTTP_CONTENT_ENCODING: <span class="kw-2">&amp;</span>str = <span class="string">&quot;x-lambda-http-content-encoding&quot;</span>;
 
-<span class="comment">// See list of common MIME types:</span>
-<span class="comment">// - https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types</span>
-<span class="comment">// - https://github.com/ietf-wg-httpapi/mediatypes/blob/main/draft-ietf-httpapi-yaml-mediatypes.md</span>
-<span class="kw">const</span> <span class="ident">TEXT_ENCODING_PREFIXES</span>: [<span class="kw-2">&amp;</span><span class="ident">str</span>; <span class="number">5</span>] <span class="op">=</span> [
+<span class="comment">// See list of common MIME types:
+// - https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
+// - https://github.com/ietf-wg-httpapi/mediatypes/blob/main/draft-ietf-httpapi-yaml-mediatypes.md
+</span><span class="kw">const </span>TEXT_ENCODING_PREFIXES: [<span class="kw-2">&amp;</span>str; <span class="number">5</span>] = [
     <span class="string">&quot;text&quot;</span>,
     <span class="string">&quot;application/json&quot;</span>,
     <span class="string">&quot;application/javascript&quot;</span>,
@@ -529,466 +529,466 @@
     <span class="string">&quot;application/yaml&quot;</span>,
 ];
 
-<span class="kw">const</span> <span class="ident">TEXT_ENCODING_SUFFIXES</span>: [<span class="kw-2">&amp;</span><span class="ident">str</span>; <span class="number">3</span>] <span class="op">=</span> [<span class="string">&quot;+xml&quot;</span>, <span class="string">&quot;+yaml&quot;</span>, <span class="string">&quot;+json&quot;</span>];
+<span class="kw">const </span>TEXT_ENCODING_SUFFIXES: [<span class="kw-2">&amp;</span>str; <span class="number">3</span>] = [<span class="string">&quot;+xml&quot;</span>, <span class="string">&quot;+yaml&quot;</span>, <span class="string">&quot;+json&quot;</span>];
 
-<span class="doccomment">/// Representation of Lambda response</span>
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Debug</span>)]</span>
-<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">untagged</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">LambdaResponse</span> {
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_rest&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_websockets&quot;</span>))]</span>
-    <span class="ident">ApiGatewayV1</span>(<span class="ident">ApiGatewayProxyResponse</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_http&quot;</span>)]</span>
-    <span class="ident">ApiGatewayV2</span>(<span class="ident">ApiGatewayV2httpResponse</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;alb&quot;</span>)]</span>
-    <span class="ident">Alb</span>(<span class="ident">AlbTargetGroupResponse</span>),
+<span class="doccomment">/// Representation of Lambda response
+</span><span class="attribute">#[doc(hidden)]
+#[derive(Serialize, Debug)]
+#[serde(untagged)]
+</span><span class="kw">pub enum </span>LambdaResponse {
+    <span class="attribute">#[cfg(any(feature = <span class="string">&quot;apigw_rest&quot;</span>, feature = <span class="string">&quot;apigw_websockets&quot;</span>))]
+    </span>ApiGatewayV1(ApiGatewayProxyResponse),
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;apigw_http&quot;</span>)]
+    </span>ApiGatewayV2(ApiGatewayV2httpResponse),
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;alb&quot;</span>)]
+    </span>Alb(AlbTargetGroupResponse),
 }
 
-<span class="doccomment">/// Transformation from http type to internal type</span>
-<span class="kw">impl</span> <span class="ident">LambdaResponse</span> {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">from_response</span>(<span class="ident">request_origin</span>: <span class="kw-2">&amp;</span><span class="ident">RequestOrigin</span>, <span class="ident">value</span>: <span class="ident">Response</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> (<span class="ident">parts</span>, <span class="ident">bod</span>) <span class="op">=</span> <span class="ident">value</span>.<span class="ident">into_parts</span>();
-        <span class="kw">let</span> (<span class="ident">is_base64_encoded</span>, <span class="ident">body</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">bod</span> {
-            <span class="ident">Body::Empty</span> =&gt; (<span class="bool-val">false</span>, <span class="prelude-val">None</span>),
-            <span class="ident">b</span> @ <span class="ident">Body::Text</span>(<span class="kw">_</span>) =&gt; (<span class="bool-val">false</span>, <span class="prelude-val">Some</span>(<span class="ident">b</span>)),
-            <span class="ident">b</span> @ <span class="ident">Body::Binary</span>(<span class="kw">_</span>) =&gt; (<span class="bool-val">true</span>, <span class="prelude-val">Some</span>(<span class="ident">b</span>)),
+<span class="doccomment">/// Transformation from http type to internal type
+</span><span class="kw">impl </span>LambdaResponse {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>from_response(request_origin: <span class="kw-2">&amp;</span>RequestOrigin, value: Response&lt;Body&gt;) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>(parts, bod) = value.into_parts();
+        <span class="kw">let </span>(is_base64_encoded, body) = <span class="kw">match </span>bod {
+            Body::Empty =&gt; (<span class="bool-val">false</span>, <span class="prelude-val">None</span>),
+            b @ Body::Text(<span class="kw">_</span>) =&gt; (<span class="bool-val">false</span>, <span class="prelude-val">Some</span>(b)),
+            b @ Body::Binary(<span class="kw">_</span>) =&gt; (<span class="bool-val">true</span>, <span class="prelude-val">Some</span>(b)),
         };
 
-        <span class="kw">let</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">parts</span>.<span class="ident">headers</span>;
-        <span class="kw">let</span> <span class="ident">status_code</span> <span class="op">=</span> <span class="ident">parts</span>.<span class="ident">status</span>.<span class="ident">as_u16</span>();
+        <span class="kw">let </span>headers = parts.headers;
+        <span class="kw">let </span>status_code = parts.status.as_u16();
 
-        <span class="kw">match</span> <span class="ident">request_origin</span> {
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_rest&quot;</span>)]</span>
-            <span class="ident">RequestOrigin::ApiGatewayV1</span> =&gt; <span class="ident">LambdaResponse::ApiGatewayV1</span>(<span class="ident">ApiGatewayProxyResponse</span> {
-                <span class="ident">body</span>,
-                <span class="ident">status_code</span>: <span class="ident">status_code</span> <span class="kw">as</span> <span class="ident">i64</span>,
-                <span class="ident">is_base64_encoded</span>: <span class="prelude-val">Some</span>(<span class="ident">is_base64_encoded</span>),
-                <span class="ident">headers</span>: <span class="ident">headers</span>.<span class="ident">clone</span>(),
-                <span class="ident">multi_value_headers</span>: <span class="ident">headers</span>,
+        <span class="kw">match </span>request_origin {
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;apigw_rest&quot;</span>)]
+            </span>RequestOrigin::ApiGatewayV1 =&gt; LambdaResponse::ApiGatewayV1(ApiGatewayProxyResponse {
+                body,
+                status_code: status_code <span class="kw">as </span>i64,
+                is_base64_encoded: <span class="prelude-val">Some</span>(is_base64_encoded),
+                headers: headers.clone(),
+                multi_value_headers: headers,
             }),
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_http&quot;</span>)]</span>
-            <span class="ident">RequestOrigin::ApiGatewayV2</span> =&gt; {
-                <span class="kw">use</span> <span class="ident">http::header::SET_COOKIE</span>;
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">headers</span>;
-                <span class="comment">// ApiGatewayV2 expects the set-cookies headers to be in the &quot;cookies&quot; attribute,</span>
-                <span class="comment">// so remove them from the headers.</span>
-                <span class="kw">let</span> <span class="ident">cookies</span> <span class="op">=</span> <span class="ident">headers</span>
-                    .<span class="ident">get_all</span>(<span class="ident">SET_COOKIE</span>)
-                    .<span class="ident">iter</span>()
-                    .<span class="ident">cloned</span>()
-                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">to_str</span>().<span class="ident">ok</span>().<span class="ident">unwrap_or_default</span>().<span class="ident">to_string</span>())
-                    .<span class="ident">collect</span>();
-                <span class="ident">headers</span>.<span class="ident">remove</span>(<span class="ident">SET_COOKIE</span>);
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;apigw_http&quot;</span>)]
+            </span>RequestOrigin::ApiGatewayV2 =&gt; {
+                <span class="kw">use </span>http::header::SET_COOKIE;
+                <span class="kw">let </span><span class="kw-2">mut </span>headers = headers;
+                <span class="comment">// ApiGatewayV2 expects the set-cookies headers to be in the &quot;cookies&quot; attribute,
+                // so remove them from the headers.
+                </span><span class="kw">let </span>cookies = headers
+                    .get_all(SET_COOKIE)
+                    .iter()
+                    .cloned()
+                    .map(|v| v.to_str().ok().unwrap_or_default().to_string())
+                    .collect();
+                headers.remove(SET_COOKIE);
 
-                <span class="ident">LambdaResponse::ApiGatewayV2</span>(<span class="ident">ApiGatewayV2httpResponse</span> {
-                    <span class="ident">body</span>,
-                    <span class="ident">status_code</span>: <span class="ident">status_code</span> <span class="kw">as</span> <span class="ident">i64</span>,
-                    <span class="ident">is_base64_encoded</span>: <span class="prelude-val">Some</span>(<span class="ident">is_base64_encoded</span>),
-                    <span class="ident">cookies</span>,
-                    <span class="ident">headers</span>: <span class="ident">headers</span>.<span class="ident">clone</span>(),
-                    <span class="ident">multi_value_headers</span>: <span class="ident">headers</span>,
+                LambdaResponse::ApiGatewayV2(ApiGatewayV2httpResponse {
+                    body,
+                    status_code: status_code <span class="kw">as </span>i64,
+                    is_base64_encoded: <span class="prelude-val">Some</span>(is_base64_encoded),
+                    cookies,
+                    headers: headers.clone(),
+                    multi_value_headers: headers,
                 })
             }
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;alb&quot;</span>)]</span>
-            <span class="ident">RequestOrigin::Alb</span> =&gt; <span class="ident">LambdaResponse::Alb</span>(<span class="ident">AlbTargetGroupResponse</span> {
-                <span class="ident">body</span>,
-                <span class="ident">status_code</span>: <span class="ident">status_code</span> <span class="kw">as</span> <span class="ident">i64</span>,
-                <span class="ident">is_base64_encoded</span>,
-                <span class="ident">headers</span>: <span class="ident">headers</span>.<span class="ident">clone</span>(),
-                <span class="ident">multi_value_headers</span>: <span class="ident">headers</span>,
-                <span class="ident">status_description</span>: <span class="prelude-val">Some</span>(<span class="macro">format!</span>(
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;alb&quot;</span>)]
+            </span>RequestOrigin::Alb =&gt; LambdaResponse::Alb(AlbTargetGroupResponse {
+                body,
+                status_code: status_code <span class="kw">as </span>i64,
+                is_base64_encoded,
+                headers: headers.clone(),
+                multi_value_headers: headers,
+                status_description: <span class="prelude-val">Some</span>(<span class="macro">format!</span>(
                     <span class="string">&quot;{} {}&quot;</span>,
-                    <span class="ident">status_code</span>,
-                    <span class="ident">parts</span>.<span class="ident">status</span>.<span class="ident">canonical_reason</span>().<span class="ident">unwrap_or_default</span>()
+                    status_code,
+                    parts.status.canonical_reason().unwrap_or_default()
                 )),
             }),
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;apigw_websockets&quot;</span>)]</span>
-            <span class="ident">RequestOrigin::WebSocket</span> =&gt; <span class="ident">LambdaResponse::ApiGatewayV1</span>(<span class="ident">ApiGatewayProxyResponse</span> {
-                <span class="ident">body</span>,
-                <span class="ident">status_code</span>: <span class="ident">status_code</span> <span class="kw">as</span> <span class="ident">i64</span>,
-                <span class="ident">is_base64_encoded</span>: <span class="prelude-val">Some</span>(<span class="ident">is_base64_encoded</span>),
-                <span class="ident">headers</span>: <span class="ident">headers</span>.<span class="ident">clone</span>(),
-                <span class="ident">multi_value_headers</span>: <span class="ident">headers</span>,
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;apigw_websockets&quot;</span>)]
+            </span>RequestOrigin::WebSocket =&gt; LambdaResponse::ApiGatewayV1(ApiGatewayProxyResponse {
+                body,
+                status_code: status_code <span class="kw">as </span>i64,
+                is_base64_encoded: <span class="prelude-val">Some</span>(is_base64_encoded),
+                headers: headers.clone(),
+                multi_value_headers: headers,
             }),
         }
     }
 }
 
-<span class="doccomment">/// Trait for generating responses</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Types that implement this trait can be used as return types for handler functions.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">IntoResponse</span> {
-    <span class="doccomment">/// Transform into a Response&lt;Body&gt; Future</span>
-    <span class="kw">fn</span> <span class="ident">into_response</span>(<span class="self">self</span>) -&gt; <span class="ident">ResponseFuture</span>;
+<span class="doccomment">/// Trait for generating responses
+///
+/// Types that implement this trait can be used as return types for handler functions.
+</span><span class="kw">pub trait </span>IntoResponse {
+    <span class="doccomment">/// Transform into a Response&lt;Body&gt; Future
+    </span><span class="kw">fn </span>into_response(<span class="self">self</span>) -&gt; ResponseFuture;
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span> <span class="ident">IntoResponse</span> <span class="kw">for</span> <span class="ident">Response</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">B</span>: <span class="ident">ConvertBody</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
+<span class="kw">impl</span>&lt;B&gt; IntoResponse <span class="kw">for </span>Response&lt;B&gt;
+<span class="kw">where
+    </span>B: ConvertBody + Send + <span class="lifetime">&#39;static</span>,
 {
-    <span class="kw">fn</span> <span class="ident">into_response</span>(<span class="self">self</span>) -&gt; <span class="ident">ResponseFuture</span> {
-        <span class="kw">let</span> (<span class="ident">parts</span>, <span class="ident">body</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">into_parts</span>();
-        <span class="kw">let</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">parts</span>.<span class="ident">headers</span>.<span class="ident">clone</span>();
+    <span class="kw">fn </span>into_response(<span class="self">self</span>) -&gt; ResponseFuture {
+        <span class="kw">let </span>(parts, body) = <span class="self">self</span>.into_parts();
+        <span class="kw">let </span>headers = parts.headers.clone();
 
-        <span class="kw">let</span> <span class="ident">fut</span> <span class="op">=</span> <span class="kw">async</span> { <span class="ident">Response::from_parts</span>(<span class="ident">parts</span>, <span class="ident">body</span>.<span class="ident">convert</span>(<span class="ident">headers</span>).<span class="kw">await</span>) };
+        <span class="kw">let </span>fut = <span class="kw">async </span>{ Response::from_parts(parts, body.convert(headers).<span class="kw">await</span>) };
 
-        <span class="ident">Box::pin</span>(<span class="ident">fut</span>)
+        Box::pin(fut)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">IntoResponse</span> <span class="kw">for</span> <span class="ident">String</span> {
-    <span class="kw">fn</span> <span class="ident">into_response</span>(<span class="self">self</span>) -&gt; <span class="ident">ResponseFuture</span> {
-        <span class="ident">Box::pin</span>(<span class="ident">ready</span>(<span class="ident">Response::new</span>(<span class="ident">Body::from</span>(<span class="self">self</span>))))
+<span class="kw">impl </span>IntoResponse <span class="kw">for </span>String {
+    <span class="kw">fn </span>into_response(<span class="self">self</span>) -&gt; ResponseFuture {
+        Box::pin(ready(Response::new(Body::from(<span class="self">self</span>))))
     }
 }
 
-<span class="kw">impl</span> <span class="ident">IntoResponse</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">str</span> {
-    <span class="kw">fn</span> <span class="ident">into_response</span>(<span class="self">self</span>) -&gt; <span class="ident">ResponseFuture</span> {
-        <span class="ident">Box::pin</span>(<span class="ident">ready</span>(<span class="ident">Response::new</span>(<span class="ident">Body::from</span>(<span class="self">self</span>))))
+<span class="kw">impl </span>IntoResponse <span class="kw">for </span><span class="kw-2">&amp;</span>str {
+    <span class="kw">fn </span>into_response(<span class="self">self</span>) -&gt; ResponseFuture {
+        Box::pin(ready(Response::new(Body::from(<span class="self">self</span>))))
     }
 }
 
-<span class="kw">impl</span> <span class="ident">IntoResponse</span> <span class="kw">for</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] {
-    <span class="kw">fn</span> <span class="ident">into_response</span>(<span class="self">self</span>) -&gt; <span class="ident">ResponseFuture</span> {
-        <span class="ident">Box::pin</span>(<span class="ident">ready</span>(<span class="ident">Response::new</span>(<span class="ident">Body::from</span>(<span class="self">self</span>))))
+<span class="kw">impl </span>IntoResponse <span class="kw">for </span><span class="kw-2">&amp;</span>[u8] {
+    <span class="kw">fn </span>into_response(<span class="self">self</span>) -&gt; ResponseFuture {
+        Box::pin(ready(Response::new(Body::from(<span class="self">self</span>))))
     }
 }
 
-<span class="kw">impl</span> <span class="ident">IntoResponse</span> <span class="kw">for</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">into_response</span>(<span class="self">self</span>) -&gt; <span class="ident">ResponseFuture</span> {
-        <span class="ident">Box::pin</span>(<span class="ident">ready</span>(<span class="ident">Response::new</span>(<span class="ident">Body::from</span>(<span class="self">self</span>))))
+<span class="kw">impl </span>IntoResponse <span class="kw">for </span>Vec&lt;u8&gt; {
+    <span class="kw">fn </span>into_response(<span class="self">self</span>) -&gt; ResponseFuture {
+        Box::pin(ready(Response::new(Body::from(<span class="self">self</span>))))
     }
 }
 
-<span class="kw">impl</span> <span class="ident">IntoResponse</span> <span class="kw">for</span> <span class="ident">serde_json::Value</span> {
-    <span class="kw">fn</span> <span class="ident">into_response</span>(<span class="self">self</span>) -&gt; <span class="ident">ResponseFuture</span> {
-        <span class="ident">Box::pin</span>(<span class="kw">async</span> <span class="kw">move</span> {
-            <span class="ident">Response::builder</span>()
-                .<span class="ident">header</span>(<span class="ident">CONTENT_TYPE</span>, <span class="string">&quot;application/json&quot;</span>)
-                .<span class="ident">body</span>(
-                    <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="self">self</span>)
-                        .<span class="ident">expect</span>(<span class="string">&quot;unable to serialize serde_json::Value&quot;</span>)
-                        .<span class="ident">into</span>(),
+<span class="kw">impl </span>IntoResponse <span class="kw">for </span>serde_json::Value {
+    <span class="kw">fn </span>into_response(<span class="self">self</span>) -&gt; ResponseFuture {
+        Box::pin(<span class="kw">async move </span>{
+            Response::builder()
+                .header(CONTENT_TYPE, <span class="string">&quot;application/json&quot;</span>)
+                .body(
+                    serde_json::to_string(<span class="kw-2">&amp;</span><span class="self">self</span>)
+                        .expect(<span class="string">&quot;unable to serialize serde_json::Value&quot;</span>)
+                        .into(),
                 )
-                .<span class="ident">expect</span>(<span class="string">&quot;unable to build http::Response&quot;</span>)
+                .expect(<span class="string">&quot;unable to build http::Response&quot;</span>)
         })
     }
 }
 
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">ResponseFuture</span> <span class="op">=</span> <span class="ident">Pin</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="ident">Response</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+<span class="kw">pub type </span>ResponseFuture = Pin&lt;Box&lt;<span class="kw">dyn </span>Future&lt;Output = Response&lt;Body&gt;&gt; + Send&gt;&gt;;
 
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">ConvertBody</span> {
-    <span class="kw">fn</span> <span class="ident">convert</span>(<span class="self">self</span>, <span class="ident">parts</span>: <span class="ident">HeaderMap</span>) -&gt; <span class="ident">BodyFuture</span>;
+<span class="kw">pub trait </span>ConvertBody {
+    <span class="kw">fn </span>convert(<span class="self">self</span>, parts: HeaderMap) -&gt; BodyFuture;
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span> <span class="ident">ConvertBody</span> <span class="kw">for</span> <span class="ident">B</span>
-<span class="kw">where</span>
-    <span class="ident">B</span>: <span class="ident">HttpBody</span> <span class="op">+</span> <span class="ident">Unpin</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
-    <span class="ident">B::Data</span>: <span class="ident">Send</span>,
-    <span class="ident">B::Error</span>: <span class="ident">fmt::Debug</span>,
+<span class="kw">impl</span>&lt;B&gt; ConvertBody <span class="kw">for </span>B
+<span class="kw">where
+    </span>B: HttpBody + Unpin + Send + <span class="lifetime">&#39;static</span>,
+    B::Data: Send,
+    B::Error: fmt::Debug,
 {
-    <span class="kw">fn</span> <span class="ident">convert</span>(<span class="self">self</span>, <span class="ident">headers</span>: <span class="ident">HeaderMap</span>) -&gt; <span class="ident">BodyFuture</span> {
-        <span class="kw">if</span> <span class="ident">headers</span>.<span class="ident">get</span>(<span class="ident">CONTENT_ENCODING</span>).<span class="ident">is_some</span>() {
-            <span class="kw">return</span> <span class="ident">convert_to_binary</span>(<span class="self">self</span>);
+    <span class="kw">fn </span>convert(<span class="self">self</span>, headers: HeaderMap) -&gt; BodyFuture {
+        <span class="kw">if </span>headers.get(CONTENT_ENCODING).is_some() {
+            <span class="kw">return </span>convert_to_binary(<span class="self">self</span>);
         }
 
-        <span class="kw">let</span> <span class="ident">content_type</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">value</span>) <span class="op">=</span> <span class="ident">headers</span>.<span class="ident">get</span>(<span class="ident">CONTENT_TYPE</span>) {
-            <span class="ident">value</span>.<span class="ident">to_str</span>().<span class="ident">unwrap_or_default</span>()
-        } <span class="kw">else</span> {
-            <span class="comment">// Content-Type and Content-Encoding not set, passthrough as utf8 text</span>
-            <span class="kw">return</span> <span class="ident">convert_to_text</span>(<span class="self">self</span>, <span class="string">&quot;utf-8&quot;</span>);
+        <span class="kw">let </span>content_type = <span class="kw">if let </span><span class="prelude-val">Some</span>(value) = headers.get(CONTENT_TYPE) {
+            value.to_str().unwrap_or_default()
+        } <span class="kw">else </span>{
+            <span class="comment">// Content-Type and Content-Encoding not set, passthrough as utf8 text
+            </span><span class="kw">return </span>convert_to_text(<span class="self">self</span>, <span class="string">&quot;utf-8&quot;</span>);
         };
 
-        <span class="kw">for</span> <span class="ident">prefix</span> <span class="kw">in</span> <span class="ident">TEXT_ENCODING_PREFIXES</span> {
-            <span class="kw">if</span> <span class="ident">content_type</span>.<span class="ident">starts_with</span>(<span class="ident">prefix</span>) {
-                <span class="kw">return</span> <span class="ident">convert_to_text</span>(<span class="self">self</span>, <span class="ident">content_type</span>);
+        <span class="kw">for </span>prefix <span class="kw">in </span>TEXT_ENCODING_PREFIXES {
+            <span class="kw">if </span>content_type.starts_with(prefix) {
+                <span class="kw">return </span>convert_to_text(<span class="self">self</span>, content_type);
             }
         }
 
-        <span class="kw">for</span> <span class="ident">suffix</span> <span class="kw">in</span> <span class="ident">TEXT_ENCODING_SUFFIXES</span> {
-            <span class="kw">if</span> <span class="ident">content_type</span>.<span class="ident">ends_with</span>(<span class="ident">suffix</span>) {
-                <span class="kw">return</span> <span class="ident">convert_to_text</span>(<span class="self">self</span>, <span class="ident">content_type</span>);
+        <span class="kw">for </span>suffix <span class="kw">in </span>TEXT_ENCODING_SUFFIXES {
+            <span class="kw">if </span>content_type.ends_with(suffix) {
+                <span class="kw">return </span>convert_to_text(<span class="self">self</span>, content_type);
             }
         }
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">value</span>) <span class="op">=</span> <span class="ident">headers</span>.<span class="ident">get</span>(<span class="ident">X_LAMBDA_HTTP_CONTENT_ENCODING</span>) {
-            <span class="kw">if</span> <span class="ident">value</span> <span class="op">==</span> <span class="string">&quot;text&quot;</span> {
-                <span class="kw">return</span> <span class="ident">convert_to_text</span>(<span class="self">self</span>, <span class="ident">content_type</span>);
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(value) = headers.get(X_LAMBDA_HTTP_CONTENT_ENCODING) {
+            <span class="kw">if </span>value == <span class="string">&quot;text&quot; </span>{
+                <span class="kw">return </span>convert_to_text(<span class="self">self</span>, content_type);
             }
         }
 
-        <span class="ident">convert_to_binary</span>(<span class="self">self</span>)
+        convert_to_binary(<span class="self">self</span>)
     }
 }
 
-<span class="kw">fn</span> <span class="ident">convert_to_binary</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>(<span class="ident">body</span>: <span class="ident">B</span>) -&gt; <span class="ident">BodyFuture</span>
-<span class="kw">where</span>
-    <span class="ident">B</span>: <span class="ident">HttpBody</span> <span class="op">+</span> <span class="ident">Unpin</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
-    <span class="ident">B::Data</span>: <span class="ident">Send</span>,
-    <span class="ident">B::Error</span>: <span class="ident">fmt::Debug</span>,
+<span class="kw">fn </span>convert_to_binary&lt;B&gt;(body: B) -&gt; BodyFuture
+<span class="kw">where
+    </span>B: HttpBody + Unpin + Send + <span class="lifetime">&#39;static</span>,
+    B::Data: Send,
+    B::Error: fmt::Debug,
 {
-    <span class="ident">Box::pin</span>(<span class="kw">async</span> <span class="kw">move</span> { <span class="ident">Body::from</span>(<span class="ident">to_bytes</span>(<span class="ident">body</span>).<span class="kw">await</span>.<span class="ident">expect</span>(<span class="string">&quot;unable to read bytes from body&quot;</span>).<span class="ident">to_vec</span>()) })
+    Box::pin(<span class="kw">async move </span>{ Body::from(to_bytes(body).<span class="kw">await</span>.expect(<span class="string">&quot;unable to read bytes from body&quot;</span>).to_vec()) })
 }
 
-<span class="kw">fn</span> <span class="ident">convert_to_text</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>(<span class="ident">body</span>: <span class="ident">B</span>, <span class="ident">content_type</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">BodyFuture</span>
-<span class="kw">where</span>
-    <span class="ident">B</span>: <span class="ident">HttpBody</span> <span class="op">+</span> <span class="ident">Unpin</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
-    <span class="ident">B::Data</span>: <span class="ident">Send</span>,
-    <span class="ident">B::Error</span>: <span class="ident">fmt::Debug</span>,
+<span class="kw">fn </span>convert_to_text&lt;B&gt;(body: B, content_type: <span class="kw-2">&amp;</span>str) -&gt; BodyFuture
+<span class="kw">where
+    </span>B: HttpBody + Unpin + Send + <span class="lifetime">&#39;static</span>,
+    B::Data: Send,
+    B::Error: fmt::Debug,
 {
-    <span class="kw">let</span> <span class="ident">mime_type</span> <span class="op">=</span> <span class="ident">content_type</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">Mime</span><span class="op">&gt;</span>();
+    <span class="kw">let </span>mime_type = content_type.parse::&lt;Mime&gt;();
 
-    <span class="kw">let</span> <span class="ident">encoding</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">mime_type</span>.<span class="ident">as_ref</span>() {
-        <span class="prelude-val">Ok</span>(<span class="ident">mime</span>) =&gt; <span class="ident">mime</span>.<span class="ident">get_param</span>(<span class="ident">CHARSET</span>).<span class="ident">unwrap_or</span>(<span class="ident">mime::UTF_8</span>),
-        <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="ident">mime::UTF_8</span>,
+    <span class="kw">let </span>encoding = <span class="kw">match </span>mime_type.as_ref() {
+        <span class="prelude-val">Ok</span>(mime) =&gt; mime.get_param(CHARSET).unwrap_or(mime::UTF_8),
+        <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; mime::UTF_8,
     };
 
-    <span class="kw">let</span> <span class="ident">label</span> <span class="op">=</span> <span class="ident">encoding</span>.<span class="ident">as_ref</span>().<span class="ident">as_bytes</span>();
-    <span class="kw">let</span> <span class="ident">encoding</span> <span class="op">=</span> <span class="ident">Encoding::for_label</span>(<span class="ident">label</span>).<span class="ident">unwrap_or</span>(<span class="ident">encoding_rs::UTF_8</span>);
+    <span class="kw">let </span>label = encoding.as_ref().as_bytes();
+    <span class="kw">let </span>encoding = Encoding::for_label(label).unwrap_or(encoding_rs::UTF_8);
 
-    <span class="comment">// assumes utf-8</span>
-    <span class="ident">Box::pin</span>(<span class="kw">async</span> <span class="kw">move</span> {
-        <span class="kw">let</span> <span class="ident">bytes</span> <span class="op">=</span> <span class="ident">to_bytes</span>(<span class="ident">body</span>).<span class="kw">await</span>.<span class="ident">expect</span>(<span class="string">&quot;unable to read bytes from body&quot;</span>);
-        <span class="kw">let</span> (<span class="ident">content</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">encoding</span>.<span class="ident">decode</span>(<span class="kw-2">&amp;</span><span class="ident">bytes</span>);
+    <span class="comment">// assumes utf-8
+    </span>Box::pin(<span class="kw">async move </span>{
+        <span class="kw">let </span>bytes = to_bytes(body).<span class="kw">await</span>.expect(<span class="string">&quot;unable to read bytes from body&quot;</span>);
+        <span class="kw">let </span>(content, <span class="kw">_</span>, <span class="kw">_</span>) = encoding.decode(<span class="kw-2">&amp;</span>bytes);
 
-        <span class="kw">match</span> <span class="ident">content</span> {
-            <span class="ident">Cow::Borrowed</span>(<span class="ident">content</span>) =&gt; <span class="ident">Body::from</span>(<span class="ident">content</span>),
-            <span class="ident">Cow::Owned</span>(<span class="ident">content</span>) =&gt; <span class="ident">Body::from</span>(<span class="ident">content</span>),
+        <span class="kw">match </span>content {
+            Cow::Borrowed(content) =&gt; Body::from(content),
+            Cow::Owned(content) =&gt; Body::from(content),
         }
     })
 }
 
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">BodyFuture</span> <span class="op">=</span> <span class="ident">Pin</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="ident">Body</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+<span class="kw">pub type </span>BodyFuture = Pin&lt;Box&lt;<span class="kw">dyn </span>Future&lt;Output = Body&gt; + Send&gt;&gt;;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">Body</span>, <span class="ident">IntoResponse</span>, <span class="ident">LambdaResponse</span>, <span class="ident">RequestOrigin</span>, <span class="ident">X_LAMBDA_HTTP_CONTENT_ENCODING</span>};
-    <span class="kw">use</span> <span class="ident">http</span>::{
-        <span class="ident">header</span>::{<span class="ident">CONTENT_ENCODING</span>, <span class="ident">CONTENT_TYPE</span>},
-        <span class="ident">Response</span>,
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use super</span>::{Body, IntoResponse, LambdaResponse, RequestOrigin, X_LAMBDA_HTTP_CONTENT_ENCODING};
+    <span class="kw">use </span>http::{
+        header::{CONTENT_ENCODING, CONTENT_TYPE},
+        Response,
     };
-    <span class="kw">use</span> <span class="ident">hyper::Body</span> <span class="kw">as</span> <span class="ident">HyperBody</span>;
-    <span class="kw">use</span> <span class="ident">serde_json</span>::{<span class="self">self</span>, <span class="ident">json</span>};
+    <span class="kw">use </span>hyper::Body <span class="kw">as </span>HyperBody;
+    <span class="kw">use </span>serde_json::{<span class="self">self</span>, json};
 
-    <span class="kw">const</span> <span class="ident">SVG_LOGO</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/svg_logo.svg&quot;</span>);
+    <span class="kw">const </span>SVG_LOGO: <span class="kw-2">&amp;</span>str = <span class="macro">include_str!</span>(<span class="string">&quot;../tests/data/svg_logo.svg&quot;</span>);
 
-    <span class="attribute">#[<span class="ident">tokio::test</span>]</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">json_into_response</span>() {
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="macro">json!</span>({ <span class="string">&quot;hello&quot;</span>: <span class="string">&quot;lambda&quot;</span>}).<span class="ident">into_response</span>().<span class="kw">await</span>;
-        <span class="kw">match</span> <span class="ident">response</span>.<span class="ident">body</span>() {
-            <span class="ident">Body::Text</span>(<span class="ident">json</span>) =&gt; <span class="macro">assert_eq!</span>(<span class="ident">json</span>, <span class="string">r#&quot;{&quot;hello&quot;:&quot;lambda&quot;}&quot;#</span>),
-            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;invalid body&quot;</span>),
+    <span class="attribute">#[tokio::test]
+    </span><span class="kw">async fn </span>json_into_response() {
+        <span class="kw">let </span>response = <span class="macro">json!</span>({ <span class="string">&quot;hello&quot;</span>: <span class="string">&quot;lambda&quot;</span>}).into_response().<span class="kw">await</span>;
+        <span class="kw">match </span>response.body() {
+            Body::Text(json) =&gt; <span class="macro">assert_eq!</span>(json, <span class="string">r#&quot;{&quot;hello&quot;:&quot;lambda&quot;}&quot;#</span>),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;invalid body&quot;</span>),
         }
         <span class="macro">assert_eq!</span>(
-            <span class="ident">response</span>
-                .<span class="ident">headers</span>()
-                .<span class="ident">get</span>(<span class="ident">CONTENT_TYPE</span>)
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">h</span><span class="op">|</span> <span class="ident">h</span>.<span class="ident">to_str</span>().<span class="ident">expect</span>(<span class="string">&quot;invalid header&quot;</span>)),
+            response
+                .headers()
+                .get(CONTENT_TYPE)
+                .map(|h| h.to_str().expect(<span class="string">&quot;invalid header&quot;</span>)),
             <span class="prelude-val">Some</span>(<span class="string">&quot;application/json&quot;</span>)
         )
     }
 
-    <span class="attribute">#[<span class="ident">tokio::test</span>]</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">text_into_response</span>() {
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="string">&quot;text&quot;</span>.<span class="ident">into_response</span>().<span class="kw">await</span>;
-        <span class="kw">match</span> <span class="ident">response</span>.<span class="ident">body</span>() {
-            <span class="ident">Body::Text</span>(<span class="ident">text</span>) =&gt; <span class="macro">assert_eq!</span>(<span class="ident">text</span>, <span class="string">&quot;text&quot;</span>),
-            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;invalid body&quot;</span>),
+    <span class="attribute">#[tokio::test]
+    </span><span class="kw">async fn </span>text_into_response() {
+        <span class="kw">let </span>response = <span class="string">&quot;text&quot;</span>.into_response().<span class="kw">await</span>;
+        <span class="kw">match </span>response.body() {
+            Body::Text(text) =&gt; <span class="macro">assert_eq!</span>(text, <span class="string">&quot;text&quot;</span>),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;invalid body&quot;</span>),
         }
     }
 
-    <span class="attribute">#[<span class="ident">tokio::test</span>]</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">bytes_into_response</span>() {
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="string">&quot;text&quot;</span>.<span class="ident">as_bytes</span>().<span class="ident">into_response</span>().<span class="kw">await</span>;
-        <span class="kw">match</span> <span class="ident">response</span>.<span class="ident">body</span>() {
-            <span class="ident">Body::Binary</span>(<span class="ident">data</span>) =&gt; <span class="macro">assert_eq!</span>(<span class="ident">data</span>, <span class="string">&quot;text&quot;</span>.<span class="ident">as_bytes</span>()),
-            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;invalid body&quot;</span>),
+    <span class="attribute">#[tokio::test]
+    </span><span class="kw">async fn </span>bytes_into_response() {
+        <span class="kw">let </span>response = <span class="string">&quot;text&quot;</span>.as_bytes().into_response().<span class="kw">await</span>;
+        <span class="kw">match </span>response.body() {
+            Body::Binary(data) =&gt; <span class="macro">assert_eq!</span>(data, <span class="string">&quot;text&quot;</span>.as_bytes()),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;invalid body&quot;</span>),
         }
     }
 
-    <span class="attribute">#[<span class="ident">tokio::test</span>]</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">content_encoding_header</span>() {
-        <span class="comment">// Drive the implementation by using `hyper::Body` instead of</span>
-        <span class="comment">// of `aws_lambda_events::encodings::Body`</span>
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">Response::builder</span>()
-            .<span class="ident">header</span>(<span class="ident">CONTENT_ENCODING</span>, <span class="string">&quot;gzip&quot;</span>)
-            .<span class="ident">body</span>(<span class="ident">HyperBody::from</span>(<span class="string">&quot;000000&quot;</span>.<span class="ident">as_bytes</span>()))
-            .<span class="ident">expect</span>(<span class="string">&quot;unable to build http::Response&quot;</span>);
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">response</span>.<span class="ident">into_response</span>().<span class="kw">await</span>;
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">LambdaResponse::from_response</span>(<span class="kw-2">&amp;</span><span class="ident">RequestOrigin::ApiGatewayV2</span>, <span class="ident">response</span>);
+    <span class="attribute">#[tokio::test]
+    </span><span class="kw">async fn </span>content_encoding_header() {
+        <span class="comment">// Drive the implementation by using `hyper::Body` instead of
+        // of `aws_lambda_events::encodings::Body`
+        </span><span class="kw">let </span>response = Response::builder()
+            .header(CONTENT_ENCODING, <span class="string">&quot;gzip&quot;</span>)
+            .body(HyperBody::from(<span class="string">&quot;000000&quot;</span>.as_bytes()))
+            .expect(<span class="string">&quot;unable to build http::Response&quot;</span>);
+        <span class="kw">let </span>response = response.into_response().<span class="kw">await</span>;
+        <span class="kw">let </span>response = LambdaResponse::from_response(<span class="kw-2">&amp;</span>RequestOrigin::ApiGatewayV2, response);
 
-        <span class="kw">let</span> <span class="ident">json</span> <span class="op">=</span> <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>).<span class="ident">expect</span>(<span class="string">&quot;failed to serialize to json&quot;</span>);
+        <span class="kw">let </span>json = serde_json::to_string(<span class="kw-2">&amp;</span>response).expect(<span class="string">&quot;failed to serialize to json&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">json</span>,
-            <span class="string">r#&quot;{&quot;statusCode&quot;:200,&quot;headers&quot;:{&quot;content-encoding&quot;:&quot;gzip&quot;},&quot;multiValueHeaders&quot;:{&quot;content-encoding&quot;:[&quot;gzip&quot;]},&quot;body&quot;:&quot;MDAwMDAw&quot;,&quot;isBase64Encoded&quot;:true,&quot;cookies&quot;:[]}&quot;#</span>
-        )
+            json,
+            <span class="string">r#&quot;{&quot;statusCode&quot;:200,&quot;headers&quot;:{&quot;content-encoding&quot;:&quot;gzip&quot;},&quot;multiValueHeaders&quot;:{&quot;content-encoding&quot;:[&quot;gzip&quot;]},&quot;body&quot;:&quot;MDAwMDAw&quot;,&quot;isBase64Encoded&quot;:true,&quot;cookies&quot;:[]}&quot;#
+        </span>)
     }
 
-    <span class="attribute">#[<span class="ident">tokio::test</span>]</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">content_type_header</span>() {
-        <span class="comment">// Drive the implementation by using `hyper::Body` instead of</span>
-        <span class="comment">// of `aws_lambda_events::encodings::Body`</span>
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">Response::builder</span>()
-            .<span class="ident">header</span>(<span class="ident">CONTENT_TYPE</span>, <span class="string">&quot;application/json&quot;</span>)
-            .<span class="ident">body</span>(<span class="ident">HyperBody::from</span>(<span class="string">&quot;000000&quot;</span>.<span class="ident">as_bytes</span>()))
-            .<span class="ident">expect</span>(<span class="string">&quot;unable to build http::Response&quot;</span>);
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">response</span>.<span class="ident">into_response</span>().<span class="kw">await</span>;
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">LambdaResponse::from_response</span>(<span class="kw-2">&amp;</span><span class="ident">RequestOrigin::ApiGatewayV2</span>, <span class="ident">response</span>);
+    <span class="attribute">#[tokio::test]
+    </span><span class="kw">async fn </span>content_type_header() {
+        <span class="comment">// Drive the implementation by using `hyper::Body` instead of
+        // of `aws_lambda_events::encodings::Body`
+        </span><span class="kw">let </span>response = Response::builder()
+            .header(CONTENT_TYPE, <span class="string">&quot;application/json&quot;</span>)
+            .body(HyperBody::from(<span class="string">&quot;000000&quot;</span>.as_bytes()))
+            .expect(<span class="string">&quot;unable to build http::Response&quot;</span>);
+        <span class="kw">let </span>response = response.into_response().<span class="kw">await</span>;
+        <span class="kw">let </span>response = LambdaResponse::from_response(<span class="kw-2">&amp;</span>RequestOrigin::ApiGatewayV2, response);
 
-        <span class="kw">let</span> <span class="ident">json</span> <span class="op">=</span> <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>).<span class="ident">expect</span>(<span class="string">&quot;failed to serialize to json&quot;</span>);
+        <span class="kw">let </span>json = serde_json::to_string(<span class="kw-2">&amp;</span>response).expect(<span class="string">&quot;failed to serialize to json&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">json</span>,
-            <span class="string">r#&quot;{&quot;statusCode&quot;:200,&quot;headers&quot;:{&quot;content-type&quot;:&quot;application/json&quot;},&quot;multiValueHeaders&quot;:{&quot;content-type&quot;:[&quot;application/json&quot;]},&quot;body&quot;:&quot;000000&quot;,&quot;isBase64Encoded&quot;:false,&quot;cookies&quot;:[]}&quot;#</span>
-        )
+            json,
+            <span class="string">r#&quot;{&quot;statusCode&quot;:200,&quot;headers&quot;:{&quot;content-type&quot;:&quot;application/json&quot;},&quot;multiValueHeaders&quot;:{&quot;content-type&quot;:[&quot;application/json&quot;]},&quot;body&quot;:&quot;000000&quot;,&quot;isBase64Encoded&quot;:false,&quot;cookies&quot;:[]}&quot;#
+        </span>)
     }
 
-    <span class="attribute">#[<span class="ident">tokio::test</span>]</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">charset_content_type_header</span>() {
-        <span class="comment">// Drive the implementation by using `hyper::Body` instead of</span>
-        <span class="comment">// of `aws_lambda_events::encodings::Body`</span>
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">Response::builder</span>()
-            .<span class="ident">header</span>(<span class="ident">CONTENT_TYPE</span>, <span class="string">&quot;application/json; charset=utf-16&quot;</span>)
-            .<span class="ident">body</span>(<span class="ident">HyperBody::from</span>(<span class="string">&quot;000000&quot;</span>.<span class="ident">as_bytes</span>()))
-            .<span class="ident">expect</span>(<span class="string">&quot;unable to build http::Response&quot;</span>);
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">response</span>.<span class="ident">into_response</span>().<span class="kw">await</span>;
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">LambdaResponse::from_response</span>(<span class="kw-2">&amp;</span><span class="ident">RequestOrigin::ApiGatewayV2</span>, <span class="ident">response</span>);
+    <span class="attribute">#[tokio::test]
+    </span><span class="kw">async fn </span>charset_content_type_header() {
+        <span class="comment">// Drive the implementation by using `hyper::Body` instead of
+        // of `aws_lambda_events::encodings::Body`
+        </span><span class="kw">let </span>response = Response::builder()
+            .header(CONTENT_TYPE, <span class="string">&quot;application/json; charset=utf-16&quot;</span>)
+            .body(HyperBody::from(<span class="string">&quot;000000&quot;</span>.as_bytes()))
+            .expect(<span class="string">&quot;unable to build http::Response&quot;</span>);
+        <span class="kw">let </span>response = response.into_response().<span class="kw">await</span>;
+        <span class="kw">let </span>response = LambdaResponse::from_response(<span class="kw-2">&amp;</span>RequestOrigin::ApiGatewayV2, response);
 
-        <span class="kw">let</span> <span class="ident">json</span> <span class="op">=</span> <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>).<span class="ident">expect</span>(<span class="string">&quot;failed to serialize to json&quot;</span>);
+        <span class="kw">let </span>json = serde_json::to_string(<span class="kw-2">&amp;</span>response).expect(<span class="string">&quot;failed to serialize to json&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">json</span>,
-            <span class="string">r#&quot;{&quot;statusCode&quot;:200,&quot;headers&quot;:{&quot;content-type&quot;:&quot;application/json; charset=utf-16&quot;},&quot;multiValueHeaders&quot;:{&quot;content-type&quot;:[&quot;application/json; charset=utf-16&quot;]},&quot;body&quot;:&quot;〰〰〰&quot;,&quot;isBase64Encoded&quot;:false,&quot;cookies&quot;:[]}&quot;#</span>
-        )
+            json,
+            <span class="string">r#&quot;{&quot;statusCode&quot;:200,&quot;headers&quot;:{&quot;content-type&quot;:&quot;application/json; charset=utf-16&quot;},&quot;multiValueHeaders&quot;:{&quot;content-type&quot;:[&quot;application/json; charset=utf-16&quot;]},&quot;body&quot;:&quot;〰〰〰&quot;,&quot;isBase64Encoded&quot;:false,&quot;cookies&quot;:[]}&quot;#
+        </span>)
     }
 
-    <span class="attribute">#[<span class="ident">tokio::test</span>]</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">content_headers_unset</span>() {
-        <span class="comment">// Drive the implementation by using `hyper::Body` instead of</span>
-        <span class="comment">// of `aws_lambda_events::encodings::Body`</span>
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">Response::builder</span>()
-            .<span class="ident">body</span>(<span class="ident">HyperBody::from</span>(<span class="string">&quot;000000&quot;</span>.<span class="ident">as_bytes</span>()))
-            .<span class="ident">expect</span>(<span class="string">&quot;unable to build http::Response&quot;</span>);
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">response</span>.<span class="ident">into_response</span>().<span class="kw">await</span>;
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">LambdaResponse::from_response</span>(<span class="kw-2">&amp;</span><span class="ident">RequestOrigin::ApiGatewayV2</span>, <span class="ident">response</span>);
+    <span class="attribute">#[tokio::test]
+    </span><span class="kw">async fn </span>content_headers_unset() {
+        <span class="comment">// Drive the implementation by using `hyper::Body` instead of
+        // of `aws_lambda_events::encodings::Body`
+        </span><span class="kw">let </span>response = Response::builder()
+            .body(HyperBody::from(<span class="string">&quot;000000&quot;</span>.as_bytes()))
+            .expect(<span class="string">&quot;unable to build http::Response&quot;</span>);
+        <span class="kw">let </span>response = response.into_response().<span class="kw">await</span>;
+        <span class="kw">let </span>response = LambdaResponse::from_response(<span class="kw-2">&amp;</span>RequestOrigin::ApiGatewayV2, response);
 
-        <span class="kw">let</span> <span class="ident">json</span> <span class="op">=</span> <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">response</span>).<span class="ident">expect</span>(<span class="string">&quot;failed to serialize to json&quot;</span>);
+        <span class="kw">let </span>json = serde_json::to_string(<span class="kw-2">&amp;</span>response).expect(<span class="string">&quot;failed to serialize to json&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">json</span>,
-            <span class="string">r#&quot;{&quot;statusCode&quot;:200,&quot;headers&quot;:{},&quot;multiValueHeaders&quot;:{},&quot;body&quot;:&quot;000000&quot;,&quot;isBase64Encoded&quot;:false,&quot;cookies&quot;:[]}&quot;#</span>
-        )
+            json,
+            <span class="string">r#&quot;{&quot;statusCode&quot;:200,&quot;headers&quot;:{},&quot;multiValueHeaders&quot;:{},&quot;body&quot;:&quot;000000&quot;,&quot;isBase64Encoded&quot;:false,&quot;cookies&quot;:[]}&quot;#
+        </span>)
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">serialize_multi_value_headers</span>() {
-        <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">LambdaResponse::from_response</span>(
-            <span class="kw-2">&amp;</span><span class="ident">RequestOrigin::ApiGatewayV1</span>,
-            <span class="ident">Response::builder</span>()
-                .<span class="ident">header</span>(<span class="string">&quot;multi&quot;</span>, <span class="string">&quot;a&quot;</span>)
-                .<span class="ident">header</span>(<span class="string">&quot;multi&quot;</span>, <span class="string">&quot;b&quot;</span>)
-                .<span class="ident">body</span>(<span class="ident">Body::from</span>(()))
-                .<span class="ident">expect</span>(<span class="string">&quot;failed to create response&quot;</span>),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>serialize_multi_value_headers() {
+        <span class="kw">let </span>res = LambdaResponse::from_response(
+            <span class="kw-2">&amp;</span>RequestOrigin::ApiGatewayV1,
+            Response::builder()
+                .header(<span class="string">&quot;multi&quot;</span>, <span class="string">&quot;a&quot;</span>)
+                .header(<span class="string">&quot;multi&quot;</span>, <span class="string">&quot;b&quot;</span>)
+                .body(Body::from(()))
+                .expect(<span class="string">&quot;failed to create response&quot;</span>),
         );
-        <span class="kw">let</span> <span class="ident">json</span> <span class="op">=</span> <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">res</span>).<span class="ident">expect</span>(<span class="string">&quot;failed to serialize to json&quot;</span>);
+        <span class="kw">let </span>json = serde_json::to_string(<span class="kw-2">&amp;</span>res).expect(<span class="string">&quot;failed to serialize to json&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">json</span>,
-            <span class="string">r#&quot;{&quot;statusCode&quot;:200,&quot;headers&quot;:{&quot;multi&quot;:&quot;a&quot;},&quot;multiValueHeaders&quot;:{&quot;multi&quot;:[&quot;a&quot;,&quot;b&quot;]},&quot;isBase64Encoded&quot;:false}&quot;#</span>
-        )
+            json,
+            <span class="string">r#&quot;{&quot;statusCode&quot;:200,&quot;headers&quot;:{&quot;multi&quot;:&quot;a&quot;},&quot;multiValueHeaders&quot;:{&quot;multi&quot;:[&quot;a&quot;,&quot;b&quot;]},&quot;isBase64Encoded&quot;:false}&quot;#
+        </span>)
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">serialize_cookies</span>() {
-        <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">LambdaResponse::from_response</span>(
-            <span class="kw-2">&amp;</span><span class="ident">RequestOrigin::ApiGatewayV2</span>,
-            <span class="ident">Response::builder</span>()
-                .<span class="ident">header</span>(<span class="string">&quot;set-cookie&quot;</span>, <span class="string">&quot;cookie1=a&quot;</span>)
-                .<span class="ident">header</span>(<span class="string">&quot;set-cookie&quot;</span>, <span class="string">&quot;cookie2=b&quot;</span>)
-                .<span class="ident">body</span>(<span class="ident">Body::from</span>(()))
-                .<span class="ident">expect</span>(<span class="string">&quot;failed to create response&quot;</span>),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>serialize_cookies() {
+        <span class="kw">let </span>res = LambdaResponse::from_response(
+            <span class="kw-2">&amp;</span>RequestOrigin::ApiGatewayV2,
+            Response::builder()
+                .header(<span class="string">&quot;set-cookie&quot;</span>, <span class="string">&quot;cookie1=a&quot;</span>)
+                .header(<span class="string">&quot;set-cookie&quot;</span>, <span class="string">&quot;cookie2=b&quot;</span>)
+                .body(Body::from(()))
+                .expect(<span class="string">&quot;failed to create response&quot;</span>),
         );
-        <span class="kw">let</span> <span class="ident">json</span> <span class="op">=</span> <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">res</span>).<span class="ident">expect</span>(<span class="string">&quot;failed to serialize to json&quot;</span>);
+        <span class="kw">let </span>json = serde_json::to_string(<span class="kw-2">&amp;</span>res).expect(<span class="string">&quot;failed to serialize to json&quot;</span>);
         <span class="macro">assert_eq!</span>(
             <span class="string">&quot;{\&quot;statusCode\&quot;:200,\&quot;headers\&quot;:{},\&quot;multiValueHeaders\&quot;:{},\&quot;isBase64Encoded\&quot;:false,\&quot;cookies\&quot;:[\&quot;cookie1=a\&quot;,\&quot;cookie2=b\&quot;]}&quot;</span>,
-            <span class="ident">json</span>
+            json
         )
     }
 
-    <span class="attribute">#[<span class="ident">tokio::test</span>]</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">content_type_xml_as_text</span>() {
-        <span class="comment">// Drive the implementation by using `hyper::Body` instead of</span>
-        <span class="comment">// of `aws_lambda_events::encodings::Body`</span>
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">Response::builder</span>()
-            .<span class="ident">header</span>(<span class="ident">CONTENT_TYPE</span>, <span class="string">&quot;image/svg+xml&quot;</span>)
-            .<span class="ident">body</span>(<span class="ident">HyperBody::from</span>(<span class="ident">SVG_LOGO</span>.<span class="ident">as_bytes</span>()))
-            .<span class="ident">expect</span>(<span class="string">&quot;unable to build http::Response&quot;</span>);
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">response</span>.<span class="ident">into_response</span>().<span class="kw">await</span>;
+    <span class="attribute">#[tokio::test]
+    </span><span class="kw">async fn </span>content_type_xml_as_text() {
+        <span class="comment">// Drive the implementation by using `hyper::Body` instead of
+        // of `aws_lambda_events::encodings::Body`
+        </span><span class="kw">let </span>response = Response::builder()
+            .header(CONTENT_TYPE, <span class="string">&quot;image/svg+xml&quot;</span>)
+            .body(HyperBody::from(SVG_LOGO.as_bytes()))
+            .expect(<span class="string">&quot;unable to build http::Response&quot;</span>);
+        <span class="kw">let </span>response = response.into_response().<span class="kw">await</span>;
 
-        <span class="kw">match</span> <span class="ident">response</span>.<span class="ident">body</span>() {
-            <span class="ident">Body::Text</span>(<span class="ident">body</span>) =&gt; <span class="macro">assert_eq!</span>(<span class="ident">SVG_LOGO</span>, <span class="ident">body</span>),
-            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;invalid body&quot;</span>),
+        <span class="kw">match </span>response.body() {
+            Body::Text(body) =&gt; <span class="macro">assert_eq!</span>(SVG_LOGO, body),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;invalid body&quot;</span>),
         }
         <span class="macro">assert_eq!</span>(
-            <span class="ident">response</span>
-                .<span class="ident">headers</span>()
-                .<span class="ident">get</span>(<span class="ident">CONTENT_TYPE</span>)
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">h</span><span class="op">|</span> <span class="ident">h</span>.<span class="ident">to_str</span>().<span class="ident">expect</span>(<span class="string">&quot;invalid header&quot;</span>)),
+            response
+                .headers()
+                .get(CONTENT_TYPE)
+                .map(|h| h.to_str().expect(<span class="string">&quot;invalid header&quot;</span>)),
             <span class="prelude-val">Some</span>(<span class="string">&quot;image/svg+xml&quot;</span>)
         )
     }
 
-    <span class="attribute">#[<span class="ident">tokio::test</span>]</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">content_type_custom_encoding_as_text</span>() {
-        <span class="comment">// Drive the implementation by using `hyper::Body` instead of</span>
-        <span class="comment">// of `aws_lambda_events::encodings::Body`</span>
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">Response::builder</span>()
-            <span class="comment">// this CONTENT-TYPE is not standard, and would yield a binary response</span>
-            .<span class="ident">header</span>(<span class="ident">CONTENT_TYPE</span>, <span class="string">&quot;image/svg&quot;</span>)
-            .<span class="ident">header</span>(<span class="ident">X_LAMBDA_HTTP_CONTENT_ENCODING</span>, <span class="string">&quot;text&quot;</span>)
-            .<span class="ident">body</span>(<span class="ident">HyperBody::from</span>(<span class="ident">SVG_LOGO</span>.<span class="ident">as_bytes</span>()))
-            .<span class="ident">expect</span>(<span class="string">&quot;unable to build http::Response&quot;</span>);
-        <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">response</span>.<span class="ident">into_response</span>().<span class="kw">await</span>;
+    <span class="attribute">#[tokio::test]
+    </span><span class="kw">async fn </span>content_type_custom_encoding_as_text() {
+        <span class="comment">// Drive the implementation by using `hyper::Body` instead of
+        // of `aws_lambda_events::encodings::Body`
+        </span><span class="kw">let </span>response = Response::builder()
+            <span class="comment">// this CONTENT-TYPE is not standard, and would yield a binary response
+            </span>.header(CONTENT_TYPE, <span class="string">&quot;image/svg&quot;</span>)
+            .header(X_LAMBDA_HTTP_CONTENT_ENCODING, <span class="string">&quot;text&quot;</span>)
+            .body(HyperBody::from(SVG_LOGO.as_bytes()))
+            .expect(<span class="string">&quot;unable to build http::Response&quot;</span>);
+        <span class="kw">let </span>response = response.into_response().<span class="kw">await</span>;
 
-        <span class="kw">match</span> <span class="ident">response</span>.<span class="ident">body</span>() {
-            <span class="ident">Body::Text</span>(<span class="ident">body</span>) =&gt; <span class="macro">assert_eq!</span>(<span class="ident">SVG_LOGO</span>, <span class="ident">body</span>),
-            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;invalid body&quot;</span>),
+        <span class="kw">match </span>response.body() {
+            Body::Text(body) =&gt; <span class="macro">assert_eq!</span>(SVG_LOGO, body),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;invalid body&quot;</span>),
         }
         <span class="macro">assert_eq!</span>(
-            <span class="ident">response</span>
-                .<span class="ident">headers</span>()
-                .<span class="ident">get</span>(<span class="ident">CONTENT_TYPE</span>)
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">h</span><span class="op">|</span> <span class="ident">h</span>.<span class="ident">to_str</span>().<span class="ident">expect</span>(<span class="string">&quot;invalid header&quot;</span>)),
+            response
+                .headers()
+                .get(CONTENT_TYPE)
+                .map(|h| h.to_str().expect(<span class="string">&quot;invalid header&quot;</span>)),
             <span class="prelude-val">Some</span>(<span class="string">&quot;image/svg&quot;</span>)
         )
     }
 
-    <span class="attribute">#[<span class="ident">tokio::test</span>]</span>
-    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">content_type_yaml_as_text</span>() {
-        <span class="comment">// Drive the implementation by using `hyper::Body` instead of</span>
-        <span class="comment">// of `aws_lambda_events::encodings::Body`</span>
-        <span class="kw">let</span> <span class="ident">yaml</span> <span class="op">=</span> <span class="string">r#&quot;---
+    <span class="attribute">#[tokio::test]
+    </span><span class="kw">async fn </span>content_type_yaml_as_text() {
+        <span class="comment">// Drive the implementation by using `hyper::Body` instead of
+        // of `aws_lambda_events::encodings::Body`
+        </span><span class="kw">let </span>yaml = <span class="string">r#&quot;---
 foo: bar
         &quot;#</span>;
 
-        <span class="kw">let</span> <span class="ident">formats</span> <span class="op">=</span> [<span class="string">&quot;application/yaml&quot;</span>, <span class="string">&quot;custom/vdn+yaml&quot;</span>];
+        <span class="kw">let </span>formats = [<span class="string">&quot;application/yaml&quot;</span>, <span class="string">&quot;custom/vdn+yaml&quot;</span>];
 
-        <span class="kw">for</span> <span class="ident">format</span> <span class="kw">in</span> <span class="ident">formats</span> {
-            <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">Response::builder</span>()
-                .<span class="ident">header</span>(<span class="ident">CONTENT_TYPE</span>, <span class="ident">format</span>)
-                .<span class="ident">body</span>(<span class="ident">HyperBody::from</span>(<span class="ident">yaml</span>.<span class="ident">as_bytes</span>()))
-                .<span class="ident">expect</span>(<span class="string">&quot;unable to build http::Response&quot;</span>);
-            <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">response</span>.<span class="ident">into_response</span>().<span class="kw">await</span>;
+        <span class="kw">for </span>format <span class="kw">in </span>formats {
+            <span class="kw">let </span>response = Response::builder()
+                .header(CONTENT_TYPE, format)
+                .body(HyperBody::from(yaml.as_bytes()))
+                .expect(<span class="string">&quot;unable to build http::Response&quot;</span>);
+            <span class="kw">let </span>response = response.into_response().<span class="kw">await</span>;
 
-            <span class="kw">match</span> <span class="ident">response</span>.<span class="ident">body</span>() {
-                <span class="ident">Body::Text</span>(<span class="ident">body</span>) =&gt; <span class="macro">assert_eq!</span>(<span class="ident">yaml</span>, <span class="ident">body</span>),
-                <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;invalid body&quot;</span>),
+            <span class="kw">match </span>response.body() {
+                Body::Text(body) =&gt; <span class="macro">assert_eq!</span>(yaml, body),
+                <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;invalid body&quot;</span>),
             }
             <span class="macro">assert_eq!</span>(
-                <span class="ident">response</span>
-                    .<span class="ident">headers</span>()
-                    .<span class="ident">get</span>(<span class="ident">CONTENT_TYPE</span>)
-                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">h</span><span class="op">|</span> <span class="ident">h</span>.<span class="ident">to_str</span>().<span class="ident">expect</span>(<span class="string">&quot;invalid header&quot;</span>)),
-                <span class="prelude-val">Some</span>(<span class="ident">format</span>)
+                response
+                    .headers()
+                    .get(CONTENT_TYPE)
+                    .map(|h| h.to_str().expect(<span class="string">&quot;invalid header&quot;</span>)),
+                <span class="prelude-val">Some</span>(format)
             )
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lambda_http" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lambda_http" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

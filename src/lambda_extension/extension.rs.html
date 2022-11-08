@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lambda-extension/src/extension.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>extension.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../lambda_extension/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../lambda_extension/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../lambda_extension/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lambda-extension/src/extension.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>extension.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../lambda_extension/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../lambda_extension/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../lambda_extension/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -318,325 +318,325 @@
 <span id="318">318</span>
 <span id="319">319</span>
 <span id="320">320</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std</span>::{
-    <span class="ident">convert::Infallible</span>, <span class="ident">fmt</span>, <span class="ident">future::ready</span>, <span class="ident">future::Future</span>, <span class="ident">net::SocketAddr</span>, <span class="ident">path::PathBuf</span>, <span class="ident">pin::Pin</span>, <span class="ident">sync::Arc</span>,
+</pre><pre class="rust"><code><span class="kw">use </span>std::{
+    convert::Infallible, fmt, future::ready, future::Future, net::SocketAddr, path::PathBuf, pin::Pin, sync::Arc,
 };
 
-<span class="kw">use</span> <span class="ident">hyper</span>::{<span class="ident">server::conn::AddrStream</span>, <span class="ident">Server</span>};
-<span class="kw">use</span> <span class="ident">lambda_runtime_api_client::Client</span>;
-<span class="kw">use</span> <span class="ident">tokio::sync::Mutex</span>;
-<span class="kw">use</span> <span class="ident">tokio_stream::StreamExt</span>;
-<span class="kw">use</span> <span class="ident">tower</span>::{<span class="ident">service_fn</span>, <span class="ident">MakeService</span>, <span class="ident">Service</span>, <span class="ident">ServiceExt</span>};
-<span class="kw">use</span> <span class="ident">tracing</span>::{<span class="ident">error</span>, <span class="ident">trace</span>};
+<span class="kw">use </span>hyper::{server::conn::AddrStream, Server};
+<span class="kw">use </span>lambda_runtime_api_client::Client;
+<span class="kw">use </span>tokio::sync::Mutex;
+<span class="kw">use </span>tokio_stream::StreamExt;
+<span class="kw">use </span>tower::{service_fn, MakeService, Service, ServiceExt};
+<span class="kw">use </span>tracing::{error, trace};
 
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">logs</span>::<span class="kw-2">*</span>, <span class="ident">requests</span>, <span class="ident">Error</span>, <span class="ident">ExtensionError</span>, <span class="ident">LambdaEvent</span>, <span class="ident">NextEvent</span>};
+<span class="kw">use crate</span>::{logs::<span class="kw-2">*</span>, requests, Error, ExtensionError, LambdaEvent, NextEvent};
 
-<span class="kw">const</span> <span class="ident">DEFAULT_LOG_PORT_NUMBER</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">9002</span>;
+<span class="kw">const </span>DEFAULT_LOG_PORT_NUMBER: u16 = <span class="number">9002</span>;
 
-<span class="doccomment">/// An Extension that runs event and log processors</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Extension</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">E</span>, <span class="ident">L</span><span class="op">&gt;</span> {
-    <span class="ident">extension_name</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span>,
-    <span class="ident">events</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>]<span class="op">&gt;</span>,
-    <span class="ident">events_processor</span>: <span class="ident">E</span>,
-    <span class="ident">log_types</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>]<span class="op">&gt;</span>,
-    <span class="ident">logs_processor</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">L</span><span class="op">&gt;</span>,
-    <span class="ident">log_buffering</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">LogBuffering</span><span class="op">&gt;</span>,
-    <span class="ident">log_port_number</span>: <span class="ident">u16</span>,
+<span class="doccomment">/// An Extension that runs event and log processors
+</span><span class="kw">pub struct </span>Extension&lt;<span class="lifetime">&#39;a</span>, E, L&gt; {
+    extension_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str&gt;,
+    events: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str]&gt;,
+    events_processor: E,
+    log_types: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str]&gt;,
+    logs_processor: <span class="prelude-ty">Option</span>&lt;L&gt;,
+    log_buffering: <span class="prelude-ty">Option</span>&lt;LogBuffering&gt;,
+    log_port_number: u16,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Extension</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Identity</span><span class="op">&lt;</span><span class="ident">LambdaEvent</span><span class="op">&gt;</span>, <span class="ident">MakeIdentity</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">LambdaLog</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Create a new base [`Extension`] with a no-op events processor</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident">Extension</span> {
-            <span class="ident">extension_name</span>: <span class="prelude-val">None</span>,
-            <span class="ident">events</span>: <span class="prelude-val">None</span>,
-            <span class="ident">events_processor</span>: <span class="ident">Identity::new</span>(),
-            <span class="ident">log_types</span>: <span class="prelude-val">None</span>,
-            <span class="ident">log_buffering</span>: <span class="prelude-val">None</span>,
-            <span class="ident">logs_processor</span>: <span class="prelude-val">None</span>,
-            <span class="ident">log_port_number</span>: <span class="ident">DEFAULT_LOG_PORT_NUMBER</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Extension&lt;<span class="lifetime">&#39;a</span>, Identity&lt;LambdaEvent&gt;, MakeIdentity&lt;Vec&lt;LambdaLog&gt;&gt;&gt; {
+    <span class="doccomment">/// Create a new base [`Extension`] with a no-op events processor
+    </span><span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
+        Extension {
+            extension_name: <span class="prelude-val">None</span>,
+            events: <span class="prelude-val">None</span>,
+            events_processor: Identity::new(),
+            log_types: <span class="prelude-val">None</span>,
+            log_buffering: <span class="prelude-val">None</span>,
+            logs_processor: <span class="prelude-val">None</span>,
+            log_port_number: DEFAULT_LOG_PORT_NUMBER,
         }
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Extension</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Identity</span><span class="op">&lt;</span><span class="ident">LambdaEvent</span><span class="op">&gt;</span>, <span class="ident">MakeIdentity</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">LambdaLog</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::new</span>()
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Default <span class="kw">for </span>Extension&lt;<span class="lifetime">&#39;a</span>, Identity&lt;LambdaEvent&gt;, MakeIdentity&lt;Vec&lt;LambdaLog&gt;&gt;&gt; {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new()
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">E</span>, <span class="ident">L</span><span class="op">&gt;</span> <span class="ident">Extension</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">E</span>, <span class="ident">L</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">E</span>: <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">LambdaEvent</span><span class="op">&gt;</span>,
-    <span class="ident">E::Future</span>: <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">E::Error</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="ident">E::Error</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">std::error::Error</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">fmt::Display</span> <span class="op">+</span> <span class="ident">fmt::Debug</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, E, L&gt; Extension&lt;<span class="lifetime">&#39;a</span>, E, L&gt;
+<span class="kw">where
+    </span>E: Service&lt;LambdaEvent&gt;,
+    E::Future: Future&lt;Output = <span class="prelude-ty">Result</span>&lt;(), E::Error&gt;&gt;,
+    E::Error: Into&lt;Box&lt;<span class="kw">dyn </span>std::error::Error + Send + Sync&gt;&gt; + fmt::Display + fmt::Debug,
 
-    <span class="comment">// Fixme: &#39;static bound might be too restrictive</span>
-    <span class="ident">L</span>: <span class="ident">MakeService</span><span class="op">&lt;</span>(), <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">LambdaLog</span><span class="op">&gt;</span>, <span class="ident">Response</span> <span class="op">=</span> ()<span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
-    <span class="ident">L::Service</span>: <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">LambdaLog</span><span class="op">&gt;</span>, <span class="ident">Response</span> <span class="op">=</span> ()<span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span>,
-    <span class="op">&lt;</span><span class="ident">L::Service</span> <span class="kw">as</span> <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">LambdaLog</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="ident">::Future</span>: <span class="ident">Send</span> <span class="op">+</span> <span class="lifetime">&#39;a</span>,
-    <span class="ident">L::Error</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">std::error::Error</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">fmt::Debug</span>,
-    <span class="ident">L::MakeError</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">std::error::Error</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">fmt::Debug</span>,
-    <span class="ident">L::Future</span>: <span class="ident">Send</span>,
+    <span class="comment">// Fixme: &#39;static bound might be too restrictive
+    </span>L: MakeService&lt;(), Vec&lt;LambdaLog&gt;, Response = ()&gt; + Send + Sync + <span class="lifetime">&#39;static</span>,
+    L::Service: Service&lt;Vec&lt;LambdaLog&gt;, Response = ()&gt; + Send + Sync,
+    &lt;L::Service <span class="kw">as </span>Service&lt;Vec&lt;LambdaLog&gt;&gt;&gt;::Future: Send + <span class="lifetime">&#39;a</span>,
+    L::Error: Into&lt;Box&lt;<span class="kw">dyn </span>std::error::Error + Send + Sync&gt;&gt; + fmt::Debug,
+    L::MakeError: Into&lt;Box&lt;<span class="kw">dyn </span>std::error::Error + Send + Sync&gt;&gt; + fmt::Debug,
+    L::Future: Send,
 {
-    <span class="doccomment">/// Create a new [`Extension`] with a given extension name</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_extension_name</span>(<span class="self">self</span>, <span class="ident">extension_name</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">Extension</span> {
-            <span class="ident">extension_name</span>: <span class="prelude-val">Some</span>(<span class="ident">extension_name</span>),
-            ..<span class="self">self</span>
-        }
+    <span class="doccomment">/// Create a new [`Extension`] with a given extension name
+    </span><span class="kw">pub fn </span>with_extension_name(<span class="self">self</span>, extension_name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str) -&gt; <span class="self">Self </span>{
+        Extension {
+            extension_name: <span class="prelude-val">Some</span>(extension_name),
+            ..<span class="self">self
+        </span>}
     }
 
-    <span class="doccomment">/// Create a new [`Extension`] with a list of given events.</span>
-    <span class="doccomment">/// The only accepted events are `INVOKE` and `SHUTDOWN`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_events</span>(<span class="self">self</span>, <span class="ident">events</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>]) -&gt; <span class="self">Self</span> {
-        <span class="ident">Extension</span> {
-            <span class="ident">events</span>: <span class="prelude-val">Some</span>(<span class="ident">events</span>),
-            ..<span class="self">self</span>
-        }
+    <span class="doccomment">/// Create a new [`Extension`] with a list of given events.
+    /// The only accepted events are `INVOKE` and `SHUTDOWN`.
+    </span><span class="kw">pub fn </span>with_events(<span class="self">self</span>, events: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str]) -&gt; <span class="self">Self </span>{
+        Extension {
+            events: <span class="prelude-val">Some</span>(events),
+            ..<span class="self">self
+        </span>}
     }
 
-    <span class="doccomment">/// Create a new [`Extension`] with a service that receives Lambda events.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_events_processor</span><span class="op">&lt;</span><span class="ident">N</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">ep</span>: <span class="ident">N</span>) -&gt; <span class="ident">Extension</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">N</span>, <span class="ident">L</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">N</span>: <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">LambdaEvent</span><span class="op">&gt;</span>,
-        <span class="ident">N::Future</span>: <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">N::Error</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-        <span class="ident">N::Error</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">std::error::Error</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">fmt::Display</span>,
+    <span class="doccomment">/// Create a new [`Extension`] with a service that receives Lambda events.
+    </span><span class="kw">pub fn </span>with_events_processor&lt;N&gt;(<span class="self">self</span>, ep: N) -&gt; Extension&lt;<span class="lifetime">&#39;a</span>, N, L&gt;
+    <span class="kw">where
+        </span>N: Service&lt;LambdaEvent&gt;,
+        N::Future: Future&lt;Output = <span class="prelude-ty">Result</span>&lt;(), N::Error&gt;&gt;,
+        N::Error: Into&lt;Box&lt;<span class="kw">dyn </span>std::error::Error + Send + Sync&gt;&gt; + fmt::Display,
     {
-        <span class="ident">Extension</span> {
-            <span class="ident">events_processor</span>: <span class="ident">ep</span>,
-            <span class="ident">extension_name</span>: <span class="self">self</span>.<span class="ident">extension_name</span>,
-            <span class="ident">events</span>: <span class="self">self</span>.<span class="ident">events</span>,
-            <span class="ident">log_types</span>: <span class="self">self</span>.<span class="ident">log_types</span>,
-            <span class="ident">log_buffering</span>: <span class="self">self</span>.<span class="ident">log_buffering</span>,
-            <span class="ident">logs_processor</span>: <span class="self">self</span>.<span class="ident">logs_processor</span>,
-            <span class="ident">log_port_number</span>: <span class="self">self</span>.<span class="ident">log_port_number</span>,
+        Extension {
+            events_processor: ep,
+            extension_name: <span class="self">self</span>.extension_name,
+            events: <span class="self">self</span>.events,
+            log_types: <span class="self">self</span>.log_types,
+            log_buffering: <span class="self">self</span>.log_buffering,
+            logs_processor: <span class="self">self</span>.logs_processor,
+            log_port_number: <span class="self">self</span>.log_port_number,
         }
     }
 
-    <span class="doccomment">/// Create a new [`Extension`] with a service that receives Lambda logs.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_logs_processor</span><span class="op">&lt;</span><span class="ident">N</span>, <span class="ident">NS</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">lp</span>: <span class="ident">N</span>) -&gt; <span class="ident">Extension</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">E</span>, <span class="ident">N</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">N</span>: <span class="ident">Service</span><span class="op">&lt;</span>()<span class="op">&gt;</span>,
-        <span class="ident">N::Future</span>: <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">NS</span>, <span class="ident">N::Error</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-        <span class="ident">N::Error</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">std::error::Error</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">fmt::Display</span>,
+    <span class="doccomment">/// Create a new [`Extension`] with a service that receives Lambda logs.
+    </span><span class="kw">pub fn </span>with_logs_processor&lt;N, NS&gt;(<span class="self">self</span>, lp: N) -&gt; Extension&lt;<span class="lifetime">&#39;a</span>, E, N&gt;
+    <span class="kw">where
+        </span>N: Service&lt;()&gt;,
+        N::Future: Future&lt;Output = <span class="prelude-ty">Result</span>&lt;NS, N::Error&gt;&gt;,
+        N::Error: Into&lt;Box&lt;<span class="kw">dyn </span>std::error::Error + Send + Sync&gt;&gt; + fmt::Display,
     {
-        <span class="ident">Extension</span> {
-            <span class="ident">logs_processor</span>: <span class="prelude-val">Some</span>(<span class="ident">lp</span>),
-            <span class="ident">events_processor</span>: <span class="self">self</span>.<span class="ident">events_processor</span>,
-            <span class="ident">extension_name</span>: <span class="self">self</span>.<span class="ident">extension_name</span>,
-            <span class="ident">events</span>: <span class="self">self</span>.<span class="ident">events</span>,
-            <span class="ident">log_types</span>: <span class="self">self</span>.<span class="ident">log_types</span>,
-            <span class="ident">log_buffering</span>: <span class="self">self</span>.<span class="ident">log_buffering</span>,
-            <span class="ident">log_port_number</span>: <span class="self">self</span>.<span class="ident">log_port_number</span>,
+        Extension {
+            logs_processor: <span class="prelude-val">Some</span>(lp),
+            events_processor: <span class="self">self</span>.events_processor,
+            extension_name: <span class="self">self</span>.extension_name,
+            events: <span class="self">self</span>.events,
+            log_types: <span class="self">self</span>.log_types,
+            log_buffering: <span class="self">self</span>.log_buffering,
+            log_port_number: <span class="self">self</span>.log_port_number,
         }
     }
 
-    <span class="doccomment">/// Create a new [`Extension`] with a list of logs types to subscribe.</span>
-    <span class="doccomment">/// The only accepted log types are `function`, `platform`, and `extension`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_log_types</span>(<span class="self">self</span>, <span class="ident">log_types</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>]) -&gt; <span class="self">Self</span> {
-        <span class="ident">Extension</span> {
-            <span class="ident">log_types</span>: <span class="prelude-val">Some</span>(<span class="ident">log_types</span>),
-            ..<span class="self">self</span>
-        }
+    <span class="doccomment">/// Create a new [`Extension`] with a list of logs types to subscribe.
+    /// The only accepted log types are `function`, `platform`, and `extension`.
+    </span><span class="kw">pub fn </span>with_log_types(<span class="self">self</span>, log_types: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str]) -&gt; <span class="self">Self </span>{
+        Extension {
+            log_types: <span class="prelude-val">Some</span>(log_types),
+            ..<span class="self">self
+        </span>}
     }
 
-    <span class="doccomment">/// Create a new [`Extension`] with specific configuration to buffer logs.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_log_buffering</span>(<span class="self">self</span>, <span class="ident">lb</span>: <span class="ident">LogBuffering</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">Extension</span> {
-            <span class="ident">log_buffering</span>: <span class="prelude-val">Some</span>(<span class="ident">lb</span>),
-            ..<span class="self">self</span>
-        }
+    <span class="doccomment">/// Create a new [`Extension`] with specific configuration to buffer logs.
+    </span><span class="kw">pub fn </span>with_log_buffering(<span class="self">self</span>, lb: LogBuffering) -&gt; <span class="self">Self </span>{
+        Extension {
+            log_buffering: <span class="prelude-val">Some</span>(lb),
+            ..<span class="self">self
+        </span>}
     }
 
-    <span class="doccomment">/// Create a new [`Extension`] with a different port number to listen to logs.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_log_port_number</span>(<span class="self">self</span>, <span class="ident">port_number</span>: <span class="ident">u16</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">Extension</span> {
-            <span class="ident">log_port_number</span>: <span class="ident">port_number</span>,
-            ..<span class="self">self</span>
-        }
+    <span class="doccomment">/// Create a new [`Extension`] with a different port number to listen to logs.
+    </span><span class="kw">pub fn </span>with_log_port_number(<span class="self">self</span>, port_number: u16) -&gt; <span class="self">Self </span>{
+        Extension {
+            log_port_number: port_number,
+            ..<span class="self">self
+        </span>}
     }
 
-    <span class="doccomment">/// Execute the given extension</span>
-    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">run</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">Client::builder</span>().<span class="ident">build</span>()<span class="question-mark">?</span>;
+    <span class="doccomment">/// Execute the given extension
+    </span><span class="kw">pub async fn </span>run(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+        <span class="kw">let </span>client = <span class="kw-2">&amp;</span>Client::builder().build()<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">extension_id</span> <span class="op">=</span> <span class="ident">register</span>(<span class="ident">client</span>, <span class="self">self</span>.<span class="ident">extension_name</span>, <span class="self">self</span>.<span class="ident">events</span>).<span class="kw">await</span><span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">extension_id</span> <span class="op">=</span> <span class="ident">extension_id</span>.<span class="ident">to_str</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ep</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">events_processor</span>;
+        <span class="kw">let </span>extension_id = register(client, <span class="self">self</span>.extension_name, <span class="self">self</span>.events).<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="kw">let </span>extension_id = extension_id.to_str()<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>ep = <span class="self">self</span>.events_processor;
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">mut</span> <span class="ident">log_processor</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">logs_processor</span> {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>log_processor) = <span class="self">self</span>.logs_processor {
             <span class="macro">trace!</span>(<span class="string">&quot;Log processor found&quot;</span>);
-            <span class="comment">// Spawn task to run processor</span>
-            <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">SocketAddr::from</span>(([<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>], <span class="self">self</span>.<span class="ident">log_port_number</span>));
-            <span class="kw">let</span> <span class="ident">make_service</span> <span class="op">=</span> <span class="ident">service_fn</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">_socket</span>: <span class="kw-2">&amp;</span><span class="ident">AddrStream</span><span class="op">|</span> {
+            <span class="comment">// Spawn task to run processor
+            </span><span class="kw">let </span>addr = SocketAddr::from(([<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>], <span class="self">self</span>.log_port_number));
+            <span class="kw">let </span>make_service = service_fn(<span class="kw">move </span>|_socket: <span class="kw-2">&amp;</span>AddrStream| {
                 <span class="macro">trace!</span>(<span class="string">&quot;Creating new log processor Service&quot;</span>);
-                <span class="kw">let</span> <span class="ident">service</span> <span class="op">=</span> <span class="ident">log_processor</span>.<span class="ident">make_service</span>(());
-                <span class="kw">async</span> <span class="kw">move</span> {
-                    <span class="kw">let</span> <span class="ident">service</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">service</span>.<span class="kw">await</span><span class="question-mark">?</span>));
-                    <span class="prelude-val">Ok</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">L::MakeError</span><span class="op">&gt;</span>(<span class="ident">service_fn</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">req</span><span class="op">|</span> <span class="ident">log_wrapper</span>(<span class="ident">service</span>.<span class="ident">clone</span>(), <span class="ident">req</span>)))
+                <span class="kw">let </span>service = log_processor.make_service(());
+                <span class="kw">async move </span>{
+                    <span class="kw">let </span>service = Arc::new(Mutex::new(service.<span class="kw">await</span><span class="question-mark">?</span>));
+                    <span class="prelude-val">Ok</span>::&lt;<span class="kw">_</span>, L::MakeError&gt;(service_fn(<span class="kw">move </span>|req| log_wrapper(service.clone(), req)))
                 }
             });
-            <span class="kw">let</span> <span class="ident">server</span> <span class="op">=</span> <span class="ident">Server::bind</span>(<span class="kw-2">&amp;</span><span class="ident">addr</span>).<span class="ident">serve</span>(<span class="ident">make_service</span>);
-            <span class="ident">tokio::spawn</span>(<span class="kw">async</span> <span class="kw">move</span> {
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">server</span>.<span class="kw">await</span> {
-                    <span class="macro">error!</span>(<span class="string">&quot;Error while running log processor: {}&quot;</span>, <span class="ident">e</span>);
+            <span class="kw">let </span>server = Server::bind(<span class="kw-2">&amp;</span>addr).serve(make_service);
+            tokio::spawn(<span class="kw">async move </span>{
+                <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = server.<span class="kw">await </span>{
+                    <span class="macro">error!</span>(<span class="string">&quot;Error while running log processor: {}&quot;</span>, e);
                 }
             });
             <span class="macro">trace!</span>(<span class="string">&quot;Log processor started&quot;</span>);
 
-            <span class="comment">// Call Logs API to start receiving events</span>
-            <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">requests::subscribe_logs_request</span>(
-                <span class="ident">extension_id</span>,
-                <span class="self">self</span>.<span class="ident">log_types</span>,
-                <span class="self">self</span>.<span class="ident">log_buffering</span>,
-                <span class="self">self</span>.<span class="ident">log_port_number</span>,
+            <span class="comment">// Call Logs API to start receiving events
+            </span><span class="kw">let </span>req = requests::subscribe_logs_request(
+                extension_id,
+                <span class="self">self</span>.log_types,
+                <span class="self">self</span>.log_buffering,
+                <span class="self">self</span>.log_port_number,
             )<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">client</span>.<span class="ident">call</span>(<span class="ident">req</span>).<span class="kw">await</span><span class="question-mark">?</span>;
-            <span class="kw">if</span> <span class="ident">res</span>.<span class="ident">status</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">http::StatusCode::OK</span> {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ExtensionError::boxed</span>(<span class="string">&quot;unable to initialize the logs api&quot;</span>));
+            <span class="kw">let </span>res = client.call(req).<span class="kw">await</span><span class="question-mark">?</span>;
+            <span class="kw">if </span>res.status() != http::StatusCode::OK {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(ExtensionError::boxed(<span class="string">&quot;unable to initialize the logs api&quot;</span>));
             }
             <span class="macro">trace!</span>(<span class="string">&quot;Registered extension with Logs API&quot;</span>);
         }
 
-        <span class="kw">let</span> <span class="ident">incoming</span> <span class="op">=</span> <span class="macro">async_stream::stream!</span> {
-            <span class="kw">loop</span> {
+        <span class="kw">let </span>incoming = <span class="macro">async_stream::stream! </span>{
+            <span class="kw">loop </span>{
                 <span class="macro">trace!</span>(<span class="string">&quot;Waiting for next event (incoming loop)&quot;</span>);
-                <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">requests::next_event_request</span>(<span class="ident">extension_id</span>)<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">client</span>.<span class="ident">call</span>(<span class="ident">req</span>).<span class="kw">await</span>;
-                <span class="kw">yield</span> <span class="ident">res</span>;
+                <span class="kw">let </span>req = requests::next_event_request(extension_id)<span class="question-mark">?</span>;
+                <span class="kw">let </span>res = client.call(req).<span class="kw">await</span>;
+                <span class="kw">yield </span>res;
             }
         };
 
-        <span class="macro">tokio::pin!</span>(<span class="ident">incoming</span>);
-        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">event</span>) <span class="op">=</span> <span class="ident">incoming</span>.<span class="ident">next</span>().<span class="kw">await</span> {
+        <span class="macro">tokio::pin!</span>(incoming);
+        <span class="kw">while let </span><span class="prelude-val">Some</span>(event) = incoming.next().<span class="kw">await </span>{
             <span class="macro">trace!</span>(<span class="string">&quot;New event arrived (run loop)&quot;</span>);
-            <span class="kw">let</span> <span class="ident">event</span> <span class="op">=</span> <span class="ident">event</span><span class="question-mark">?</span>;
-            <span class="kw">let</span> (<span class="ident">_parts</span>, <span class="ident">body</span>) <span class="op">=</span> <span class="ident">event</span>.<span class="ident">into_parts</span>();
+            <span class="kw">let </span>event = event<span class="question-mark">?</span>;
+            <span class="kw">let </span>(_parts, body) = event.into_parts();
 
-            <span class="kw">let</span> <span class="ident">body</span> <span class="op">=</span> <span class="ident">hyper::body::to_bytes</span>(<span class="ident">body</span>).<span class="kw">await</span><span class="question-mark">?</span>;
-            <span class="macro">trace!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">std::str::from_utf8</span>(<span class="kw-2">&amp;</span><span class="ident">body</span>)<span class="question-mark">?</span>); <span class="comment">// this may be very verbose</span>
-            <span class="kw">let</span> <span class="ident">event</span>: <span class="ident">NextEvent</span> <span class="op">=</span> <span class="ident">serde_json::from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">body</span>)<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">is_invoke</span> <span class="op">=</span> <span class="ident">event</span>.<span class="ident">is_invoke</span>();
+            <span class="kw">let </span>body = hyper::body::to_bytes(body).<span class="kw">await</span><span class="question-mark">?</span>;
+            <span class="macro">trace!</span>(<span class="string">&quot;{}&quot;</span>, std::str::from_utf8(<span class="kw-2">&amp;</span>body)<span class="question-mark">?</span>); <span class="comment">// this may be very verbose
+            </span><span class="kw">let </span>event: NextEvent = serde_json::from_slice(<span class="kw-2">&amp;</span>body)<span class="question-mark">?</span>;
+            <span class="kw">let </span>is_invoke = event.is_invoke();
 
-            <span class="kw">let</span> <span class="ident">event</span> <span class="op">=</span> <span class="ident">LambdaEvent::new</span>(<span class="ident">extension_id</span>, <span class="ident">event</span>);
+            <span class="kw">let </span>event = LambdaEvent::new(extension_id, event);
 
-            <span class="kw">let</span> <span class="ident">ep</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">ep</span>.<span class="ident">ready</span>().<span class="kw">await</span> {
-                <span class="prelude-val">Ok</span>(<span class="ident">ep</span>) =&gt; <span class="ident">ep</span>,
-                <span class="prelude-val">Err</span>(<span class="ident">error</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Inner service is not ready: {:?}&quot;</span>, <span class="ident">error</span>);
-                    <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">is_invoke</span> {
-                        <span class="ident">requests::init_error</span>(<span class="ident">extension_id</span>, <span class="kw-2">&amp;</span><span class="ident">error</span>.<span class="ident">to_string</span>(), <span class="prelude-val">None</span>)<span class="question-mark">?</span>
-                    } <span class="kw">else</span> {
-                        <span class="ident">requests::exit_error</span>(<span class="ident">extension_id</span>, <span class="kw-2">&amp;</span><span class="ident">error</span>.<span class="ident">to_string</span>(), <span class="prelude-val">None</span>)<span class="question-mark">?</span>
-                    };
+            <span class="kw">let </span>ep = <span class="kw">match </span>ep.ready().<span class="kw">await </span>{
+                <span class="prelude-val">Ok</span>(ep) =&gt; ep,
+                <span class="prelude-val">Err</span>(error) =&gt; {
+                    <span class="macro">println!</span>(<span class="string">&quot;Inner service is not ready: {:?}&quot;</span>, error);
+                    <span class="kw">let </span>req = <span class="kw">if </span>is_invoke {
+                        requests::init_error(extension_id, <span class="kw-2">&amp;</span>error.to_string(), <span class="prelude-val">None</span>)<span class="question-mark">?
+                    </span>} <span class="kw">else </span>{
+                        requests::exit_error(extension_id, <span class="kw-2">&amp;</span>error.to_string(), <span class="prelude-val">None</span>)<span class="question-mark">?
+                    </span>};
 
-                    <span class="ident">client</span>.<span class="ident">call</span>(<span class="ident">req</span>).<span class="kw">await</span><span class="question-mark">?</span>;
-                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">error</span>.<span class="ident">into</span>());
+                    client.call(req).<span class="kw">await</span><span class="question-mark">?</span>;
+                    <span class="kw">return </span><span class="prelude-val">Err</span>(error.into());
                 }
             };
 
-            <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">ep</span>.<span class="ident">call</span>(<span class="ident">event</span>).<span class="kw">await</span>;
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">error</span>) <span class="op">=</span> <span class="ident">res</span> {
-                <span class="macro">println!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">error</span>);
-                <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">is_invoke</span> {
-                    <span class="ident">requests::init_error</span>(<span class="ident">extension_id</span>, <span class="kw-2">&amp;</span><span class="ident">error</span>.<span class="ident">to_string</span>(), <span class="prelude-val">None</span>)<span class="question-mark">?</span>
-                } <span class="kw">else</span> {
-                    <span class="ident">requests::exit_error</span>(<span class="ident">extension_id</span>, <span class="kw-2">&amp;</span><span class="ident">error</span>.<span class="ident">to_string</span>(), <span class="prelude-val">None</span>)<span class="question-mark">?</span>
-                };
+            <span class="kw">let </span>res = ep.call(event).<span class="kw">await</span>;
+            <span class="kw">if let </span><span class="prelude-val">Err</span>(error) = res {
+                <span class="macro">println!</span>(<span class="string">&quot;{:?}&quot;</span>, error);
+                <span class="kw">let </span>req = <span class="kw">if </span>is_invoke {
+                    requests::init_error(extension_id, <span class="kw-2">&amp;</span>error.to_string(), <span class="prelude-val">None</span>)<span class="question-mark">?
+                </span>} <span class="kw">else </span>{
+                    requests::exit_error(extension_id, <span class="kw-2">&amp;</span>error.to_string(), <span class="prelude-val">None</span>)<span class="question-mark">?
+                </span>};
 
-                <span class="ident">client</span>.<span class="ident">call</span>(<span class="ident">req</span>).<span class="kw">await</span><span class="question-mark">?</span>;
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">error</span>.<span class="ident">into</span>());
+                client.call(req).<span class="kw">await</span><span class="question-mark">?</span>;
+                <span class="kw">return </span><span class="prelude-val">Err</span>(error.into());
             }
         }
         <span class="prelude-val">Ok</span>(())
     }
 }
 
-<span class="doccomment">/// A no-op generic processor</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Identity</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="ident">_phantom</span>: <span class="ident">std::marker::PhantomData</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+<span class="doccomment">/// A no-op generic processor
+</span><span class="attribute">#[derive(Clone)]
+</span><span class="kw">pub struct </span>Identity&lt;T&gt; {
+    _phantom: std::marker::PhantomData&lt;T&gt;,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Identity</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">_phantom</span>: <span class="ident">std::marker::PhantomData</span>,
+<span class="kw">impl</span>&lt;T&gt; Identity&lt;T&gt; {
+    <span class="kw">fn </span>new() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            _phantom: std::marker::PhantomData,
         }
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Identity</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Infallible</span>;
-    <span class="kw">type</span> <span class="ident">Future</span> <span class="op">=</span> <span class="ident">Pin</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Response</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span><span class="op">&gt;</span><span class="op">&gt;</span>;
-    <span class="kw">type</span> <span class="ident">Response</span> <span class="op">=</span> ();
+<span class="kw">impl</span>&lt;T&gt; Service&lt;T&gt; <span class="kw">for </span>Identity&lt;T&gt; {
+    <span class="kw">type </span>Error = Infallible;
+    <span class="kw">type </span>Future = Pin&lt;Box&lt;<span class="kw">dyn </span>Future&lt;Output = <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Response, <span class="self">Self</span>::Error&gt;&gt; + Send&gt;&gt;;
+    <span class="kw">type </span>Response = ();
 
-    <span class="kw">fn</span> <span class="ident">poll_ready</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">_cx</span>: <span class="kw-2">&amp;mut</span> <span class="ident">core::task::Context</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">core::task::Poll</span><span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="ident">core::task::Poll::Ready</span>(<span class="prelude-val">Ok</span>(()))
+    <span class="kw">fn </span>poll_ready(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _cx: <span class="kw-2">&amp;mut </span>core::task::Context&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; core::task::Poll&lt;<span class="prelude-ty">Result</span>&lt;(), <span class="self">Self</span>::Error&gt;&gt; {
+        core::task::Poll::Ready(<span class="prelude-val">Ok</span>(()))
     }
 
-    <span class="kw">fn</span> <span class="ident">call</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">_event</span>: <span class="ident">T</span>) -&gt; <span class="ident"><span class="self">Self</span>::Future</span> {
-        <span class="ident">Box::pin</span>(<span class="ident">ready</span>(<span class="prelude-val">Ok</span>(())))
+    <span class="kw">fn </span>call(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _event: T) -&gt; <span class="self">Self</span>::Future {
+        Box::pin(ready(<span class="prelude-val">Ok</span>(())))
     }
 }
 
-<span class="doccomment">/// Service factory to generate no-op generic processors</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">MakeIdentity</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="ident">_phantom</span>: <span class="ident">std::marker::PhantomData</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+<span class="doccomment">/// Service factory to generate no-op generic processors
+</span><span class="attribute">#[derive(Clone)]
+</span><span class="kw">pub struct </span>MakeIdentity&lt;T&gt; {
+    _phantom: std::marker::PhantomData&lt;T&gt;,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Service</span><span class="op">&lt;</span>()<span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">MakeIdentity</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
+<span class="kw">impl</span>&lt;T&gt; Service&lt;()&gt; <span class="kw">for </span>MakeIdentity&lt;T&gt;
+<span class="kw">where
+    </span>T: Send + Sync + <span class="lifetime">&#39;static</span>,
 {
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Infallible</span>;
-    <span class="kw">type</span> <span class="ident">Response</span> <span class="op">=</span> <span class="ident">Identity</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
-    <span class="kw">type</span> <span class="ident">Future</span> <span class="op">=</span> <span class="ident">Pin</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Response</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+    <span class="kw">type </span>Error = Infallible;
+    <span class="kw">type </span>Response = Identity&lt;T&gt;;
+    <span class="kw">type </span>Future = Pin&lt;Box&lt;<span class="kw">dyn </span>Future&lt;Output = <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Response, <span class="self">Self</span>::Error&gt;&gt; + Send&gt;&gt;;
 
-    <span class="kw">fn</span> <span class="ident">poll_ready</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">_cx</span>: <span class="kw-2">&amp;mut</span> <span class="ident">core::task::Context</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">core::task::Poll</span><span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="ident">core::task::Poll::Ready</span>(<span class="prelude-val">Ok</span>(()))
+    <span class="kw">fn </span>poll_ready(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _cx: <span class="kw-2">&amp;mut </span>core::task::Context&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; core::task::Poll&lt;<span class="prelude-ty">Result</span>&lt;(), <span class="self">Self</span>::Error&gt;&gt; {
+        core::task::Poll::Ready(<span class="prelude-val">Ok</span>(()))
     }
 
-    <span class="kw">fn</span> <span class="ident">call</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="kw">_</span>: ()) -&gt; <span class="ident"><span class="self">Self</span>::Future</span> {
-        <span class="ident">Box::pin</span>(<span class="ident">ready</span>(<span class="prelude-val">Ok</span>(<span class="ident">Identity::new</span>())))
+    <span class="kw">fn </span>call(<span class="kw-2">&amp;mut </span><span class="self">self</span>, <span class="kw">_</span>: ()) -&gt; <span class="self">Self</span>::Future {
+        Box::pin(ready(<span class="prelude-val">Ok</span>(Identity::new())))
     }
 }
 
-<span class="doccomment">/// Initialize and register the extension in the Extensions API</span>
-<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">register</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(
-    <span class="ident">client</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Client</span>,
-    <span class="ident">extension_name</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span>,
-    <span class="ident">events</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>]<span class="op">&gt;</span>,
-) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">http::HeaderValue</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">extension_name</span> {
-        <span class="prelude-val">Some</span>(<span class="ident">name</span>) =&gt; <span class="ident">name</span>.<span class="ident">into</span>(),
-        <span class="prelude-val">None</span> =&gt; {
-            <span class="kw">let</span> <span class="ident">args</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">std::env::args</span>().<span class="ident">collect</span>();
-            <span class="ident">PathBuf::from</span>(<span class="ident">args</span>[<span class="number">0</span>].<span class="ident">clone</span>())
-                .<span class="ident">file_name</span>()
-                .<span class="ident">expect</span>(<span class="string">&quot;unexpected executable name&quot;</span>)
-                .<span class="ident">to_str</span>()
-                .<span class="ident">expect</span>(<span class="string">&quot;unexpect executable name&quot;</span>)
-                .<span class="ident">to_string</span>()
+<span class="doccomment">/// Initialize and register the extension in the Extensions API
+</span><span class="kw">async fn </span>register&lt;<span class="lifetime">&#39;a</span>&gt;(
+    client: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Client,
+    extension_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str&gt;,
+    events: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str]&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;http::HeaderValue, Error&gt; {
+    <span class="kw">let </span>name = <span class="kw">match </span>extension_name {
+        <span class="prelude-val">Some</span>(name) =&gt; name.into(),
+        <span class="prelude-val">None </span>=&gt; {
+            <span class="kw">let </span>args: Vec&lt;String&gt; = std::env::args().collect();
+            PathBuf::from(args[<span class="number">0</span>].clone())
+                .file_name()
+                .expect(<span class="string">&quot;unexpected executable name&quot;</span>)
+                .to_str()
+                .expect(<span class="string">&quot;unexpect executable name&quot;</span>)
+                .to_string()
         }
     };
 
-    <span class="kw">let</span> <span class="ident">events</span> <span class="op">=</span> <span class="ident">events</span>.<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;INVOKE&quot;</span>, <span class="string">&quot;SHUTDOWN&quot;</span>]);
+    <span class="kw">let </span>events = events.unwrap_or(<span class="kw-2">&amp;</span>[<span class="string">&quot;INVOKE&quot;</span>, <span class="string">&quot;SHUTDOWN&quot;</span>]);
 
-    <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">requests::register_request</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>, <span class="ident">events</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">client</span>.<span class="ident">call</span>(<span class="ident">req</span>).<span class="kw">await</span><span class="question-mark">?</span>;
-    <span class="kw">if</span> <span class="ident">res</span>.<span class="ident">status</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">http::StatusCode::OK</span> {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ExtensionError::boxed</span>(<span class="string">&quot;unable to register the extension&quot;</span>));
+    <span class="kw">let </span>req = requests::register_request(<span class="kw-2">&amp;</span>name, events)<span class="question-mark">?</span>;
+    <span class="kw">let </span>res = client.call(req).<span class="kw">await</span><span class="question-mark">?</span>;
+    <span class="kw">if </span>res.status() != http::StatusCode::OK {
+        <span class="kw">return </span><span class="prelude-val">Err</span>(ExtensionError::boxed(<span class="string">&quot;unable to register the extension&quot;</span>));
     }
 
-    <span class="kw">let</span> <span class="ident">header</span> <span class="op">=</span> <span class="ident">res</span>
-        .<span class="ident">headers</span>()
-        .<span class="ident">get</span>(<span class="ident">requests::EXTENSION_ID_HEADER</span>)
-        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">ExtensionError::boxed</span>(<span class="string">&quot;missing extension id header&quot;</span>))
-        .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">ExtensionError::boxed</span>(<span class="ident">e</span>.<span class="ident">to_string</span>()))<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(<span class="ident">header</span>.<span class="ident">clone</span>())
+    <span class="kw">let </span>header = res
+        .headers()
+        .get(requests::EXTENSION_ID_HEADER)
+        .ok_or_else(|| ExtensionError::boxed(<span class="string">&quot;missing extension id header&quot;</span>))
+        .map_err(|e| ExtensionError::boxed(e.to_string()))<span class="question-mark">?</span>;
+    <span class="prelude-val">Ok</span>(header.clone())
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lambda_extension" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lambda_extension" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

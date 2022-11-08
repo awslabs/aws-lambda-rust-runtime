@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lambda-extension/src/logs.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>logs.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../lambda_extension/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../lambda_extension/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../lambda_extension/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lambda-extension/src/logs.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>logs.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../lambda_extension/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../lambda_extension/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../lambda_extension/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -300,307 +300,307 @@
 <span id="300">300</span>
 <span id="301">301</span>
 <span id="302">302</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">chrono</span>::{<span class="ident">DateTime</span>, <span class="ident">Utc</span>};
-<span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">boxed::Box</span>, <span class="ident">fmt</span>, <span class="ident">sync::Arc</span>};
-<span class="kw">use</span> <span class="ident">tokio::sync::Mutex</span>;
-<span class="kw">use</span> <span class="ident">tower::Service</span>;
-<span class="kw">use</span> <span class="ident">tracing</span>::{<span class="ident">error</span>, <span class="ident">trace</span>};
+</pre><pre class="rust"><code><span class="kw">use </span>chrono::{DateTime, Utc};
+<span class="kw">use </span>serde::{Deserialize, Serialize};
+<span class="kw">use </span>std::{boxed::Box, fmt, sync::Arc};
+<span class="kw">use </span>tokio::sync::Mutex;
+<span class="kw">use </span>tower::Service;
+<span class="kw">use </span>tracing::{error, trace};
 
-<span class="doccomment">/// Payload received from the Lambda Logs API</span>
-<span class="doccomment">/// See: https://docs.aws.amazon.com/lambda/latest/dg/runtimes-logs-api.html#runtimes-logs-api-msg</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Deserialize</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LambdaLog</span> {
-    <span class="doccomment">/// Time when the log was generated</span>
-    <span class="kw">pub</span> <span class="ident">time</span>: <span class="ident">DateTime</span><span class="op">&lt;</span><span class="ident">Utc</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// Log record entry</span>
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">flatten</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">record</span>: <span class="ident">LambdaLogRecord</span>,
+<span class="doccomment">/// Payload received from the Lambda Logs API
+/// See: https://docs.aws.amazon.com/lambda/latest/dg/runtimes-logs-api.html#runtimes-logs-api-msg
+</span><span class="attribute">#[derive(Clone, Debug, Deserialize, PartialEq)]
+</span><span class="kw">pub struct </span>LambdaLog {
+    <span class="doccomment">/// Time when the log was generated
+    </span><span class="kw">pub </span>time: DateTime&lt;Utc&gt;,
+    <span class="doccomment">/// Log record entry
+    </span><span class="attribute">#[serde(flatten)]
+    </span><span class="kw">pub </span>record: LambdaLogRecord,
 }
 
-<span class="doccomment">/// Record in a LambdaLog entry</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Deserialize</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">tag</span> <span class="op">=</span> <span class="string">&quot;type&quot;</span>, <span class="ident">content</span> <span class="op">=</span> <span class="string">&quot;record&quot;</span>, <span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;lowercase&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">LambdaLogRecord</span> {
-    <span class="doccomment">/// Function log records</span>
-    <span class="ident">Function</span>(<span class="ident">String</span>),
+<span class="doccomment">/// Record in a LambdaLog entry
+</span><span class="attribute">#[derive(Clone, Debug, Deserialize, PartialEq)]
+#[serde(tag = <span class="string">&quot;type&quot;</span>, content = <span class="string">&quot;record&quot;</span>, rename_all = <span class="string">&quot;lowercase&quot;</span>)]
+</span><span class="kw">pub enum </span>LambdaLogRecord {
+    <span class="doccomment">/// Function log records
+    </span>Function(String),
 
-    <span class="doccomment">/// Extension log records</span>
-    <span class="ident">Extension</span>(<span class="ident">String</span>),
+    <span class="doccomment">/// Extension log records
+    </span>Extension(String),
 
-    <span class="doccomment">/// Platform start record</span>
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename</span> <span class="op">=</span> <span class="string">&quot;platform.start&quot;</span>, <span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;camelCase&quot;</span>)]</span>
-    <span class="ident">PlatformStart</span> {
-        <span class="doccomment">/// Request identifier</span>
-        <span class="ident">request_id</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// Platform start record
+    </span><span class="attribute">#[serde(rename = <span class="string">&quot;platform.start&quot;</span>, rename_all = <span class="string">&quot;camelCase&quot;</span>)]
+    </span>PlatformStart {
+        <span class="doccomment">/// Request identifier
+        </span>request_id: String,
     },
-    <span class="doccomment">/// Platform stop record</span>
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename</span> <span class="op">=</span> <span class="string">&quot;platform.end&quot;</span>, <span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;camelCase&quot;</span>)]</span>
-    <span class="ident">PlatformEnd</span> {
-        <span class="doccomment">/// Request identifier</span>
-        <span class="ident">request_id</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// Platform stop record
+    </span><span class="attribute">#[serde(rename = <span class="string">&quot;platform.end&quot;</span>, rename_all = <span class="string">&quot;camelCase&quot;</span>)]
+    </span>PlatformEnd {
+        <span class="doccomment">/// Request identifier
+        </span>request_id: String,
     },
-    <span class="doccomment">/// Platform report record</span>
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename</span> <span class="op">=</span> <span class="string">&quot;platform.report&quot;</span>, <span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;camelCase&quot;</span>)]</span>
-    <span class="ident">PlatformReport</span> {
-        <span class="doccomment">/// Request identifier</span>
-        <span class="ident">request_id</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// Request metrics</span>
-        <span class="ident">metrics</span>: <span class="ident">LogPlatformReportMetrics</span>,
+    <span class="doccomment">/// Platform report record
+    </span><span class="attribute">#[serde(rename = <span class="string">&quot;platform.report&quot;</span>, rename_all = <span class="string">&quot;camelCase&quot;</span>)]
+    </span>PlatformReport {
+        <span class="doccomment">/// Request identifier
+        </span>request_id: String,
+        <span class="doccomment">/// Request metrics
+        </span>metrics: LogPlatformReportMetrics,
     },
-    <span class="doccomment">/// Runtime or execution environment error record</span>
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename</span> <span class="op">=</span> <span class="string">&quot;platform.fault&quot;</span>)]</span>
-    <span class="ident">PlatformFault</span>(<span class="ident">String</span>),
-    <span class="doccomment">/// Extension-specific record</span>
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename</span> <span class="op">=</span> <span class="string">&quot;platform.extension&quot;</span>, <span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;camelCase&quot;</span>)]</span>
-    <span class="ident">PlatformExtension</span> {
-        <span class="doccomment">/// Name of the extension</span>
-        <span class="ident">name</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// State of the extension</span>
-        <span class="ident">state</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// Events sent to the extension</span>
-        <span class="ident">events</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// Runtime or execution environment error record
+    </span><span class="attribute">#[serde(rename = <span class="string">&quot;platform.fault&quot;</span>)]
+    </span>PlatformFault(String),
+    <span class="doccomment">/// Extension-specific record
+    </span><span class="attribute">#[serde(rename = <span class="string">&quot;platform.extension&quot;</span>, rename_all = <span class="string">&quot;camelCase&quot;</span>)]
+    </span>PlatformExtension {
+        <span class="doccomment">/// Name of the extension
+        </span>name: String,
+        <span class="doccomment">/// State of the extension
+        </span>state: String,
+        <span class="doccomment">/// Events sent to the extension
+        </span>events: Vec&lt;String&gt;,
     },
-    <span class="doccomment">/// Log processor-specific record</span>
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename</span> <span class="op">=</span> <span class="string">&quot;platform.logsSubscription&quot;</span>, <span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;camelCase&quot;</span>)]</span>
-    <span class="ident">PlatformLogsSubscription</span> {
-        <span class="doccomment">/// Name of the extension</span>
-        <span class="ident">name</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// State of the extensions</span>
-        <span class="ident">state</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// Types of records sent to the extension</span>
-        <span class="ident">types</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// Log processor-specific record
+    </span><span class="attribute">#[serde(rename = <span class="string">&quot;platform.logsSubscription&quot;</span>, rename_all = <span class="string">&quot;camelCase&quot;</span>)]
+    </span>PlatformLogsSubscription {
+        <span class="doccomment">/// Name of the extension
+        </span>name: String,
+        <span class="doccomment">/// State of the extensions
+        </span>state: String,
+        <span class="doccomment">/// Types of records sent to the extension
+        </span>types: Vec&lt;String&gt;,
     },
-    <span class="doccomment">/// Record generated when the log processor is falling behind</span>
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename</span> <span class="op">=</span> <span class="string">&quot;platform.logsDropped&quot;</span>, <span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;camelCase&quot;</span>)]</span>
-    <span class="ident">PlatformLogsDropped</span> {
-        <span class="doccomment">/// Reason for dropping the logs</span>
-        <span class="ident">reason</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// Number of records dropped</span>
-        <span class="ident">dropped_records</span>: <span class="ident">u64</span>,
-        <span class="doccomment">/// Total size of the dropped records</span>
-        <span class="ident">dropped_bytes</span>: <span class="ident">u64</span>,
+    <span class="doccomment">/// Record generated when the log processor is falling behind
+    </span><span class="attribute">#[serde(rename = <span class="string">&quot;platform.logsDropped&quot;</span>, rename_all = <span class="string">&quot;camelCase&quot;</span>)]
+    </span>PlatformLogsDropped {
+        <span class="doccomment">/// Reason for dropping the logs
+        </span>reason: String,
+        <span class="doccomment">/// Number of records dropped
+        </span>dropped_records: u64,
+        <span class="doccomment">/// Total size of the dropped records
+        </span>dropped_bytes: u64,
     },
-    <span class="doccomment">/// Record marking the completion of an invocation</span>
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename</span> <span class="op">=</span> <span class="string">&quot;platform.runtimeDone&quot;</span>, <span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;camelCase&quot;</span>)]</span>
-    <span class="ident">PlatformRuntimeDone</span> {
-        <span class="doccomment">/// Request identifier</span>
-        <span class="ident">request_id</span>: <span class="ident">String</span>,
-        <span class="doccomment">/// Status of the invocation</span>
-        <span class="ident">status</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// Record marking the completion of an invocation
+    </span><span class="attribute">#[serde(rename = <span class="string">&quot;platform.runtimeDone&quot;</span>, rename_all = <span class="string">&quot;camelCase&quot;</span>)]
+    </span>PlatformRuntimeDone {
+        <span class="doccomment">/// Request identifier
+        </span>request_id: String,
+        <span class="doccomment">/// Status of the invocation
+        </span>status: String,
     },
 }
 
-<span class="doccomment">/// Platform report metrics</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Deserialize</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;camelCase&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LogPlatformReportMetrics</span> {
-    <span class="doccomment">/// Duration in milliseconds</span>
-    <span class="kw">pub</span> <span class="ident">duration_ms</span>: <span class="ident">f64</span>,
-    <span class="doccomment">/// Billed duration in milliseconds</span>
-    <span class="kw">pub</span> <span class="ident">billed_duration_ms</span>: <span class="ident">u64</span>,
-    <span class="doccomment">/// Memory allocated in megabytes</span>
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename</span> <span class="op">=</span> <span class="string">&quot;memorySizeMB&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">memory_size_mb</span>: <span class="ident">u64</span>,
-    <span class="doccomment">/// Maximum memory used for the invoke in megabytes</span>
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename</span> <span class="op">=</span> <span class="string">&quot;maxMemoryUsedMB&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">max_memory_used_mb</span>: <span class="ident">u64</span>,
-    <span class="doccomment">/// Init duration in case of a cold start</span>
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span> <span class="op">=</span> <span class="string">&quot;Option::default&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">init_duration_ms</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>,
+<span class="doccomment">/// Platform report metrics
+</span><span class="attribute">#[derive(Clone, Debug, Deserialize, PartialEq)]
+#[serde(rename_all = <span class="string">&quot;camelCase&quot;</span>)]
+</span><span class="kw">pub struct </span>LogPlatformReportMetrics {
+    <span class="doccomment">/// Duration in milliseconds
+    </span><span class="kw">pub </span>duration_ms: f64,
+    <span class="doccomment">/// Billed duration in milliseconds
+    </span><span class="kw">pub </span>billed_duration_ms: u64,
+    <span class="doccomment">/// Memory allocated in megabytes
+    </span><span class="attribute">#[serde(rename = <span class="string">&quot;memorySizeMB&quot;</span>)]
+    </span><span class="kw">pub </span>memory_size_mb: u64,
+    <span class="doccomment">/// Maximum memory used for the invoke in megabytes
+    </span><span class="attribute">#[serde(rename = <span class="string">&quot;maxMemoryUsedMB&quot;</span>)]
+    </span><span class="kw">pub </span>max_memory_used_mb: u64,
+    <span class="doccomment">/// Init duration in case of a cold start
+    </span><span class="attribute">#[serde(default = <span class="string">&quot;Option::default&quot;</span>)]
+    </span><span class="kw">pub </span>init_duration_ms: <span class="prelude-ty">Option</span>&lt;f64&gt;,
 }
 
-<span class="doccomment">/// Log buffering configuration.</span>
-<span class="doccomment">/// Allows Lambda to buffer logs before deliverying them to a subscriber.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Serialize</span>)]</span>
-<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;camelCase&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LogBuffering</span> {
-    <span class="doccomment">/// The maximum time (in milliseconds) to buffer a batch.</span>
-    <span class="doccomment">/// Default: 1,000. Minimum: 25. Maximum: 30,000</span>
-    <span class="kw">pub</span> <span class="ident">timeout_ms</span>: <span class="ident">usize</span>,
-    <span class="doccomment">/// The maximum size (in bytes) of the logs to buffer in memory.</span>
-    <span class="doccomment">/// Default: 262,144. Minimum: 262,144. Maximum: 1,048,576</span>
-    <span class="kw">pub</span> <span class="ident">max_bytes</span>: <span class="ident">usize</span>,
-    <span class="doccomment">/// The maximum number of events to buffer in memory.</span>
-    <span class="doccomment">/// Default: 10,000. Minimum: 1,000. Maximum: 10,000</span>
-    <span class="kw">pub</span> <span class="ident">max_items</span>: <span class="ident">usize</span>,
+<span class="doccomment">/// Log buffering configuration.
+/// Allows Lambda to buffer logs before deliverying them to a subscriber.
+</span><span class="attribute">#[derive(Debug, Serialize)]
+#[serde(rename_all = <span class="string">&quot;camelCase&quot;</span>)]
+</span><span class="kw">pub struct </span>LogBuffering {
+    <span class="doccomment">/// The maximum time (in milliseconds) to buffer a batch.
+    /// Default: 1,000. Minimum: 25. Maximum: 30,000
+    </span><span class="kw">pub </span>timeout_ms: usize,
+    <span class="doccomment">/// The maximum size (in bytes) of the logs to buffer in memory.
+    /// Default: 262,144. Minimum: 262,144. Maximum: 1,048,576
+    </span><span class="kw">pub </span>max_bytes: usize,
+    <span class="doccomment">/// The maximum number of events to buffer in memory.
+    /// Default: 10,000. Minimum: 1,000. Maximum: 10,000
+    </span><span class="kw">pub </span>max_items: usize,
 }
 
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">LogBuffering</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident">LogBuffering</span> {
-            <span class="ident">timeout_ms</span>: <span class="number">1_000</span>,
-            <span class="ident">max_bytes</span>: <span class="number">262_144</span>,
-            <span class="ident">max_items</span>: <span class="number">10_000</span>,
+<span class="kw">impl </span>Default <span class="kw">for </span>LogBuffering {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        LogBuffering {
+            timeout_ms: <span class="number">1_000</span>,
+            max_bytes: <span class="number">262_144</span>,
+            max_items: <span class="number">10_000</span>,
         }
     }
 }
 
-<span class="doccomment">/// Wrapper function that sends logs to the subscriber Service</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This takes an `hyper::Request` and transforms it into `Vec&lt;LambdaLog&gt;` for the</span>
-<span class="doccomment">/// underlying `Service` to process.</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">log_wrapper</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(
-    <span class="ident">service</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="ident">req</span>: <span class="ident">hyper::Request</span><span class="op">&lt;</span><span class="ident">hyper::Body</span><span class="op">&gt;</span>,
-) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">hyper::Response</span><span class="op">&lt;</span><span class="ident">hyper::Body</span><span class="op">&gt;</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">std::error::Error</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span><span class="op">&gt;</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">S</span>: <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">LambdaLog</span><span class="op">&gt;</span>, <span class="ident">Response</span> <span class="op">=</span> ()<span class="op">&gt;</span>,
-    <span class="ident">S::Error</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">std::error::Error</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">fmt::Debug</span>,
-    <span class="ident">S::Future</span>: <span class="ident">Send</span>,
+<span class="doccomment">/// Wrapper function that sends logs to the subscriber Service
+///
+/// This takes an `hyper::Request` and transforms it into `Vec&lt;LambdaLog&gt;` for the
+/// underlying `Service` to process.
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">async fn </span>log_wrapper&lt;S&gt;(
+    service: Arc&lt;Mutex&lt;S&gt;&gt;,
+    req: hyper::Request&lt;hyper::Body&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;hyper::Response&lt;hyper::Body&gt;, Box&lt;<span class="kw">dyn </span>std::error::Error + Send + Sync&gt;&gt;
+<span class="kw">where
+    </span>S: Service&lt;Vec&lt;LambdaLog&gt;, Response = ()&gt;,
+    S::Error: Into&lt;Box&lt;<span class="kw">dyn </span>std::error::Error + Send + Sync&gt;&gt; + fmt::Debug,
+    S::Future: Send,
 {
     <span class="macro">trace!</span>(<span class="string">&quot;Received logs request&quot;</span>);
-    <span class="comment">// Parse the request body as a Vec&lt;LambdaLog&gt;</span>
-    <span class="kw">let</span> <span class="ident">body</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">hyper::body::to_bytes</span>(<span class="ident">req</span>.<span class="ident">into_body</span>()).<span class="kw">await</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">body</span>) =&gt; <span class="ident">body</span>,
-        <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; {
-            <span class="macro">error!</span>(<span class="string">&quot;Error reading logs request body: {}&quot;</span>, <span class="ident">e</span>);
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">hyper::Response::builder</span>()
-                .<span class="ident">status</span>(<span class="ident">hyper::StatusCode::BAD_REQUEST</span>)
-                .<span class="ident">body</span>(<span class="ident">hyper::Body::empty</span>())
-                .<span class="ident">unwrap</span>());
+    <span class="comment">// Parse the request body as a Vec&lt;LambdaLog&gt;
+    </span><span class="kw">let </span>body = <span class="kw">match </span>hyper::body::to_bytes(req.into_body()).<span class="kw">await </span>{
+        <span class="prelude-val">Ok</span>(body) =&gt; body,
+        <span class="prelude-val">Err</span>(e) =&gt; {
+            <span class="macro">error!</span>(<span class="string">&quot;Error reading logs request body: {}&quot;</span>, e);
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(hyper::Response::builder()
+                .status(hyper::StatusCode::BAD_REQUEST)
+                .body(hyper::Body::empty())
+                .unwrap());
         }
     };
-    <span class="kw">let</span> <span class="ident">logs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">LambdaLog</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">serde_json::from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">body</span>) {
-        <span class="prelude-val">Ok</span>(<span class="ident">logs</span>) =&gt; <span class="ident">logs</span>,
-        <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; {
-            <span class="macro">error!</span>(<span class="string">&quot;Error parsing logs: {}&quot;</span>, <span class="ident">e</span>);
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">hyper::Response::builder</span>()
-                .<span class="ident">status</span>(<span class="ident">hyper::StatusCode::BAD_REQUEST</span>)
-                .<span class="ident">body</span>(<span class="ident">hyper::Body::empty</span>())
-                .<span class="ident">unwrap</span>());
+    <span class="kw">let </span>logs: Vec&lt;LambdaLog&gt; = <span class="kw">match </span>serde_json::from_slice(<span class="kw-2">&amp;</span>body) {
+        <span class="prelude-val">Ok</span>(logs) =&gt; logs,
+        <span class="prelude-val">Err</span>(e) =&gt; {
+            <span class="macro">error!</span>(<span class="string">&quot;Error parsing logs: {}&quot;</span>, e);
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(hyper::Response::builder()
+                .status(hyper::StatusCode::BAD_REQUEST)
+                .body(hyper::Body::empty())
+                .unwrap());
         }
     };
 
     {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">service</span> <span class="op">=</span> <span class="ident">service</span>.<span class="ident">lock</span>().<span class="kw">await</span>;
-        <span class="kw">match</span> <span class="ident">service</span>.<span class="ident">call</span>(<span class="ident">logs</span>).<span class="kw">await</span> {
+        <span class="kw">let </span><span class="kw-2">mut </span>service = service.lock().<span class="kw">await</span>;
+        <span class="kw">match </span>service.call(logs).<span class="kw">await </span>{
             <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; (),
-            <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; <span class="macro">println!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">err</span>),
+            <span class="prelude-val">Err</span>(err) =&gt; <span class="macro">println!</span>(<span class="string">&quot;{:?}&quot;</span>, err),
         }
     }
 
-    <span class="prelude-val">Ok</span>(<span class="ident">hyper::Response::new</span>(<span class="ident">hyper::Body::empty</span>()))
+    <span class="prelude-val">Ok</span>(hyper::Response::new(hyper::Body::empty()))
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="ident">chrono::TimeZone</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use </span>chrono::TimeZone;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">deserialize_full</span>() {
-        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="string">r#&quot;{&quot;time&quot;: &quot;2020-08-20T12:31:32.123Z&quot;,&quot;type&quot;: &quot;function&quot;, &quot;record&quot;: &quot;hello world&quot;}&quot;#</span>;
-        <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="ident">LambdaLog</span> {
-            <span class="ident">time</span>: <span class="ident">Utc</span>.<span class="ident">ymd</span>(<span class="number">2020</span>, <span class="number">8</span>, <span class="number">20</span>).<span class="ident">and_hms_milli</span>(<span class="number">12</span>, <span class="number">31</span>, <span class="number">32</span>, <span class="number">123</span>),
-            <span class="ident">record</span>: <span class="ident">LambdaLogRecord::Function</span>(<span class="string">&quot;hello world&quot;</span>.<span class="ident">to_string</span>()),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>deserialize_full() {
+        <span class="kw">let </span>data = <span class="string">r#&quot;{&quot;time&quot;: &quot;2020-08-20T12:31:32.123Z&quot;,&quot;type&quot;: &quot;function&quot;, &quot;record&quot;: &quot;hello world&quot;}&quot;#</span>;
+        <span class="kw">let </span>expected = LambdaLog {
+            time: Utc.ymd(<span class="number">2020</span>, <span class="number">8</span>, <span class="number">20</span>).and_hms_milli(<span class="number">12</span>, <span class="number">31</span>, <span class="number">32</span>, <span class="number">123</span>),
+            record: LambdaLogRecord::Function(<span class="string">&quot;hello world&quot;</span>.to_string()),
         };
 
-        <span class="kw">let</span> <span class="ident">actual</span> <span class="op">=</span> <span class="ident">serde_json::from_str</span>::<span class="op">&lt;</span><span class="ident">LambdaLog</span><span class="op">&gt;</span>(<span class="ident">data</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let </span>actual = serde_json::from_str::&lt;LambdaLog&gt;(data).unwrap();
 
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="macro">macro_rules!</span> <span class="ident">deserialize_tests</span> {
-        ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>:<span class="ident">ident</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>:<span class="ident">expr</span>,)<span class="kw-2">*</span>) =&gt; {
+    <span class="macro">macro_rules! </span>deserialize_tests {
+        ($(<span class="macro-nonterminal">$name</span>:ident: <span class="macro-nonterminal">$value</span>:expr,)<span class="kw-2">*</span>) =&gt; {
             $(
-                <span class="attribute">#[<span class="ident">test</span>]</span>
-                <span class="kw">fn</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>() {
-                    <span class="kw">let</span> (<span class="ident">input</span>, <span class="ident">expected</span>) <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>;
-                    <span class="kw">let</span> <span class="ident">actual</span> <span class="op">=</span> <span class="ident">serde_json::from_str</span>::<span class="op">&lt;</span><span class="ident">LambdaLog</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>).<span class="ident">expect</span>(<span class="string">&quot;unable to deserialize&quot;</span>);
+                <span class="attribute">#[test]
+                </span><span class="kw">fn </span><span class="macro-nonterminal">$name</span>() {
+                    <span class="kw">let </span>(input, expected) = <span class="macro-nonterminal">$value</span>;
+                    <span class="kw">let </span>actual = serde_json::from_str::&lt;LambdaLog&gt;(<span class="kw-2">&amp;</span>input).expect(<span class="string">&quot;unable to deserialize&quot;</span>);
 
-                    <span class="macro">assert!</span>(<span class="ident">actual</span>.<span class="ident">record</span> <span class="op">==</span> <span class="ident">expected</span>);
+                    <span class="macro">assert!</span>(actual.record == expected);
                 }
-            )<span class="op">*</span>
+            )*
         }
     }
 
-    <span class="macro">deserialize_tests!</span> {
-        <span class="comment">// function</span>
-        <span class="ident">function</span>: (
+    <span class="macro">deserialize_tests! </span>{
+        <span class="comment">// function
+        </span>function: (
             <span class="string">r#&quot;{&quot;time&quot;: &quot;2020-08-20T12:31:32.123Z&quot;,&quot;type&quot;: &quot;function&quot;, &quot;record&quot;: &quot;hello world&quot;}&quot;#</span>,
-            <span class="ident">LambdaLogRecord::Function</span>(<span class="string">&quot;hello world&quot;</span>.<span class="ident">to_string</span>()),
+            LambdaLogRecord::Function(<span class="string">&quot;hello world&quot;</span>.to_string()),
         ),
 
-        <span class="comment">// extension</span>
-        <span class="ident">extension</span>: (
+        <span class="comment">// extension
+        </span>extension: (
             <span class="string">r#&quot;{&quot;time&quot;: &quot;2020-08-20T12:31:32.123Z&quot;,&quot;type&quot;: &quot;extension&quot;, &quot;record&quot;: &quot;hello world&quot;}&quot;#</span>,
-            <span class="ident">LambdaLogRecord::Extension</span>(<span class="string">&quot;hello world&quot;</span>.<span class="ident">to_string</span>()),
+            LambdaLogRecord::Extension(<span class="string">&quot;hello world&quot;</span>.to_string()),
         ),
 
-        <span class="comment">// platform.start</span>
-        <span class="ident">platform_start</span>: (
+        <span class="comment">// platform.start
+        </span>platform_start: (
             <span class="string">r#&quot;{&quot;time&quot;: &quot;2020-08-20T12:31:32.123Z&quot;,&quot;type&quot;: &quot;platform.start&quot;,&quot;record&quot;: {&quot;requestId&quot;: &quot;6f7f0961f83442118a7af6fe80b88d56&quot;}}&quot;#</span>,
-            <span class="ident">LambdaLogRecord::PlatformStart</span> {
-                <span class="ident">request_id</span>: <span class="string">&quot;6f7f0961f83442118a7af6fe80b88d56&quot;</span>.<span class="ident">to_string</span>(),
+            LambdaLogRecord::PlatformStart {
+                request_id: <span class="string">&quot;6f7f0961f83442118a7af6fe80b88d56&quot;</span>.to_string(),
             },
         ),
-        <span class="comment">// platform.end</span>
-        <span class="ident">platform_end</span>: (
+        <span class="comment">// platform.end
+        </span>platform_end: (
             <span class="string">r#&quot;{&quot;time&quot;: &quot;2020-08-20T12:31:32.123Z&quot;,&quot;type&quot;: &quot;platform.end&quot;,&quot;record&quot;: {&quot;requestId&quot;: &quot;6f7f0961f83442118a7af6fe80b88d56&quot;}}&quot;#</span>,
-            <span class="ident">LambdaLogRecord::PlatformEnd</span> {
-                <span class="ident">request_id</span>: <span class="string">&quot;6f7f0961f83442118a7af6fe80b88d56&quot;</span>.<span class="ident">to_string</span>(),
+            LambdaLogRecord::PlatformEnd {
+                request_id: <span class="string">&quot;6f7f0961f83442118a7af6fe80b88d56&quot;</span>.to_string(),
             },
         ),
-        <span class="comment">// platform.report</span>
-        <span class="ident">platform_report</span>: (
+        <span class="comment">// platform.report
+        </span>platform_report: (
             <span class="string">r#&quot;{&quot;time&quot;: &quot;2020-08-20T12:31:32.123Z&quot;,&quot;type&quot;: &quot;platform.report&quot;,&quot;record&quot;: {&quot;requestId&quot;: &quot;6f7f0961f83442118a7af6fe80b88d56&quot;,&quot;metrics&quot;: {&quot;durationMs&quot;: 1.23,&quot;billedDurationMs&quot;: 123,&quot;memorySizeMB&quot;: 123,&quot;maxMemoryUsedMB&quot;: 123,&quot;initDurationMs&quot;: 1.23}}}&quot;#</span>,
-            <span class="ident">LambdaLogRecord::PlatformReport</span> {
-                <span class="ident">request_id</span>: <span class="string">&quot;6f7f0961f83442118a7af6fe80b88d56&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="ident">metrics</span>: <span class="ident">LogPlatformReportMetrics</span> {
-                    <span class="ident">duration_ms</span>: <span class="number">1.23</span>,
-                    <span class="ident">billed_duration_ms</span>: <span class="number">123</span>,
-                    <span class="ident">memory_size_mb</span>: <span class="number">123</span>,
-                    <span class="ident">max_memory_used_mb</span>: <span class="number">123</span>,
-                    <span class="ident">init_duration_ms</span>: <span class="prelude-val">Some</span>(<span class="number">1.23</span>),
+            LambdaLogRecord::PlatformReport {
+                request_id: <span class="string">&quot;6f7f0961f83442118a7af6fe80b88d56&quot;</span>.to_string(),
+                metrics: LogPlatformReportMetrics {
+                    duration_ms: <span class="number">1.23</span>,
+                    billed_duration_ms: <span class="number">123</span>,
+                    memory_size_mb: <span class="number">123</span>,
+                    max_memory_used_mb: <span class="number">123</span>,
+                    init_duration_ms: <span class="prelude-val">Some</span>(<span class="number">1.23</span>),
                 },
             },
         ),
-        <span class="comment">// platform.fault</span>
-        <span class="ident">platform_fault</span>: (
+        <span class="comment">// platform.fault
+        </span>platform_fault: (
             <span class="string">r#&quot;{&quot;time&quot;: &quot;2020-08-20T12:31:32.123Z&quot;,&quot;type&quot;: &quot;platform.fault&quot;,&quot;record&quot;: &quot;RequestId: d783b35e-a91d-4251-af17-035953428a2c Process exited before completing request&quot;}&quot;#</span>,
-            <span class="ident">LambdaLogRecord::PlatformFault</span>(
-                <span class="string">&quot;RequestId: d783b35e-a91d-4251-af17-035953428a2c Process exited before completing request&quot;</span>
-                    .<span class="ident">to_string</span>(),
+            LambdaLogRecord::PlatformFault(
+                <span class="string">&quot;RequestId: d783b35e-a91d-4251-af17-035953428a2c Process exited before completing request&quot;
+                    </span>.to_string(),
             ),
         ),
-        <span class="comment">// platform.extension</span>
-        <span class="ident">platform_extension</span>: (
+        <span class="comment">// platform.extension
+        </span>platform_extension: (
             <span class="string">r#&quot;{&quot;time&quot;: &quot;2020-08-20T12:31:32.123Z&quot;,&quot;type&quot;: &quot;platform.extension&quot;,&quot;record&quot;: {&quot;name&quot;: &quot;Foo.bar&quot;,&quot;state&quot;: &quot;Ready&quot;,&quot;events&quot;: [&quot;INVOKE&quot;, &quot;SHUTDOWN&quot;]}}&quot;#</span>,
-            <span class="ident">LambdaLogRecord::PlatformExtension</span> {
-                <span class="ident">name</span>: <span class="string">&quot;Foo.bar&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="ident">state</span>: <span class="string">&quot;Ready&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="ident">events</span>: <span class="macro">vec!</span>[<span class="string">&quot;INVOKE&quot;</span>.<span class="ident">to_string</span>(), <span class="string">&quot;SHUTDOWN&quot;</span>.<span class="ident">to_string</span>()],
+            LambdaLogRecord::PlatformExtension {
+                name: <span class="string">&quot;Foo.bar&quot;</span>.to_string(),
+                state: <span class="string">&quot;Ready&quot;</span>.to_string(),
+                events: <span class="macro">vec!</span>[<span class="string">&quot;INVOKE&quot;</span>.to_string(), <span class="string">&quot;SHUTDOWN&quot;</span>.to_string()],
             },
         ),
-        <span class="comment">// platform.logsSubscription</span>
-        <span class="ident">platform_logssubscription</span>: (
+        <span class="comment">// platform.logsSubscription
+        </span>platform_logssubscription: (
             <span class="string">r#&quot;{&quot;time&quot;: &quot;2020-08-20T12:31:32.123Z&quot;,&quot;type&quot;: &quot;platform.logsSubscription&quot;,&quot;record&quot;: {&quot;name&quot;: &quot;test&quot;,&quot;state&quot;: &quot;active&quot;,&quot;types&quot;: [&quot;test&quot;]}}&quot;#</span>,
-            <span class="ident">LambdaLogRecord::PlatformLogsSubscription</span> {
-                <span class="ident">name</span>: <span class="string">&quot;test&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="ident">state</span>: <span class="string">&quot;active&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="ident">types</span>: <span class="macro">vec!</span>[<span class="string">&quot;test&quot;</span>.<span class="ident">to_string</span>()],
+            LambdaLogRecord::PlatformLogsSubscription {
+                name: <span class="string">&quot;test&quot;</span>.to_string(),
+                state: <span class="string">&quot;active&quot;</span>.to_string(),
+                types: <span class="macro">vec!</span>[<span class="string">&quot;test&quot;</span>.to_string()],
             },
         ),
-        <span class="comment">// platform.logsDropped</span>
-        <span class="ident">platform_logsdropped</span>: (
+        <span class="comment">// platform.logsDropped
+        </span>platform_logsdropped: (
             <span class="string">r#&quot;{&quot;time&quot;: &quot;2020-08-20T12:31:32.123Z&quot;,&quot;type&quot;: &quot;platform.logsDropped&quot;,&quot;record&quot;: {&quot;reason&quot;: &quot;Consumer seems to have fallen behind as it has not acknowledged receipt of logs.&quot;,&quot;droppedRecords&quot;: 123,&quot;droppedBytes&quot;: 12345}}&quot;#</span>,
-            <span class="ident">LambdaLogRecord::PlatformLogsDropped</span> {
-                <span class="ident">reason</span>: <span class="string">&quot;Consumer seems to have fallen behind as it has not acknowledged receipt of logs.&quot;</span>
-                    .<span class="ident">to_string</span>(),
-                <span class="ident">dropped_records</span>: <span class="number">123</span>,
-                <span class="ident">dropped_bytes</span>: <span class="number">12345</span>,
+            LambdaLogRecord::PlatformLogsDropped {
+                reason: <span class="string">&quot;Consumer seems to have fallen behind as it has not acknowledged receipt of logs.&quot;
+                    </span>.to_string(),
+                dropped_records: <span class="number">123</span>,
+                dropped_bytes: <span class="number">12345</span>,
             },
         ),
-        <span class="comment">// platform.runtimeDone</span>
-        <span class="ident">platform_runtimedone</span>: (
+        <span class="comment">// platform.runtimeDone
+        </span>platform_runtimedone: (
             <span class="string">r#&quot;{&quot;time&quot;: &quot;2021-02-04T20:00:05.123Z&quot;,&quot;type&quot;: &quot;platform.runtimeDone&quot;,&quot;record&quot;: {&quot;requestId&quot;:&quot;6f7f0961f83442118a7af6fe80b88d56&quot;,&quot;status&quot;: &quot;success&quot;}}&quot;#</span>,
-            <span class="ident">LambdaLogRecord::PlatformRuntimeDone</span> {
-                <span class="ident">request_id</span>: <span class="string">&quot;6f7f0961f83442118a7af6fe80b88d56&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="ident">status</span>: <span class="string">&quot;success&quot;</span>.<span class="ident">to_string</span>(),
+            LambdaLogRecord::PlatformRuntimeDone {
+                request_id: <span class="string">&quot;6f7f0961f83442118a7af6fe80b88d56&quot;</span>.to_string(),
+                status: <span class="string">&quot;success&quot;</span>.to_string(),
             },
         ),
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lambda_extension" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lambda_extension" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lambda-extension/src/requests.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>requests.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../lambda_extension/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../lambda_extension/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../lambda_extension/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lambda-extension/src/requests.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>requests.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../lambda_extension/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../lambda_extension/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../lambda_extension/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -107,114 +107,114 @@
 <span id="107">107</span>
 <span id="108">108</span>
 <span id="109">109</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Error</span>, <span class="ident">LogBuffering</span>};
-<span class="kw">use</span> <span class="ident">http</span>::{<span class="ident">Method</span>, <span class="ident">Request</span>};
-<span class="kw">use</span> <span class="ident">hyper::Body</span>;
-<span class="kw">use</span> <span class="ident">lambda_runtime_api_client::build_request</span>;
-<span class="kw">use</span> <span class="ident">serde::Serialize</span>;
+</pre><pre class="rust"><code><span class="kw">use crate</span>::{Error, LogBuffering};
+<span class="kw">use </span>http::{Method, Request};
+<span class="kw">use </span>hyper::Body;
+<span class="kw">use </span>lambda_runtime_api_client::build_request;
+<span class="kw">use </span>serde::Serialize;
 
-<span class="kw">const</span> <span class="ident">EXTENSION_NAME_HEADER</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Lambda-Extension-Name&quot;</span>;
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const</span> <span class="ident">EXTENSION_ID_HEADER</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Lambda-Extension-Identifier&quot;</span>;
-<span class="kw">const</span> <span class="ident">EXTENSION_ERROR_TYPE_HEADER</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Lambda-Extension-Function-Error-Type&quot;</span>;
+<span class="kw">const </span>EXTENSION_NAME_HEADER: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Lambda-Extension-Name&quot;</span>;
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>EXTENSION_ID_HEADER: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Lambda-Extension-Identifier&quot;</span>;
+<span class="kw">const </span>EXTENSION_ERROR_TYPE_HEADER: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Lambda-Extension-Function-Error-Type&quot;</span>;
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">next_event_request</span>(<span class="ident">extension_id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">build_request</span>()
-        .<span class="ident">method</span>(<span class="ident">Method::GET</span>)
-        .<span class="ident">header</span>(<span class="ident">EXTENSION_ID_HEADER</span>, <span class="ident">extension_id</span>)
-        .<span class="ident">uri</span>(<span class="string">&quot;/2020-01-01/extension/event/next&quot;</span>)
-        .<span class="ident">body</span>(<span class="ident">Body::empty</span>())<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(<span class="ident">req</span>)
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>next_event_request(extension_id: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;Body&gt;, Error&gt; {
+    <span class="kw">let </span>req = build_request()
+        .method(Method::GET)
+        .header(EXTENSION_ID_HEADER, extension_id)
+        .uri(<span class="string">&quot;/2020-01-01/extension/event/next&quot;</span>)
+        .body(Body::empty())<span class="question-mark">?</span>;
+    <span class="prelude-val">Ok</span>(req)
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">register_request</span>(<span class="ident">extension_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">events</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">events</span> <span class="op">=</span> <span class="macro">serde_json::json!</span>({ <span class="string">&quot;events&quot;</span>: <span class="ident">events</span> });
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>register_request(extension_name: <span class="kw-2">&amp;</span>str, events: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>str]) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;Body&gt;, Error&gt; {
+    <span class="kw">let </span>events = <span class="macro">serde_json::json!</span>({ <span class="string">&quot;events&quot;</span>: events });
 
-    <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">build_request</span>()
-        .<span class="ident">method</span>(<span class="ident">Method::POST</span>)
-        .<span class="ident">uri</span>(<span class="string">&quot;/2020-01-01/extension/register&quot;</span>)
-        .<span class="ident">header</span>(<span class="ident">EXTENSION_NAME_HEADER</span>, <span class="ident">extension_name</span>)
-        .<span class="ident">body</span>(<span class="ident">Body::from</span>(<span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">events</span>)<span class="question-mark">?</span>))<span class="question-mark">?</span>;
+    <span class="kw">let </span>req = build_request()
+        .method(Method::POST)
+        .uri(<span class="string">&quot;/2020-01-01/extension/register&quot;</span>)
+        .header(EXTENSION_NAME_HEADER, extension_name)
+        .body(Body::from(serde_json::to_string(<span class="kw-2">&amp;</span>events)<span class="question-mark">?</span>))<span class="question-mark">?</span>;
 
-    <span class="prelude-val">Ok</span>(<span class="ident">req</span>)
+    <span class="prelude-val">Ok</span>(req)
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">subscribe_logs_request</span>(
-    <span class="ident">extension_id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-    <span class="ident">types</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>]<span class="op">&gt;</span>,
-    <span class="ident">buffering</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">LogBuffering</span><span class="op">&gt;</span>,
-    <span class="ident">port_number</span>: <span class="ident">u16</span>,
-) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">types</span> <span class="op">=</span> <span class="ident">types</span>.<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;platform&quot;</span>, <span class="string">&quot;function&quot;</span>]);
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>subscribe_logs_request(
+    extension_id: <span class="kw-2">&amp;</span>str,
+    types: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>str]&gt;,
+    buffering: <span class="prelude-ty">Option</span>&lt;LogBuffering&gt;,
+    port_number: u16,
+) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;Body&gt;, Error&gt; {
+    <span class="kw">let </span>types = types.unwrap_or(<span class="kw-2">&amp;</span>[<span class="string">&quot;platform&quot;</span>, <span class="string">&quot;function&quot;</span>]);
 
-    <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="macro">serde_json::json!</span>({
+    <span class="kw">let </span>data = <span class="macro">serde_json::json!</span>({
         <span class="string">&quot;schemaVersion&quot;</span>: <span class="string">&quot;2021-03-18&quot;</span>,
-        <span class="string">&quot;types&quot;</span>: <span class="ident">types</span>,
-        <span class="string">&quot;buffering&quot;</span>: <span class="ident">buffering</span>.<span class="ident">unwrap_or_default</span>(),
+        <span class="string">&quot;types&quot;</span>: types,
+        <span class="string">&quot;buffering&quot;</span>: buffering.unwrap_or_default(),
         <span class="string">&quot;destination&quot;</span>: {
             <span class="string">&quot;protocol&quot;</span>: <span class="string">&quot;HTTP&quot;</span>,
-            <span class="string">&quot;URI&quot;</span>: <span class="macro">format!</span>(<span class="string">&quot;http://sandbox.localdomain:{}&quot;</span>, <span class="ident">port_number</span>),
+            <span class="string">&quot;URI&quot;</span>: <span class="macro">format!</span>(<span class="string">&quot;http://sandbox.localdomain:{}&quot;</span>, port_number),
         }
     });
 
-    <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">build_request</span>()
-        .<span class="ident">method</span>(<span class="ident">Method::PUT</span>)
-        .<span class="ident">uri</span>(<span class="string">&quot;/2020-08-15/logs&quot;</span>)
-        .<span class="ident">header</span>(<span class="ident">EXTENSION_ID_HEADER</span>, <span class="ident">extension_id</span>)
-        .<span class="ident">body</span>(<span class="ident">Body::from</span>(<span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">data</span>)<span class="question-mark">?</span>))<span class="question-mark">?</span>;
+    <span class="kw">let </span>req = build_request()
+        .method(Method::PUT)
+        .uri(<span class="string">&quot;/2020-08-15/logs&quot;</span>)
+        .header(EXTENSION_ID_HEADER, extension_id)
+        .body(Body::from(serde_json::to_string(<span class="kw-2">&amp;</span>data)<span class="question-mark">?</span>))<span class="question-mark">?</span>;
 
-    <span class="prelude-val">Ok</span>(<span class="ident">req</span>)
+    <span class="prelude-val">Ok</span>(req)
 }
 
-<span class="doccomment">/// Payload to send error information to the Extensions API.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Serialize</span>)]</span>
-<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;camelCase&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ErrorRequest</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Human readable error description</span>
-    <span class="kw">pub</span> <span class="ident">error_message</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
-    <span class="doccomment">/// The type of error to categorize</span>
-    <span class="kw">pub</span> <span class="ident">error_type</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
-    <span class="doccomment">/// The error backtrace</span>
-    <span class="kw">pub</span> <span class="ident">stack_trace</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span>,
+<span class="doccomment">/// Payload to send error information to the Extensions API.
+</span><span class="attribute">#[derive(Debug, Serialize)]
+#[serde(rename_all = <span class="string">&quot;camelCase&quot;</span>)]
+</span><span class="kw">pub struct </span>ErrorRequest&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="doccomment">/// Human readable error description
+    </span><span class="kw">pub </span>error_message: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
+    <span class="doccomment">/// The type of error to categorize
+    </span><span class="kw">pub </span>error_type: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
+    <span class="doccomment">/// The error backtrace
+    </span><span class="kw">pub </span>stack_trace: Vec&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str&gt;,
 }
 
-<span class="doccomment">/// Create a new init error request to send to the Extensions API</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">init_error</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(
-    <span class="ident">extension_id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-    <span class="ident">error_type</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-    <span class="ident">request</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ErrorRequest</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-    <span class="ident">error_request</span>(<span class="string">&quot;init&quot;</span>, <span class="ident">extension_id</span>, <span class="ident">error_type</span>, <span class="ident">request</span>)
+<span class="doccomment">/// Create a new init error request to send to the Extensions API
+</span><span class="kw">pub fn </span>init_error&lt;<span class="lifetime">&#39;a</span>&gt;(
+    extension_id: <span class="kw-2">&amp;</span>str,
+    error_type: <span class="kw-2">&amp;</span>str,
+    request: <span class="prelude-ty">Option</span>&lt;ErrorRequest&lt;<span class="lifetime">&#39;a</span>&gt;&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;Body&gt;, Error&gt; {
+    error_request(<span class="string">&quot;init&quot;</span>, extension_id, error_type, request)
 }
 
-<span class="doccomment">/// Create a new exit error request to send to the Extensions API</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">exit_error</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(
-    <span class="ident">extension_id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-    <span class="ident">error_type</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-    <span class="ident">request</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ErrorRequest</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-    <span class="ident">error_request</span>(<span class="string">&quot;exit&quot;</span>, <span class="ident">extension_id</span>, <span class="ident">error_type</span>, <span class="ident">request</span>)
+<span class="doccomment">/// Create a new exit error request to send to the Extensions API
+</span><span class="kw">pub fn </span>exit_error&lt;<span class="lifetime">&#39;a</span>&gt;(
+    extension_id: <span class="kw-2">&amp;</span>str,
+    error_type: <span class="kw-2">&amp;</span>str,
+    request: <span class="prelude-ty">Option</span>&lt;ErrorRequest&lt;<span class="lifetime">&#39;a</span>&gt;&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;Body&gt;, Error&gt; {
+    error_request(<span class="string">&quot;exit&quot;</span>, extension_id, error_type, request)
 }
 
-<span class="kw">fn</span> <span class="ident">error_request</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(
-    <span class="ident">error_type</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-    <span class="ident">extension_id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-    <span class="ident">error_str</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-    <span class="ident">request</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ErrorRequest</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Request</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">uri</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;/2020-01-01/extension/{}/error&quot;</span>, <span class="ident">error_type</span>);
+<span class="kw">fn </span>error_request&lt;<span class="lifetime">&#39;a</span>&gt;(
+    error_type: <span class="kw-2">&amp;</span>str,
+    extension_id: <span class="kw-2">&amp;</span>str,
+    error_str: <span class="kw-2">&amp;</span>str,
+    request: <span class="prelude-ty">Option</span>&lt;ErrorRequest&lt;<span class="lifetime">&#39;a</span>&gt;&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;Body&gt;, Error&gt; {
+    <span class="kw">let </span>uri = <span class="macro">format!</span>(<span class="string">&quot;/2020-01-01/extension/{}/error&quot;</span>, error_type);
 
-    <span class="kw">let</span> <span class="ident">body</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">request</span> {
-        <span class="prelude-val">None</span> =&gt; <span class="ident">Body::empty</span>(),
-        <span class="prelude-val">Some</span>(<span class="ident">err</span>) =&gt; <span class="ident">Body::from</span>(<span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">err</span>)<span class="question-mark">?</span>),
+    <span class="kw">let </span>body = <span class="kw">match </span>request {
+        <span class="prelude-val">None </span>=&gt; Body::empty(),
+        <span class="prelude-val">Some</span>(err) =&gt; Body::from(serde_json::to_string(<span class="kw-2">&amp;</span>err)<span class="question-mark">?</span>),
     };
 
-    <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">build_request</span>()
-        .<span class="ident">method</span>(<span class="ident">Method::POST</span>)
-        .<span class="ident">uri</span>(<span class="ident">uri</span>)
-        .<span class="ident">header</span>(<span class="ident">EXTENSION_ID_HEADER</span>, <span class="ident">extension_id</span>)
-        .<span class="ident">header</span>(<span class="ident">EXTENSION_ERROR_TYPE_HEADER</span>, <span class="ident">error_str</span>)
-        .<span class="ident">body</span>(<span class="ident">body</span>)<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(<span class="ident">req</span>)
+    <span class="kw">let </span>req = build_request()
+        .method(Method::POST)
+        .uri(uri)
+        .header(EXTENSION_ID_HEADER, extension_id)
+        .header(EXTENSION_ERROR_TYPE_HEADER, error_str)
+        .body(body)<span class="question-mark">?</span>;
+    <span class="prelude-val">Ok</span>(req)
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lambda_extension" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lambda_extension" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

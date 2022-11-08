@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lambda-integration-tests/src/bin/http-trait.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>http-trait.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../http_trait/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../http_trait/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../http_trait/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lambda-integration-tests/src/bin/http-trait.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>http-trait.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../http_trait/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../http_trait/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../http_trait/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -84,91 +84,91 @@
 <span id="84">84</span>
 <span id="85">85</span>
 <span id="86">86</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std</span>::{
-    <span class="ident">future</span>::{<span class="ident">ready</span>, <span class="ident">Future</span>},
-    <span class="ident">pin::Pin</span>,
-    <span class="ident">sync::atomic</span>::{<span class="ident">AtomicBool</span>, <span class="ident">Ordering</span>},
+</pre><pre class="rust"><code><span class="kw">use </span>std::{
+    future::{ready, Future},
+    pin::Pin,
+    sync::atomic::{AtomicBool, Ordering},
 };
 
-<span class="kw">use</span> <span class="ident">lambda_http</span>::{<span class="ident">Body</span>, <span class="ident">Error</span>, <span class="ident">Request</span>, <span class="ident">RequestExt</span>, <span class="ident">Response</span>, <span class="ident">Service</span>};
-<span class="kw">use</span> <span class="ident">tracing::info</span>;
+<span class="kw">use </span>lambda_http::{Body, Error, Request, RequestExt, Response, Service};
+<span class="kw">use </span>tracing::info;
 
-<span class="kw">struct</span> <span class="ident">MyHandler</span> {
-    <span class="ident">invoke_count</span>: <span class="ident">usize</span>,
-    <span class="ident">ready</span>: <span class="ident">AtomicBool</span>,
+<span class="kw">struct </span>MyHandler {
+    invoke_count: usize,
+    ready: AtomicBool,
 }
 
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">MyHandler</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">invoke_count</span>: <span class="ident">usize::default</span>(),
-            <span class="comment">// New instances are not ready to be called until polled.</span>
-            <span class="ident">ready</span>: <span class="bool-val">false</span>.<span class="ident">into</span>(),
+<span class="kw">impl </span>Default <span class="kw">for </span>MyHandler {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            invoke_count: usize::default(),
+            <span class="comment">// New instances are not ready to be called until polled.
+            </span>ready: <span class="bool-val">false</span>.into(),
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">MyHandler</span> {
-    <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">invoke_count</span>: <span class="self">self</span>.<span class="ident">invoke_count</span>,
-            <span class="comment">// Cloned instances may not be immediately ready to be called.</span>
-            <span class="comment">// https://docs.rs/tower/0.4.13/tower/trait.Service.html#be-careful-when-cloning-inner-services</span>
-            <span class="ident">ready</span>: <span class="bool-val">false</span>.<span class="ident">into</span>(),
+<span class="kw">impl </span>Clone <span class="kw">for </span>MyHandler {
+    <span class="kw">fn </span>clone(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            invoke_count: <span class="self">self</span>.invoke_count,
+            <span class="comment">// Cloned instances may not be immediately ready to be called.
+            // https://docs.rs/tower/0.4.13/tower/trait.Service.html#be-careful-when-cloning-inner-services
+            </span>ready: <span class="bool-val">false</span>.into(),
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Service</span><span class="op">&lt;</span><span class="ident">Request</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">MyHandler</span> {
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>;
-    <span class="kw">type</span> <span class="ident">Future</span> <span class="op">=</span> <span class="ident">Pin</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Response</span>, <span class="ident">Error</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span><span class="op">&gt;</span><span class="op">&gt;</span>;
-    <span class="kw">type</span> <span class="ident">Response</span> <span class="op">=</span> <span class="ident">Response</span><span class="op">&lt;</span><span class="ident">Body</span><span class="op">&gt;</span>;
+<span class="kw">impl </span>Service&lt;Request&gt; <span class="kw">for </span>MyHandler {
+    <span class="kw">type </span>Error = Error;
+    <span class="kw">type </span>Future = Pin&lt;Box&lt;<span class="kw">dyn </span>Future&lt;Output = <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Response, Error&gt;&gt; + Send&gt;&gt;;
+    <span class="kw">type </span>Response = Response&lt;Body&gt;;
 
-    <span class="kw">fn</span> <span class="ident">poll_ready</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">_cx</span>: <span class="kw-2">&amp;mut</span> <span class="ident">core::task::Context</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">core::task::Poll</span><span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">ready</span>.<span class="ident">swap</span>(<span class="bool-val">true</span>, <span class="ident">Ordering::SeqCst</span>) {
+    <span class="kw">fn </span>poll_ready(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _cx: <span class="kw-2">&amp;mut </span>core::task::Context&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; core::task::Poll&lt;<span class="prelude-ty">Result</span>&lt;(), <span class="self">Self</span>::Error&gt;&gt; {
+        <span class="kw">if </span><span class="self">self</span>.ready.swap(<span class="bool-val">true</span>, Ordering::SeqCst) {
             <span class="macro">info!</span>(<span class="string">&quot;[http-trait] Service was already ready&quot;</span>);
-        } <span class="kw">else</span> {
+        } <span class="kw">else </span>{
             <span class="macro">info!</span>(<span class="string">&quot;[http-trait] Service is now ready&quot;</span>);
         };
 
-        <span class="ident">core::task::Poll::Ready</span>(<span class="prelude-val">Ok</span>(()))
+        core::task::Poll::Ready(<span class="prelude-val">Ok</span>(()))
     }
 
-    <span class="kw">fn</span> <span class="ident">call</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">request</span>: <span class="ident">Request</span>) -&gt; <span class="ident"><span class="self">Self</span>::Future</span> {
-        <span class="self">self</span>.<span class="ident">invoke_count</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-        <span class="macro">info!</span>(<span class="string">&quot;[http-trait] Received event {}: {:?}&quot;</span>, <span class="self">self</span>.<span class="ident">invoke_count</span>, <span class="ident">request</span>);
-        <span class="macro">info!</span>(<span class="string">&quot;[http-trait] Lambda context: {:?}&quot;</span>, <span class="ident">request</span>.<span class="ident">lambda_context</span>());
+    <span class="kw">fn </span>call(<span class="kw-2">&amp;mut </span><span class="self">self</span>, request: Request) -&gt; <span class="self">Self</span>::Future {
+        <span class="self">self</span>.invoke_count += <span class="number">1</span>;
+        <span class="macro">info!</span>(<span class="string">&quot;[http-trait] Received event {}: {:?}&quot;</span>, <span class="self">self</span>.invoke_count, request);
+        <span class="macro">info!</span>(<span class="string">&quot;[http-trait] Lambda context: {:?}&quot;</span>, request.lambda_context());
 
-        <span class="comment">// After being called once, the service is no longer ready until polled again.</span>
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">ready</span>.<span class="ident">swap</span>(<span class="bool-val">false</span>, <span class="ident">Ordering::SeqCst</span>) {
+        <span class="comment">// After being called once, the service is no longer ready until polled again.
+        </span><span class="kw">if </span><span class="self">self</span>.ready.swap(<span class="bool-val">false</span>, Ordering::SeqCst) {
             <span class="macro">info!</span>(<span class="string">&quot;[http-trait] The service is ready&quot;</span>);
-        } <span class="kw">else</span> {
-            <span class="comment">// https://docs.rs/tower/latest/tower/trait.Service.html#backpressure</span>
-            <span class="comment">// https://docs.rs/tower/latest/tower/trait.Service.html#be-careful-when-cloning-inner-services</span>
-            <span class="comment">// &gt; Services are permitted to panic if `call` is invoked without obtaining</span>
-            <span class="comment">// &gt; `Poll::Ready(Ok(()))` from `poll_ready`.</span>
-            <span class="macro">panic!</span>(<span class="string">&quot;[http-trait] The service is not ready; `.poll_ready()` must be called first&quot;</span>);
+        } <span class="kw">else </span>{
+            <span class="comment">// https://docs.rs/tower/latest/tower/trait.Service.html#backpressure
+            // https://docs.rs/tower/latest/tower/trait.Service.html#be-careful-when-cloning-inner-services
+            // &gt; Services are permitted to panic if `call` is invoked without obtaining
+            // &gt; `Poll::Ready(Ok(()))` from `poll_ready`.
+            </span><span class="macro">panic!</span>(<span class="string">&quot;[http-trait] The service is not ready; `.poll_ready()` must be called first&quot;</span>);
         }
 
-        <span class="ident">Box::pin</span>(<span class="ident">ready</span>(<span class="prelude-val">Ok</span>(<span class="ident">Response::builder</span>()
-            .<span class="ident">status</span>(<span class="number">200</span>)
-            .<span class="ident">body</span>(<span class="ident">Body::from</span>(<span class="string">&quot;Hello, World!&quot;</span>))
-            .<span class="ident">unwrap</span>())))
+        Box::pin(ready(<span class="prelude-val">Ok</span>(Response::builder()
+            .status(<span class="number">200</span>)
+            .body(Body::from(<span class="string">&quot;Hello, World!&quot;</span>))
+            .unwrap())))
     }
 }
 
-<span class="attribute">#[<span class="ident">tokio::main</span>]</span>
-<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">main</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-    <span class="ident">tracing_subscriber::fmt</span>()
-        .<span class="ident">with_max_level</span>(<span class="ident">tracing::Level::INFO</span>)
-        <span class="comment">// this needs to be set to false, otherwise ANSI color codes will</span>
-        <span class="comment">// show up in a confusing manner in CloudWatch logs.</span>
-        .<span class="ident">with_ansi</span>(<span class="bool-val">false</span>)
-        <span class="comment">// disabling time is handy because CloudWatch will add the ingestion time.</span>
-        .<span class="ident">without_time</span>()
-        .<span class="ident">init</span>();
+<span class="attribute">#[tokio::main]
+</span><span class="kw">async fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::INFO)
+        <span class="comment">// this needs to be set to false, otherwise ANSI color codes will
+        // show up in a confusing manner in CloudWatch logs.
+        </span>.with_ansi(<span class="bool-val">false</span>)
+        <span class="comment">// disabling time is handy because CloudWatch will add the ingestion time.
+        </span>.without_time()
+        .init();
 
-    <span class="ident">lambda_http::run</span>(<span class="ident">MyHandler::default</span>()).<span class="kw">await</span>
-}
+    lambda_http::run(MyHandler::default()).<span class="kw">await
+</span>}
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="http_trait" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="http_trait" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

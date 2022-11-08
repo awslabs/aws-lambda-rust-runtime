@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lambda-runtime/src/types.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>types.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../lambda_runtime/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../lambda_runtime/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../lambda_runtime/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lambda-runtime/src/types.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>types.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../lambda_runtime/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../lambda_runtime/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../lambda_runtime/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -368,375 +368,375 @@
 <span id="368">368</span>
 <span id="369">369</span>
 <span id="370">370</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Config</span>, <span class="ident">Error</span>};
-<span class="kw">use</span> <span class="ident">http</span>::{<span class="ident">HeaderMap</span>, <span class="ident">HeaderValue</span>};
-<span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">collections::HashMap</span>, <span class="ident">convert::TryFrom</span>};
+</pre><pre class="rust"><code><span class="kw">use crate</span>::{Config, Error};
+<span class="kw">use </span>http::{HeaderMap, HeaderValue};
+<span class="kw">use </span>serde::{Deserialize, Serialize};
+<span class="kw">use </span>std::{collections::HashMap, convert::TryFrom};
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Clone</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
-<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;camelCase&quot;</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">Diagnostic</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">error_type</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">error_message</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
+<span class="attribute">#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
+#[serde(rename_all = <span class="string">&quot;camelCase&quot;</span>)]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>Diagnostic&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) error_type: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) error_message: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
 }
 
-<span class="doccomment">/// The request ID, which identifies the request that triggered the function invocation. This header</span>
-<span class="doccomment">/// tracks the invocation within the Lambda control plane. The request ID is used to specify completion</span>
-<span class="doccomment">/// of a given invocation.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RequestId</span>(<span class="kw">pub</span> <span class="ident">String</span>);
+<span class="doccomment">/// The request ID, which identifies the request that triggered the function invocation. This header
+/// tracks the invocation within the Lambda control plane. The request ID is used to specify completion
+/// of a given invocation.
+</span><span class="attribute">#[derive(Debug, Clone, Eq, PartialEq)]
+</span><span class="kw">pub struct </span>RequestId(<span class="kw">pub </span>String);
 
-<span class="doccomment">/// The date that the function times out in Unix time milliseconds. For example, `1542409706888`.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">InvocationDeadline</span>(<span class="kw">pub</span> <span class="ident">u64</span>);
+<span class="doccomment">/// The date that the function times out in Unix time milliseconds. For example, `1542409706888`.
+</span><span class="attribute">#[derive(Debug, Clone, Eq, PartialEq)]
+</span><span class="kw">pub struct </span>InvocationDeadline(<span class="kw">pub </span>u64);
 
-<span class="doccomment">/// The ARN of the Lambda function, version, or alias that is specified in the invocation.</span>
-<span class="doccomment">/// For instance, `arn:aws:lambda:us-east-2:123456789012:function:custom-runtime`.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">FunctionArn</span>(<span class="kw">pub</span> <span class="ident">String</span>);
+<span class="doccomment">/// The ARN of the Lambda function, version, or alias that is specified in the invocation.
+/// For instance, `arn:aws:lambda:us-east-2:123456789012:function:custom-runtime`.
+</span><span class="attribute">#[derive(Debug, Clone, Eq, PartialEq)]
+</span><span class="kw">pub struct </span>FunctionArn(<span class="kw">pub </span>String);
 
-<span class="doccomment">/// The AWS X-Ray Tracing header. For more information,</span>
-<span class="doccomment">/// please see [AWS&#39; documentation](https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-tracingheader).</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">XRayTraceId</span>(<span class="kw">pub</span> <span class="ident">String</span>);
+<span class="doccomment">/// The AWS X-Ray Tracing header. For more information,
+/// please see [AWS&#39; documentation](https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-tracingheader).
+</span><span class="attribute">#[derive(Debug, Clone, Eq, PartialEq)]
+</span><span class="kw">pub struct </span>XRayTraceId(<span class="kw">pub </span>String);
 
-<span class="doccomment">/// For invocations from the AWS Mobile SDK contains data about client application and device.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">struct</span> <span class="ident">MobileClientContext</span>(<span class="ident">String</span>);
+<span class="doccomment">/// For invocations from the AWS Mobile SDK contains data about client application and device.
+</span><span class="attribute">#[derive(Debug, Clone, Eq, PartialEq)]
+</span><span class="kw">struct </span>MobileClientContext(String);
 
-<span class="doccomment">/// For invocations from the AWS Mobile SDK, data about the Amazon Cognito identity provider.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">struct</span> <span class="ident">MobileClientIdentity</span>(<span class="ident">String</span>);
+<span class="doccomment">/// For invocations from the AWS Mobile SDK, data about the Amazon Cognito identity provider.
+</span><span class="attribute">#[derive(Debug, Clone, Eq, PartialEq)]
+</span><span class="kw">struct </span>MobileClientIdentity(String);
 
-<span class="doccomment">/// Client context sent by the AWS Mobile SDK.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ClientContext</span> {
-    <span class="doccomment">/// Information about the mobile application invoking the function.</span>
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">client</span>: <span class="ident">ClientApplication</span>,
-    <span class="doccomment">/// Custom properties attached to the mobile event context.</span>
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">custom</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// Environment settings from the mobile client.</span>
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">environment</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span>,
+<span class="doccomment">/// Client context sent by the AWS Mobile SDK.
+</span><span class="attribute">#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+</span><span class="kw">pub struct </span>ClientContext {
+    <span class="doccomment">/// Information about the mobile application invoking the function.
+    </span><span class="attribute">#[serde(default)]
+    </span><span class="kw">pub </span>client: ClientApplication,
+    <span class="doccomment">/// Custom properties attached to the mobile event context.
+    </span><span class="attribute">#[serde(default)]
+    </span><span class="kw">pub </span>custom: HashMap&lt;String, String&gt;,
+    <span class="doccomment">/// Environment settings from the mobile client.
+    </span><span class="attribute">#[serde(default)]
+    </span><span class="kw">pub </span>environment: HashMap&lt;String, String&gt;,
 }
 
-<span class="doccomment">/// AWS Mobile SDK client fields.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Default</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;camelCase&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ClientApplication</span> {
-    <span class="doccomment">/// The mobile app installation id</span>
-    <span class="kw">pub</span> <span class="ident">installation_id</span>: <span class="ident">String</span>,
-    <span class="doccomment">/// The app title for the mobile app as registered with AWS&#39; mobile services.</span>
-    <span class="kw">pub</span> <span class="ident">app_title</span>: <span class="ident">String</span>,
-    <span class="doccomment">/// The version name of the application as registered with AWS&#39; mobile services.</span>
-    <span class="kw">pub</span> <span class="ident">app_version_name</span>: <span class="ident">String</span>,
-    <span class="doccomment">/// The app version code.</span>
-    <span class="kw">pub</span> <span class="ident">app_version_code</span>: <span class="ident">String</span>,
-    <span class="doccomment">/// The package name for the mobile application invoking the function</span>
-    <span class="kw">pub</span> <span class="ident">app_package_name</span>: <span class="ident">String</span>,
+<span class="doccomment">/// AWS Mobile SDK client fields.
+</span><span class="attribute">#[derive(Serialize, Deserialize, Default, Clone, Debug, Eq, PartialEq)]
+#[serde(rename_all = <span class="string">&quot;camelCase&quot;</span>)]
+</span><span class="kw">pub struct </span>ClientApplication {
+    <span class="doccomment">/// The mobile app installation id
+    </span><span class="kw">pub </span>installation_id: String,
+    <span class="doccomment">/// The app title for the mobile app as registered with AWS&#39; mobile services.
+    </span><span class="kw">pub </span>app_title: String,
+    <span class="doccomment">/// The version name of the application as registered with AWS&#39; mobile services.
+    </span><span class="kw">pub </span>app_version_name: String,
+    <span class="doccomment">/// The app version code.
+    </span><span class="kw">pub </span>app_version_code: String,
+    <span class="doccomment">/// The package name for the mobile application invoking the function
+    </span><span class="kw">pub </span>app_package_name: String,
 }
 
-<span class="doccomment">/// Cognito identity information sent with the event</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">CognitoIdentity</span> {
-    <span class="doccomment">/// The unique identity id for the Cognito credentials invoking the function.</span>
-    <span class="kw">pub</span> <span class="ident">identity_id</span>: <span class="ident">String</span>,
-    <span class="doccomment">/// The identity pool id the caller is &quot;registered&quot; with.</span>
-    <span class="kw">pub</span> <span class="ident">identity_pool_id</span>: <span class="ident">String</span>,
+<span class="doccomment">/// Cognito identity information sent with the event
+</span><span class="attribute">#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+</span><span class="kw">pub struct </span>CognitoIdentity {
+    <span class="doccomment">/// The unique identity id for the Cognito credentials invoking the function.
+    </span><span class="kw">pub </span>identity_id: String,
+    <span class="doccomment">/// The identity pool id the caller is &quot;registered&quot; with.
+    </span><span class="kw">pub </span>identity_pool_id: String,
 }
 
-<span class="doccomment">/// The Lambda function execution context. The values in this struct</span>
-<span class="doccomment">/// are populated using the [Lambda environment variables](https://docs.aws.amazon.com/lambda/latest/dg/current-supported-versions.html)</span>
-<span class="doccomment">/// and the headers returned by the poll request to the Runtime APIs.</span>
-<span class="attribute">#[<span class="ident">non_exhaustive</span>]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Default</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Context</span> {
-    <span class="doccomment">/// The AWS request ID generated by the Lambda service.</span>
-    <span class="kw">pub</span> <span class="ident">request_id</span>: <span class="ident">String</span>,
-    <span class="doccomment">/// The execution deadline for the current invocation in milliseconds.</span>
-    <span class="kw">pub</span> <span class="ident">deadline</span>: <span class="ident">u64</span>,
-    <span class="doccomment">/// The ARN of the Lambda function being invoked.</span>
-    <span class="kw">pub</span> <span class="ident">invoked_function_arn</span>: <span class="ident">String</span>,
-    <span class="doccomment">/// The X-Ray trace ID for the current invocation.</span>
-    <span class="kw">pub</span> <span class="ident">xray_trace_id</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// The client context object sent by the AWS mobile SDK. This field is</span>
-    <span class="doccomment">/// empty unless the function is invoked using an AWS mobile SDK.</span>
-    <span class="kw">pub</span> <span class="ident">client_context</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ClientContext</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// The Cognito identity that invoked the function. This field is empty</span>
-    <span class="doccomment">/// unless the invocation request to the Lambda APIs was made using AWS</span>
-    <span class="doccomment">/// credentials issues by Amazon Cognito Identity Pools.</span>
-    <span class="kw">pub</span> <span class="ident">identity</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">CognitoIdentity</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// Lambda function configuration from the local environment variables.</span>
-    <span class="doccomment">/// Includes information such as the function name, memory allocation,</span>
-    <span class="doccomment">/// version, and log streams.</span>
-    <span class="kw">pub</span> <span class="ident">env_config</span>: <span class="ident">Config</span>,
+<span class="doccomment">/// The Lambda function execution context. The values in this struct
+/// are populated using the [Lambda environment variables](https://docs.aws.amazon.com/lambda/latest/dg/current-supported-versions.html)
+/// and the headers returned by the poll request to the Runtime APIs.
+</span><span class="attribute">#[non_exhaustive]
+#[derive(Clone, Debug, Eq, PartialEq, Default, Serialize, Deserialize)]
+</span><span class="kw">pub struct </span>Context {
+    <span class="doccomment">/// The AWS request ID generated by the Lambda service.
+    </span><span class="kw">pub </span>request_id: String,
+    <span class="doccomment">/// The execution deadline for the current invocation in milliseconds.
+    </span><span class="kw">pub </span>deadline: u64,
+    <span class="doccomment">/// The ARN of the Lambda function being invoked.
+    </span><span class="kw">pub </span>invoked_function_arn: String,
+    <span class="doccomment">/// The X-Ray trace ID for the current invocation.
+    </span><span class="kw">pub </span>xray_trace_id: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="doccomment">/// The client context object sent by the AWS mobile SDK. This field is
+    /// empty unless the function is invoked using an AWS mobile SDK.
+    </span><span class="kw">pub </span>client_context: <span class="prelude-ty">Option</span>&lt;ClientContext&gt;,
+    <span class="doccomment">/// The Cognito identity that invoked the function. This field is empty
+    /// unless the invocation request to the Lambda APIs was made using AWS
+    /// credentials issues by Amazon Cognito Identity Pools.
+    </span><span class="kw">pub </span>identity: <span class="prelude-ty">Option</span>&lt;CognitoIdentity&gt;,
+    <span class="doccomment">/// Lambda function configuration from the local environment variables.
+    /// Includes information such as the function name, memory allocation,
+    /// version, and log streams.
+    </span><span class="kw">pub </span>env_config: Config,
 }
 
-<span class="kw">impl</span> <span class="ident">TryFrom</span><span class="op">&lt;</span><span class="ident">HeaderMap</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Context</span> {
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>;
-    <span class="kw">fn</span> <span class="ident">try_from</span>(<span class="ident">headers</span>: <span class="ident">HeaderMap</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">client_context</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ClientContext</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">value</span>) <span class="op">=</span> <span class="ident">headers</span>.<span class="ident">get</span>(<span class="string">&quot;lambda-runtime-client-context&quot;</span>) {
-            <span class="ident">serde_json::from_str</span>(<span class="ident">value</span>.<span class="ident">to_str</span>()<span class="question-mark">?</span>)<span class="question-mark">?</span>
-        } <span class="kw">else</span> {
-            <span class="prelude-val">None</span>
-        };
+<span class="kw">impl </span>TryFrom&lt;HeaderMap&gt; <span class="kw">for </span>Context {
+    <span class="kw">type </span>Error = Error;
+    <span class="kw">fn </span>try_from(headers: HeaderMap) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Error&gt; {
+        <span class="kw">let </span>client_context: <span class="prelude-ty">Option</span>&lt;ClientContext&gt; = <span class="kw">if let </span><span class="prelude-val">Some</span>(value) = headers.get(<span class="string">&quot;lambda-runtime-client-context&quot;</span>) {
+            serde_json::from_str(value.to_str()<span class="question-mark">?</span>)<span class="question-mark">?
+        </span>} <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>};
 
-        <span class="kw">let</span> <span class="ident">identity</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">CognitoIdentity</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">value</span>) <span class="op">=</span> <span class="ident">headers</span>.<span class="ident">get</span>(<span class="string">&quot;lambda-runtime-cognito-identity&quot;</span>) {
-            <span class="ident">serde_json::from_str</span>(<span class="ident">value</span>.<span class="ident">to_str</span>()<span class="question-mark">?</span>)<span class="question-mark">?</span>
-        } <span class="kw">else</span> {
-            <span class="prelude-val">None</span>
-        };
+        <span class="kw">let </span>identity: <span class="prelude-ty">Option</span>&lt;CognitoIdentity&gt; = <span class="kw">if let </span><span class="prelude-val">Some</span>(value) = headers.get(<span class="string">&quot;lambda-runtime-cognito-identity&quot;</span>) {
+            serde_json::from_str(value.to_str()<span class="question-mark">?</span>)<span class="question-mark">?
+        </span>} <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>};
 
-        <span class="kw">let</span> <span class="ident">ctx</span> <span class="op">=</span> <span class="ident">Context</span> {
-            <span class="ident">request_id</span>: <span class="ident">headers</span>
-                .<span class="ident">get</span>(<span class="string">&quot;lambda-runtime-aws-request-id&quot;</span>)
-                .<span class="ident">expect</span>(<span class="string">&quot;missing lambda-runtime-aws-request-id header&quot;</span>)
-                .<span class="ident">to_str</span>()<span class="question-mark">?</span>
-                .<span class="ident">to_owned</span>(),
-            <span class="ident">deadline</span>: <span class="ident">headers</span>
-                .<span class="ident">get</span>(<span class="string">&quot;lambda-runtime-deadline-ms&quot;</span>)
-                .<span class="ident">expect</span>(<span class="string">&quot;missing lambda-runtime-deadline-ms header&quot;</span>)
-                .<span class="ident">to_str</span>()<span class="question-mark">?</span>
-                .<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>()<span class="question-mark">?</span>,
-            <span class="ident">invoked_function_arn</span>: <span class="ident">headers</span>
-                .<span class="ident">get</span>(<span class="string">&quot;lambda-runtime-invoked-function-arn&quot;</span>)
-                .<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span><span class="ident">HeaderValue::from_static</span>(
+        <span class="kw">let </span>ctx = Context {
+            request_id: headers
+                .get(<span class="string">&quot;lambda-runtime-aws-request-id&quot;</span>)
+                .expect(<span class="string">&quot;missing lambda-runtime-aws-request-id header&quot;</span>)
+                .to_str()<span class="question-mark">?
+                </span>.to_owned(),
+            deadline: headers
+                .get(<span class="string">&quot;lambda-runtime-deadline-ms&quot;</span>)
+                .expect(<span class="string">&quot;missing lambda-runtime-deadline-ms header&quot;</span>)
+                .to_str()<span class="question-mark">?
+                </span>.parse::&lt;u64&gt;()<span class="question-mark">?</span>,
+            invoked_function_arn: headers
+                .get(<span class="string">&quot;lambda-runtime-invoked-function-arn&quot;</span>)
+                .unwrap_or(<span class="kw-2">&amp;</span>HeaderValue::from_static(
                     <span class="string">&quot;No header lambda-runtime-invoked-function-arn found.&quot;</span>,
                 ))
-                .<span class="ident">to_str</span>()<span class="question-mark">?</span>
-                .<span class="ident">to_owned</span>(),
-            <span class="ident">xray_trace_id</span>: <span class="ident">headers</span>
-                .<span class="ident">get</span>(<span class="string">&quot;lambda-runtime-trace-id&quot;</span>)
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">String::from_utf8_lossy</span>(<span class="ident">v</span>.<span class="ident">as_bytes</span>()).<span class="ident">to_string</span>()),
-            <span class="ident">client_context</span>,
-            <span class="ident">identity</span>,
-            ..<span class="ident">Default::default</span>()
+                .to_str()<span class="question-mark">?
+                </span>.to_owned(),
+            xray_trace_id: headers
+                .get(<span class="string">&quot;lambda-runtime-trace-id&quot;</span>)
+                .map(|v| String::from_utf8_lossy(v.as_bytes()).to_string()),
+            client_context,
+            identity,
+            ..Default::default()
         };
 
-        <span class="prelude-val">Ok</span>(<span class="ident">ctx</span>)
+        <span class="prelude-val">Ok</span>(ctx)
     }
 }
 
-<span class="doccomment">/// Incoming Lambda request containing the event payload and context.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LambdaEvent</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Event payload.</span>
-    <span class="kw">pub</span> <span class="ident">payload</span>: <span class="ident">T</span>,
-    <span class="doccomment">/// Invocation context.</span>
-    <span class="kw">pub</span> <span class="ident">context</span>: <span class="ident">Context</span>,
+<span class="doccomment">/// Incoming Lambda request containing the event payload and context.
+</span><span class="attribute">#[derive(Clone, Debug)]
+</span><span class="kw">pub struct </span>LambdaEvent&lt;T&gt; {
+    <span class="doccomment">/// Event payload.
+    </span><span class="kw">pub </span>payload: T,
+    <span class="doccomment">/// Invocation context.
+    </span><span class="kw">pub </span>context: Context,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">LambdaEvent</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Creates a new Lambda request</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">payload</span>: <span class="ident">T</span>, <span class="ident">context</span>: <span class="ident">Context</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> { <span class="ident">payload</span>, <span class="ident">context</span> }
+<span class="kw">impl</span>&lt;T&gt; LambdaEvent&lt;T&gt; {
+    <span class="doccomment">/// Creates a new Lambda request
+    </span><span class="kw">pub fn </span>new(payload: T, context: Context) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{ payload, context }
     }
 
-    <span class="doccomment">/// Split the Lambda event into its payload and context.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_parts</span>(<span class="self">self</span>) -&gt; (<span class="ident">T</span>, <span class="ident">Context</span>) {
-        (<span class="self">self</span>.<span class="ident">payload</span>, <span class="self">self</span>.<span class="ident">context</span>)
+    <span class="doccomment">/// Split the Lambda event into its payload and context.
+    </span><span class="kw">pub fn </span>into_parts(<span class="self">self</span>) -&gt; (T, Context) {
+        (<span class="self">self</span>.payload, <span class="self">self</span>.context)
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">round_trip_lambda_error</span>() {
-        <span class="kw">use</span> <span class="ident">serde_json</span>::{<span class="ident">json</span>, <span class="ident">Value</span>};
-        <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="macro">json!</span>({
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>round_trip_lambda_error() {
+        <span class="kw">use </span>serde_json::{json, Value};
+        <span class="kw">let </span>expected = <span class="macro">json!</span>({
             <span class="string">&quot;errorType&quot;</span>: <span class="string">&quot;InvalidEventDataError&quot;</span>,
             <span class="string">&quot;errorMessage&quot;</span>: <span class="string">&quot;Error parsing event data.&quot;</span>,
         });
 
-        <span class="kw">let</span> <span class="ident">actual</span> <span class="op">=</span> <span class="ident">Diagnostic</span> {
-            <span class="ident">error_type</span>: <span class="string">&quot;InvalidEventDataError&quot;</span>,
-            <span class="ident">error_message</span>: <span class="string">&quot;Error parsing event data.&quot;</span>,
+        <span class="kw">let </span>actual = Diagnostic {
+            error_type: <span class="string">&quot;InvalidEventDataError&quot;</span>,
+            error_message: <span class="string">&quot;Error parsing event data.&quot;</span>,
         };
-        <span class="kw">let</span> <span class="ident">actual</span>: <span class="ident">Value</span> <span class="op">=</span> <span class="ident">serde_json::to_value</span>(<span class="ident">actual</span>).<span class="ident">expect</span>(<span class="string">&quot;failed to serialize diagnostic&quot;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+        <span class="kw">let </span>actual: Value = serde_json::to_value(actual).expect(<span class="string">&quot;failed to serialize diagnostic&quot;</span>);
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">context_with_expected_values_and_types_resolves</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">HeaderMap::new</span>();
-        <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="string">&quot;lambda-runtime-aws-request-id&quot;</span>, <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;my-id&quot;</span>));
-        <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="string">&quot;lambda-runtime-deadline-ms&quot;</span>, <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;123&quot;</span>));
-        <span class="ident">headers</span>.<span class="ident">insert</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>context_with_expected_values_and_types_resolves() {
+        <span class="kw">let </span><span class="kw-2">mut </span>headers = HeaderMap::new();
+        headers.insert(<span class="string">&quot;lambda-runtime-aws-request-id&quot;</span>, HeaderValue::from_static(<span class="string">&quot;my-id&quot;</span>));
+        headers.insert(<span class="string">&quot;lambda-runtime-deadline-ms&quot;</span>, HeaderValue::from_static(<span class="string">&quot;123&quot;</span>));
+        headers.insert(
             <span class="string">&quot;lambda-runtime-invoked-function-arn&quot;</span>,
-            <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;arn::myarn&quot;</span>),
+            HeaderValue::from_static(<span class="string">&quot;arn::myarn&quot;</span>),
         );
-        <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="string">&quot;lambda-runtime-trace-id&quot;</span>, <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;arn::myarn&quot;</span>));
-        <span class="kw">let</span> <span class="ident">tried</span> <span class="op">=</span> <span class="ident">Context::try_from</span>(<span class="ident">headers</span>);
-        <span class="macro">assert!</span>(<span class="ident">tried</span>.<span class="ident">is_ok</span>());
+        headers.insert(<span class="string">&quot;lambda-runtime-trace-id&quot;</span>, HeaderValue::from_static(<span class="string">&quot;arn::myarn&quot;</span>));
+        <span class="kw">let </span>tried = Context::try_from(headers);
+        <span class="macro">assert!</span>(tried.is_ok());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">context_with_certain_missing_headers_still_resolves</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">HeaderMap::new</span>();
-        <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="string">&quot;lambda-runtime-aws-request-id&quot;</span>, <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;my-id&quot;</span>));
-        <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="string">&quot;lambda-runtime-deadline-ms&quot;</span>, <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;123&quot;</span>));
-        <span class="kw">let</span> <span class="ident">tried</span> <span class="op">=</span> <span class="ident">Context::try_from</span>(<span class="ident">headers</span>);
-        <span class="macro">assert!</span>(<span class="ident">tried</span>.<span class="ident">is_ok</span>());
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>context_with_certain_missing_headers_still_resolves() {
+        <span class="kw">let </span><span class="kw-2">mut </span>headers = HeaderMap::new();
+        headers.insert(<span class="string">&quot;lambda-runtime-aws-request-id&quot;</span>, HeaderValue::from_static(<span class="string">&quot;my-id&quot;</span>));
+        headers.insert(<span class="string">&quot;lambda-runtime-deadline-ms&quot;</span>, HeaderValue::from_static(<span class="string">&quot;123&quot;</span>));
+        <span class="kw">let </span>tried = Context::try_from(headers);
+        <span class="macro">assert!</span>(tried.is_ok());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">context_with_client_context_resolves</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">custom</span> <span class="op">=</span> <span class="ident">HashMap::new</span>();
-        <span class="ident">custom</span>.<span class="ident">insert</span>(<span class="string">&quot;key&quot;</span>.<span class="ident">to_string</span>(), <span class="string">&quot;value&quot;</span>.<span class="ident">to_string</span>());
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">environment</span> <span class="op">=</span> <span class="ident">HashMap::new</span>();
-        <span class="ident">environment</span>.<span class="ident">insert</span>(<span class="string">&quot;key&quot;</span>.<span class="ident">to_string</span>(), <span class="string">&quot;value&quot;</span>.<span class="ident">to_string</span>());
-        <span class="kw">let</span> <span class="ident">client_context</span> <span class="op">=</span> <span class="ident">ClientContext</span> {
-            <span class="ident">client</span>: <span class="ident">ClientApplication</span> {
-                <span class="ident">installation_id</span>: <span class="ident">String::new</span>(),
-                <span class="ident">app_title</span>: <span class="ident">String::new</span>(),
-                <span class="ident">app_version_name</span>: <span class="ident">String::new</span>(),
-                <span class="ident">app_version_code</span>: <span class="ident">String::new</span>(),
-                <span class="ident">app_package_name</span>: <span class="ident">String::new</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>context_with_client_context_resolves() {
+        <span class="kw">let </span><span class="kw-2">mut </span>custom = HashMap::new();
+        custom.insert(<span class="string">&quot;key&quot;</span>.to_string(), <span class="string">&quot;value&quot;</span>.to_string());
+        <span class="kw">let </span><span class="kw-2">mut </span>environment = HashMap::new();
+        environment.insert(<span class="string">&quot;key&quot;</span>.to_string(), <span class="string">&quot;value&quot;</span>.to_string());
+        <span class="kw">let </span>client_context = ClientContext {
+            client: ClientApplication {
+                installation_id: String::new(),
+                app_title: String::new(),
+                app_version_name: String::new(),
+                app_version_code: String::new(),
+                app_package_name: String::new(),
             },
-            <span class="ident">custom</span>,
-            <span class="ident">environment</span>,
+            custom,
+            environment,
         };
-        <span class="kw">let</span> <span class="ident">client_context_str</span> <span class="op">=</span> <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">client_context</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">HeaderMap::new</span>();
-        <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="string">&quot;lambda-runtime-aws-request-id&quot;</span>, <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;my-id&quot;</span>));
-        <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="string">&quot;lambda-runtime-deadline-ms&quot;</span>, <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;123&quot;</span>));
-        <span class="ident">headers</span>.<span class="ident">insert</span>(
+        <span class="kw">let </span>client_context_str = serde_json::to_string(<span class="kw-2">&amp;</span>client_context).unwrap();
+        <span class="kw">let </span><span class="kw-2">mut </span>headers = HeaderMap::new();
+        headers.insert(<span class="string">&quot;lambda-runtime-aws-request-id&quot;</span>, HeaderValue::from_static(<span class="string">&quot;my-id&quot;</span>));
+        headers.insert(<span class="string">&quot;lambda-runtime-deadline-ms&quot;</span>, HeaderValue::from_static(<span class="string">&quot;123&quot;</span>));
+        headers.insert(
             <span class="string">&quot;lambda-runtime-client-context&quot;</span>,
-            <span class="ident">HeaderValue::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">client_context_str</span>).<span class="ident">unwrap</span>(),
+            HeaderValue::from_str(<span class="kw-2">&amp;</span>client_context_str).unwrap(),
         );
-        <span class="kw">let</span> <span class="ident">tried</span> <span class="op">=</span> <span class="ident">Context::try_from</span>(<span class="ident">headers</span>);
-        <span class="macro">assert!</span>(<span class="ident">tried</span>.<span class="ident">is_ok</span>());
-        <span class="kw">let</span> <span class="ident">tried</span> <span class="op">=</span> <span class="ident">tried</span>.<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="ident">tried</span>.<span class="ident">client_context</span>.<span class="ident">is_some</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">tried</span>.<span class="ident">client_context</span>.<span class="ident">unwrap</span>(), <span class="ident">client_context</span>);
+        <span class="kw">let </span>tried = Context::try_from(headers);
+        <span class="macro">assert!</span>(tried.is_ok());
+        <span class="kw">let </span>tried = tried.unwrap();
+        <span class="macro">assert!</span>(tried.client_context.is_some());
+        <span class="macro">assert_eq!</span>(tried.client_context.unwrap(), client_context);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">context_with_empty_client_context_resolves</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">HeaderMap::new</span>();
-        <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="string">&quot;lambda-runtime-aws-request-id&quot;</span>, <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;my-id&quot;</span>));
-        <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="string">&quot;lambda-runtime-deadline-ms&quot;</span>, <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;123&quot;</span>));
-        <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="string">&quot;lambda-runtime-client-context&quot;</span>, <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;{}&quot;</span>));
-        <span class="kw">let</span> <span class="ident">tried</span> <span class="op">=</span> <span class="ident">Context::try_from</span>(<span class="ident">headers</span>);
-        <span class="macro">assert!</span>(<span class="ident">tried</span>.<span class="ident">is_ok</span>());
-        <span class="macro">assert!</span>(<span class="ident">tried</span>.<span class="ident">unwrap</span>().<span class="ident">client_context</span>.<span class="ident">is_some</span>());
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>context_with_empty_client_context_resolves() {
+        <span class="kw">let </span><span class="kw-2">mut </span>headers = HeaderMap::new();
+        headers.insert(<span class="string">&quot;lambda-runtime-aws-request-id&quot;</span>, HeaderValue::from_static(<span class="string">&quot;my-id&quot;</span>));
+        headers.insert(<span class="string">&quot;lambda-runtime-deadline-ms&quot;</span>, HeaderValue::from_static(<span class="string">&quot;123&quot;</span>));
+        headers.insert(<span class="string">&quot;lambda-runtime-client-context&quot;</span>, HeaderValue::from_static(<span class="string">&quot;{}&quot;</span>));
+        <span class="kw">let </span>tried = Context::try_from(headers);
+        <span class="macro">assert!</span>(tried.is_ok());
+        <span class="macro">assert!</span>(tried.unwrap().client_context.is_some());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">context_with_identity_resolves</span>() {
-        <span class="kw">let</span> <span class="ident">cognito_identity</span> <span class="op">=</span> <span class="ident">CognitoIdentity</span> {
-            <span class="ident">identity_id</span>: <span class="ident">String::new</span>(),
-            <span class="ident">identity_pool_id</span>: <span class="ident">String::new</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>context_with_identity_resolves() {
+        <span class="kw">let </span>cognito_identity = CognitoIdentity {
+            identity_id: String::new(),
+            identity_pool_id: String::new(),
         };
-        <span class="kw">let</span> <span class="ident">cognito_identity_str</span> <span class="op">=</span> <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">cognito_identity</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">HeaderMap::new</span>();
-        <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="string">&quot;lambda-runtime-aws-request-id&quot;</span>, <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;my-id&quot;</span>));
-        <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="string">&quot;lambda-runtime-deadline-ms&quot;</span>, <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;123&quot;</span>));
-        <span class="ident">headers</span>.<span class="ident">insert</span>(
+        <span class="kw">let </span>cognito_identity_str = serde_json::to_string(<span class="kw-2">&amp;</span>cognito_identity).unwrap();
+        <span class="kw">let </span><span class="kw-2">mut </span>headers = HeaderMap::new();
+        headers.insert(<span class="string">&quot;lambda-runtime-aws-request-id&quot;</span>, HeaderValue::from_static(<span class="string">&quot;my-id&quot;</span>));
+        headers.insert(<span class="string">&quot;lambda-runtime-deadline-ms&quot;</span>, HeaderValue::from_static(<span class="string">&quot;123&quot;</span>));
+        headers.insert(
             <span class="string">&quot;lambda-runtime-cognito-identity&quot;</span>,
-            <span class="ident">HeaderValue::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">cognito_identity_str</span>).<span class="ident">unwrap</span>(),
+            HeaderValue::from_str(<span class="kw-2">&amp;</span>cognito_identity_str).unwrap(),
         );
-        <span class="kw">let</span> <span class="ident">tried</span> <span class="op">=</span> <span class="ident">Context::try_from</span>(<span class="ident">headers</span>);
-        <span class="macro">assert!</span>(<span class="ident">tried</span>.<span class="ident">is_ok</span>());
-        <span class="kw">let</span> <span class="ident">tried</span> <span class="op">=</span> <span class="ident">tried</span>.<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="ident">tried</span>.<span class="ident">identity</span>.<span class="ident">is_some</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">tried</span>.<span class="ident">identity</span>.<span class="ident">unwrap</span>(), <span class="ident">cognito_identity</span>);
+        <span class="kw">let </span>tried = Context::try_from(headers);
+        <span class="macro">assert!</span>(tried.is_ok());
+        <span class="kw">let </span>tried = tried.unwrap();
+        <span class="macro">assert!</span>(tried.identity.is_some());
+        <span class="macro">assert_eq!</span>(tried.identity.unwrap(), cognito_identity);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">context_with_bad_deadline_type_is_err</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">HeaderMap::new</span>();
-        <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="string">&quot;lambda-runtime-aws-request-id&quot;</span>, <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;my-id&quot;</span>));
-        <span class="ident">headers</span>.<span class="ident">insert</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>context_with_bad_deadline_type_is_err() {
+        <span class="kw">let </span><span class="kw-2">mut </span>headers = HeaderMap::new();
+        headers.insert(<span class="string">&quot;lambda-runtime-aws-request-id&quot;</span>, HeaderValue::from_static(<span class="string">&quot;my-id&quot;</span>));
+        headers.insert(
             <span class="string">&quot;lambda-runtime-deadline-ms&quot;</span>,
-            <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;BAD-Type,not &lt;u64&gt;&quot;</span>),
+            HeaderValue::from_static(<span class="string">&quot;BAD-Type,not &lt;u64&gt;&quot;</span>),
         );
-        <span class="ident">headers</span>.<span class="ident">insert</span>(
+        headers.insert(
             <span class="string">&quot;lambda-runtime-invoked-function-arn&quot;</span>,
-            <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;arn::myarn&quot;</span>),
+            HeaderValue::from_static(<span class="string">&quot;arn::myarn&quot;</span>),
         );
-        <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="string">&quot;lambda-runtime-trace-id&quot;</span>, <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;arn::myarn&quot;</span>));
-        <span class="kw">let</span> <span class="ident">tried</span> <span class="op">=</span> <span class="ident">Context::try_from</span>(<span class="ident">headers</span>);
-        <span class="macro">assert!</span>(<span class="ident">tried</span>.<span class="ident">is_err</span>());
+        headers.insert(<span class="string">&quot;lambda-runtime-trace-id&quot;</span>, HeaderValue::from_static(<span class="string">&quot;arn::myarn&quot;</span>));
+        <span class="kw">let </span>tried = Context::try_from(headers);
+        <span class="macro">assert!</span>(tried.is_err());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">context_with_bad_client_context_is_err</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">HeaderMap::new</span>();
-        <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="string">&quot;lambda-runtime-aws-request-id&quot;</span>, <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;my-id&quot;</span>));
-        <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="string">&quot;lambda-runtime-deadline-ms&quot;</span>, <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;123&quot;</span>));
-        <span class="ident">headers</span>.<span class="ident">insert</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>context_with_bad_client_context_is_err() {
+        <span class="kw">let </span><span class="kw-2">mut </span>headers = HeaderMap::new();
+        headers.insert(<span class="string">&quot;lambda-runtime-aws-request-id&quot;</span>, HeaderValue::from_static(<span class="string">&quot;my-id&quot;</span>));
+        headers.insert(<span class="string">&quot;lambda-runtime-deadline-ms&quot;</span>, HeaderValue::from_static(<span class="string">&quot;123&quot;</span>));
+        headers.insert(
             <span class="string">&quot;lambda-runtime-client-context&quot;</span>,
-            <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;BAD-Type,not JSON&quot;</span>),
+            HeaderValue::from_static(<span class="string">&quot;BAD-Type,not JSON&quot;</span>),
         );
-        <span class="kw">let</span> <span class="ident">tried</span> <span class="op">=</span> <span class="ident">Context::try_from</span>(<span class="ident">headers</span>);
-        <span class="macro">assert!</span>(<span class="ident">tried</span>.<span class="ident">is_err</span>());
+        <span class="kw">let </span>tried = Context::try_from(headers);
+        <span class="macro">assert!</span>(tried.is_err());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">context_with_empty_identity_is_err</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">HeaderMap::new</span>();
-        <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="string">&quot;lambda-runtime-aws-request-id&quot;</span>, <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;my-id&quot;</span>));
-        <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="string">&quot;lambda-runtime-deadline-ms&quot;</span>, <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;123&quot;</span>));
-        <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="string">&quot;lambda-runtime-cognito-identity&quot;</span>, <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;{}&quot;</span>));
-        <span class="kw">let</span> <span class="ident">tried</span> <span class="op">=</span> <span class="ident">Context::try_from</span>(<span class="ident">headers</span>);
-        <span class="macro">assert!</span>(<span class="ident">tried</span>.<span class="ident">is_err</span>());
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>context_with_empty_identity_is_err() {
+        <span class="kw">let </span><span class="kw-2">mut </span>headers = HeaderMap::new();
+        headers.insert(<span class="string">&quot;lambda-runtime-aws-request-id&quot;</span>, HeaderValue::from_static(<span class="string">&quot;my-id&quot;</span>));
+        headers.insert(<span class="string">&quot;lambda-runtime-deadline-ms&quot;</span>, HeaderValue::from_static(<span class="string">&quot;123&quot;</span>));
+        headers.insert(<span class="string">&quot;lambda-runtime-cognito-identity&quot;</span>, HeaderValue::from_static(<span class="string">&quot;{}&quot;</span>));
+        <span class="kw">let </span>tried = Context::try_from(headers);
+        <span class="macro">assert!</span>(tried.is_err());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">context_with_bad_identity_is_err</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">HeaderMap::new</span>();
-        <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="string">&quot;lambda-runtime-aws-request-id&quot;</span>, <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;my-id&quot;</span>));
-        <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="string">&quot;lambda-runtime-deadline-ms&quot;</span>, <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;123&quot;</span>));
-        <span class="ident">headers</span>.<span class="ident">insert</span>(
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>context_with_bad_identity_is_err() {
+        <span class="kw">let </span><span class="kw-2">mut </span>headers = HeaderMap::new();
+        headers.insert(<span class="string">&quot;lambda-runtime-aws-request-id&quot;</span>, HeaderValue::from_static(<span class="string">&quot;my-id&quot;</span>));
+        headers.insert(<span class="string">&quot;lambda-runtime-deadline-ms&quot;</span>, HeaderValue::from_static(<span class="string">&quot;123&quot;</span>));
+        headers.insert(
             <span class="string">&quot;lambda-runtime-cognito-identity&quot;</span>,
-            <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;BAD-Type,not JSON&quot;</span>),
+            HeaderValue::from_static(<span class="string">&quot;BAD-Type,not JSON&quot;</span>),
         );
-        <span class="kw">let</span> <span class="ident">tried</span> <span class="op">=</span> <span class="ident">Context::try_from</span>(<span class="ident">headers</span>);
-        <span class="macro">assert!</span>(<span class="ident">tried</span>.<span class="ident">is_err</span>());
+        <span class="kw">let </span>tried = Context::try_from(headers);
+        <span class="macro">assert!</span>(tried.is_err());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="attribute">#[<span class="ident">should_panic</span>]</span>
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_must_use</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">context_with_missing_request_id_should_panic</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">HeaderMap::new</span>();
-        <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="string">&quot;lambda-runtime-aws-request-id&quot;</span>, <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;my-id&quot;</span>));
-        <span class="ident">headers</span>.<span class="ident">insert</span>(
+    <span class="attribute">#[test]
+    #[should_panic]
+    #[allow(unused_must_use)]
+    </span><span class="kw">fn </span>context_with_missing_request_id_should_panic() {
+        <span class="kw">let </span><span class="kw-2">mut </span>headers = HeaderMap::new();
+        headers.insert(<span class="string">&quot;lambda-runtime-aws-request-id&quot;</span>, HeaderValue::from_static(<span class="string">&quot;my-id&quot;</span>));
+        headers.insert(
             <span class="string">&quot;lambda-runtime-invoked-function-arn&quot;</span>,
-            <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;arn::myarn&quot;</span>),
+            HeaderValue::from_static(<span class="string">&quot;arn::myarn&quot;</span>),
         );
-        <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="string">&quot;lambda-runtime-trace-id&quot;</span>, <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;arn::myarn&quot;</span>));
-        <span class="ident">Context::try_from</span>(<span class="ident">headers</span>);
+        headers.insert(<span class="string">&quot;lambda-runtime-trace-id&quot;</span>, HeaderValue::from_static(<span class="string">&quot;arn::myarn&quot;</span>));
+        Context::try_from(headers);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="attribute">#[<span class="ident">should_panic</span>]</span>
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_must_use</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">context_with_missing_deadline_should_panic</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">headers</span> <span class="op">=</span> <span class="ident">HeaderMap::new</span>();
-        <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="string">&quot;lambda-runtime-deadline-ms&quot;</span>, <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;123&quot;</span>));
-        <span class="ident">headers</span>.<span class="ident">insert</span>(
+    <span class="attribute">#[test]
+    #[should_panic]
+    #[allow(unused_must_use)]
+    </span><span class="kw">fn </span>context_with_missing_deadline_should_panic() {
+        <span class="kw">let </span><span class="kw-2">mut </span>headers = HeaderMap::new();
+        headers.insert(<span class="string">&quot;lambda-runtime-deadline-ms&quot;</span>, HeaderValue::from_static(<span class="string">&quot;123&quot;</span>));
+        headers.insert(
             <span class="string">&quot;lambda-runtime-invoked-function-arn&quot;</span>,
-            <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;arn::myarn&quot;</span>),
+            HeaderValue::from_static(<span class="string">&quot;arn::myarn&quot;</span>),
         );
-        <span class="ident">headers</span>.<span class="ident">insert</span>(<span class="string">&quot;lambda-runtime-trace-id&quot;</span>, <span class="ident">HeaderValue::from_static</span>(<span class="string">&quot;arn::myarn&quot;</span>));
-        <span class="ident">Context::try_from</span>(<span class="ident">headers</span>);
+        headers.insert(<span class="string">&quot;lambda-runtime-trace-id&quot;</span>, HeaderValue::from_static(<span class="string">&quot;arn::myarn&quot;</span>));
+        Context::try_from(headers);
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Context</span> {
-    <span class="doccomment">/// Add environment details to the context by setting `env_config`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_config</span>(<span class="self">self</span>, <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">env_config</span>: <span class="ident">config</span>.<span class="ident">clone</span>(),
-            ..<span class="self">self</span>
-        }
+<span class="kw">impl </span>Context {
+    <span class="doccomment">/// Add environment details to the context by setting `env_config`.
+    </span><span class="kw">pub fn </span>with_config(<span class="self">self</span>, config: <span class="kw-2">&amp;</span>Config) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            env_config: config.clone(),
+            ..<span class="self">self
+        </span>}
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lambda_runtime" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lambda_runtime" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

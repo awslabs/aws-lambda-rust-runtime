@@ -70,10 +70,13 @@ pub struct ClientApplication {
 
 /// Cognito identity information sent with the event
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct CognitoIdentity {
     /// The unique identity id for the Cognito credentials invoking the function.
+    #[serde(alias = "cognitoIdentityId")]
     pub identity_id: String,
     /// The identity pool id the caller is "registered" with.
+    #[serde(alias = "cognitoIdentityPoolId")]
     pub identity_pool_id: String,
 }
 

@@ -368,6 +368,14 @@
 <span id="368">368</span>
 <span id="369">369</span>
 <span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{Config, Error};
 <span class="kw">use </span>http::{HeaderMap, HeaderValue};
 <span class="kw">use </span>serde::{Deserialize, Serialize};
@@ -427,23 +435,31 @@
 #[serde(rename_all = <span class="string">&quot;camelCase&quot;</span>)]
 </span><span class="kw">pub struct </span>ClientApplication {
     <span class="doccomment">/// The mobile app installation id
+    </span><span class="attribute">#[serde(alias = <span class="string">&quot;installation_id&quot;</span>)]
     </span><span class="kw">pub </span>installation_id: String,
     <span class="doccomment">/// The app title for the mobile app as registered with AWS&#39; mobile services.
+    </span><span class="attribute">#[serde(alias = <span class="string">&quot;app_title&quot;</span>)]
     </span><span class="kw">pub </span>app_title: String,
     <span class="doccomment">/// The version name of the application as registered with AWS&#39; mobile services.
+    </span><span class="attribute">#[serde(alias = <span class="string">&quot;app_version_name&quot;</span>)]
     </span><span class="kw">pub </span>app_version_name: String,
     <span class="doccomment">/// The app version code.
+    </span><span class="attribute">#[serde(alias = <span class="string">&quot;app_version_code&quot;</span>)]
     </span><span class="kw">pub </span>app_version_code: String,
     <span class="doccomment">/// The package name for the mobile application invoking the function
+    </span><span class="attribute">#[serde(alias = <span class="string">&quot;app_package_name&quot;</span>)]
     </span><span class="kw">pub </span>app_package_name: String,
 }
 
 <span class="doccomment">/// Cognito identity information sent with the event
 </span><span class="attribute">#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(rename_all = <span class="string">&quot;camelCase&quot;</span>)]
 </span><span class="kw">pub struct </span>CognitoIdentity {
     <span class="doccomment">/// The unique identity id for the Cognito credentials invoking the function.
+    </span><span class="attribute">#[serde(alias = <span class="string">&quot;cognitoIdentityId&quot;</span>, alias = <span class="string">&quot;identity_id&quot;</span>)]
     </span><span class="kw">pub </span>identity_id: String,
     <span class="doccomment">/// The identity pool id the caller is &quot;registered&quot; with.
+    </span><span class="attribute">#[serde(alias = <span class="string">&quot;cognitoIdentityPoolId&quot;</span>, alias = <span class="string">&quot;identity_pool_id&quot;</span>)]
     </span><span class="kw">pub </span>identity_pool_id: String,
 }
 

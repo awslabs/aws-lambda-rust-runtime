@@ -11,7 +11,7 @@ jobs:
         os:
           - ubuntu-latest
           - macOS-latest
-        rust:
+        toolchain:
           - "1.62.0" # Current MSRV
           - stable
           - beta
@@ -25,11 +25,12 @@ jobs:
     env:
       RUST_BACKTRACE: 1
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v2
+      - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: ${{ matrix.rust }}
-          override: true
+          toolchain: ${{ matrix.toolchain }}
+      - uses: Swatinem/rust-cache@v2
+
       - name: Build
         run: cargo build --all --verbose
         env:
@@ -40,38 +41,29 @@ jobs:
         env:
           TARGET: ${{ matrix.target }}
         continue-on-error: ${{ matrix.allow_failure }}
-  fmt:
+  formatting:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v2
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: stable
-          components: rustfmt
-          override: true
+      - uses: Swatinem/rust-cache@v2
+
       - name: Run fmt check
         run: cargo fmt --all -- --check
-  clippy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          components: clippy
-          override: true
       - name: Run clippy check
-        run: cargo clippy
+        run: cargo clippy --all-features -- -D warnings
 
   check-examples:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: stable
-          components: clippy
-          override: true
+      - uses: Swatinem/rust-cache@v2
+
       - name: Check examples
         working-directory: examples
         shell: bash
@@ -84,9 +76,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build]
     steps:
-      - name: Set up Rust
-        uses: hecrj/setup-rust-action@v1
       - uses: actions/checkout@v2
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@v2
+
       - name: Generate Docs
         run: |
           cargo doc --no-deps

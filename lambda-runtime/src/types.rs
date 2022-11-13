@@ -57,23 +57,31 @@ pub struct ClientContext {
 #[serde(rename_all = "camelCase")]
 pub struct ClientApplication {
     /// The mobile app installation id
+    #[serde(alias = "installation_id")]
     pub installation_id: String,
     /// The app title for the mobile app as registered with AWS' mobile services.
+    #[serde(alias = "app_title")]
     pub app_title: String,
     /// The version name of the application as registered with AWS' mobile services.
+    #[serde(alias = "app_version_name")]
     pub app_version_name: String,
     /// The app version code.
+    #[serde(alias = "app_version_code")]
     pub app_version_code: String,
     /// The package name for the mobile application invoking the function
+    #[serde(alias = "app_package_name")]
     pub app_package_name: String,
 }
 
 /// Cognito identity information sent with the event
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct CognitoIdentity {
     /// The unique identity id for the Cognito credentials invoking the function.
+    #[serde(alias = "cognitoIdentityId", alias = "identity_id")]
     pub identity_id: String,
     /// The identity pool id the caller is "registered" with.
+    #[serde(alias = "cognitoIdentityPoolId", alias = "identity_pool_id")]
     pub identity_pool_id: String,
 }
 

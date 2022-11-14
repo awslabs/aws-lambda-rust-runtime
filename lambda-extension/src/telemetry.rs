@@ -143,7 +143,7 @@ pub enum LambdaTelemetryRecord {
 }
 
 /// Type of Initialization
-#[derive(Clone, Debug, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "kebab-case")]
 pub enum InitType {
     /// Initialised on demand
@@ -155,7 +155,7 @@ pub enum InitType {
 }
 
 /// Phase in which initialization occurs
-#[derive(Clone, Debug, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "kebab-case")]
 pub enum InitPhase {
     /// Initialization phase
@@ -165,7 +165,7 @@ pub enum InitPhase {
 }
 
 /// Status of invocation/initialization
-#[derive(Clone, Debug, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "kebab-case")]
 pub enum Status {
     /// Success
@@ -191,7 +191,7 @@ pub struct Span {
 }
 
 /// Tracing Context
-#[derive(Clone, Debug, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct TraceContext {
     /// Span ID
@@ -203,7 +203,7 @@ pub struct TraceContext {
 }
 
 /// Type of tracing
-#[derive(Clone, Debug, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 pub enum TracingType {
     /// Amazon trace type
     #[serde(rename = "X-Amzn-Trace-Id")]

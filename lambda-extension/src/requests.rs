@@ -29,7 +29,29 @@ pub(crate) fn register_request(extension_name: &str, events: &[&str]) -> Result<
     Ok(req)
 }
 
-pub(crate) fn subscribe_logs_request(
+pub(crate) enum Api {
+    LogsApi,
+    TelemetryApi,
+}
+
+impl Api {
+    pub(crate) fn schema_version(&self) -> &str {
+        match *self {
+            Api::LogsApi => "2021-03-18",
+            Api::TelemetryApi => "2022-07-01",
+        }
+    }
+
+    pub(crate) fn uri(&self) -> &str {
+        match *self {
+            Api::LogsApi => "/2020-08-15/logs",
+            Api::TelemetryApi => "/2022-07-01/telemetry",
+        }
+    }
+}
+
+pub(crate) fn subscribe_request(
+    api: Api,
     extension_id: &str,
     types: Option<&[&str]>,
     buffering: Option<LogBuffering>,
@@ -38,7 +60,7 @@ pub(crate) fn subscribe_logs_request(
     let types = types.unwrap_or(&["platform", "function"]);
 
     let data = serde_json::json!({
-        "schemaVersion": "2021-03-18",
+        "schemaVersion": api.schema_version(),
         "types": types,
         "buffering": buffering.unwrap_or_default(),
         "destination": {
@@ -49,7 +71,7 @@ pub(crate) fn subscribe_logs_request(
 
     let req = build_request()
         .method(Method::PUT)
-        .uri("/2020-08-15/logs")
+        .uri(api.uri())
         .header(EXTENSION_ID_HEADER, extension_id)
         .body(Body::from(serde_json::to_string(&data)?))?;
 

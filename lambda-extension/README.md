@@ -8,7 +8,7 @@
 
 ### Simple extension
 
-The code below creates a simple extension that's registered to every `INVOKE` and `SHUTDOWN` events, and logs them in CloudWatch.
+The code below creates a simple extension that's registered to every `INVOKE` and `SHUTDOWN` events.
 
 ```rust,no_run
 use lambda_extension::{service_fn, Error, LambdaEvent, NextEvent};
@@ -69,6 +69,45 @@ async fn main() -> Result<(), Error> {
     let logs_processor = SharedService::new(service_fn(handler));
 
     Extension::new().with_logs_processor(logs_processor).run().await?;
+
+    Ok(())
+}
+
+```
+
+### Telemetry processor extension
+
+```rust,no_run
+use lambda_extension::{service_fn, Error, Extension, LambdaTelemetry, LambdaTelemetryRecord, SharedService};
+use tracing::info;
+
+async fn handler(events: Vec<LambdaTelemetry>) -> Result<(), Error> {
+    for event in events {
+        match event.record {
+            LambdaTelemetryRecord::Function(record) => {
+                // do something with the function log record
+            },
+            LambdaTelemetryRecord::PlatformInitStart {
+                initialization_type: _,
+                phase: _,
+                runtime_version: _,
+                runtime_version_arn: _,
+            } => {
+                // do something with the PlatformInitStart event
+            },
+            // more types of telemetry events are available
+            _ => (),
+        }
+    }
+
+    Ok(())
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Error> {
+    let telemetry_processor = SharedService::new(service_fn(handler));
+
+    Extension::new().with_telemetry_processor(telemetry_processor).run().await?;
 
     Ok(())
 }

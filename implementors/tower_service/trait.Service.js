@@ -5,5 +5,5 @@
 "lambda_http":[],
 "lambda_runtime":[],
 "logs_trait":[["impl Service&lt;<a class=\"struct\" href=\"https://doc.rust-lang.org/1.65.0/alloc/vec/struct.Vec.html\" title=\"struct alloc::vec::Vec\">Vec</a>&lt;LambdaLog, <a class=\"struct\" href=\"https://doc.rust-lang.org/1.65.0/alloc/alloc/struct.Global.html\" title=\"struct alloc::alloc::Global\">Global</a>&gt;&gt; for <a class=\"struct\" href=\"logs_trait/struct.MyLogsProcessor.html\" title=\"struct logs_trait::MyLogsProcessor\">MyLogsProcessor</a>"]],
-"runtime_trait":[["impl Service&lt;LambdaEvent&lt;<a class=\"struct\" href=\"runtime_trait/struct.Request.html\" title=\"struct runtime_trait::Request\">Request</a>&gt;&gt; for <a class=\"struct\" href=\"runtime_trait/struct.MyHandler.html\" title=\"struct runtime_trait::MyHandler\">MyHandler</a>"]]
+"runtime_trait":[["impl Service&lt;<a class=\"struct\" href=\"lambda_runtime/types/struct.LambdaEvent.html\" title=\"struct lambda_runtime::types::LambdaEvent\">LambdaEvent</a>&lt;<a class=\"struct\" href=\"runtime_trait/struct.Request.html\" title=\"struct runtime_trait::Request\">Request</a>&gt;&gt; for <a class=\"struct\" href=\"runtime_trait/struct.MyHandler.html\" title=\"struct runtime_trait::MyHandler\">MyHandler</a>"]]
 };if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

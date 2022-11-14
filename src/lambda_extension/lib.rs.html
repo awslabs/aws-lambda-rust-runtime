@@ -31,6 +31,8 @@
 <span id="31">31</span>
 <span id="32">32</span>
 <span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
 </pre><pre class="rust"><code><span class="attribute">#![deny(clippy::all, clippy::cargo)]
 #![allow(clippy::multiple_crate_versions, clippy::type_complexity)]
 #![warn(missing_docs, nonstandard_style, rust_2018_idioms)]
@@ -50,6 +52,8 @@
 <span class="kw">pub use </span>events::<span class="kw-2">*</span>;
 <span class="kw">mod </span>logs;
 <span class="kw">pub use </span>logs::<span class="kw-2">*</span>;
+<span class="kw">mod </span>telemetry;
+<span class="kw">pub use </span>telemetry::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// Include several request builders to interact with the Extension API.
 </span><span class="kw">pub mod </span>requests;

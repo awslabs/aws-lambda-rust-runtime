@@ -168,7 +168,7 @@ where
         }
     }
 
-    /// Create a new [`Extension`] with a service that receives Lambda logs.
+    /// Create a new [`Extension`] with a service that receives Lambda telemetry data.
     pub fn with_telemetry_processor<N, NS>(self, lp: N) -> Extension<'a, E, L, N>
     where
         N: Service<()>,

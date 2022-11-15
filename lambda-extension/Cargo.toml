@@ -1,10 +1,10 @@
 [package]
 name = "lambda-extension"
-version = "0.7.0"
+version = "0.8.0"
 edition = "2021"
 authors = [
     "David Calavera <dcalaver@amazon.com>",
-    "Harold Sun <sunhua@amazon.com>"
+    "Harold Sun <sunhua@amazon.com>",
 ]
 description = "AWS Lambda Extension API"
 license = "Apache-2.0"

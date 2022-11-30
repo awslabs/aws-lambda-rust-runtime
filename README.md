@@ -326,6 +326,7 @@ fn test_my_lambda_handler() {
     .expect("failed to create request");
 
   let response = my_lambda_handler(request).await.expect("failed to handle request");
+  assert_eq!(http::StatusCode::OK, response.status());
 }
 ```
 

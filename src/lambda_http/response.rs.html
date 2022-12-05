@@ -494,6 +494,119 @@
 <span id="494">494</span>
 <span id="495">495</span>
 <span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
+<span id="537">537</span>
+<span id="538">538</span>
+<span id="539">539</span>
+<span id="540">540</span>
+<span id="541">541</span>
+<span id="542">542</span>
+<span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
+<span id="546">546</span>
+<span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
+<span id="557">557</span>
+<span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
+<span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
+<span id="564">564</span>
+<span id="565">565</span>
+<span id="566">566</span>
+<span id="567">567</span>
+<span id="568">568</span>
+<span id="569">569</span>
+<span id="570">570</span>
+<span id="571">571</span>
+<span id="572">572</span>
+<span id="573">573</span>
+<span id="574">574</span>
+<span id="575">575</span>
+<span id="576">576</span>
+<span id="577">577</span>
+<span id="578">578</span>
+<span id="579">579</span>
+<span id="580">580</span>
+<span id="581">581</span>
+<span id="582">582</span>
+<span id="583">583</span>
+<span id="584">584</span>
+<span id="585">585</span>
+<span id="586">586</span>
+<span id="587">587</span>
+<span id="588">588</span>
+<span id="589">589</span>
+<span id="590">590</span>
+<span id="591">591</span>
+<span id="592">592</span>
+<span id="593">593</span>
+<span id="594">594</span>
+<span id="595">595</span>
+<span id="596">596</span>
+<span id="597">597</span>
+<span id="598">598</span>
+<span id="599">599</span>
+<span id="600">600</span>
+<span id="601">601</span>
+<span id="602">602</span>
+<span id="603">603</span>
+<span id="604">604</span>
+<span id="605">605</span>
+<span id="606">606</span>
+<span id="607">607</span>
+<span id="608">608</span>
+<span id="609">609</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Response types
 
 </span><span class="kw">use </span><span class="kw">crate</span>::request::RequestOrigin;
@@ -507,7 +620,7 @@
 <span class="kw">use </span>encoding_rs::Encoding;
 <span class="kw">use </span>http::header::CONTENT_ENCODING;
 <span class="kw">use </span>http::HeaderMap;
-<span class="kw">use </span>http::{header::CONTENT_TYPE, Response};
+<span class="kw">use </span>http::{header::CONTENT_TYPE, Response, StatusCode};
 <span class="kw">use </span>http_body::Body <span class="kw">as </span>HttpBody;
 <span class="kw">use </span>hyper::body::to_bytes;
 <span class="kw">use </span>mime::{Mime, CHARSET};
@@ -675,6 +788,71 @@
     }
 }
 
+<span class="kw">impl </span>IntoResponse <span class="kw">for </span>(StatusCode, String) {
+    <span class="kw">fn </span>into_response(<span class="self">self</span>) -&gt; ResponseFuture {
+        <span class="kw">let </span>(status, body) = <span class="self">self</span>;
+        Box::pin(ready(
+            Response::builder()
+                .status(status)
+                .body(Body::from(body))
+                .expect(<span class="string">&quot;unable to build http::Response&quot;</span>),
+        ))
+    }
+}
+
+<span class="kw">impl </span>IntoResponse <span class="kw">for </span>(StatusCode, <span class="kw-2">&amp;</span>str) {
+    <span class="kw">fn </span>into_response(<span class="self">self</span>) -&gt; ResponseFuture {
+        <span class="kw">let </span>(status, body) = <span class="self">self</span>;
+        Box::pin(ready(
+            Response::builder()
+                .status(status)
+                .body(Body::from(body))
+                .expect(<span class="string">&quot;unable to build http::Response&quot;</span>),
+        ))
+    }
+}
+
+<span class="kw">impl </span>IntoResponse <span class="kw">for </span>(StatusCode, <span class="kw-2">&amp;</span>[u8]) {
+    <span class="kw">fn </span>into_response(<span class="self">self</span>) -&gt; ResponseFuture {
+        <span class="kw">let </span>(status, body) = <span class="self">self</span>;
+        Box::pin(ready(
+            Response::builder()
+                .status(status)
+                .body(Body::from(body))
+                .expect(<span class="string">&quot;unable to build http::Response&quot;</span>),
+        ))
+    }
+}
+
+<span class="kw">impl </span>IntoResponse <span class="kw">for </span>(StatusCode, Vec&lt;u8&gt;) {
+    <span class="kw">fn </span>into_response(<span class="self">self</span>) -&gt; ResponseFuture {
+        <span class="kw">let </span>(status, body) = <span class="self">self</span>;
+        Box::pin(ready(
+            Response::builder()
+                .status(status)
+                .body(Body::from(body))
+                .expect(<span class="string">&quot;unable to build http::Response&quot;</span>),
+        ))
+    }
+}
+
+<span class="kw">impl </span>IntoResponse <span class="kw">for </span>(StatusCode, serde_json::Value) {
+    <span class="kw">fn </span>into_response(<span class="self">self</span>) -&gt; ResponseFuture {
+        <span class="kw">let </span>(status, body) = <span class="self">self</span>;
+        Box::pin(<span class="kw">async move </span>{
+            Response::builder()
+                .status(status)
+                .header(CONTENT_TYPE, <span class="string">&quot;application/json&quot;</span>)
+                .body(
+                    serde_json::to_string(<span class="kw-2">&amp;</span>body)
+                        .expect(<span class="string">&quot;unable to serialize serde_json::Value&quot;</span>)
+                        .into(),
+                )
+                .expect(<span class="string">&quot;unable to build http::Response&quot;</span>)
+        })
+    }
+}
+
 <span class="kw">pub type </span>ResponseFuture = Pin&lt;Box&lt;<span class="kw">dyn </span>Future&lt;Output = Response&lt;Body&gt;&gt; + Send&gt;&gt;;
 
 <span class="kw">pub trait </span>ConvertBody {
@@ -765,7 +943,7 @@
     <span class="kw">use super</span>::{Body, IntoResponse, LambdaResponse, RequestOrigin, X_LAMBDA_HTTP_CONTENT_ENCODING};
     <span class="kw">use </span>http::{
         header::{CONTENT_ENCODING, CONTENT_TYPE},
-        Response,
+        Response, StatusCode,
     };
     <span class="kw">use </span>hyper::Body <span class="kw">as </span>HyperBody;
     <span class="kw">use </span>serde_json::{<span class="self">self</span>, json};
@@ -800,6 +978,54 @@
     <span class="attribute">#[tokio::test]
     </span><span class="kw">async fn </span>bytes_into_response() {
         <span class="kw">let </span>response = <span class="string">&quot;text&quot;</span>.as_bytes().into_response().<span class="kw">await</span>;
+        <span class="kw">match </span>response.body() {
+            Body::Binary(data) =&gt; <span class="macro">assert_eq!</span>(data, <span class="string">&quot;text&quot;</span>.as_bytes()),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;invalid body&quot;</span>),
+        }
+    }
+
+    <span class="attribute">#[tokio::test]
+    </span><span class="kw">async fn </span>json_with_status_code_into_response() {
+        <span class="kw">let </span>response = (StatusCode::CREATED, <span class="macro">json!</span>({ <span class="string">&quot;hello&quot;</span>: <span class="string">&quot;lambda&quot;</span>})).into_response().<span class="kw">await</span>;
+        <span class="kw">match </span>response.body() {
+            Body::Text(json) =&gt; <span class="macro">assert_eq!</span>(json, <span class="string">r#&quot;{&quot;hello&quot;:&quot;lambda&quot;}&quot;#</span>),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;invalid body&quot;</span>),
+        }
+        <span class="kw">match </span>response.status() {
+            StatusCode::CREATED =&gt; (),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;invalid status code&quot;</span>),
+        }
+
+        <span class="macro">assert_eq!</span>(
+            response
+                .headers()
+                .get(CONTENT_TYPE)
+                .map(|h| h.to_str().expect(<span class="string">&quot;invalid header&quot;</span>)),
+            <span class="prelude-val">Some</span>(<span class="string">&quot;application/json&quot;</span>)
+        )
+    }
+
+    <span class="attribute">#[tokio::test]
+    </span><span class="kw">async fn </span>text_with_status_code_into_response() {
+        <span class="kw">let </span>response = (StatusCode::CREATED, <span class="string">&quot;text&quot;</span>).into_response().<span class="kw">await</span>;
+
+        <span class="kw">match </span>response.status() {
+            StatusCode::CREATED =&gt; (),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;invalid status code&quot;</span>),
+        }
+        <span class="kw">match </span>response.body() {
+            Body::Text(text) =&gt; <span class="macro">assert_eq!</span>(text, <span class="string">&quot;text&quot;</span>),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;invalid body&quot;</span>),
+        }
+    }
+
+    <span class="attribute">#[tokio::test]
+    </span><span class="kw">async fn </span>bytes_with_status_code_into_response() {
+        <span class="kw">let </span>response = (StatusCode::CREATED, <span class="string">&quot;text&quot;</span>.as_bytes()).into_response().<span class="kw">await</span>;
+        <span class="kw">match </span>response.status() {
+            StatusCode::CREATED =&gt; (),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;invalid status code&quot;</span>),
+        }
         <span class="kw">match </span>response.body() {
             Body::Binary(data) =&gt; <span class="macro">assert_eq!</span>(data, <span class="string">&quot;text&quot;</span>.as_bytes()),
             <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;invalid body&quot;</span>),

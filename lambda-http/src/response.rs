@@ -11,7 +11,7 @@ use aws_lambda_events::encodings::Body;
 use encoding_rs::Encoding;
 use http::header::CONTENT_ENCODING;
 use http::HeaderMap;
-use http::{header::CONTENT_TYPE, Response};
+use http::{header::CONTENT_TYPE, Response, StatusCode};
 use http_body::Body as HttpBody;
 use hyper::body::to_bytes;
 use mime::{Mime, CHARSET};
@@ -179,6 +179,71 @@ impl IntoResponse for serde_json::Value {
     }
 }
 
+impl IntoResponse for (StatusCode, String) {
+    fn into_response(self) -> ResponseFuture {
+        let (status, body) = self;
+        Box::pin(ready(
+            Response::builder()
+                .status(status)
+                .body(Body::from(body))
+                .expect("unable to build http::Response"),
+        ))
+    }
+}
+
+impl IntoResponse for (StatusCode, &str) {
+    fn into_response(self) -> ResponseFuture {
+        let (status, body) = self;
+        Box::pin(ready(
+            Response::builder()
+                .status(status)
+                .body(Body::from(body))
+                .expect("unable to build http::Response"),
+        ))
+    }
+}
+
+impl IntoResponse for (StatusCode, &[u8]) {
+    fn into_response(self) -> ResponseFuture {
+        let (status, body) = self;
+        Box::pin(ready(
+            Response::builder()
+                .status(status)
+                .body(Body::from(body))
+                .expect("unable to build http::Response"),
+        ))
+    }
+}
+
+impl IntoResponse for (StatusCode, Vec<u8>) {
+    fn into_response(self) -> ResponseFuture {
+        let (status, body) = self;
+        Box::pin(ready(
+            Response::builder()
+                .status(status)
+                .body(Body::from(body))
+                .expect("unable to build http::Response"),
+        ))
+    }
+}
+
+impl IntoResponse for (StatusCode, serde_json::Value) {
+    fn into_response(self) -> ResponseFuture {
+        let (status, body) = self;
+        Box::pin(async move {
+            Response::builder()
+                .status(status)
+                .header(CONTENT_TYPE, "application/json")
+                .body(
+                    serde_json::to_string(&body)
+                        .expect("unable to serialize serde_json::Value")
+                        .into(),
+                )
+                .expect("unable to build http::Response")
+        })
+    }
+}
+
 pub type ResponseFuture = Pin<Box<dyn Future<Output = Response<Body>> + Send>>;
 
 pub trait ConvertBody {
@@ -269,7 +334,7 @@ mod tests {
     use super::{Body, IntoResponse, LambdaResponse, RequestOrigin, X_LAMBDA_HTTP_CONTENT_ENCODING};
     use http::{
         header::{CONTENT_ENCODING, CONTENT_TYPE},
-        Response,
+        Response, StatusCode,
     };
     use hyper::Body as HyperBody;
     use serde_json::{self, json};
@@ -304,6 +369,54 @@ mod tests {
     #[tokio::test]
     async fn bytes_into_response() {
         let response = "text".as_bytes().into_response().await;
+        match response.body() {
+            Body::Binary(data) => assert_eq!(data, "text".as_bytes()),
+            _ => panic!("invalid body"),
+        }
+    }
+
+    #[tokio::test]
+    async fn json_with_status_code_into_response() {
+        let response = (StatusCode::CREATED, json!({ "hello": "lambda"})).into_response().await;
+        match response.body() {
+            Body::Text(json) => assert_eq!(json, r#"{"hello":"lambda"}"#),
+            _ => panic!("invalid body"),
+        }
+        match response.status() {
+            StatusCode::CREATED => (),
+            _ => panic!("invalid status code"),
+        }
+
+        assert_eq!(
+            response
+                .headers()
+                .get(CONTENT_TYPE)
+                .map(|h| h.to_str().expect("invalid header")),
+            Some("application/json")
+        )
+    }
+
+    #[tokio::test]
+    async fn text_with_status_code_into_response() {
+        let response = (StatusCode::CREATED, "text").into_response().await;
+
+        match response.status() {
+            StatusCode::CREATED => (),
+            _ => panic!("invalid status code"),
+        }
+        match response.body() {
+            Body::Text(text) => assert_eq!(text, "text"),
+            _ => panic!("invalid body"),
+        }
+    }
+
+    #[tokio::test]
+    async fn bytes_with_status_code_into_response() {
+        let response = (StatusCode::CREATED, "text".as_bytes()).into_response().await;
+        match response.status() {
+            StatusCode::CREATED => (),
+            _ => panic!("invalid status code"),
+        }
         match response.body() {
             Body::Binary(data) => assert_eq!(data, "text".as_bytes()),
             _ => panic!("invalid body"),

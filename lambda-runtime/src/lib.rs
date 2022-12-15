@@ -131,16 +131,16 @@ where
             }
             let request_span = match xray_trace_id {
                 Some(trace_id) => tracing::span!(
-                    tracing::Level::TRACE,
+                    tracing::Level::INFO,
                     "Lambda request",
                     requestId = request_id,
                     xrayTraceId = trace_id
                 ),
-                None => tracing::span!(tracing::Level::TRACE, "Lambda request", requestId = request_id),
+                None => tracing::span!(tracing::Level::INFO, "Lambda request", requestId = request_id),
             };
 
+            // Group the handling in one future and instrument it with the span
             async {
-                // Group the handling in one future and instrument it with the span
                 let body = hyper::body::to_bytes(body).await?;
                 trace!("response body - {}", std::str::from_utf8(&body)?);
 

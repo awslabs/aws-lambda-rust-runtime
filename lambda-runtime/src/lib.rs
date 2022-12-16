@@ -26,7 +26,7 @@ use tokio::io::{AsyncRead, AsyncWrite};
 use tokio_stream::{Stream, StreamExt};
 pub use tower::{self, service_fn, Service};
 use tower::{util::ServiceFn, ServiceExt};
-use tracing::{error, span, trace, Instrument};
+use tracing::{error, trace, Instrument};
 
 mod requests;
 #[cfg(test)]

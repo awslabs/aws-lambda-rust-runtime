@@ -132,11 +132,11 @@ where
             let request_span = match xray_trace_id {
                 Some(trace_id) => tracing::span!(
                     tracing::Level::INFO,
-                    "Lambda request",
+                    "Lambda runtime invoke",
                     requestId = request_id,
                     xrayTraceId = trace_id
                 ),
-                None => tracing::span!(tracing::Level::INFO, "Lambda request", requestId = request_id),
+                None => tracing::span!(tracing::Level::INFO, "Lambda runtime invoke", requestId = request_id),
             };
 
             // Group the handling in one future and instrument it with the span

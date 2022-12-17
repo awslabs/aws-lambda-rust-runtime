@@ -17,7 +17,7 @@ use aws_lambda_events::apigw::{ApiGatewayWebsocketProxyRequest, ApiGatewayWebsoc
 use aws_lambda_events::{encodings::Body, query_map::QueryMap};
 use http::header::HeaderName;
 use http::{HeaderMap, HeaderValue};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::error::Error as JsonError;
 use std::future::Future;
 use std::pin::Pin;
@@ -330,7 +330,7 @@ fn apigw_path_with_stage(stage: &Option<String>, path: &str) -> String {
 
 /// Event request context as an enumeration of request contexts
 /// for both ALB and API Gateway and HTTP API events
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, Serialize)]
 #[serde(untagged)]
 pub enum RequestContext {
     /// API Gateway proxy request context

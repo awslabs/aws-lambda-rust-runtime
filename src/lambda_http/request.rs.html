@@ -763,7 +763,7 @@
 <span class="kw">use </span>aws_lambda_events::{encodings::Body, query_map::QueryMap};
 <span class="kw">use </span>http::header::HeaderName;
 <span class="kw">use </span>http::{HeaderMap, HeaderValue};
-<span class="kw">use </span>serde::Deserialize;
+<span class="kw">use </span>serde::{Deserialize, Serialize};
 <span class="kw">use </span>serde_json::error::Error <span class="kw">as </span>JsonError;
 <span class="kw">use </span>std::future::Future;
 <span class="kw">use </span>std::pin::Pin;
@@ -1076,7 +1076,7 @@
 
 <span class="doccomment">/// Event request context as an enumeration of request contexts
 /// for both ALB and API Gateway and HTTP API events
-</span><span class="attribute">#[derive(Deserialize, Debug, Clone)]
+</span><span class="attribute">#[derive(Deserialize, Debug, Clone, Serialize)]
 #[serde(untagged)]
 </span><span class="kw">pub enum </span>RequestContext {
     <span class="doccomment">/// API Gateway proxy request context

@@ -1,9 +1,9 @@
 [package]
 name = "lambda_http"
-version = "0.7.1"
+version = "0.7.2"
 authors = [
     "David Calavera <dcalaver@amazon.com>",
-    "Harold Sun <sunhua@amazon.com>"
+    "Harold Sun <sunhua@amazon.com>",
 ]
 edition = "2021"
 description = "Application Load Balancer and API Gateway event types for AWS Lambda"
@@ -46,4 +46,3 @@ features = ["alb", "apigw"]
 log = "^0.4"
 maplit = "1.0"
 tokio = { version = "1.0", features = ["macros"] }
-

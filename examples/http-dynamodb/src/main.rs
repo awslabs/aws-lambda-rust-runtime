@@ -16,10 +16,10 @@ pub struct Item {
 /// Write your code inside it.
 /// You can see more examples in Runtime's repository:
 /// - https://github.com/awslabs/aws-lambda-rust-runtime/tree/main/examples
-async fn function_handler(event: Request) -> Result<Response<Body>, Error> {
+async fn handle_request(db_client: &Client, event: Request) -> Result<Response<Body>, Error> {
     // Extract some useful information from the request
     let body = event.body();
-    let s = std::str::from_utf8(&body).expect("invalid utf-8 sequence");
+    let s = std::str::from_utf8(body).expect("invalid utf-8 sequence");
     //Log into Cloudwatch
     info!(payload = %s, "JSON Payload received");
 
@@ -36,14 +36,9 @@ async fn function_handler(event: Request) -> Result<Response<Body>, Error> {
             return Ok(resp);
         }
     };
-    
-    //Get config from environment.
-    let config = aws_config::load_from_env().await;
-    //Create the DynamoDB client.
-    let client = Client::new(&config);
 
     //Insert into the table.
-    add_item(&client, item.clone(), "lambda_dyno_example").await?;
+    add_item(db_client, item.clone(), "lambda_dyno_example").await?;
 
     //Deserialize into json to return in the Response
     let j = serde_json::to_string(&item)?;
@@ -65,7 +60,15 @@ async fn main() -> Result<(), Error> {
         .without_time()
         .init();
 
-    run(service_fn(function_handler)).await
+    //Get config from environment.
+    let config = aws_config::load_from_env().await;
+    //Create the DynamoDB client.
+    let client = Client::new(&config);
+
+    run(service_fn(|event: Request| async {
+        handle_request(&client, event).await
+    }))
+    .await
 }
 
 // Add an item to a table.

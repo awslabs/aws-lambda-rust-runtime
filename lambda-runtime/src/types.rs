@@ -1,7 +1,11 @@
 use crate::{Config, Error};
 use http::{HeaderMap, HeaderValue};
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, convert::TryFrom};
+use std::{
+    collections::HashMap,
+    convert::TryFrom,
+    time::{Duration, SystemTime},
+};
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -374,5 +378,10 @@ impl Context {
             env_config: config.clone(),
             ..self
         }
+    }
+
+    /// The execution deadline for the current invocation.
+    pub fn deadline(&self) -> SystemTime {
+        SystemTime::UNIX_EPOCH + Duration::from_millis(self.deadline)
     }
 }

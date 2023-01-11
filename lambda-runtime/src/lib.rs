@@ -124,19 +124,15 @@ where
             let ctx: Context = ctx.with_config(config);
             let request_id = &ctx.request_id.clone();
 
-            let xray_trace_id = &ctx.xray_trace_id.clone();
-            match xray_trace_id {
-                Some(trace_id) => env::set_var("_X_AMZN_TRACE_ID", trace_id),
-                None => env::remove_var("_X_AMZN_TRACE_ID"),
-            }
-            let request_span = match xray_trace_id {
-                Some(trace_id) => tracing::span!(
-                    tracing::Level::INFO,
-                    "Lambda runtime invoke",
-                    requestId = request_id,
-                    xrayTraceId = trace_id
-                ),
-                None => tracing::span!(tracing::Level::INFO, "Lambda runtime invoke", requestId = request_id),
+            let request_span = match &ctx.xray_trace_id {
+                Some(trace_id) => {
+                    env::set_var("_X_AMZN_TRACE_ID", trace_id);
+                    tracing::info_span!("Lambda runtime invoke", requestId = request_id, xrayTraceId = trace_id)
+                }
+                None => {
+                    env::remove_var("_X_AMZN_TRACE_ID");
+                    tracing::info_span!("Lambda runtime invoke", requestId = request_id)
+                }
             };
 
             // Group the handling in one future and instrument it with the span

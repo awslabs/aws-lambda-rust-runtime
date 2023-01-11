@@ -1,4 +1,4 @@
-edition = "2018"
+edition = "2021"
 # imports_granularity is unstable
 # # https://github.com/rust-lang/rustfmt/blob/master/Configurations.md#merge_imports
 # imports_granularity = "Crate"

@@ -587,10 +587,6 @@
 <span id="587">587</span>
 <span id="588">588</span>
 <span id="589">589</span>
-<span id="590">590</span>
-<span id="591">591</span>
-<span id="592">592</span>
-<span id="593">593</span>
 </pre><pre class="rust"><code><span class="attribute">#![deny(clippy::all, clippy::cargo)]
 #![allow(clippy::multiple_crate_versions)]
 #![warn(missing_docs, nonstandard_style, rust_2018_idioms)]
@@ -717,19 +713,15 @@
             <span class="kw">let </span>ctx: Context = ctx.with_config(config);
             <span class="kw">let </span>request_id = <span class="kw-2">&amp;</span>ctx.request_id.clone();
 
-            <span class="kw">let </span>xray_trace_id = <span class="kw-2">&amp;</span>ctx.xray_trace_id.clone();
-            <span class="kw">match </span>xray_trace_id {
-                <span class="prelude-val">Some</span>(trace_id) =&gt; env::set_var(<span class="string">&quot;_X_AMZN_TRACE_ID&quot;</span>, trace_id),
-                <span class="prelude-val">None </span>=&gt; env::remove_var(<span class="string">&quot;_X_AMZN_TRACE_ID&quot;</span>),
-            }
-            <span class="kw">let </span>request_span = <span class="kw">match </span>xray_trace_id {
-                <span class="prelude-val">Some</span>(trace_id) =&gt; <span class="macro">tracing::span!</span>(
-                    tracing::Level::INFO,
-                    <span class="string">&quot;Lambda runtime invoke&quot;</span>,
-                    requestId = request_id,
-                    xrayTraceId = trace_id
-                ),
-                <span class="prelude-val">None </span>=&gt; <span class="macro">tracing::span!</span>(tracing::Level::INFO, <span class="string">&quot;Lambda runtime invoke&quot;</span>, requestId = request_id),
+            <span class="kw">let </span>request_span = <span class="kw">match </span><span class="kw-2">&amp;</span>ctx.xray_trace_id {
+                <span class="prelude-val">Some</span>(trace_id) =&gt; {
+                    env::set_var(<span class="string">&quot;_X_AMZN_TRACE_ID&quot;</span>, trace_id);
+                    <span class="macro">tracing::info_span!</span>(<span class="string">&quot;Lambda runtime invoke&quot;</span>, requestId = request_id, xrayTraceId = trace_id)
+                }
+                <span class="prelude-val">None </span>=&gt; {
+                    env::remove_var(<span class="string">&quot;_X_AMZN_TRACE_ID&quot;</span>);
+                    <span class="macro">tracing::info_span!</span>(<span class="string">&quot;Lambda runtime invoke&quot;</span>, requestId = request_id)
+                }
             };
 
             <span class="comment">// Group the handling in one future and instrument it with the span
@@ -1185,4 +1177,4 @@
     </span>}
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lambda_runtime" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lambda_runtime" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.1 (90743e729 2023-01-10)" ></div></body></html>

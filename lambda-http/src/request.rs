@@ -563,12 +563,13 @@ mod tests {
             .get_all(http::header::COOKIE)
             .iter()
             .map(|v| v.to_str().unwrap().to_string())
-            .reduce(|acc, nxt|
-                [acc, nxt].join(";")
-            );
+            .reduce(|acc, nxt| [acc, nxt].join(";"));
 
         assert_eq!(req.method(), "GET");
-        assert_eq!(req.uri(), "https://id.lambda-url.eu-west-2.on.aws/my/path?parameter1=value1&parameter1=value2&parameter2=value");
+        assert_eq!(
+            req.uri(),
+            "https://id.lambda-url.eu-west-2.on.aws/my/path?parameter1=value1&parameter1=value2&parameter2=value"
+        );
         assert_eq!(cookie_header, Some("test=hi".to_string()));
 
         // Ensure this is an APIGWv2 request (Lambda Function URL requests confirm to API GW v2 Request format)

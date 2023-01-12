@@ -548,7 +548,7 @@ mod tests {
     #[test]
     fn deserializes_lambda_function_url_request_events() {
         // from the docs
-        // https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request
+        // https://docs.aws.amazon.com/lambda/latest/dg/urls-invocation.html#urls-payloads
         let input = include_str!("../tests/data/lambda_function_url_request.json");
         let result = from_str(input);
         assert!(

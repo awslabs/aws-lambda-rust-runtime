@@ -122,7 +122,7 @@ fn into_api_gateway_v2_request(ag: ApiGatewayV2httpRequest) -> http::Request<Bod
     update_xray_trace_id_header(&mut headers);
     if let Some(cookies) = ag.cookies {
         if let Ok(header_value) = HeaderValue::from_str(&cookies.join(";")) {
-            headers.append(http::header::COOKIE, header_value);
+            headers.insert(http::header::COOKIE, header_value);
         }
     }
 
@@ -541,6 +541,42 @@ mod tests {
         assert!(
             matches!(req_context, RequestContext::ApiGatewayV1(_)),
             "expected ApiGateway context, got {:?}",
+            req_context
+        );
+    }
+
+    #[test]
+    fn deserializes_lambda_function_url_request_events() {
+        // from the docs
+        // https://docs.aws.amazon.com/lambda/latest/dg/urls-invocation.html#urls-payloads
+        let input = include_str!("../tests/data/lambda_function_url_request.json");
+        let result = from_str(input);
+        assert!(
+            result.is_ok(),
+            "event was not parsed as expected {:?} given {}",
+            result,
+            input
+        );
+        let req = result.expect("failed to parse request");
+        let cookie_header = req
+            .headers()
+            .get_all(http::header::COOKIE)
+            .iter()
+            .map(|v| v.to_str().unwrap().to_string())
+            .reduce(|acc, nxt| [acc, nxt].join(";"));
+
+        assert_eq!(req.method(), "GET");
+        assert_eq!(
+            req.uri(),
+            "https://id.lambda-url.eu-west-2.on.aws/my/path?parameter1=value1&parameter1=value2&parameter2=value"
+        );
+        assert_eq!(cookie_header, Some("test=hi".to_string()));
+
+        // Ensure this is an APIGWv2 request (Lambda Function URL requests confirm to API GW v2 Request format)
+        let req_context = req.request_context();
+        assert!(
+            matches!(req_context, RequestContext::ApiGatewayV2(_)),
+            "expected ApiGatewayV2 context, got {:?}",
             req_context
         );
     }

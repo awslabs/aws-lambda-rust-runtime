@@ -56,7 +56,6 @@ async fn handler(logs: Vec<LambdaLog>) -> Result<(), Error> {
             LambdaLogRecord::Extension(_record) => {
                 // do something with the extension log record
             },
-            },
             _ => (),
         }
     }

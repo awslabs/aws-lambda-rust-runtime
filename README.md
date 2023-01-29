@@ -11,7 +11,7 @@ This package makes it easy to run AWS Lambda Functions written in Rust. This wor
 
 ## Getting started
 
-The easiest way to start writing Lambda functions with Rust is by using Cargo Lambda. This Cargo subcommand provides several commands to help you in your journey with Rust on AWS Lambda.
+The easiest way to start writing Lambda functions with Rust is by using [Cargo Lambda](https://www.cargo-lambda.info/), a related project. Cargo Lambda is a Cargo plugin, or subcommand, that provides several commands to help you in your journey with Rust on AWS Lambda.
 
 The preferred way to install Cargo Lambda is by using a package manager.
 

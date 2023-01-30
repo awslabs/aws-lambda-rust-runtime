@@ -1,4 +1,4 @@
 (function() {var implementors = {
-"lambda_extension":[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.66.1/core/error/trait.Error.html\" title=\"trait core::error::Error\">Error</a> for <a class=\"struct\" href=\"lambda_extension/struct.ExtensionError.html\" title=\"struct lambda_extension::ExtensionError\">ExtensionError</a>"]],
-"lambda_http":[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.66.1/core/error/trait.Error.html\" title=\"trait core::error::Error\">Error</a> for <a class=\"enum\" href=\"lambda_http/ext/enum.PayloadError.html\" title=\"enum lambda_http::ext::PayloadError\">PayloadError</a>"]]
+"lambda_extension":[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.67.0/core/error/trait.Error.html\" title=\"trait core::error::Error\">Error</a> for <a class=\"struct\" href=\"lambda_extension/struct.ExtensionError.html\" title=\"struct lambda_extension::ExtensionError\">ExtensionError</a>"]],
+"lambda_http":[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.67.0/core/error/trait.Error.html\" title=\"trait core::error::Error\">Error</a> for <a class=\"enum\" href=\"lambda_http/ext/enum.PayloadError.html\" title=\"enum lambda_http::ext::PayloadError\">PayloadError</a>"]]
 };if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

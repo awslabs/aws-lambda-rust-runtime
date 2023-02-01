@@ -37,11 +37,10 @@ pub enum PayloadError {
 impl fmt::Display for PayloadError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            PayloadError::Json(json) => writeln!(f, "failed to parse payload from application/json {}", json),
+            PayloadError::Json(json) => writeln!(f, "failed to parse payload from application/json {json}"),
             PayloadError::WwwFormUrlEncoded(form) => writeln!(
                 f,
-                "failed to parse payload from application/x-www-form-urlencoded {}",
-                form
+                "failed to parse payload from application/x-www-form-urlencoded {form}"
             ),
         }
     }

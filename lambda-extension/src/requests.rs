@@ -68,7 +68,7 @@ pub(crate) fn subscribe_request(
         "buffering": buffering.unwrap_or_default(),
         "destination": {
             "protocol": "HTTP",
-            "URI": format!("http://sandbox.localdomain:{}", port_number),
+            "URI": format!("http://sandbox.localdomain:{port_number}"),
         }
     });
 
@@ -95,30 +95,30 @@ pub struct ErrorRequest<'a> {
 }
 
 /// Create a new init error request to send to the Extensions API
-pub fn init_error<'a>(
+pub fn init_error(
     extension_id: &str,
     error_type: &str,
-    request: Option<ErrorRequest<'a>>,
+    request: Option<ErrorRequest<'_>>,
 ) -> Result<Request<Body>, Error> {
     error_request("init", extension_id, error_type, request)
 }
 
 /// Create a new exit error request to send to the Extensions API
-pub fn exit_error<'a>(
+pub fn exit_error(
     extension_id: &str,
     error_type: &str,
-    request: Option<ErrorRequest<'a>>,
+    request: Option<ErrorRequest<'_>>,
 ) -> Result<Request<Body>, Error> {
     error_request("exit", extension_id, error_type, request)
 }
 
-fn error_request<'a>(
+fn error_request(
     error_type: &str,
     extension_id: &str,
     error_str: &str,
-    request: Option<ErrorRequest<'a>>,
+    request: Option<ErrorRequest<'_>>,
 ) -> Result<Request<Body>, Error> {
-    let uri = format!("/2020-01-01/extension/{}/error", error_type);
+    let uri = format!("/2020-01-01/extension/{error_type}/error");
 
     let body = match request {
         None => Body::empty(),

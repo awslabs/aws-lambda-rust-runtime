@@ -174,7 +174,7 @@ where
         let mut service = service.lock().await;
         match service.call(logs).await {
             Ok(_) => (),
-            Err(err) => println!("{:?}", err),
+            Err(err) => println!("{err:?}"),
         }
     }
 

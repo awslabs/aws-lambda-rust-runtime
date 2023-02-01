@@ -319,30 +319,30 @@ where
 
             let ep = match ep.ready().await {
                 Ok(ep) => ep,
-                Err(error) => {
-                    println!("Inner service is not ready: {:?}", error);
+                Err(err) => {
+                    println!("Inner service is not ready: {err:?}");
                     let req = if is_invoke {
-                        requests::init_error(extension_id, &error.to_string(), None)?
+                        requests::init_error(extension_id, &err.to_string(), None)?
                     } else {
-                        requests::exit_error(extension_id, &error.to_string(), None)?
+                        requests::exit_error(extension_id, &err.to_string(), None)?
                     };
 
                     client.call(req).await?;
-                    return Err(error.into());
+                    return Err(err.into());
                 }
             };
 
             let res = ep.call(event).await;
-            if let Err(error) = res {
-                println!("{:?}", error);
+            if let Err(err) = res {
+                println!("{err:?}");
                 let req = if is_invoke {
-                    requests::init_error(extension_id, &error.to_string(), None)?
+                    requests::init_error(extension_id, &err.to_string(), None)?
                 } else {
-                    requests::exit_error(extension_id, &error.to_string(), None)?
+                    requests::exit_error(extension_id, &err.to_string(), None)?
                 };
 
                 client.call(req).await?;
-                return Err(error.into());
+                return Err(err.into());
             }
         }
         Ok(())

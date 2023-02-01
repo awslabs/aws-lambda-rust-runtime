@@ -253,7 +253,8 @@ where
             )?;
             let res = client.call(req).await?;
             if res.status() != http::StatusCode::OK {
-                return Err(ExtensionError::boxed("unable to initialize the logs api"));
+                let err = format!("unable to initialize the logs api: {}", res.status());
+                return Err(ExtensionError::boxed(err));
             }
             trace!("Registered extension with Logs API");
         }
@@ -288,7 +289,8 @@ where
             )?;
             let res = client.call(req).await?;
             if res.status() != http::StatusCode::OK {
-                return Err(ExtensionError::boxed("unable to initialize the telemetry api"));
+                let err = format!("unable to initialize the telemetry api: {}", res.status());
+                return Err(ExtensionError::boxed(err));
             }
             trace!("Registered extension with Telemetry API");
         }
@@ -422,7 +424,8 @@ async fn register<'a>(
     let req = requests::register_request(&name, events)?;
     let res = client.call(req).await?;
     if res.status() != http::StatusCode::OK {
-        return Err(ExtensionError::boxed("unable to register the extension"));
+        let err = format!("unable to register the extension: {}", res.status());
+        return Err(ExtensionError::boxed(err));
     }
 
     let header = res

@@ -7,6 +7,8 @@ use serde::Serialize;
 const EXTENSION_NAME_HEADER: &str = "Lambda-Extension-Name";
 pub(crate) const EXTENSION_ID_HEADER: &str = "Lambda-Extension-Identifier";
 const EXTENSION_ERROR_TYPE_HEADER: &str = "Lambda-Extension-Function-Error-Type";
+const CONTENT_TYPE_HEADER_NAME: &str = "Content-Type";
+const CONTENT_TYPE_HEADER_VALUE: &str = "application/json";
 
 pub(crate) fn next_event_request(extension_id: &str) -> Result<Request<Body>, Error> {
     let req = build_request()
@@ -24,6 +26,7 @@ pub(crate) fn register_request(extension_name: &str, events: &[&str]) -> Result<
         .method(Method::POST)
         .uri("/2020-01-01/extension/register")
         .header(EXTENSION_NAME_HEADER, extension_name)
+        .header(CONTENT_TYPE_HEADER_NAME, CONTENT_TYPE_HEADER_VALUE)
         .body(Body::from(serde_json::to_string(&events)?))?;
 
     Ok(req)
@@ -73,6 +76,7 @@ pub(crate) fn subscribe_request(
         .method(Method::PUT)
         .uri(api.uri())
         .header(EXTENSION_ID_HEADER, extension_id)
+        .header(CONTENT_TYPE_HEADER_NAME, CONTENT_TYPE_HEADER_VALUE)
         .body(Body::from(serde_json::to_string(&data)?))?;
 
     Ok(req)

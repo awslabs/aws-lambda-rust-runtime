@@ -772,7 +772,7 @@
                                 <span class="macro">error!</span>(<span class="string">&quot;{:?}&quot;</span>, err);
                                 <span class="kw">let </span>error_type = type_name_of_val(<span class="kw-2">&amp;</span>err);
                                 <span class="kw">let </span>msg = <span class="kw">if let </span><span class="prelude-val">Some</span>(msg) = err.downcast_ref::&lt;<span class="kw-2">&amp;</span>str&gt;() {
-                                    <span class="macro">format!</span>(<span class="string">&quot;Lambda panicked: {}&quot;</span>, msg)
+                                    <span class="macro">format!</span>(<span class="string">&quot;Lambda panicked: {msg}&quot;</span>)
                                 } <span class="kw">else </span>{
                                     <span class="string">&quot;Lambda panicked&quot;</span>.to_string()
                                 };
@@ -857,7 +857,7 @@
 {
     <span class="macro">error!</span>(<span class="string">&quot;{:?}&quot;</span>, err); <span class="comment">// logs the error in CloudWatch
     </span><span class="kw">let </span>error_type = type_name_of_val(<span class="kw-2">&amp;</span>err);
-    <span class="kw">let </span>msg = <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, err);
+    <span class="kw">let </span>msg = <span class="macro">format!</span>(<span class="string">&quot;{err}&quot;</span>);
 
     EventErrorRequest::new(request_id, error_type, <span class="kw-2">&amp;</span>msg).into_req()
 }

@@ -129,6 +129,10 @@
 <a href="#129" id="129">129</a>
 <a href="#130" id="130">130</a>
 <a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{Error, LogBuffering};
 <span class="kw">use </span>http::{Method, Request};
 <span class="kw">use </span>hyper::Body;
@@ -138,6 +142,8 @@
 <span class="kw">const </span>EXTENSION_NAME_HEADER: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Lambda-Extension-Name&quot;</span>;
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>EXTENSION_ID_HEADER: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Lambda-Extension-Identifier&quot;</span>;
 <span class="kw">const </span>EXTENSION_ERROR_TYPE_HEADER: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Lambda-Extension-Function-Error-Type&quot;</span>;
+<span class="kw">const </span>CONTENT_TYPE_HEADER_NAME: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Content-Type&quot;</span>;
+<span class="kw">const </span>CONTENT_TYPE_HEADER_VALUE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;application/json&quot;</span>;
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>next_event_request(extension_id: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;Body&gt;, Error&gt; {
     <span class="kw">let </span>req = build_request()
@@ -155,6 +161,7 @@
         .method(Method::POST)
         .uri(<span class="string">&quot;/2020-01-01/extension/register&quot;</span>)
         .header(EXTENSION_NAME_HEADER, extension_name)
+        .header(CONTENT_TYPE_HEADER_NAME, CONTENT_TYPE_HEADER_VALUE)
         .body(Body::from(serde_json::to_string(<span class="kw-2">&amp;</span>events)<span class="question-mark">?</span>))<span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(req)
@@ -196,7 +203,7 @@
         <span class="string">&quot;buffering&quot;</span>: buffering.unwrap_or_default(),
         <span class="string">&quot;destination&quot;</span>: {
             <span class="string">&quot;protocol&quot;</span>: <span class="string">&quot;HTTP&quot;</span>,
-            <span class="string">&quot;URI&quot;</span>: <span class="macro">format!</span>(<span class="string">&quot;http://sandbox.localdomain:{}&quot;</span>, port_number),
+            <span class="string">&quot;URI&quot;</span>: <span class="macro">format!</span>(<span class="string">&quot;http://sandbox.localdomain:{port_number}&quot;</span>),
         }
     });
 
@@ -204,6 +211,7 @@
         .method(Method::PUT)
         .uri(api.uri())
         .header(EXTENSION_ID_HEADER, extension_id)
+        .header(CONTENT_TYPE_HEADER_NAME, CONTENT_TYPE_HEADER_VALUE)
         .body(Body::from(serde_json::to_string(<span class="kw-2">&amp;</span>data)<span class="question-mark">?</span>))<span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(req)
@@ -222,30 +230,30 @@
 }
 
 <span class="doccomment">/// Create a new init error request to send to the Extensions API
-</span><span class="kw">pub fn </span>init_error&lt;<span class="lifetime">&#39;a</span>&gt;(
+</span><span class="kw">pub fn </span>init_error(
     extension_id: <span class="kw-2">&amp;</span>str,
     error_type: <span class="kw-2">&amp;</span>str,
-    request: <span class="prelude-ty">Option</span>&lt;ErrorRequest&lt;<span class="lifetime">&#39;a</span>&gt;&gt;,
+    request: <span class="prelude-ty">Option</span>&lt;ErrorRequest&lt;<span class="lifetime">&#39;_</span>&gt;&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;Body&gt;, Error&gt; {
     error_request(<span class="string">&quot;init&quot;</span>, extension_id, error_type, request)
 }
 
 <span class="doccomment">/// Create a new exit error request to send to the Extensions API
-</span><span class="kw">pub fn </span>exit_error&lt;<span class="lifetime">&#39;a</span>&gt;(
+</span><span class="kw">pub fn </span>exit_error(
     extension_id: <span class="kw-2">&amp;</span>str,
     error_type: <span class="kw-2">&amp;</span>str,
-    request: <span class="prelude-ty">Option</span>&lt;ErrorRequest&lt;<span class="lifetime">&#39;a</span>&gt;&gt;,
+    request: <span class="prelude-ty">Option</span>&lt;ErrorRequest&lt;<span class="lifetime">&#39;_</span>&gt;&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;Body&gt;, Error&gt; {
     error_request(<span class="string">&quot;exit&quot;</span>, extension_id, error_type, request)
 }
 
-<span class="kw">fn </span>error_request&lt;<span class="lifetime">&#39;a</span>&gt;(
+<span class="kw">fn </span>error_request(
     error_type: <span class="kw-2">&amp;</span>str,
     extension_id: <span class="kw-2">&amp;</span>str,
     error_str: <span class="kw-2">&amp;</span>str,
-    request: <span class="prelude-ty">Option</span>&lt;ErrorRequest&lt;<span class="lifetime">&#39;a</span>&gt;&gt;,
+    request: <span class="prelude-ty">Option</span>&lt;ErrorRequest&lt;<span class="lifetime">&#39;_</span>&gt;&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Request&lt;Body&gt;, Error&gt; {
-    <span class="kw">let </span>uri = <span class="macro">format!</span>(<span class="string">&quot;/2020-01-01/extension/{}/error&quot;</span>, error_type);
+    <span class="kw">let </span>uri = <span class="macro">format!</span>(<span class="string">&quot;/2020-01-01/extension/{error_type}/error&quot;</span>);
 
     <span class="kw">let </span>body = <span class="kw">match </span>request {
         <span class="prelude-val">None </span>=&gt; Body::empty(),

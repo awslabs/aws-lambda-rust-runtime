@@ -1106,7 +1106,7 @@
     <span class="kw">match </span>stage {
         <span class="prelude-val">None </span>=&gt; path.into(),
         <span class="prelude-val">Some</span>(stage) <span class="kw">if </span>stage == <span class="string">&quot;$default&quot; </span>=&gt; path.into(),
-        <span class="prelude-val">Some</span>(stage) =&gt; <span class="macro">format!</span>(<span class="string">&quot;/{}{}&quot;</span>, stage, path),
+        <span class="prelude-val">Some</span>(stage) =&gt; <span class="macro">format!</span>(<span class="string">&quot;/{stage}{path}&quot;</span>),
     }
 }
 
@@ -1200,7 +1200,7 @@
 ) -&gt; String {
     <span class="kw">let </span><span class="kw-2">mut </span>url = <span class="kw">match </span>host {
         <span class="prelude-val">None </span>=&gt; {
-            <span class="kw">let </span>rel_url = Url::parse(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;http://localhost{}&quot;</span>, path)).unwrap();
+            <span class="kw">let </span>rel_url = Url::parse(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;http://localhost{path}&quot;</span>)).unwrap();
             rel_url.path().to_string()
         }
         <span class="prelude-val">Some</span>(host) =&gt; {
@@ -1208,7 +1208,7 @@
                 .get(x_forwarded_proto())
                 .and_then(|s| s.to_str().ok())
                 .unwrap_or(<span class="string">&quot;https&quot;</span>);
-            <span class="kw">let </span>url = <span class="macro">format!</span>(<span class="string">&quot;{}://{}{}&quot;</span>, scheme, host, path);
+            <span class="kw">let </span>url = <span class="macro">format!</span>(<span class="string">&quot;{scheme}://{host}{path}&quot;</span>);
             Url::parse(<span class="kw-2">&amp;</span>url).unwrap().to_string()
         }
     };

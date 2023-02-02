@@ -253,7 +253,7 @@
             (scheme, authority, base_path)
         };
         <span class="kw">let </span>path = parts.uri.path_and_query().expect(<span class="string">&quot;PathAndQuery not found&quot;</span>);
-        <span class="kw">let </span>pq: PathAndQuery = <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, base_path, path).parse().expect(<span class="string">&quot;PathAndQuery invalid&quot;</span>);
+        <span class="kw">let </span>pq: PathAndQuery = <span class="macro">format!</span>(<span class="string">&quot;{base_path}{path}&quot;</span>).parse().expect(<span class="string">&quot;PathAndQuery invalid&quot;</span>);
 
         <span class="kw">let </span>uri = Uri::builder()
             .scheme(scheme.as_ref())

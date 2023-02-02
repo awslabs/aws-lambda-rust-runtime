@@ -432,6 +432,9 @@
 <a href="#432" id="432">432</a>
 <a href="#433" id="433">433</a>
 <a href="#434" id="434">434</a>
+<a href="#435" id="435">435</a>
+<a href="#436" id="436">436</a>
+<a href="#437" id="437">437</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
     convert::Infallible, fmt, future::ready, future::Future, net::SocketAddr, path::PathBuf, pin::Pin, sync::Arc,
 };
@@ -687,7 +690,8 @@
             )<span class="question-mark">?</span>;
             <span class="kw">let </span>res = client.call(req).<span class="kw">await</span><span class="question-mark">?</span>;
             <span class="kw">if </span>res.status() != http::StatusCode::OK {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(ExtensionError::boxed(<span class="string">&quot;unable to initialize the logs api&quot;</span>));
+                <span class="kw">let </span>err = <span class="macro">format!</span>(<span class="string">&quot;unable to initialize the logs api: {}&quot;</span>, res.status());
+                <span class="kw">return </span><span class="prelude-val">Err</span>(ExtensionError::boxed(err));
             }
             <span class="macro">trace!</span>(<span class="string">&quot;Registered extension with Logs API&quot;</span>);
         }
@@ -722,7 +726,8 @@
             )<span class="question-mark">?</span>;
             <span class="kw">let </span>res = client.call(req).<span class="kw">await</span><span class="question-mark">?</span>;
             <span class="kw">if </span>res.status() != http::StatusCode::OK {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(ExtensionError::boxed(<span class="string">&quot;unable to initialize the telemetry api&quot;</span>));
+                <span class="kw">let </span>err = <span class="macro">format!</span>(<span class="string">&quot;unable to initialize the telemetry api: {}&quot;</span>, res.status());
+                <span class="kw">return </span><span class="prelude-val">Err</span>(ExtensionError::boxed(err));
             }
             <span class="macro">trace!</span>(<span class="string">&quot;Registered extension with Telemetry API&quot;</span>);
         }
@@ -751,30 +756,30 @@
 
             <span class="kw">let </span>ep = <span class="kw">match </span>ep.ready().<span class="kw">await </span>{
                 <span class="prelude-val">Ok</span>(ep) =&gt; ep,
-                <span class="prelude-val">Err</span>(error) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Inner service is not ready: {:?}&quot;</span>, error);
+                <span class="prelude-val">Err</span>(err) =&gt; {
+                    <span class="macro">println!</span>(<span class="string">&quot;Inner service is not ready: {err:?}&quot;</span>);
                     <span class="kw">let </span>req = <span class="kw">if </span>is_invoke {
-                        requests::init_error(extension_id, <span class="kw-2">&amp;</span>error.to_string(), <span class="prelude-val">None</span>)<span class="question-mark">?
+                        requests::init_error(extension_id, <span class="kw-2">&amp;</span>err.to_string(), <span class="prelude-val">None</span>)<span class="question-mark">?
                     </span>} <span class="kw">else </span>{
-                        requests::exit_error(extension_id, <span class="kw-2">&amp;</span>error.to_string(), <span class="prelude-val">None</span>)<span class="question-mark">?
+                        requests::exit_error(extension_id, <span class="kw-2">&amp;</span>err.to_string(), <span class="prelude-val">None</span>)<span class="question-mark">?
                     </span>};
 
                     client.call(req).<span class="kw">await</span><span class="question-mark">?</span>;
-                    <span class="kw">return </span><span class="prelude-val">Err</span>(error.into());
+                    <span class="kw">return </span><span class="prelude-val">Err</span>(err.into());
                 }
             };
 
             <span class="kw">let </span>res = ep.call(event).<span class="kw">await</span>;
-            <span class="kw">if let </span><span class="prelude-val">Err</span>(error) = res {
-                <span class="macro">println!</span>(<span class="string">&quot;{:?}&quot;</span>, error);
+            <span class="kw">if let </span><span class="prelude-val">Err</span>(err) = res {
+                <span class="macro">println!</span>(<span class="string">&quot;{err:?}&quot;</span>);
                 <span class="kw">let </span>req = <span class="kw">if </span>is_invoke {
-                    requests::init_error(extension_id, <span class="kw-2">&amp;</span>error.to_string(), <span class="prelude-val">None</span>)<span class="question-mark">?
+                    requests::init_error(extension_id, <span class="kw-2">&amp;</span>err.to_string(), <span class="prelude-val">None</span>)<span class="question-mark">?
                 </span>} <span class="kw">else </span>{
-                    requests::exit_error(extension_id, <span class="kw-2">&amp;</span>error.to_string(), <span class="prelude-val">None</span>)<span class="question-mark">?
+                    requests::exit_error(extension_id, <span class="kw-2">&amp;</span>err.to_string(), <span class="prelude-val">None</span>)<span class="question-mark">?
                 </span>};
 
                 client.call(req).<span class="kw">await</span><span class="question-mark">?</span>;
-                <span class="kw">return </span><span class="prelude-val">Err</span>(error.into());
+                <span class="kw">return </span><span class="prelude-val">Err</span>(err.into());
             }
         }
         <span class="prelude-val">Ok</span>(())
@@ -856,7 +861,8 @@
     <span class="kw">let </span>req = requests::register_request(<span class="kw-2">&amp;</span>name, events)<span class="question-mark">?</span>;
     <span class="kw">let </span>res = client.call(req).<span class="kw">await</span><span class="question-mark">?</span>;
     <span class="kw">if </span>res.status() != http::StatusCode::OK {
-        <span class="kw">return </span><span class="prelude-val">Err</span>(ExtensionError::boxed(<span class="string">&quot;unable to register the extension&quot;</span>));
+        <span class="kw">let </span>err = <span class="macro">format!</span>(<span class="string">&quot;unable to register the extension: {}&quot;</span>, res.status());
+        <span class="kw">return </span><span class="prelude-val">Err</span>(ExtensionError::boxed(err));
     }
 
     <span class="kw">let </span>header = res

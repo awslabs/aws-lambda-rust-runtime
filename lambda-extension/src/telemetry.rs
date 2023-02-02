@@ -291,7 +291,7 @@ where
         let mut service = service.lock().await;
         match service.call(telemetry).await {
             Ok(_) => (),
-            Err(err) => println!("{:?}", err),
+            Err(err) => println!("{err:?}"),
         }
     }
 

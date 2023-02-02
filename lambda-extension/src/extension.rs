@@ -253,7 +253,8 @@ where
             )?;
             let res = client.call(req).await?;
             if res.status() != http::StatusCode::OK {
-                return Err(ExtensionError::boxed("unable to initialize the logs api"));
+                let err = format!("unable to initialize the logs api: {}", res.status());
+                return Err(ExtensionError::boxed(err));
             }
             trace!("Registered extension with Logs API");
         }
@@ -288,7 +289,8 @@ where
             )?;
             let res = client.call(req).await?;
             if res.status() != http::StatusCode::OK {
-                return Err(ExtensionError::boxed("unable to initialize the telemetry api"));
+                let err = format!("unable to initialize the telemetry api: {}", res.status());
+                return Err(ExtensionError::boxed(err));
             }
             trace!("Registered extension with Telemetry API");
         }
@@ -317,30 +319,30 @@ where
 
             let ep = match ep.ready().await {
                 Ok(ep) => ep,
-                Err(error) => {
-                    println!("Inner service is not ready: {:?}", error);
+                Err(err) => {
+                    println!("Inner service is not ready: {err:?}");
                     let req = if is_invoke {
-                        requests::init_error(extension_id, &error.to_string(), None)?
+                        requests::init_error(extension_id, &err.to_string(), None)?
                     } else {
-                        requests::exit_error(extension_id, &error.to_string(), None)?
+                        requests::exit_error(extension_id, &err.to_string(), None)?
                     };
 
                     client.call(req).await?;
-                    return Err(error.into());
+                    return Err(err.into());
                 }
             };
 
             let res = ep.call(event).await;
-            if let Err(error) = res {
-                println!("{:?}", error);
+            if let Err(err) = res {
+                println!("{err:?}");
                 let req = if is_invoke {
-                    requests::init_error(extension_id, &error.to_string(), None)?
+                    requests::init_error(extension_id, &err.to_string(), None)?
                 } else {
-                    requests::exit_error(extension_id, &error.to_string(), None)?
+                    requests::exit_error(extension_id, &err.to_string(), None)?
                 };
 
                 client.call(req).await?;
-                return Err(error.into());
+                return Err(err.into());
             }
         }
         Ok(())
@@ -422,7 +424,8 @@ async fn register<'a>(
     let req = requests::register_request(&name, events)?;
     let res = client.call(req).await?;
     if res.status() != http::StatusCode::OK {
-        return Err(ExtensionError::boxed("unable to register the extension"));
+        let err = format!("unable to register the extension: {}", res.status());
+        return Err(ExtensionError::boxed(err));
     }
 
     let header = res

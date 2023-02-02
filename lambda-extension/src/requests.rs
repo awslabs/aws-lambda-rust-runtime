@@ -7,6 +7,8 @@ use serde::Serialize;
 const EXTENSION_NAME_HEADER: &str = "Lambda-Extension-Name";
 pub(crate) const EXTENSION_ID_HEADER: &str = "Lambda-Extension-Identifier";
 const EXTENSION_ERROR_TYPE_HEADER: &str = "Lambda-Extension-Function-Error-Type";
+const CONTENT_TYPE_HEADER_NAME: &str = "Content-Type";
+const CONTENT_TYPE_HEADER_VALUE: &str = "application/json";
 
 pub(crate) fn next_event_request(extension_id: &str) -> Result<Request<Body>, Error> {
     let req = build_request()
@@ -24,6 +26,7 @@ pub(crate) fn register_request(extension_name: &str, events: &[&str]) -> Result<
         .method(Method::POST)
         .uri("/2020-01-01/extension/register")
         .header(EXTENSION_NAME_HEADER, extension_name)
+        .header(CONTENT_TYPE_HEADER_NAME, CONTENT_TYPE_HEADER_VALUE)
         .body(Body::from(serde_json::to_string(&events)?))?;
 
     Ok(req)
@@ -65,7 +68,7 @@ pub(crate) fn subscribe_request(
         "buffering": buffering.unwrap_or_default(),
         "destination": {
             "protocol": "HTTP",
-            "URI": format!("http://sandbox.localdomain:{}", port_number),
+            "URI": format!("http://sandbox.localdomain:{port_number}"),
         }
     });
 
@@ -73,6 +76,7 @@ pub(crate) fn subscribe_request(
         .method(Method::PUT)
         .uri(api.uri())
         .header(EXTENSION_ID_HEADER, extension_id)
+        .header(CONTENT_TYPE_HEADER_NAME, CONTENT_TYPE_HEADER_VALUE)
         .body(Body::from(serde_json::to_string(&data)?))?;
 
     Ok(req)
@@ -91,30 +95,30 @@ pub struct ErrorRequest<'a> {
 }
 
 /// Create a new init error request to send to the Extensions API
-pub fn init_error<'a>(
+pub fn init_error(
     extension_id: &str,
     error_type: &str,
-    request: Option<ErrorRequest<'a>>,
+    request: Option<ErrorRequest<'_>>,
 ) -> Result<Request<Body>, Error> {
     error_request("init", extension_id, error_type, request)
 }
 
 /// Create a new exit error request to send to the Extensions API
-pub fn exit_error<'a>(
+pub fn exit_error(
     extension_id: &str,
     error_type: &str,
-    request: Option<ErrorRequest<'a>>,
+    request: Option<ErrorRequest<'_>>,
 ) -> Result<Request<Body>, Error> {
     error_request("exit", extension_id, error_type, request)
 }
 
-fn error_request<'a>(
+fn error_request(
     error_type: &str,
     extension_id: &str,
     error_str: &str,
-    request: Option<ErrorRequest<'a>>,
+    request: Option<ErrorRequest<'_>>,
 ) -> Result<Request<Body>, Error> {
-    let uri = format!("/2020-01-01/extension/{}/error", error_type);
+    let uri = format!("/2020-01-01/extension/{error_type}/error");
 
     let body = match request {
         None => Body::empty(),

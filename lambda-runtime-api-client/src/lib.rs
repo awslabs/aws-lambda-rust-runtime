@@ -66,7 +66,7 @@ where
             (scheme, authority, base_path)
         };
         let path = parts.uri.path_and_query().expect("PathAndQuery not found");
-        let pq: PathAndQuery = format!("{}{}", base_path, path).parse().expect("PathAndQuery invalid");
+        let pq: PathAndQuery = format!("{base_path}{path}").parse().expect("PathAndQuery invalid");
 
         let uri = Uri::builder()
             .scheme(scheme.as_ref())

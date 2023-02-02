@@ -183,7 +183,7 @@ where
                                 error!("{:?}", err);
                                 let error_type = type_name_of_val(&err);
                                 let msg = if let Some(msg) = err.downcast_ref::<&str>() {
-                                    format!("Lambda panicked: {}", msg)
+                                    format!("Lambda panicked: {msg}")
                                 } else {
                                     "Lambda panicked".to_string()
                                 };
@@ -268,7 +268,7 @@ where
 {
     error!("{:?}", err); // logs the error in CloudWatch
     let error_type = type_name_of_val(&err);
-    let msg = format!("{}", err);
+    let msg = format!("{err}");
 
     EventErrorRequest::new(request_id, error_type, &msg).into_req()
 }

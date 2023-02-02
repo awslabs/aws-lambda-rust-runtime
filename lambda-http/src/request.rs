@@ -324,7 +324,7 @@ fn apigw_path_with_stage(stage: &Option<String>, path: &str) -> String {
     match stage {
         None => path.into(),
         Some(stage) if stage == "$default" => path.into(),
-        Some(stage) => format!("/{}{}", stage, path),
+        Some(stage) => format!("/{stage}{path}"),
     }
 }
 
@@ -418,7 +418,7 @@ fn build_request_uri(
 ) -> String {
     let mut url = match host {
         None => {
-            let rel_url = Url::parse(&format!("http://localhost{}", path)).unwrap();
+            let rel_url = Url::parse(&format!("http://localhost{path}")).unwrap();
             rel_url.path().to_string()
         }
         Some(host) => {
@@ -426,7 +426,7 @@ fn build_request_uri(
                 .get(x_forwarded_proto())
                 .and_then(|s| s.to_str().ok())
                 .unwrap_or("https");
-            let url = format!("{}://{}{}", scheme, host, path);
+            let url = format!("{scheme}://{host}{path}");
             Url::parse(&url).unwrap().to_string()
         }
     };

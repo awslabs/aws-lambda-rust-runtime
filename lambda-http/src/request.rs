@@ -780,6 +780,7 @@ mod tests {
     // This is async as this function would typically use futures, but this trival test case does not.
     async fn params_missing_handler(event: crate::Request) -> crate::Response<Body> {
         let uri = event.uri();
+        assert_eq!(uri.query().unwrap(), "name=me/");
 
         http::Response::builder()
             .status(200)

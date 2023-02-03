@@ -777,7 +777,8 @@ mod tests {
         assert_eq!(req.uri(), "https://id.execute-api.us-east-1.amazonaws.com/my/path-with%20space?parameter1=value1&parameter1=value2&parameter2=value");
     }
 
-    fn params_missing_handler(event: crate::Request) -> http::Response<Body> {
+    // This is async as this function would typically use futures, but this trival test case does not.
+    async fn params_missing_handler(event: crate::Request) -> crate::Response<Body> {
         let uri = event.uri();
 
         http::Response::builder()
@@ -787,13 +788,13 @@ mod tests {
             .unwrap()
     }
 
-    #[test]
-    fn params_missing() {
+    #[tokio::test]
+    async fn params_missing() {
         let input = include_str!("../tests/data/apigw_v2_proxy_request_minimal.json");
 
         let request = from_str(input).expect("created request");
 
-        let response = params_missing_handler(request);
+        let response = params_missing_handler(request).await;
         match response.body() {
             Body::Text(text) => {
                 assert_eq!(

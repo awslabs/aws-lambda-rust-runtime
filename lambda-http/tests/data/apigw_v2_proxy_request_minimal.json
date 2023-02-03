@@ -2,7 +2,7 @@
     "headers": {
       "accept": "*/*",
       "content-length": "0",
-      "host": "xxx.execute-api.us-east-1.amazonaws.com",
+      "host": "xxx.execute-api.us-east-1.amazonaws.com/test/test/hello?name=me",
       "user-agent": "curl/7.64.1",
       "x-amzn-trace-id": "Root=1-5eb33c07-de25b420912dee103a5db434",
       "x-forwarded-for": "65.78.31.245",

@@ -473,7 +473,10 @@ mod tests {
         );
         let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "GET");
-        assert_eq!(req.uri(), "https://xxx.execute-api.us-east-1.amazonaws.com/");
+        assert_eq!(
+            req.uri(),
+            "https://xxx.execute-api.us-east-1.amazonaws.com/test/test/hello?name=me/"
+        );
 
         // Ensure this is an APIGWv2 request
         let req_context = req.request_context();
@@ -772,6 +775,34 @@ mod tests {
         );
         let req = result.expect("failed to parse request");
         assert_eq!(req.uri(), "https://id.execute-api.us-east-1.amazonaws.com/my/path-with%20space?parameter1=value1&parameter1=value2&parameter2=value");
+    }
+
+    fn params_missing_handler(event: crate::Request) -> http::Response<Body> {
+        let uri = event.uri();
+
+        http::Response::builder()
+            .status(200)
+            .body(format!("URI: {}", uri).into())
+            .map_err(Box::new)
+            .unwrap()
+    }
+
+    #[test]
+    fn params_missing() {
+        let input = include_str!("../tests/data/apigw_v2_proxy_request_minimal.json");
+
+        let request = from_str(input).expect("created request");
+
+        let response = params_missing_handler(request);
+        match response.body() {
+            Body::Text(text) => {
+                assert_eq!(
+                    text,
+                    &r#"URI: https://xxx.execute-api.us-east-1.amazonaws.com/test/test/hello?name=me/"#.to_string()
+                )
+            }
+            _ => (),
+        };
     }
 
     #[test]

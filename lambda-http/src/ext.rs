@@ -55,7 +55,7 @@ impl Error for PayloadError {
     }
 }
 
-/// Extentions for `lambda_http::Request` structs that
+/// Extensions for `lambda_http::Request` structs that
 /// provide access to [API gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format)
 /// and [ALB](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html)
 /// features.
@@ -358,7 +358,7 @@ mod tests {
     }
 
     #[test]
-    fn requests_have_json_parseable_payloads() {
+    fn requests_have_json_parsable_payloads() {
         #[derive(Deserialize, Eq, PartialEq, Debug)]
         struct Payload {
             foo: String,
@@ -421,7 +421,7 @@ mod tests {
     }
 
     #[test]
-    fn requests_omiting_content_types_do_not_support_parseable_payloads() {
+    fn requests_omitting_content_types_do_not_support_parsable_payloads() {
         #[derive(Deserialize, Eq, PartialEq, Debug)]
         struct Payload {
             foo: String,
@@ -429,7 +429,7 @@ mod tests {
         }
         let request = http::Request::builder()
             .body(Body::from(r#"{"foo":"bar", "baz": 2}"#))
-            .expect("failed to bulid request");
+            .expect("failed to build request");
         let payload: Option<Payload> = request.payload().unwrap_or_default();
         assert_eq!(payload, None);
     }

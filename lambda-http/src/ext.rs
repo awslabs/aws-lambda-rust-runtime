@@ -109,6 +109,9 @@ pub trait RequestExt {
     /// Return the raw http path for a request without any stage information.
     fn raw_http_path(&self) -> String;
 
+    /// Return the raw http path for a request without any stage information.
+    fn raw_http_path_str(&self) -> &str;
+
     /// Configures instance with the raw http path.
     fn with_raw_http_path(self, path: &str) -> Self;
 
@@ -118,11 +121,23 @@ pub trait RequestExt {
     ///
     /// The yielded value represents both single and multi-valued
     /// parameters alike. When multiple query string parameters with the same
-    /// name are expected, `query_string_parameters().get_all("many")` to retrieve them all.
+    /// name are expected, `query_string_parameters().all("many")` to retrieve them all.
     ///
-    /// No query parameters
-    /// will yield an empty `QueryMap`.
+    /// No query parameters will yield an empty `QueryMap`.
     fn query_string_parameters(&self) -> QueryMap;
+
+    /// Return pre-parsed http query string parameters, parameters
+    /// provided after the `?` portion of a url,
+    /// associated with the API gateway request.
+    ///
+    /// The yielded value represents both single and multi-valued
+    /// parameters alike. When multiple query string parameters with the same
+    /// name are expected,
+    /// `query_string_parameters_ref().and_then(|params| params.all("many"))` to
+    /// retrieve them all.
+    ///
+    /// No query parameters will yield `None`.
+    fn query_string_parameters_ref(&self) -> Option<&QueryMap>;
 
     /// Configures instance with query string parameters
     ///
@@ -139,6 +154,14 @@ pub trait RequestExt {
     /// These will always be empty for ALB triggered requests
     fn path_parameters(&self) -> QueryMap;
 
+    /// Return pre-extracted path parameters, parameter provided in url placeholders
+    /// `/foo/{bar}/baz/{boom}`,
+    /// associated with the API gateway request. No path parameters
+    /// will yield `None`
+    ///
+    /// These will always be `None` for ALB triggered requests
+    fn path_parameters_ref(&self) -> Option<&QueryMap>;
+
     /// Configures instance with path parameters
     ///
     /// This is intended for use in mock testing contexts.
@@ -153,6 +176,13 @@ pub trait RequestExt {
     /// These will always be empty for ALB triggered requests
     fn stage_variables(&self) -> QueryMap;
 
+    /// Return [stage variables](https://docs.aws.amazon.com/apigateway/latest/developerguide/stage-variables.html)
+    /// associated with the API gateway request. No stage parameters
+    /// will yield `None`
+    ///
+    /// These will always be `None` for ALB triggered requests
+    fn stage_variables_ref(&self) -> Option<&QueryMap>;
+
     /// Configures instance with stage variables under #[cfg(test)] configurations
     ///
     /// This is intended for use in mock testing contexts.
@@ -163,6 +193,10 @@ pub trait RequestExt {
 
     /// Return request context data associated with the ALB or API gateway request
     fn request_context(&self) -> RequestContext;
+
+    /// Return a reference to the request context data associated with the ALB or
+    /// API gateway request
+    fn request_context_ref(&self) -> Option<&RequestContext>;
 
     /// Configures instance with request context
     ///
@@ -185,15 +219,23 @@ pub trait RequestExt {
     /// Return the Lambda function context associated with the request
     fn lambda_context(&self) -> Context;
 
+    /// Return a reference to the the Lambda function context associated with the
+    /// request
+    fn lambda_context_ref(&self) -> Option<&Context>;
+
     /// Configures instance with lambda context
     fn with_lambda_context(self, context: Context) -> Self;
 }
 
 impl RequestExt for http::Request<Body> {
     fn raw_http_path(&self) -> String {
+        self.raw_http_path_str().to_string()
+    }
+
+    fn raw_http_path_str(&self) -> &str {
         self.extensions()
             .get::<RawHttpPath>()
-            .map(|ext| ext.0.clone())
+            .map(|RawHttpPath(path)| path.as_str())
             .unwrap_or_default()
     }
 
@@ -204,10 +246,19 @@ impl RequestExt for http::Request<Body> {
     }
 
     fn query_string_parameters(&self) -> QueryMap {
-        self.extensions()
-            .get::<QueryStringParameters>()
-            .map(|ext| ext.0.clone())
-            .unwrap_or_default()
+        self.query_string_parameters_ref().cloned().unwrap_or_default()
+    }
+
+    fn query_string_parameters_ref(&self) -> Option<&QueryMap> {
+        self.extensions().get::<QueryStringParameters>().and_then(
+            |QueryStringParameters(params)| {
+                if params.is_empty() {
+                    None
+                } else {
+                    Some(params)
+                }
+            },
+        )
     }
 
     fn with_query_string_parameters<Q>(self, parameters: Q) -> Self
@@ -220,10 +271,19 @@ impl RequestExt for http::Request<Body> {
     }
 
     fn path_parameters(&self) -> QueryMap {
-        self.extensions()
-            .get::<PathParameters>()
-            .map(|ext| ext.0.clone())
-            .unwrap_or_default()
+        self.path_parameters_ref().cloned().unwrap_or_default()
+    }
+
+    fn path_parameters_ref(&self) -> Option<&QueryMap> {
+        self.extensions().get::<PathParameters>().and_then(
+            |PathParameters(params)| {
+                if params.is_empty() {
+                    None
+                } else {
+                    Some(params)
+                }
+            },
+        )
     }
 
     fn with_path_parameters<P>(self, parameters: P) -> Self
@@ -236,10 +296,19 @@ impl RequestExt for http::Request<Body> {
     }
 
     fn stage_variables(&self) -> QueryMap {
-        self.extensions()
-            .get::<StageVariables>()
-            .map(|ext| ext.0.clone())
-            .unwrap_or_default()
+        self.stage_variables_ref().cloned().unwrap_or_default()
+    }
+
+    fn stage_variables_ref(&self) -> Option<&QueryMap> {
+        self.extensions().get::<StageVariables>().and_then(
+            |StageVariables(vars)| {
+                if vars.is_empty() {
+                    None
+                } else {
+                    Some(vars)
+                }
+            },
+        )
     }
 
     #[cfg(test)]
@@ -253,10 +322,13 @@ impl RequestExt for http::Request<Body> {
     }
 
     fn request_context(&self) -> RequestContext {
-        self.extensions()
-            .get::<RequestContext>()
+        self.request_context_ref()
             .cloned()
             .expect("Request did not contain a request context")
+    }
+
+    fn request_context_ref(&self) -> Option<&RequestContext> {
+        self.extensions().get::<RequestContext>()
     }
 
     fn with_request_context(self, context: RequestContext) -> Self {
@@ -266,10 +338,13 @@ impl RequestExt for http::Request<Body> {
     }
 
     fn lambda_context(&self) -> Context {
-        self.extensions()
-            .get::<Context>()
+        self.lambda_context_ref()
             .cloned()
             .expect("Request did not contain a lambda context")
+    }
+
+    fn lambda_context_ref(&self) -> Option<&Context> {
+        self.extensions().get::<Context>()
     }
 
     fn with_lambda_context(self, context: Context) -> Self {

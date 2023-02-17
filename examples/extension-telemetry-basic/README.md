@@ -8,7 +8,6 @@
 
 The last command will give you an ARN for the extension layer that you can use in your functions.
 
-
 ## Build for ARM 64
 
 Build the extension with `cargo lambda build --release --extension --arm64`

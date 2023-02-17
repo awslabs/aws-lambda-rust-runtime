@@ -328,9 +328,30 @@ fn test_my_lambda_handler() {
 
 ### Cargo Lambda
 
-[Cargo Lambda](https://www.cargo-lambda.info) provides a local server that emulates the AWS Lambda control plane. This server works on Windows, Linux, and MacOS. In the root of your Lambda project, run the subcommand `cargo lambda start` to start the server. Your function will be compiled when the server receives the first request to process. Use the subcommand `cargo lambda invoke` to send requests to your function. The `start` subcommand will watch your function's code for changes, and it will compile it every time you save the source after making changes.
+[Cargo Lambda](https://www.cargo-lambda.info) provides a local server that emulates the AWS Lambda control plane. This server works on Windows, Linux, and MacOS. In the root of your Lambda project. You can run the following subcommand to compile your function(s) and start the server.
 
-You can read more about how [cargo lambda watch](https://www.cargo-lambda.info/commands/watch.html) and [cargo lambda invoke](https://www.cargo-lambda.info/commands/watch.html) work on the [project's documentation page](https://www.cargo-lambda.info).
+```bash
+cargo lambda watch -a 127.0.0.1 -p 9001
+```
+
+Now you can use the `cargo lambda invoke` to send requests to your function. For example:
+
+```bash
+cargo lambda invoke <lambda-function-name> --data-ascii '{ "command": "hi" }'
+```
+
+However, this will not work on a HTTP function. Instead, you will have to cURL the following endpoint based on the address and port you defined. For example:
+
+```bash
+curl -v -X POST \
+  'http://127.0.0.1:9001/lambda-url/<lambda-function-name>' \
+  -H 'content-type: application/json' \
+  -d '{ "command": "hi" }'
+```
+
+> **warning** Do not remove the `content-type` header. It is necessary to instruct the function how to deserialize the request body.
+
+You can read more about how [cargo lambda watch](https://www.cargo-lambda.info/commands/watch.html) and [cargo lambda invoke](https://www.cargo-lambda.info/commands/invoke.html) work on the project's [documentation page](https://www.cargo-lambda.info).
 
 ### Lambda Debug Proxy
 

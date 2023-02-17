@@ -41,7 +41,7 @@ See other installation options in [the Cargo Lambda documentation](https://www.c
 
 To create your first function, run Cargo Lambda with the [subcommand `new`](https://www.cargo-lambda.info/commands/new.html). This command will generate a Rust package with the initial source code for your function:
 
-```
+```bash
 cargo lambda new YOUR_FUNCTION_NAME
 ```
 
@@ -72,12 +72,11 @@ async fn func(event: LambdaEvent<Value>) -> Result<Value, Error> {
 
 If you already have Cargo Lambda installed in your machine, run the next command to build your function:
 
-```
+```bash
 cargo lambda build --release
 ```
 
 There are other ways of building your function: manually with the AWS CLI, with [AWS SAM](https://github.com/aws/aws-sam-cli), and with the [Serverless framework](https://serverless.com/framework/).
-
 
 ### 1. Cross-compiling your Lambda functions
 
@@ -99,7 +98,7 @@ Amazon Linux 1 uses glibc version 2.17, while Rust binaries need glibc version 2
 
 If you are building for Amazon Linux 1, or you want to support both Amazon Linux 2 and 1, run:
 
-```
+```bash
 # Note: replace "aarch64" with "x86_64" if you are building for x86_64
 cargo lambda build --release --target aarch64-unknown-linux-gnu.2.17
 ```
@@ -124,7 +123,6 @@ cargo lambda deploy \
 
 This command will create a Lambda function with the same name of your rust package. You can change the name
 of the function by adding the argument at the end of the command:
-
 
 ```bash
 cargo lambda deploy \
@@ -153,7 +151,6 @@ cargo lambda build --release --arm64 --output-format zip
 ```
 
 You can find the resulting zip file in `target/lambda/YOUR_PACKAGE/bootstrap.zip`. Use that file path to deploy your function with the [AWS CLI](https://aws.amazon.com/cli/):
-
 
 ```bash
 $ aws lambda create-function --function-name rustTest \
@@ -257,7 +254,7 @@ $ npx serverless deploy
 Invoke it using serverless framework or a configured AWS integrated trigger source:
 
 ```bash
-$ npx serverless invoke -f hello -d '{"foo":"bar"}'
+npx serverless invoke -f hello -d '{"foo":"bar"}'
 ```
 
 #### 2.5. Docker

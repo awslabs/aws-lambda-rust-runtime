@@ -300,6 +300,10 @@
 <a href="#300" id="300">300</a>
 <a href="#301" id="301">301</a>
 <a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
 </pre><pre class="rust"><code><span class="kw">use </span>chrono::{DateTime, Utc};
 <span class="kw">use </span>serde::{Deserialize, Serialize};
 <span class="kw">use </span>std::{boxed::Box, fmt, sync::Arc};
@@ -486,13 +490,17 @@
 <span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use </span>chrono::TimeZone;
+    <span class="kw">use </span>chrono::{Duration, TimeZone};
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>deserialize_full() {
         <span class="kw">let </span>data = <span class="string">r#&quot;{&quot;time&quot;: &quot;2020-08-20T12:31:32.123Z&quot;,&quot;type&quot;: &quot;function&quot;, &quot;record&quot;: &quot;hello world&quot;}&quot;#</span>;
         <span class="kw">let </span>expected = LambdaLog {
-            time: Utc.ymd(<span class="number">2020</span>, <span class="number">8</span>, <span class="number">20</span>).and_hms_milli(<span class="number">12</span>, <span class="number">31</span>, <span class="number">32</span>, <span class="number">123</span>),
+            time: Utc
+                .with_ymd_and_hms(<span class="number">2020</span>, <span class="number">8</span>, <span class="number">20</span>, <span class="number">12</span>, <span class="number">31</span>, <span class="number">32</span>)
+                .unwrap()
+                .checked_add_signed(Duration::milliseconds(<span class="number">123</span>))
+                .unwrap(),
             record: LambdaLogRecord::Function(<span class="string">&quot;hello world&quot;</span>.to_string()),
         };
 
@@ -603,4 +611,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="lambda_extension" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0 (fc594f156 2023-01-24)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="lambda_extension" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.1 (d5a82bbd2 2023-02-07)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>

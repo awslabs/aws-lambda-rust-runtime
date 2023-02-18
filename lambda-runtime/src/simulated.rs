@@ -66,7 +66,7 @@ impl hyper::service::Service<Uri> for Connector {
     fn call(&mut self, uri: Uri) -> Self::Future {
         let res = match self.inner.lock() {
             Ok(mut map) if map.contains_key(&uri) => Ok(map.remove(&uri).unwrap()),
-            Ok(_) => Err(format!("Uri {} is not in map", uri).into()),
+            Ok(_) => Err(format!("Uri {uri} is not in map").into()),
             Err(_) => Err("mutex was poisoned".into()),
         };
         Box::pin(async move { res })

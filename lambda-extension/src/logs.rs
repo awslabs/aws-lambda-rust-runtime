@@ -184,13 +184,17 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use chrono::TimeZone;
+    use chrono::{Duration, TimeZone};
 
     #[test]
     fn deserialize_full() {
         let data = r#"{"time": "2020-08-20T12:31:32.123Z","type": "function", "record": "hello world"}"#;
         let expected = LambdaLog {
-            time: Utc.ymd(2020, 8, 20).and_hms_milli(12, 31, 32, 123),
+            time: Utc
+                .with_ymd_and_hms(2020, 8, 20, 12, 31, 32)
+                .unwrap()
+                .checked_add_signed(Duration::milliseconds(123))
+                .unwrap(),
             record: LambdaLogRecord::Function("hello world".to_string()),
         };
 

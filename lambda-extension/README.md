@@ -125,13 +125,13 @@ Regardless of how you deploy them, the extensions MUST be compiled against the s
 
 - Build the extension with:
 
-```
+```bash
 cargo lambda build --release --extension
 ```
 
 If you want to run the extension in ARM processors, add the `--arm64` flag to the previous command:
 
-```
+```bash
 cargo lambda build --release --extension --arm64
 ```
 
@@ -141,13 +141,12 @@ This previous command will generate a binary file in `target/lambda/extensions` 
 
 - Make sure you have the right credentials in your terminal by running the AWS CLI configure command:
 
-```
+```bash
 aws configure
 ```
 
 - Deploy the extension as a layer with:
 
-```
+```bash
 cargo lambda deploy --extension
 ```
-

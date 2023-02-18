@@ -41,7 +41,7 @@ See other installation options in [the Cargo Lambda documentation](https://www.c
 
 To create your first function, run Cargo Lambda with the [subcommand `new`](https://www.cargo-lambda.info/commands/new.html). This command will generate a Rust package with the initial source code for your function:
 
-```
+```bash
 cargo lambda new YOUR_FUNCTION_NAME
 ```
 
@@ -72,12 +72,11 @@ async fn func(event: LambdaEvent<Value>) -> Result<Value, Error> {
 
 If you already have Cargo Lambda installed in your machine, run the next command to build your function:
 
-```
+```bash
 cargo lambda build --release
 ```
 
 There are other ways of building your function: manually with the AWS CLI, with [AWS SAM](https://github.com/aws/aws-sam-cli), and with the [Serverless framework](https://serverless.com/framework/).
-
 
 ### 1. Cross-compiling your Lambda functions
 
@@ -99,7 +98,7 @@ Amazon Linux 1 uses glibc version 2.17, while Rust binaries need glibc version 2
 
 If you are building for Amazon Linux 1, or you want to support both Amazon Linux 2 and 1, run:
 
-```
+```bash
 # Note: replace "aarch64" with "x86_64" if you are building for x86_64
 cargo lambda build --release --target aarch64-unknown-linux-gnu.2.17
 ```
@@ -124,7 +123,6 @@ cargo lambda deploy \
 
 This command will create a Lambda function with the same name of your rust package. You can change the name
 of the function by adding the argument at the end of the command:
-
 
 ```bash
 cargo lambda deploy \
@@ -153,7 +151,6 @@ cargo lambda build --release --arm64 --output-format zip
 ```
 
 You can find the resulting zip file in `target/lambda/YOUR_PACKAGE/bootstrap.zip`. Use that file path to deploy your function with the [AWS CLI](https://aws.amazon.com/cli/):
-
 
 ```bash
 $ aws lambda create-function --function-name rustTest \
@@ -257,7 +254,7 @@ $ npx serverless deploy
 Invoke it using serverless framework or a configured AWS integrated trigger source:
 
 ```bash
-$ npx serverless invoke -f hello -d '{"foo":"bar"}'
+npx serverless invoke -f hello -d '{"foo":"bar"}'
 ```
 
 #### 2.5. Docker
@@ -331,9 +328,38 @@ fn test_my_lambda_handler() {
 
 ### Cargo Lambda
 
-[Cargo Lambda](https://www.cargo-lambda.info) provides a local server that emulates the AWS Lambda control plane. This server works on Windows, Linux, and MacOS. In the root of your Lambda project, run the subcommand `cargo lambda start` to start the server. Your function will be compiled when the server receives the first request to process. Use the subcommand `cargo lambda invoke` to send requests to your function. The `start` subcommand will watch your function's code for changes, and it will compile it every time you save the source after making changes.
+[Cargo Lambda](https://www.cargo-lambda.info) provides a local server that emulates the AWS Lambda control plane. This server works on Windows, Linux, and MacOS. In the root of your Lambda project. You can run the following subcommand to compile your function(s) and start the server.
 
-You can read more about how [cargo lambda watch](https://www.cargo-lambda.info/commands/watch.html) and [cargo lambda invoke](https://www.cargo-lambda.info/commands/watch.html) work on the [project's documentation page](https://www.cargo-lambda.info).
+```bash
+cargo lambda watch -a 127.0.0.1 -p 9001
+```
+
+Now you can use the `cargo lambda invoke` to send requests to your function. For example:
+
+```bash
+cargo lambda invoke <lambda-function-name> --data-ascii '{ "command": "hi" }'
+```
+
+Running the command on a HTTP function (Function URL, API Gateway, etc) will require you to use the appropriate scheme. You can find examples of these schemes [here](https://github.com/awslabs/aws-lambda-rust-runtime/tree/main/lambda-http/tests/data). Otherwise, you will be presented with the following error.
+
+```rust,no_run
+Error: serde_json::error::Error
+
+  × data did not match any variant of untagged enum LambdaRequest
+```
+
+An simpler alternative is to cURL the following endpoint based on the address and port you defined. For example:
+
+```bash
+curl -v -X POST \
+  'http://127.0.0.1:9001/lambda-url/<lambda-function-name>' \
+  -H 'content-type: application/json' \
+  -d '{ "command": "hi" }'
+```
+
+> **warning** Do not remove the `content-type` header. It is necessary to instruct the function how to deserialize the request body.
+
+You can read more about how [cargo lambda watch](https://www.cargo-lambda.info/commands/watch.html) and [cargo lambda invoke](https://www.cargo-lambda.info/commands/invoke.html) work on the project's [documentation page](https://www.cargo-lambda.info).
 
 ### Lambda Debug Proxy
 

@@ -2,10 +2,8 @@
 
 This example shows how to process events from an SQS queue using the partial batch failure feature.
 
-_Important note:_ your lambda sqs trigger *needs* to be configured with partial batch response support
-(the ` ReportBatchItemFailures` flag set to true), otherwise failed message will be not be reprocessed.
-For more details see:
-https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-batchfailurereporting
+_Important note:_ your lambda sqs trigger _needs_ to be configured with partial batch response support
+(the `ReportBatchItemFailures` flag set to true), otherwise failed message will be not be reprocessed. You may see more details [here](https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-batchfailurereporting).
 
 ## Build & Deploy
 

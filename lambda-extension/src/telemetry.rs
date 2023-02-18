@@ -301,7 +301,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use chrono::TimeZone;
+    use chrono::{Duration, TimeZone};
 
     macro_rules! deserialize_tests {
         ($($name:ident: $value:expr,)*) => {
@@ -367,13 +367,21 @@ mod tests {
                 spans: vec!(
                     Span {
                         name:"responseLatency".to_string(),
-                        start: Utc.ymd(2022, 10, 21).and_hms_milli(14, 05, 03, 165),
-                        duration_ms:2598.0
+                        start: Utc
+                            .with_ymd_and_hms(2022, 10, 21, 14, 5, 3)
+                            .unwrap()
+                            .checked_add_signed(Duration::milliseconds(165))
+                            .unwrap(),
+                        duration_ms: 2598.0
                     },
                     Span {
                         name:"responseDuration".to_string(),
-                        start:Utc.ymd(2022, 10, 21).and_hms_milli(14, 05, 05, 763),
-                        duration_ms:0.0
+                        start: Utc
+                            .with_ymd_and_hms(2022, 10, 21, 14, 5, 5)
+                            .unwrap()
+                            .checked_add_signed(Duration::milliseconds(763))
+                            .unwrap(),
+                        duration_ms: 0.0
                     },
                 ),
                 tracing: Some(TraceContext{

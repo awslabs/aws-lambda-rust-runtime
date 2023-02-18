@@ -1,14 +1,16 @@
 # lambda-http for AWS Lambda in Rust
 
-[![Docs](https://docs.rs/lambda_http/badge.svg)](https://docs.rs/lambda_http) 
+[![Docs](https://docs.rs/lambda_http/badge.svg)](https://docs.rs/lambda_http)
 
 **`lambda-http`** is an abstraction that takes payloads from different services and turns them into http objects, making it easy to write API Gateway proxy event focused Lambda functions in Rust.
 
 lambda-http handler is made of:
+
 * Request - Represents an HTTP request
 * IntoResponse - Future that will convert an [`IntoResponse`] into an actual [`LambdaResponse`]
 
 We are able to handle requests from:
+
 * [API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html) REST, HTTP and WebSockets API lambda integrations
 * AWS [ALB](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html)
 * AWS [Lambda function URLs](https://docs.aws.amazon.com/lambda/latest/dg/lambda-urls.html)
@@ -61,7 +63,7 @@ pub async fn function_handler(event: Request) -> Result<impl IntoResponse, Error
         .header("Content-Type", "application/json")
         .body(json!({
             "message": "Hello World",
-            "payload": body, 
+            "payload": body,
           }).to_string())
         .map_err(Box::new)?;
 
@@ -117,7 +119,6 @@ pub async fn function_handler(event: Request) -> Result<impl IntoResponse, Error
 Because **`lambda-http`** is an abstraction, we cannot use it for the Lambda Request Authorizer case.
 If you remove the abstraction, you need to handle the request/response for your service.
 
-
 ```rust
 use aws_lambda_events::apigw::{
     ApiGatewayCustomAuthorizerRequestTypeRequest, ApiGatewayCustomAuthorizerResponse, ApiGatewayCustomAuthorizerPolicy, IamPolicyStatement,
@@ -151,8 +152,8 @@ pub async fn function_handler(event: LambdaEvent<ApiGatewayCustomAuthorizerReque
     }
 
     Ok(custom_authorizer_response(
-      &"DENY".to_string(), 
-      "", 
+      &"DENY".to_string(),
+      "",
       &method_arn))
 }
 

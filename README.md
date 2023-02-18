@@ -340,7 +340,7 @@ Now you can use the `cargo lambda invoke` to send requests to your function. For
 cargo lambda invoke <lambda-function-name> --data-ascii '{ "command": "hi" }'
 ```
 
-Running the command on a HTTP function (Function URL, API Gateway, etc) will not work, presenting you with the following error.
+Running the command on a HTTP function (Function URL, API Gateway, etc) will require you to use the appropriate scheme. You can find examples of these schemes [here](https://github.com/awslabs/aws-lambda-rust-runtime/tree/main/lambda-http/tests/data). Otherwise, you will be presented with the following error.
 
 ```rust,no_run
 Error: serde_json::error::Error
@@ -348,7 +348,7 @@ Error: serde_json::error::Error
   × data did not match any variant of untagged enum LambdaRequest
 ```
 
-Instead, you will have to cURL the following endpoint based on the address and port you defined. For example:
+An simpler alternative is to cURL the following endpoint based on the address and port you defined. For example:
 
 ```bash
 curl -v -X POST \

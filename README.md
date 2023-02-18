@@ -354,7 +354,7 @@ An simpler alternative is to cURL the following endpoint based on the address an
 curl -v -X POST \
   'http://127.0.0.1:9001/lambda-url/<lambda-function-name>' \
   -H 'content-type: application/json' \
-  -d '{ "command": "hi" }'
+  -d "{\"command\": \"hi\" }"
 ```
 
 > **warning** Do not remove the `content-type` header. It is necessary to instruct the function how to deserialize the request body.

@@ -137,7 +137,7 @@ You can test the function with the [invoke subcommand](https://www.cargo-lambda.
 
 ```bash
 cargo lambda invoke --remote \
-  --data-ascii '{"command": "hi"}' \
+  --data-ascii "{\"command\": \"hi\" }" \
   --output-format json \
   my-first-lambda-function
 ```
@@ -171,7 +171,7 @@ You can now test the function using the AWS CLI or the AWS Lambda console
 $ aws lambda invoke
   --cli-binary-format raw-in-base64-out \
   --function-name rustTest \
-  --payload '{"command": "Say Hi!"}' \
+  --payload "{\"command\": \"hi\" }" \
   output.json
 $ cat output.json  # Prints: {"msg": "Command Say Hi! executed."}
 ```
@@ -218,7 +218,7 @@ At the end, `sam` will output the actual Lambda function name. You can use this 
 $ aws lambda invoke
   --cli-binary-format raw-in-base64-out \
   --function-name HelloWorldFunction-XXXXXXXX \ # Replace with the actual function name
-  --payload '{"command": "Say Hi!"}' \
+  --payload "{\"command\": \"hi\" }" \
   output.json
 $ cat output.json  # Prints: {"msg": "Command Say Hi! executed."}
 ```
@@ -254,7 +254,7 @@ $ npx serverless deploy
 Invoke it using serverless framework or a configured AWS integrated trigger source:
 
 ```bash
-npx serverless invoke -f hello -d '{"foo":"bar"}'
+npx serverless invoke -f hello -d "{\"foo\":\"bar\"}"
 ```
 
 #### 2.5. Docker

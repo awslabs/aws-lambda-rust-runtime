@@ -337,7 +337,7 @@ cargo lambda watch -a 127.0.0.1 -p 9001
 Now you can use the `cargo lambda invoke` to send requests to your function. For example:
 
 ```bash
-cargo lambda invoke <lambda-function-name> --data-ascii '{ "command": "hi" }'
+cargo lambda invoke <lambda-function-name> --data-ascii "{\"command\": \"hi\" }"
 ```
 
 Running the command on a HTTP function (Function URL, API Gateway, etc) will require you to use the appropriate scheme. You can find examples of these schemes [here](https://github.com/awslabs/aws-lambda-rust-runtime/tree/main/lambda-http/tests/data). Otherwise, you will be presented with the following error.

@@ -456,7 +456,7 @@ mod tests {
         // https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request
         // note: file paths are relative to the directory of the crate at runtime
         let result = from_reader(File::open("tests/data/apigw_proxy_request.json").expect("expected file"));
-        assert!(result.is_ok(), "event was not parsed as expected {:?}", result);
+        assert!(result.is_ok(), "event was not parsed as expected {result:?}");
     }
 
     #[test]
@@ -467,9 +467,7 @@ mod tests {
         let result = from_str(input);
         assert!(
             result.is_ok(),
-            "event was not parsed as expected {:?} given {}",
-            result,
-            input
+            "event was not parsed as expected {result:?} given {input}"
         );
         let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "GET");
@@ -479,8 +477,7 @@ mod tests {
         let req_context = req.request_context();
         assert!(
             matches!(req_context, RequestContext::ApiGatewayV2(_)),
-            "expected ApiGatewayV2 context, got {:?}",
-            req_context
+            "expected ApiGatewayV2 context, got {req_context:?}"
         );
     }
 
@@ -492,9 +489,7 @@ mod tests {
         let result = from_str(input);
         assert!(
             result.is_ok(),
-            "event was not parsed as expected {:?} given {}",
-            result,
-            input
+            "event was not parsed as expected {result:?} given {input}"
         );
         let req = result.expect("failed to parse request");
         let cookie_header = req
@@ -511,8 +506,7 @@ mod tests {
         let req_context = req.request_context();
         assert!(
             matches!(req_context, RequestContext::ApiGatewayV2(_)),
-            "expected ApiGatewayV2 context, got {:?}",
-            req_context
+            "expected ApiGatewayV2 context, got {req_context:?}"
         );
     }
 
@@ -525,9 +519,7 @@ mod tests {
         let result = from_str(input);
         assert!(
             result.is_ok(),
-            "event was not parsed as expected {:?} given {}",
-            result,
-            input
+            "event was not parsed as expected {result:?} given {input}"
         );
         let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "GET");
@@ -540,8 +532,7 @@ mod tests {
         let req_context = req.request_context();
         assert!(
             matches!(req_context, RequestContext::ApiGatewayV1(_)),
-            "expected ApiGateway context, got {:?}",
-            req_context
+            "expected ApiGateway context, got {req_context:?}"
         );
     }
 
@@ -553,9 +544,7 @@ mod tests {
         let result = from_str(input);
         assert!(
             result.is_ok(),
-            "event was not parsed as expected {:?} given {}",
-            result,
-            input
+            "event was not parsed as expected {result:?} given {input}"
         );
         let req = result.expect("failed to parse request");
         let cookie_header = req
@@ -576,8 +565,7 @@ mod tests {
         let req_context = req.request_context();
         assert!(
             matches!(req_context, RequestContext::ApiGatewayV2(_)),
-            "expected ApiGatewayV2 context, got {:?}",
-            req_context
+            "expected ApiGatewayV2 context, got {req_context:?}"
         );
     }
 
@@ -589,9 +577,7 @@ mod tests {
         let result = from_str(input);
         assert!(
             result.is_ok(),
-            "event was not parsed as expected {:?} given {}",
-            result,
-            input
+            "event was not parsed as expected {result:?} given {input}"
         );
         let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "GET");
@@ -604,8 +590,7 @@ mod tests {
         let req_context = req.request_context();
         assert!(
             matches!(req_context, RequestContext::Alb(_)),
-            "expected Alb context, got {:?}",
-            req_context
+            "expected Alb context, got {req_context:?}"
         );
     }
 
@@ -617,9 +602,7 @@ mod tests {
         let result = from_str(input);
         assert!(
             result.is_ok(),
-            "event was not parsed as expected {:?} given {}",
-            result,
-            input
+            "event was not parsed as expected {result:?} given {input}"
         );
         let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "GET");
@@ -632,8 +615,7 @@ mod tests {
         let req_context = req.request_context();
         assert!(
             matches!(req_context, RequestContext::Alb(_)),
-            "expected Alb context, got {:?}",
-            req_context
+            "expected Alb context, got {req_context:?}"
         );
     }
 
@@ -645,9 +627,7 @@ mod tests {
         let result = from_str(input);
         assert!(
             result.is_ok(),
-            "event is was not parsed as expected {:?} given {}",
-            result,
-            input
+            "event is was not parsed as expected {result:?} given {input}"
         );
         let request = result.expect("failed to parse request");
 
@@ -668,9 +648,7 @@ mod tests {
         let result = from_str(input);
         assert!(
             result.is_ok(),
-            "event is was not parsed as expected {:?} given {}",
-            result,
-            input
+            "event is was not parsed as expected {result:?} given {input}"
         );
         let request = result.expect("failed to parse request");
         assert!(!request.query_string_parameters().is_empty());
@@ -690,9 +668,7 @@ mod tests {
         let result = from_str(input);
         assert!(
             result.is_ok(),
-            "event is was not parsed as expected {:?} given {}",
-            result,
-            input
+            "event is was not parsed as expected {result:?} given {input}"
         );
         let request = result.expect("failed to parse request");
         assert!(!request.query_string_parameters().is_empty());
@@ -718,9 +694,7 @@ mod tests {
         let result = from_str(input);
         assert!(
             result.is_ok(),
-            "event was not parsed as expected {:?} given {}",
-            result,
-            input
+            "event was not parsed as expected {result:?} given {input}"
         );
         let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "GET");
@@ -734,9 +708,7 @@ mod tests {
         let result = from_str(input);
         assert!(
             result.is_ok(),
-            "event was not parsed as expected {:?} given {}",
-            result,
-            input
+            "event was not parsed as expected {result:?} given {input}"
         );
         let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "GET");
@@ -750,9 +722,7 @@ mod tests {
         let result = from_str(input);
         assert!(
             result.is_ok(),
-            "event was not parsed as expected {:?} given {}",
-            result,
-            input
+            "event was not parsed as expected {result:?} given {input}"
         );
         let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "GET");
@@ -766,9 +736,7 @@ mod tests {
         let result = from_str(input);
         assert!(
             result.is_ok(),
-            "event was not parsed as expected {:?} given {}",
-            result,
-            input
+            "event was not parsed as expected {result:?} given {input}"
         );
         let req = result.expect("failed to parse request");
         assert_eq!(req.uri(), "https://id.execute-api.us-east-1.amazonaws.com/my/path-with%20space?parameter1=value1&parameter1=value2&parameter2=value");

@@ -323,7 +323,7 @@ mod endpoint_tests {
             .body(Body::empty())
             .expect("Unable to construct response");
 
-        let expected = format!("/2018-06-01/runtime/invocation/{}/response", id);
+        let expected = format!("/2018-06-01/runtime/invocation/{id}/response");
         assert_eq!(expected, req.uri().path());
 
         Ok(rsp)
@@ -331,7 +331,7 @@ mod endpoint_tests {
 
     #[cfg(test)]
     async fn event_err(req: &Request<Body>, id: &str) -> Result<Response<Body>, Error> {
-        let expected = format!("/2018-06-01/runtime/invocation/{}/error", id);
+        let expected = format!("/2018-06-01/runtime/invocation/{id}/error");
         assert_eq!(expected, req.uri().path());
 
         assert_eq!(req.method(), Method::POST);

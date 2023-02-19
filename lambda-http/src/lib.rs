@@ -221,7 +221,7 @@ mod test_adapter {
 
         fn call(&mut self, event: LambdaEvent<LambdaRequest>) -> Self::Future {
             // Log the request
-            println!("Lambda event: {:#?}", event);
+            println!("Lambda event: {event:#?}");
 
             self.inner.call(event)
         }

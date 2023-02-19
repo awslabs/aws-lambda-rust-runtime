@@ -467,7 +467,7 @@
 
         <span class="kw">fn </span>call(<span class="kw-2">&amp;mut </span><span class="self">self</span>, event: LambdaEvent&lt;LambdaRequest&gt;) -&gt; <span class="self">Self</span>::Future {
             <span class="comment">// Log the request
-            </span><span class="macro">println!</span>(<span class="string">&quot;Lambda event: {:#?}&quot;</span>, event);
+            </span><span class="macro">println!</span>(<span class="string">&quot;Lambda event: {event:#?}&quot;</span>);
 
             <span class="self">self</span>.inner.call(event)
         }

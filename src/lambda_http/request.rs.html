@@ -748,38 +748,6 @@
 <a href="#748" id="748">748</a>
 <a href="#749" id="749">749</a>
 <a href="#750" id="750">750</a>
-<a href="#751" id="751">751</a>
-<a href="#752" id="752">752</a>
-<a href="#753" id="753">753</a>
-<a href="#754" id="754">754</a>
-<a href="#755" id="755">755</a>
-<a href="#756" id="756">756</a>
-<a href="#757" id="757">757</a>
-<a href="#758" id="758">758</a>
-<a href="#759" id="759">759</a>
-<a href="#760" id="760">760</a>
-<a href="#761" id="761">761</a>
-<a href="#762" id="762">762</a>
-<a href="#763" id="763">763</a>
-<a href="#764" id="764">764</a>
-<a href="#765" id="765">765</a>
-<a href="#766" id="766">766</a>
-<a href="#767" id="767">767</a>
-<a href="#768" id="768">768</a>
-<a href="#769" id="769">769</a>
-<a href="#770" id="770">770</a>
-<a href="#771" id="771">771</a>
-<a href="#772" id="772">772</a>
-<a href="#773" id="773">773</a>
-<a href="#774" id="774">774</a>
-<a href="#775" id="775">775</a>
-<a href="#776" id="776">776</a>
-<a href="#777" id="777">777</a>
-<a href="#778" id="778">778</a>
-<a href="#779" id="779">779</a>
-<a href="#780" id="780">780</a>
-<a href="#781" id="781">781</a>
-<a href="#782" id="782">782</a>
 </pre><pre class="rust"><code><span class="doccomment">//! ALB and API Gateway request adaptations
 //!
 //! Typically these are exposed via the `request_context`
@@ -1238,7 +1206,7 @@
         // https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request
         // note: file paths are relative to the directory of the crate at runtime
         </span><span class="kw">let </span>result = from_reader(File::open(<span class="string">&quot;tests/data/apigw_proxy_request.json&quot;</span>).expect(<span class="string">&quot;expected file&quot;</span>));
-        <span class="macro">assert!</span>(result.is_ok(), <span class="string">&quot;event was not parsed as expected {:?}&quot;</span>, result);
+        <span class="macro">assert!</span>(result.is_ok(), <span class="string">&quot;event was not parsed as expected {result:?}&quot;</span>);
     }
 
     <span class="attr">#[test]
@@ -1249,10 +1217,8 @@
         <span class="kw">let </span>result = from_str(input);
         <span class="macro">assert!</span>(
             result.is_ok(),
-            <span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>,
-            result,
-            input
-        );
+            <span class="string">&quot;event was not parsed as expected {result:?} given {input}&quot;
+        </span>);
         <span class="kw">let </span>req = result.expect(<span class="string">&quot;failed to parse request&quot;</span>);
         <span class="macro">assert_eq!</span>(req.method(), <span class="string">&quot;GET&quot;</span>);
         <span class="macro">assert_eq!</span>(req.uri(), <span class="string">&quot;https://xxx.execute-api.us-east-1.amazonaws.com/&quot;</span>);
@@ -1261,9 +1227,8 @@
         </span><span class="kw">let </span>req_context = req.request_context();
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(req_context, RequestContext::ApiGatewayV2(<span class="kw">_</span>)),
-            <span class="string">&quot;expected ApiGatewayV2 context, got {:?}&quot;</span>,
-            req_context
-        );
+            <span class="string">&quot;expected ApiGatewayV2 context, got {req_context:?}&quot;
+        </span>);
     }
 
     <span class="attr">#[test]
@@ -1274,10 +1239,8 @@
         <span class="kw">let </span>result = from_str(input);
         <span class="macro">assert!</span>(
             result.is_ok(),
-            <span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>,
-            result,
-            input
-        );
+            <span class="string">&quot;event was not parsed as expected {result:?} given {input}&quot;
+        </span>);
         <span class="kw">let </span>req = result.expect(<span class="string">&quot;failed to parse request&quot;</span>);
         <span class="kw">let </span>cookie_header = req
             .headers()
@@ -1293,9 +1256,8 @@
         </span><span class="kw">let </span>req_context = req.request_context();
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(req_context, RequestContext::ApiGatewayV2(<span class="kw">_</span>)),
-            <span class="string">&quot;expected ApiGatewayV2 context, got {:?}&quot;</span>,
-            req_context
-        );
+            <span class="string">&quot;expected ApiGatewayV2 context, got {req_context:?}&quot;
+        </span>);
     }
 
     <span class="attr">#[test]
@@ -1307,10 +1269,8 @@
         <span class="kw">let </span>result = from_str(input);
         <span class="macro">assert!</span>(
             result.is_ok(),
-            <span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>,
-            result,
-            input
-        );
+            <span class="string">&quot;event was not parsed as expected {result:?} given {input}&quot;
+        </span>);
         <span class="kw">let </span>req = result.expect(<span class="string">&quot;failed to parse request&quot;</span>);
         <span class="macro">assert_eq!</span>(req.method(), <span class="string">&quot;GET&quot;</span>);
         <span class="macro">assert_eq!</span>(
@@ -1322,9 +1282,8 @@
         </span><span class="kw">let </span>req_context = req.request_context();
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(req_context, RequestContext::ApiGatewayV1(<span class="kw">_</span>)),
-            <span class="string">&quot;expected ApiGateway context, got {:?}&quot;</span>,
-            req_context
-        );
+            <span class="string">&quot;expected ApiGateway context, got {req_context:?}&quot;
+        </span>);
     }
 
     <span class="attr">#[test]
@@ -1335,10 +1294,8 @@
         <span class="kw">let </span>result = from_str(input);
         <span class="macro">assert!</span>(
             result.is_ok(),
-            <span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>,
-            result,
-            input
-        );
+            <span class="string">&quot;event was not parsed as expected {result:?} given {input}&quot;
+        </span>);
         <span class="kw">let </span>req = result.expect(<span class="string">&quot;failed to parse request&quot;</span>);
         <span class="kw">let </span>cookie_header = req
             .headers()
@@ -1358,9 +1315,8 @@
         </span><span class="kw">let </span>req_context = req.request_context();
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(req_context, RequestContext::ApiGatewayV2(<span class="kw">_</span>)),
-            <span class="string">&quot;expected ApiGatewayV2 context, got {:?}&quot;</span>,
-            req_context
-        );
+            <span class="string">&quot;expected ApiGatewayV2 context, got {req_context:?}&quot;
+        </span>);
     }
 
     <span class="attr">#[test]
@@ -1371,10 +1327,8 @@
         <span class="kw">let </span>result = from_str(input);
         <span class="macro">assert!</span>(
             result.is_ok(),
-            <span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>,
-            result,
-            input
-        );
+            <span class="string">&quot;event was not parsed as expected {result:?} given {input}&quot;
+        </span>);
         <span class="kw">let </span>req = result.expect(<span class="string">&quot;failed to parse request&quot;</span>);
         <span class="macro">assert_eq!</span>(req.method(), <span class="string">&quot;GET&quot;</span>);
         <span class="macro">assert_eq!</span>(
@@ -1386,9 +1340,8 @@
         </span><span class="kw">let </span>req_context = req.request_context();
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(req_context, RequestContext::Alb(<span class="kw">_</span>)),
-            <span class="string">&quot;expected Alb context, got {:?}&quot;</span>,
-            req_context
-        );
+            <span class="string">&quot;expected Alb context, got {req_context:?}&quot;
+        </span>);
     }
 
     <span class="attr">#[test]
@@ -1399,10 +1352,8 @@
         <span class="kw">let </span>result = from_str(input);
         <span class="macro">assert!</span>(
             result.is_ok(),
-            <span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>,
-            result,
-            input
-        );
+            <span class="string">&quot;event was not parsed as expected {result:?} given {input}&quot;
+        </span>);
         <span class="kw">let </span>req = result.expect(<span class="string">&quot;failed to parse request&quot;</span>);
         <span class="macro">assert_eq!</span>(req.method(), <span class="string">&quot;GET&quot;</span>);
         <span class="macro">assert_eq!</span>(
@@ -1414,9 +1365,8 @@
         </span><span class="kw">let </span>req_context = req.request_context();
         <span class="macro">assert!</span>(
             <span class="macro">matches!</span>(req_context, RequestContext::Alb(<span class="kw">_</span>)),
-            <span class="string">&quot;expected Alb context, got {:?}&quot;</span>,
-            req_context
-        );
+            <span class="string">&quot;expected Alb context, got {req_context:?}&quot;
+        </span>);
     }
 
     <span class="attr">#[test]
@@ -1427,10 +1377,8 @@
         <span class="kw">let </span>result = from_str(input);
         <span class="macro">assert!</span>(
             result.is_ok(),
-            <span class="string">&quot;event is was not parsed as expected {:?} given {}&quot;</span>,
-            result,
-            input
-        );
+            <span class="string">&quot;event is was not parsed as expected {result:?} given {input}&quot;
+        </span>);
         <span class="kw">let </span>request = result.expect(<span class="string">&quot;failed to parse request&quot;</span>);
 
         <span class="macro">assert!</span>(!request.query_string_parameters().is_empty());
@@ -1450,10 +1398,8 @@
         <span class="kw">let </span>result = from_str(input);
         <span class="macro">assert!</span>(
             result.is_ok(),
-            <span class="string">&quot;event is was not parsed as expected {:?} given {}&quot;</span>,
-            result,
-            input
-        );
+            <span class="string">&quot;event is was not parsed as expected {result:?} given {input}&quot;
+        </span>);
         <span class="kw">let </span>request = result.expect(<span class="string">&quot;failed to parse request&quot;</span>);
         <span class="macro">assert!</span>(!request.query_string_parameters().is_empty());
 
@@ -1472,10 +1418,8 @@
         <span class="kw">let </span>result = from_str(input);
         <span class="macro">assert!</span>(
             result.is_ok(),
-            <span class="string">&quot;event is was not parsed as expected {:?} given {}&quot;</span>,
-            result,
-            input
-        );
+            <span class="string">&quot;event is was not parsed as expected {result:?} given {input}&quot;
+        </span>);
         <span class="kw">let </span>request = result.expect(<span class="string">&quot;failed to parse request&quot;</span>);
         <span class="macro">assert!</span>(!request.query_string_parameters().is_empty());
 
@@ -1500,10 +1444,8 @@
         <span class="kw">let </span>result = from_str(input);
         <span class="macro">assert!</span>(
             result.is_ok(),
-            <span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>,
-            result,
-            input
-        );
+            <span class="string">&quot;event was not parsed as expected {result:?} given {input}&quot;
+        </span>);
         <span class="kw">let </span>req = result.expect(<span class="string">&quot;failed to parse request&quot;</span>);
         <span class="macro">assert_eq!</span>(req.method(), <span class="string">&quot;GET&quot;</span>);
         <span class="macro">assert_eq!</span>(req.uri(), <span class="string">&quot;http://127.0.0.1:3000/hello&quot;</span>);
@@ -1516,10 +1458,8 @@
         <span class="kw">let </span>result = from_str(input);
         <span class="macro">assert!</span>(
             result.is_ok(),
-            <span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>,
-            result,
-            input
-        );
+            <span class="string">&quot;event was not parsed as expected {result:?} given {input}&quot;
+        </span>);
         <span class="kw">let </span>req = result.expect(<span class="string">&quot;failed to parse request&quot;</span>);
         <span class="macro">assert_eq!</span>(req.method(), <span class="string">&quot;GET&quot;</span>);
         <span class="macro">assert_eq!</span>(req.uri(), <span class="string">&quot;/test/test/hello?name=me&quot;</span>);
@@ -1532,10 +1472,8 @@
         <span class="kw">let </span>result = from_str(input);
         <span class="macro">assert!</span>(
             result.is_ok(),
-            <span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>,
-            result,
-            input
-        );
+            <span class="string">&quot;event was not parsed as expected {result:?} given {input}&quot;
+        </span>);
         <span class="kw">let </span>req = result.expect(<span class="string">&quot;failed to parse request&quot;</span>);
         <span class="macro">assert_eq!</span>(req.method(), <span class="string">&quot;GET&quot;</span>);
         <span class="macro">assert_eq!</span>(req.uri(), <span class="string">&quot;/v1/health/&quot;</span>);
@@ -1548,10 +1486,8 @@
         <span class="kw">let </span>result = from_str(input);
         <span class="macro">assert!</span>(
             result.is_ok(),
-            <span class="string">&quot;event was not parsed as expected {:?} given {}&quot;</span>,
-            result,
-            input
-        );
+            <span class="string">&quot;event was not parsed as expected {result:?} given {input}&quot;
+        </span>);
         <span class="kw">let </span>req = result.expect(<span class="string">&quot;failed to parse request&quot;</span>);
         <span class="macro">assert_eq!</span>(req.uri(), <span class="string">&quot;https://id.execute-api.us-east-1.amazonaws.com/my/path-with%20space?parameter1=value1&amp;parameter1=value2&amp;parameter2=value&quot;</span>);
     }

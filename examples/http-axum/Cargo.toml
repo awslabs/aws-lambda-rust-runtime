@@ -1,5 +1,5 @@
 [package]
-name = "http-basic-lambda"
+name = "http-axum"
 version = "0.1.0"
 edition = "2021"
 

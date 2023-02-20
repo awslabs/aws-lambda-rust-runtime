@@ -1,4 +1,4 @@
-use lambda_http::{service_fn, Body, Error, IntoResponse, Request, RequestExt, Response};
+use lambda_http::{ext::RequestExt, service_fn, Body, Error, IntoResponse, Request, Response};
 use tracing::info;
 
 async fn handler(event: Request) -> Result<impl IntoResponse, Error> {

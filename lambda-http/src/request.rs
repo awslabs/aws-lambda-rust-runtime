@@ -1,11 +1,14 @@
 //! ALB and API Gateway request adaptations
 //!
-//! Typically these are exposed via the `request_context`
-//! request extension method provided by [lambda_http::RequestExt](../trait.RequestExt.html)
+//! Typically these are exposed via the [`request_context()`] or [`request_context_ref()`]
+//! request extension methods provided by the [`RequestExt`] trait.
 //!
+//! [`request_context()`]: crate::RequestExt::request_context()
+//! [`request_context_ref()`]: crate::RequestExt::request_context_ref()
+//! [`RequestExt`]: crate::RequestExt
 #[cfg(any(feature = "apigw_rest", feature = "apigw_http", feature = "apigw_websockets"))]
-use crate::ext::{PathParameters, StageVariables};
-use crate::ext::{QueryStringParameters, RawHttpPath};
+use crate::ext::extensions::{PathParameters, StageVariables};
+use crate::ext::extensions::{QueryStringParameters, RawHttpPath};
 #[cfg(feature = "alb")]
 use aws_lambda_events::alb::{AlbTargetGroupRequest, AlbTargetGroupRequestContext};
 #[cfg(feature = "apigw_rest")]
@@ -447,7 +450,7 @@ fn build_request_uri(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::RequestExt;
+    use crate::ext::RequestExt;
     use std::fs::File;
 
     #[test]
@@ -474,9 +477,9 @@ mod tests {
         assert_eq!(req.uri(), "https://xxx.execute-api.us-east-1.amazonaws.com/");
 
         // Ensure this is an APIGWv2 request
-        let req_context = req.request_context();
+        let req_context = req.request_context_ref().expect("Request is missing RequestContext");
         assert!(
-            matches!(req_context, RequestContext::ApiGatewayV2(_)),
+            matches!(req_context, &RequestContext::ApiGatewayV2(_)),
             "expected ApiGatewayV2 context, got {req_context:?}"
         );
     }
@@ -503,9 +506,9 @@ mod tests {
         assert_eq!(cookie_header, Ok("cookie1=value1;cookie2=value2"));
 
         // Ensure this is an APIGWv2 request
-        let req_context = req.request_context();
+        let req_context = req.request_context_ref().expect("Request is missing RequestContext");
         assert!(
-            matches!(req_context, RequestContext::ApiGatewayV2(_)),
+            matches!(req_context, &RequestContext::ApiGatewayV2(_)),
             "expected ApiGatewayV2 context, got {req_context:?}"
         );
     }
@@ -529,9 +532,9 @@ mod tests {
         );
 
         // Ensure this is an APIGW request
-        let req_context = req.request_context();
+        let req_context = req.request_context_ref().expect("Request is missing RequestContext");
         assert!(
-            matches!(req_context, RequestContext::ApiGatewayV1(_)),
+            matches!(req_context, &RequestContext::ApiGatewayV1(_)),
             "expected ApiGateway context, got {req_context:?}"
         );
     }
@@ -562,9 +565,9 @@ mod tests {
         assert_eq!(cookie_header, Some("test=hi".to_string()));
 
         // Ensure this is an APIGWv2 request (Lambda Function URL requests confirm to API GW v2 Request format)
-        let req_context = req.request_context();
+        let req_context = req.request_context_ref().expect("Request is missing RequestContext");
         assert!(
-            matches!(req_context, RequestContext::ApiGatewayV2(_)),
+            matches!(req_context, &RequestContext::ApiGatewayV2(_)),
             "expected ApiGatewayV2 context, got {req_context:?}"
         );
     }
@@ -587,9 +590,9 @@ mod tests {
         );
 
         // Ensure this is an ALB request
-        let req_context = req.request_context();
+        let req_context = req.request_context_ref().expect("Request is missing RequestContext");
         assert!(
-            matches!(req_context, RequestContext::Alb(_)),
+            matches!(req_context, &RequestContext::Alb(_)),
             "expected Alb context, got {req_context:?}"
         );
     }
@@ -612,9 +615,9 @@ mod tests {
         );
 
         // Ensure this is an ALB request
-        let req_context = req.request_context();
+        let req_context = req.request_context_ref().expect("Request is missing RequestContext");
         assert!(
-            matches!(req_context, RequestContext::Alb(_)),
+            matches!(req_context, &RequestContext::Alb(_)),
             "expected Alb context, got {req_context:?}"
         );
     }
@@ -631,11 +634,16 @@ mod tests {
         );
         let request = result.expect("failed to parse request");
 
-        assert!(!request.query_string_parameters().is_empty());
+        assert!(!request
+            .query_string_parameters_ref()
+            .expect("Request is missing query parameters")
+            .is_empty());
 
-        // test RequestExt#query_string_parameters does the right thing
+        // test RequestExt#query_string_parameters_ref does the right thing
         assert_eq!(
-            request.query_string_parameters().all("multivalueName"),
+            request
+                .query_string_parameters_ref()
+                .and_then(|params| params.all("multivalueName")),
             Some(vec!["you", "me"])
         );
     }
@@ -651,11 +659,16 @@ mod tests {
             "event is was not parsed as expected {result:?} given {input}"
         );
         let request = result.expect("failed to parse request");
-        assert!(!request.query_string_parameters().is_empty());
+        assert!(!request
+            .query_string_parameters_ref()
+            .expect("Request is missing query parameters")
+            .is_empty());
 
-        // test RequestExt#query_string_parameters does the right thing
+        // test RequestExt#query_string_parameters_ref does the right thing
         assert_eq!(
-            request.query_string_parameters().all("myKey"),
+            request
+                .query_string_parameters_ref()
+                .and_then(|params| params.all("myKey")),
             Some(vec!["val1", "val2"])
         );
     }
@@ -671,11 +684,16 @@ mod tests {
             "event is was not parsed as expected {result:?} given {input}"
         );
         let request = result.expect("failed to parse request");
-        assert!(!request.query_string_parameters().is_empty());
+        assert!(!request
+            .query_string_parameters_ref()
+            .expect("Request is missing query parameters")
+            .is_empty());
 
-        // test RequestExt#query_string_parameters does the right thing
+        // test RequestExt#query_string_parameters_ref does the right thing
         assert_eq!(
-            request.query_string_parameters().all("myKey"),
+            request
+                .query_string_parameters_ref()
+                .and_then(|params| params.all("myKey")),
             Some(vec!["?showAll=true", "?showAll=false"])
         );
     }

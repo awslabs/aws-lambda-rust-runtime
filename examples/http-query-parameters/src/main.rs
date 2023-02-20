@@ -6,13 +6,18 @@ use lambda_http::{run, service_fn, Error, IntoResponse, Request, RequestExt, Res
 /// - https://github.com/awslabs/aws-lambda-rust-runtime/tree/main/examples
 async fn function_handler(event: Request) -> Result<impl IntoResponse, Error> {
     // Extract some useful information from the request
-    Ok(match event.query_string_parameters().first("first_name") {
-        Some(first_name) => format!("Hello, {}!", first_name).into_response().await,
-        _ => Response::builder()
-            .status(400)
-            .body("Empty first name".into())
-            .expect("failed to render response"),
-    })
+    Ok(
+        match event
+            .query_string_parameters_ref()
+            .and_then(|params| params.first("first_name"))
+        {
+            Some(first_name) => format!("Hello, {}!", first_name).into_response().await,
+            None => Response::builder()
+                .status(400)
+                .body("Empty first name".into())
+                .expect("failed to render response"),
+        },
+    )
 }
 
 #[tokio::main]

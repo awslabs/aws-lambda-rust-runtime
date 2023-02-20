@@ -32,11 +32,16 @@ async fn main() -> Result<(), Error> {
 }
 
 async fn func(event: Request) -> Result<Response<Body>, Error> {
-    Ok(match event.query_string_parameters().first("first_name") {
-        Some(first_name) => format!("Hello, {}!", first_name).into_response().await,
-        _ => Response::builder()
-            .status(400)
-            .body("Empty first name".into())
-            .expect("failed to render response"),
-    })
+    Ok(
+        match event
+            .query_string_parameters_ref()
+            .and_then(|params| params.first("first_name"))
+        {
+            Some(first_name) => format!("Hello, {}!", first_name).into_response().await,
+            None => Response::builder()
+                .status(400)
+                .body("Empty first name".into())
+                .expect("failed to render response"),
+        },
+    )
 }

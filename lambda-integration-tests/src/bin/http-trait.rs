@@ -4,7 +4,7 @@ use std::{
     sync::atomic::{AtomicBool, Ordering},
 };
 
-use lambda_http::{Body, Error, Request, RequestExt, Response, Service};
+use lambda_http::{ext::RequestExt, Body, Error, Request, Response, Service};
 use tracing::info;
 
 struct MyHandler {

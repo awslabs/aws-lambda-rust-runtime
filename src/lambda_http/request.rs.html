@@ -1048,7 +1048,7 @@
         .extension(RequestContext::WebSocket(ag.request_context));
 
     <span class="comment">// merge headers into multi_value_headers and make
-    // multi-value_headers our cannoncial source of request headers
+    // multi-value_headers our canonical source of request headers
     </span><span class="kw">let </span><span class="kw-2">mut </span>headers = ag.multi_value_headers;
     headers.extend(ag.headers);
     update_xray_trace_id_header(<span class="kw-2">&amp;mut </span>headers);

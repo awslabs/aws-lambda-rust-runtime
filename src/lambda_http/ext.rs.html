@@ -440,6 +440,81 @@
 <a href="#440" id="440">440</a>
 <a href="#441" id="441">441</a>
 <a href="#442" id="442">442</a>
+<a href="#443" id="443">443</a>
+<a href="#444" id="444">444</a>
+<a href="#445" id="445">445</a>
+<a href="#446" id="446">446</a>
+<a href="#447" id="447">447</a>
+<a href="#448" id="448">448</a>
+<a href="#449" id="449">449</a>
+<a href="#450" id="450">450</a>
+<a href="#451" id="451">451</a>
+<a href="#452" id="452">452</a>
+<a href="#453" id="453">453</a>
+<a href="#454" id="454">454</a>
+<a href="#455" id="455">455</a>
+<a href="#456" id="456">456</a>
+<a href="#457" id="457">457</a>
+<a href="#458" id="458">458</a>
+<a href="#459" id="459">459</a>
+<a href="#460" id="460">460</a>
+<a href="#461" id="461">461</a>
+<a href="#462" id="462">462</a>
+<a href="#463" id="463">463</a>
+<a href="#464" id="464">464</a>
+<a href="#465" id="465">465</a>
+<a href="#466" id="466">466</a>
+<a href="#467" id="467">467</a>
+<a href="#468" id="468">468</a>
+<a href="#469" id="469">469</a>
+<a href="#470" id="470">470</a>
+<a href="#471" id="471">471</a>
+<a href="#472" id="472">472</a>
+<a href="#473" id="473">473</a>
+<a href="#474" id="474">474</a>
+<a href="#475" id="475">475</a>
+<a href="#476" id="476">476</a>
+<a href="#477" id="477">477</a>
+<a href="#478" id="478">478</a>
+<a href="#479" id="479">479</a>
+<a href="#480" id="480">480</a>
+<a href="#481" id="481">481</a>
+<a href="#482" id="482">482</a>
+<a href="#483" id="483">483</a>
+<a href="#484" id="484">484</a>
+<a href="#485" id="485">485</a>
+<a href="#486" id="486">486</a>
+<a href="#487" id="487">487</a>
+<a href="#488" id="488">488</a>
+<a href="#489" id="489">489</a>
+<a href="#490" id="490">490</a>
+<a href="#491" id="491">491</a>
+<a href="#492" id="492">492</a>
+<a href="#493" id="493">493</a>
+<a href="#494" id="494">494</a>
+<a href="#495" id="495">495</a>
+<a href="#496" id="496">496</a>
+<a href="#497" id="497">497</a>
+<a href="#498" id="498">498</a>
+<a href="#499" id="499">499</a>
+<a href="#500" id="500">500</a>
+<a href="#501" id="501">501</a>
+<a href="#502" id="502">502</a>
+<a href="#503" id="503">503</a>
+<a href="#504" id="504">504</a>
+<a href="#505" id="505">505</a>
+<a href="#506" id="506">506</a>
+<a href="#507" id="507">507</a>
+<a href="#508" id="508">508</a>
+<a href="#509" id="509">509</a>
+<a href="#510" id="510">510</a>
+<a href="#511" id="511">511</a>
+<a href="#512" id="512">512</a>
+<a href="#513" id="513">513</a>
+<a href="#514" id="514">514</a>
+<a href="#515" id="515">515</a>
+<a href="#516" id="516">516</a>
+<a href="#517" id="517">517</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Extension methods for `http::Request` types
 
 </span><span class="kw">use crate</span>::{request::RequestContext, Body};
@@ -497,7 +572,7 @@
     }
 }
 
-<span class="doccomment">/// Extentions for `lambda_http::Request` structs that
+<span class="doccomment">/// Extensions for `lambda_http::Request` structs that
 /// provide access to [API gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format)
 /// and [ALB](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html)
 /// features.
@@ -551,6 +626,9 @@
     <span class="doccomment">/// Return the raw http path for a request without any stage information.
     </span><span class="kw">fn </span>raw_http_path(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String;
 
+    <span class="doccomment">/// Return the raw http path for a request without any stage information.
+    </span><span class="kw">fn </span>raw_http_path_str(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str;
+
     <span class="doccomment">/// Configures instance with the raw http path.
     </span><span class="kw">fn </span>with_raw_http_path(<span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="self">Self</span>;
 
@@ -560,11 +638,23 @@
     ///
     /// The yielded value represents both single and multi-valued
     /// parameters alike. When multiple query string parameters with the same
-    /// name are expected, `query_string_parameters().get_all(&quot;many&quot;)` to retrieve them all.
+    /// name are expected, `query_string_parameters().all(&quot;many&quot;)` to retrieve them all.
     ///
-    /// No query parameters
-    /// will yield an empty `QueryMap`.
+    /// No query parameters will yield an empty `QueryMap`.
     </span><span class="kw">fn </span>query_string_parameters(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; QueryMap;
+
+    <span class="doccomment">/// Return pre-parsed http query string parameters, parameters
+    /// provided after the `?` portion of a url,
+    /// associated with the API gateway request.
+    ///
+    /// The yielded value represents both single and multi-valued
+    /// parameters alike. When multiple query string parameters with the same
+    /// name are expected,
+    /// `query_string_parameters_ref().and_then(|params| params.all(&quot;many&quot;))` to
+    /// retrieve them all.
+    ///
+    /// No query parameters will yield `None`.
+    </span><span class="kw">fn </span>query_string_parameters_ref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>QueryMap&gt;;
 
     <span class="doccomment">/// Configures instance with query string parameters
     ///
@@ -581,6 +671,14 @@
     /// These will always be empty for ALB triggered requests
     </span><span class="kw">fn </span>path_parameters(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; QueryMap;
 
+    <span class="doccomment">/// Return pre-extracted path parameters, parameter provided in url placeholders
+    /// `/foo/{bar}/baz/{boom}`,
+    /// associated with the API gateway request. No path parameters
+    /// will yield `None`
+    ///
+    /// These will always be `None` for ALB triggered requests
+    </span><span class="kw">fn </span>path_parameters_ref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>QueryMap&gt;;
+
     <span class="doccomment">/// Configures instance with path parameters
     ///
     /// This is intended for use in mock testing contexts.
@@ -595,6 +693,13 @@
     /// These will always be empty for ALB triggered requests
     </span><span class="kw">fn </span>stage_variables(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; QueryMap;
 
+    <span class="doccomment">/// Return [stage variables](https://docs.aws.amazon.com/apigateway/latest/developerguide/stage-variables.html)
+    /// associated with the API gateway request. No stage parameters
+    /// will yield `None`
+    ///
+    /// These will always be `None` for ALB triggered requests
+    </span><span class="kw">fn </span>stage_variables_ref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>QueryMap&gt;;
+
     <span class="doccomment">/// Configures instance with stage variables under #[cfg(test)] configurations
     ///
     /// This is intended for use in mock testing contexts.
@@ -605,6 +710,10 @@
 
     <span class="doccomment">/// Return request context data associated with the ALB or API gateway request
     </span><span class="kw">fn </span>request_context(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; RequestContext;
+
+    <span class="doccomment">/// Return a reference to the request context data associated with the ALB or
+    /// API gateway request
+    </span><span class="kw">fn </span>request_context_ref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>RequestContext&gt;;
 
     <span class="doccomment">/// Configures instance with request context
     ///
@@ -627,15 +736,23 @@
     <span class="doccomment">/// Return the Lambda function context associated with the request
     </span><span class="kw">fn </span>lambda_context(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Context;
 
+    <span class="doccomment">/// Return a reference to the the Lambda function context associated with the
+    /// request
+    </span><span class="kw">fn </span>lambda_context_ref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Context&gt;;
+
     <span class="doccomment">/// Configures instance with lambda context
     </span><span class="kw">fn </span>with_lambda_context(<span class="self">self</span>, context: Context) -&gt; <span class="self">Self</span>;
 }
 
 <span class="kw">impl </span>RequestExt <span class="kw">for </span>http::Request&lt;Body&gt; {
     <span class="kw">fn </span>raw_http_path(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+        <span class="self">self</span>.raw_http_path_str().to_string()
+    }
+
+    <span class="kw">fn </span>raw_http_path_str(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
         <span class="self">self</span>.extensions()
             .get::&lt;RawHttpPath&gt;()
-            .map(|ext| ext.<span class="number">0</span>.clone())
+            .map(|RawHttpPath(path)| path.as_str())
             .unwrap_or_default()
     }
 
@@ -646,10 +763,19 @@
     }
 
     <span class="kw">fn </span>query_string_parameters(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; QueryMap {
-        <span class="self">self</span>.extensions()
-            .get::&lt;QueryStringParameters&gt;()
-            .map(|ext| ext.<span class="number">0</span>.clone())
-            .unwrap_or_default()
+        <span class="self">self</span>.query_string_parameters_ref().cloned().unwrap_or_default()
+    }
+
+    <span class="kw">fn </span>query_string_parameters_ref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>QueryMap&gt; {
+        <span class="self">self</span>.extensions().get::&lt;QueryStringParameters&gt;().and_then(
+            |QueryStringParameters(params)| {
+                <span class="kw">if </span>params.is_empty() {
+                    <span class="prelude-val">None
+                </span>} <span class="kw">else </span>{
+                    <span class="prelude-val">Some</span>(params)
+                }
+            },
+        )
     }
 
     <span class="kw">fn </span>with_query_string_parameters&lt;Q&gt;(<span class="self">self</span>, parameters: Q) -&gt; <span class="self">Self
@@ -662,10 +788,19 @@
     }
 
     <span class="kw">fn </span>path_parameters(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; QueryMap {
-        <span class="self">self</span>.extensions()
-            .get::&lt;PathParameters&gt;()
-            .map(|ext| ext.<span class="number">0</span>.clone())
-            .unwrap_or_default()
+        <span class="self">self</span>.path_parameters_ref().cloned().unwrap_or_default()
+    }
+
+    <span class="kw">fn </span>path_parameters_ref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>QueryMap&gt; {
+        <span class="self">self</span>.extensions().get::&lt;PathParameters&gt;().and_then(
+            |PathParameters(params)| {
+                <span class="kw">if </span>params.is_empty() {
+                    <span class="prelude-val">None
+                </span>} <span class="kw">else </span>{
+                    <span class="prelude-val">Some</span>(params)
+                }
+            },
+        )
     }
 
     <span class="kw">fn </span>with_path_parameters&lt;P&gt;(<span class="self">self</span>, parameters: P) -&gt; <span class="self">Self
@@ -678,10 +813,19 @@
     }
 
     <span class="kw">fn </span>stage_variables(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; QueryMap {
-        <span class="self">self</span>.extensions()
-            .get::&lt;StageVariables&gt;()
-            .map(|ext| ext.<span class="number">0</span>.clone())
-            .unwrap_or_default()
+        <span class="self">self</span>.stage_variables_ref().cloned().unwrap_or_default()
+    }
+
+    <span class="kw">fn </span>stage_variables_ref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>QueryMap&gt; {
+        <span class="self">self</span>.extensions().get::&lt;StageVariables&gt;().and_then(
+            |StageVariables(vars)| {
+                <span class="kw">if </span>vars.is_empty() {
+                    <span class="prelude-val">None
+                </span>} <span class="kw">else </span>{
+                    <span class="prelude-val">Some</span>(vars)
+                }
+            },
+        )
     }
 
     <span class="attr">#[cfg(test)]
@@ -695,10 +839,13 @@
     }
 
     <span class="kw">fn </span>request_context(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; RequestContext {
-        <span class="self">self</span>.extensions()
-            .get::&lt;RequestContext&gt;()
+        <span class="self">self</span>.request_context_ref()
             .cloned()
             .expect(<span class="string">&quot;Request did not contain a request context&quot;</span>)
+    }
+
+    <span class="kw">fn </span>request_context_ref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>RequestContext&gt; {
+        <span class="self">self</span>.extensions().get::&lt;RequestContext&gt;()
     }
 
     <span class="kw">fn </span>with_request_context(<span class="self">self</span>, context: RequestContext) -&gt; <span class="self">Self </span>{
@@ -708,10 +855,13 @@
     }
 
     <span class="kw">fn </span>lambda_context(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Context {
-        <span class="self">self</span>.extensions()
-            .get::&lt;Context&gt;()
+        <span class="self">self</span>.lambda_context_ref()
             .cloned()
             .expect(<span class="string">&quot;Request did not contain a lambda context&quot;</span>)
+    }
+
+    <span class="kw">fn </span>lambda_context_ref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Context&gt; {
+        <span class="self">self</span>.extensions().get::&lt;Context&gt;()
     }
 
     <span class="kw">fn </span>with_lambda_context(<span class="self">self</span>, context: Context) -&gt; <span class="self">Self </span>{
@@ -800,7 +950,7 @@
     }
 
     <span class="attr">#[test]
-    </span><span class="kw">fn </span>requests_have_json_parseable_payloads() {
+    </span><span class="kw">fn </span>requests_have_json_parsable_payloads() {
         <span class="attr">#[derive(Deserialize, Eq, PartialEq, Debug)]
         </span><span class="kw">struct </span>Payload {
             foo: String,
@@ -863,7 +1013,7 @@
     }
 
     <span class="attr">#[test]
-    </span><span class="kw">fn </span>requests_omiting_content_types_do_not_support_parseable_payloads() {
+    </span><span class="kw">fn </span>requests_omitting_content_types_do_not_support_parsable_payloads() {
         <span class="attr">#[derive(Deserialize, Eq, PartialEq, Debug)]
         </span><span class="kw">struct </span>Payload {
             foo: String,
@@ -871,7 +1021,7 @@
         }
         <span class="kw">let </span>request = http::Request::builder()
             .body(Body::from(<span class="string">r#&quot;{&quot;foo&quot;:&quot;bar&quot;, &quot;baz&quot;: 2}&quot;#</span>))
-            .expect(<span class="string">&quot;failed to bulid request&quot;</span>);
+            .expect(<span class="string">&quot;failed to build request&quot;</span>);
         <span class="kw">let </span>payload: <span class="prelude-ty">Option</span>&lt;Payload&gt; = request.payload().unwrap_or_default();
         <span class="macro">assert_eq!</span>(payload, <span class="prelude-val">None</span>);
     }

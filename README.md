@@ -69,6 +69,8 @@ async fn func(event: LambdaEvent<Value>) -> Result<Value, Error> {
 ```
 
 ## Building and deploying your Lambda functions
+> **Note**
+> The CLI commands in the following examples are written in Linux/MacOS syntax. If you are using a different shell, such as Windows CMD or PowerShell, you may need to modify the quotation format when using quotation marks inside nested strings, such as `'{"command": "hi"}'`. For example, you might need to escape the quotes with a backslash. For more information on modifying commands, please see the [AWS CLI Reference](https://docs.amazonaws.cn/en_us/cli/latest/userguide/cli-usage-parameters-quoting-strings.html#cli-usage-parameters-quoting-strings-containing).
 
 If you already have Cargo Lambda installed in your machine, run the next command to build your function:
 
@@ -137,7 +139,7 @@ You can test the function with the [invoke subcommand](https://www.cargo-lambda.
 
 ```bash
 cargo lambda invoke --remote \
-  --data-ascii "{\"command\": \"hi\" }" \
+  --data-ascii '{"command": "hi"}' \
   --output-format json \
   my-first-lambda-function
 ```
@@ -171,7 +173,7 @@ You can now test the function using the AWS CLI or the AWS Lambda console
 $ aws lambda invoke
   --cli-binary-format raw-in-base64-out \
   --function-name rustTest \
-  --payload "{\"command\": \"hi\" }" \
+  --payload '{"command": "Say Hi!"}' \
   output.json
 $ cat output.json  # Prints: {"msg": "Command Say Hi! executed."}
 ```
@@ -218,7 +220,7 @@ At the end, `sam` will output the actual Lambda function name. You can use this 
 $ aws lambda invoke
   --cli-binary-format raw-in-base64-out \
   --function-name HelloWorldFunction-XXXXXXXX \ # Replace with the actual function name
-  --payload "{\"command\": \"hi\" }" \
+  --payload '{"command": "Say Hi!"}' \
   output.json
 $ cat output.json  # Prints: {"msg": "Command Say Hi! executed."}
 ```
@@ -254,7 +256,7 @@ $ npx serverless deploy
 Invoke it using serverless framework or a configured AWS integrated trigger source:
 
 ```bash
-npx serverless invoke -f hello -d "{\"foo\":\"bar\"}"
+npx serverless invoke -f hello -d '{"foo":"bar"}'
 ```
 
 #### 2.5. Docker
@@ -337,7 +339,7 @@ cargo lambda watch -a 127.0.0.1 -p 9001
 Now you can use the `cargo lambda invoke` to send requests to your function. For example:
 
 ```bash
-cargo lambda invoke <lambda-function-name> --data-ascii "{\"command\": \"hi\" }"
+cargo lambda invoke <lambda-function-name> --data-ascii '{ "command": "hi" }'
 ```
 
 Running the command on a HTTP function (Function URL, API Gateway, etc) will require you to use the appropriate scheme. You can find examples of these schemes [here](https://github.com/awslabs/aws-lambda-rust-runtime/tree/main/lambda-http/tests/data). Otherwise, you will be presented with the following error.
@@ -354,7 +356,7 @@ An simpler alternative is to cURL the following endpoint based on the address an
 curl -v -X POST \
   'http://127.0.0.1:9001/lambda-url/<lambda-function-name>' \
   -H 'content-type: application/json' \
-  -d "{\"command\": \"hi\" }"
+  -d '{ "command": "hi" }'
 ```
 
 > **warning** Do not remove the `content-type` header. It is necessary to instruct the function how to deserialize the request body.

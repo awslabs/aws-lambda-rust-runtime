@@ -70,7 +70,7 @@ async fn func(event: LambdaEvent<Value>) -> Result<Value, Error> {
 
 ## Building and deploying your Lambda functions
 > **Note**
-> The CLI commands in the following examples are written in Linux/MacOS syntax. If you are using a different shell, such as Windows CMD or PowerShell, you may need to modify the quotation format when using quotation marks inside nested strings, such as `'{"command": "hi"}'`. For example, you might need to escape the quotes with a backslash. For more information on modifying commands, please see the [AWS CLI Reference](https://docs.amazonaws.cn/en_us/cli/latest/userguide/cli-usage-parameters-quoting-strings.html#cli-usage-parameters-quoting-strings-containing).
+> CLI commands in the examples use Linux/MacOS syntax. For different shells like Windows CMD or PowerShell, modify syntax when using nested quotation marks like `'{"command": "hi"}'`. Escaping with a backslash may be necessary. See [AWS CLI Reference](https://docs.amazonaws.cn/en_us/cli/latest/userguide/cli-usage-parameters-quoting-strings.html#cli-usage-parameters-quoting-strings-containing) for more information.
 
 If you already have Cargo Lambda installed in your machine, run the next command to build your function:
 

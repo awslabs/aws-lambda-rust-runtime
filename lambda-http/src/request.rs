@@ -298,7 +298,7 @@ fn into_websocket_request(ag: ApiGatewayWebsocketProxyRequest) -> http::Request<
         .extension(RequestContext::WebSocket(ag.request_context));
 
     // merge headers into multi_value_headers and make
-    // multi-value_headers our cannoncial source of request headers
+    // multi-value_headers our canonical source of request headers
     let mut headers = ag.multi_value_headers;
     headers.extend(ag.headers);
     update_xray_trace_id_header(&mut headers);

@@ -99,10 +99,10 @@ Amazon Linux 1 uses glibc version 2.17, while Rust binaries need glibc version 2
 If you are building for Amazon Linux 1, or you want to support both Amazon Linux 2 and 1, run:
 
 ```bash
-# Note: replace "aarch64" with "x86_64" if you are building for x86_64
 cargo lambda build --release --target aarch64-unknown-linux-gnu.2.17
 ```
-
+> **Note**
+> Replace "aarch64" with "x86_64" if you are building for x86_64
 ### 2. Deploying the binary to AWS Lambda
 
 For [a custom runtime](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-custom.html), AWS Lambda looks for an executable called `bootstrap` in the deployment package zip. Rename the generated executable to `bootstrap` and add it to a zip archive.
@@ -118,7 +118,7 @@ cargo lambda deploy \
   --iam-role arn:aws:iam::XXXXXXXXXXXXX:role/your_lambda_execution_role
 ```
 
-> **warning**
+> **Warning**
 > Make sure to replace the execution role with an existing role in your account!
 
 This command will create a Lambda function with the same name of your rust package. You can change the name
@@ -130,7 +130,7 @@ cargo lambda deploy \
   my-first-lambda-function
 ```
 
-> **info**
+> **Note**
 > See other deployment options in [the Cargo Lambda documentation](https://www.cargo-lambda.info/commands/deploy.html).
 
 You can test the function with the [invoke subcommand](https://www.cargo-lambda.info/commands/invoke.html):
@@ -165,7 +165,7 @@ $ aws lambda create-function --function-name rustTest \
   --tracing-config Mode=Active
 ```
 
-> **warning**
+> **Warning**
 > Make sure to replace the execution role with an existing role in your account!
 
 You can now test the function using the AWS CLI or the AWS Lambda console
@@ -179,8 +179,8 @@ $ aws lambda invoke
 $ cat output.json  # Prints: {"msg": "Command Say Hi! executed."}
 ```
 
-**Note:** `--cli-binary-format raw-in-base64-out` is a required
-  argument when using the AWS CLI version 2. [More Information](https://docs.aws.amazon.com/cli/latest/userguide/cliv2-migration.html#cliv2-migration-binaryparam)
+> **Note** 
+> `--cli-binary-format raw-in-base64-out` is a required argument when using the AWS CLI version 2. [More Information](https://docs.aws.amazon.com/cli/latest/userguide/cliv2-migration.html#cliv2-migration-binaryparam)
 
 #### 2.3. AWS Serverless Application Model (SAM)
 
@@ -360,7 +360,8 @@ curl -v -X POST \
   -d '{ "command": "hi" }'
 ```
 
-> **warning** Do not remove the `content-type` header. It is necessary to instruct the function how to deserialize the request body.
+> **Warning** 
+> Do not remove the `content-type` header. It is necessary to instruct the function how to deserialize the request body.
 
 You can read more about how [cargo lambda watch](https://www.cargo-lambda.info/commands/watch.html) and [cargo lambda invoke](https://www.cargo-lambda.info/commands/invoke.html) work on the project's [documentation page](https://www.cargo-lambda.info).
 

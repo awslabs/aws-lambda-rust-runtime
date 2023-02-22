@@ -142,6 +142,9 @@ cargo lambda invoke --remote \
   my-first-lambda-function
 ```
 
+> **Note**
+> CLI commands in the examples use Linux/MacOS syntax. For different shells like Windows CMD or PowerShell, modify syntax when using nested quotation marks like `'{"command": "hi"}'`. Escaping with a backslash may be necessary. See [AWS CLI Reference](https://docs.amazonaws.cn/en_us/cli/latest/userguide/cli-usage-parameters-quoting-strings.html#cli-usage-parameters-quoting-strings-containing) for more information.
+
 #### 2.2. Deploying with the AWS CLI
 
 You can also use the AWS CLI to deploy your Rust functions. First, you will need to create a ZIP archive of your  function. Cargo Lambda can do that for you automatically when it builds your binary if you add the `output-format` flag:

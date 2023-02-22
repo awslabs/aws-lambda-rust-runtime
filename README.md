@@ -99,10 +99,10 @@ Amazon Linux 1 uses glibc version 2.17, while Rust binaries need glibc version 2
 If you are building for Amazon Linux 1, or you want to support both Amazon Linux 2 and 1, run:
 
 ```bash
-# Note: replace "aarch64" with "x86_64" if you are building for x86_64
 cargo lambda build --release --target aarch64-unknown-linux-gnu.2.17
 ```
-
+> **Note**
+> Replace "aarch64" with "x86_64" if you are building for x86_64
 ### 2. Deploying the binary to AWS Lambda
 
 For [a custom runtime](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-custom.html), AWS Lambda looks for an executable called `bootstrap` in the deployment package zip. Rename the generated executable to `bootstrap` and add it to a zip archive.

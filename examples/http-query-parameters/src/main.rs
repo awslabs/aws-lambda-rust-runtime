@@ -17,8 +17,14 @@ async fn function_handler(event: Request) -> Result<impl IntoResponse, Error> {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
+    // required to enable CloudWatch error logging by the runtime
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::INFO)
+        // disable printing the name of the module in every log line.
+        .with_target(false)
+        // this needs to be set to false, otherwise ANSI color codes will
+        // show up in a confusing manner in CloudWatch logs.
+        .with_ansi(false)
         // disabling time is handy because CloudWatch will add the ingestion time.
         .without_time()
         .init();

@@ -19,7 +19,7 @@ lambda_runtime = { path = "../../lambda-runtime" }
 aws-sdk-dynamodb = "0.21.0"
 aws-config = "0.51.0"
 tokio = { version = "1", features = ["macros"] }
-tracing = { version = "0.1.37"}
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing = { version = "0.1", features = ["log"] }
+tracing-subscriber = { version = "0.3", default-features = false, features = ["ansi", "fmt"] }
 
 

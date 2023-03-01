@@ -12,6 +12,8 @@ edition = "2021"
 [dependencies]
 lambda-extension = { path = "../../lambda-extension" }
 tokio = { version = "1.17.0", features = ["full"] }
+tracing = { version = "0.1", features = ["log"] }
+tracing-subscriber = { version = "0.3", default-features = false, features = ["ansi", "fmt"] }
 aws-config = "0.13.0"
 aws-sdk-firehose = "0.13.0"
 

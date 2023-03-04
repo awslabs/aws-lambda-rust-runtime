@@ -54,3 +54,27 @@ pub(crate) async fn my_handler(event: LambdaEvent<Request>) -> Result<Response, 
     // return `Response` (it will be serialized to JSON automatically by the runtime)
     Ok(resp)
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::{my_handler, Request};
+    use lambda_runtime::{Context, LambdaEvent};
+
+    #[tokio::test]
+    async fn response_is_good_for_simple_input() {
+        let id = "ID";
+
+        let mut context = Context::default();
+        context.request_id = id.to_string();
+
+        let payload = Request {
+            command: "X".to_string(),
+        };
+        let event = LambdaEvent { payload, context };
+
+        let result = my_handler(event).await.unwrap();
+
+        assert_eq!(result.msg, "Command X executed.");
+        assert_eq!(result.req_id, id.to_string());
+    }
+}

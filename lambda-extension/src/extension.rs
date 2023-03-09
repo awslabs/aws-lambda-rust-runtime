@@ -1,5 +1,6 @@
 use std::{
-    convert::Infallible, fmt, future::ready, future::Future, net::SocketAddr, path::PathBuf, pin::Pin, sync::Arc,
+    convert::Infallible, fmt, future::ready, future::Future, net::SocketAddr, path::PathBuf, pin::Pin, rc::Rc,
+    sync::Arc,
 };
 
 use hyper::{server::conn::AddrStream, Server};
@@ -221,6 +222,7 @@ where
 
         let extension_id = register(client, self.extension_name, self.events).await?;
         let extension_id = extension_id.to_str()?;
+        let extension_id_rc = Rc::new(String::from(extension_id));
         let mut ep = self.events_processor;
 
         if let Some(mut log_processor) = self.logs_processor {
@@ -315,7 +317,7 @@ where
             let event: NextEvent = serde_json::from_slice(&body)?;
             let is_invoke = event.is_invoke();
 
-            let event = LambdaEvent::new(extension_id, event);
+            let event = LambdaEvent::new(extension_id_rc.clone(), event);
 
             let ep = match ep.ready().await {
                 Ok(ep) => ep,

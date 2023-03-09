@@ -1,3 +1,5 @@
+use std::{rc::Rc};
+
 use serde::Deserialize;
 
 /// Request tracing information
@@ -56,16 +58,13 @@ impl NextEvent {
 /// event that the Lambda Runtime is going to process
 pub struct LambdaEvent {
     /// ID assigned to this extension by the Lambda Runtime
-    pub extension_id: String,
+    pub extension_id: Rc<String>,
     /// Next incoming event
     pub next: NextEvent,
 }
 
 impl LambdaEvent {
-    pub(crate) fn new(ex_id: &str, next: NextEvent) -> LambdaEvent {
-        LambdaEvent {
-            extension_id: ex_id.into(),
-            next,
-        }
+    pub(crate) fn new(extension_id: Rc<String>, next: NextEvent) -> Self {
+        LambdaEvent { extension_id, next }
     }
 }

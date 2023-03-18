@@ -53,7 +53,7 @@ where
 
     /// Create a new client with a given base URI and HTTP connector.
     pub fn with(base: Uri, connector: C) -> Self {
-        let client = hyper::Client::builder().build(connector);
+        let client = hyper::Client::builder().pool_idle_timeout(None).build(connector);
         Self { base, client }
     }
 

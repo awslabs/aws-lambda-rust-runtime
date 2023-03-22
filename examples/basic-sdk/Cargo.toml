@@ -1,0 +1,20 @@
+[package]
+name = "basic-sdk"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-trait = "0.1"
+aws-config = "0.54"
+aws-sdk-s3 = "0.24"
+lambda_runtime = { path = "../../lambda-runtime" }
+serde = "1.0.136"
+tokio = { version = "1", features = ["macros"] }
+tracing = { version = "0.1", features = ["log"] }
+tracing-subscriber = { version = "0.3", default-features = false, features = ["ansi", "fmt"] }
+
+[dev-dependencies]
+mockall = "0.11.3"
+tokio-test = "0.4.2"

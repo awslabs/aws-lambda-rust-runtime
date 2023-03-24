@@ -17,7 +17,7 @@ edition = "2021"
 [dependencies]
 aws_lambda_events = "0.7.2"
 lambda_runtime = { path = "../../lambda-runtime" }
-serde = "1.0.136"
+serde = "1"
 tokio = { version = "1", features = ["macros"] }
 tracing = { version = "0.1" }
 tracing-subscriber = { version = "0.3", default-features = false, features = ["ansi", "fmt"] }

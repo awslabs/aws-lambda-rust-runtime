@@ -1,10 +1,12 @@
-use aws_config::meta::region::RegionProviderChain;
+use std::io::Cursor;
+
 use aws_lambda_events::{event::s3::S3Event, s3::S3EventRecord};
 use aws_sdk_s3::Client as S3Client;
 use lambda_runtime::{run, service_fn, Error, LambdaEvent};
-use s3client::{GetFile, GetThumbnail, PutFile};
+use s3::{GetFile, PutFile};
+use thumbnailer::{create_thumbnails, ThumbnailSize};
 
-mod s3client;
+mod s3;
 
 /**
 This lambda handler
@@ -19,38 +21,40 @@ Make sure that
     * this lambda only gets event from png file creation
     * this lambda has permission to put file into the "-thumbs" bucket
 */
-pub(crate) async fn function_handler<T: PutFile + GetFile + GetThumbnail>(
+pub(crate) async fn function_handler<T: PutFile + GetFile>(
     event: LambdaEvent<S3Event>,
+    size: u32,
     client: &T,
-) -> Result<String, String> {
-    let result = Ok("".to_string());
+) -> Result<(), Error> {
     let records = event.payload.records;
+
     for record in records.iter() {
         let (bucket, key) = get_file_props(record);
+
         if bucket.is_empty() || key.is_empty() {
             // The event is not a create event or bucket/object key is missing
-            println!("record skipped");
+            tracing::info!("record skipped");
             continue;
         }
 
         let reader = client.get_file(&bucket, &key).await;
 
-        if reader.is_none() {
+        if reader.is_err() {
             continue;
         }
 
-        let thumbnail = client.get_thumbnail(reader.unwrap());
+        let thumbnail = get_thumbnail(reader.unwrap(), size);
 
         let mut thumbs_bucket = bucket.to_owned();
         thumbs_bucket.push_str("-thumbs");
 
-        // It uplaods the thumbnail into a bucket name suffixed with "-thumbs"
+        // It uploads the thumbnail into a bucket name suffixed with "-thumbs"
         // So it needs file creation permission into that bucket
 
-        return client.put_file(&thumbs_bucket, &key, thumbnail).await;
+        let _ = client.put_file(&thumbs_bucket, &key, thumbnail).await;
     }
 
-    return result;
+    Ok(())
 }
 
 fn get_file_props(record: &S3EventRecord) -> (String, String) {
@@ -59,6 +63,7 @@ fn get_file_props(record: &S3EventRecord) -> (String, String) {
     if record.event_name.is_none() {
         return empty_response;
     }
+
     if !record.event_name.as_ref().unwrap().starts_with("ObjectCreated") {
         return empty_response;
     }
@@ -71,23 +76,24 @@ fn get_file_props(record: &S3EventRecord) -> (String, String) {
     let object_key = record.s3.object.key.to_owned().unwrap();
 
     if bucket_name.is_empty() || object_key.is_empty() {
-        println!("Bucket name or object_key is empty");
+        tracing::info!("Bucket name or object_key is empty");
         return empty_response;
     }
 
-    println!("Bucket: {}, Object key: {}", bucket_name, object_key);
+    tracing::info!("Bucket: {}, Object key: {}", bucket_name, object_key);
 
-    return (bucket_name, object_key);
+    (bucket_name, object_key)
 }
 
-async fn get_client() -> S3Client {
-    let region_provider = RegionProviderChain::default_provider().or_else("us-east-2");
-    let config = aws_config::from_env().region(region_provider).load().await;
-    let client = S3Client::new(&config);
+fn get_thumbnail(vec: Vec<u8>, size: u32) -> Vec<u8> {
+    let reader = Cursor::new(vec);
+    let mut thumbnails = create_thumbnails(reader, mime::IMAGE_PNG, [ThumbnailSize::Custom((size, size))]).unwrap();
 
-    println!("client region {}", client.conf().region().unwrap().to_string());
+    let thumbnail = thumbnails.pop().unwrap();
+    let mut buf = Cursor::new(Vec::new());
+    thumbnail.write_png(&mut buf).unwrap();
 
-    return client;
+    buf.into_inner()
 }
 
 #[tokio::main]
@@ -104,10 +110,11 @@ async fn main() -> Result<(), Error> {
         .without_time()
         .init();
 
-    let client = get_client().await;
+    let shared_config = aws_config::load_from_env().await;
+    let client = S3Client::new(&shared_config);
     let client_ref = &client;
 
-    let func = service_fn(move |event| async move { function_handler(event, client_ref).await });
+    let func = service_fn(move |event| async move { function_handler(event, 128, client_ref).await });
 
     run(func).await?;
 
@@ -117,7 +124,9 @@ async fn main() -> Result<(), Error> {
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
-    use std::io::Cursor;
+    use std::fs::File;
+    use std::io::BufReader;
+    use std::io::Read;
 
     use super::*;
     use async_trait::async_trait;
@@ -127,12 +136,11 @@ mod tests {
     use aws_lambda_events::s3::S3Object;
     use aws_lambda_events::s3::S3RequestParameters;
     use aws_lambda_events::s3::S3UserIdentity;
-    use aws_sdk_s3::types::ByteStream;
+    use aws_sdk_s3::error::GetObjectError;
     use lambda_runtime::{Context, LambdaEvent};
     use mockall::mock;
-    use mockall::predicate::eq;
-    use s3client::GetFile;
-    use s3client::PutFile;
+    use s3::GetFile;
+    use s3::PutFile;
 
     #[tokio::test]
     async fn response_is_good() {
@@ -147,15 +155,11 @@ mod tests {
 
             #[async_trait]
             impl GetFile for FakeS3Client {
-                pub async fn get_file(&self, bucket: &str, key: &str) -> Option<Cursor<Vec<u8>>>;
+                pub async fn get_file(&self, bucket: &str, key: &str) -> Result<Vec<u8>, GetObjectError>;
             }
             #[async_trait]
             impl PutFile for FakeS3Client {
-                pub async fn put_file(&self, bucket: &str, key: &str, bytes: ByteStream) -> Result<String, String>;
-            }
-
-            impl GetThumbnail for FakeS3Client {
-                fn get_thumbnail(&self, reader: Cursor<Vec<u8>>) -> ByteStream;
+                pub async fn put_file(&self, bucket: &str, key: &str, bytes: Vec<u8>) -> Result<String, String>;
             }
         }
 
@@ -163,22 +167,31 @@ mod tests {
 
         mock.expect_get_file()
             .withf(|b: &str, k: &str| b.eq(bucket) && k.eq(key))
-            .returning(|_1, _2| Some(Cursor::new(b"IMAGE".to_vec())));
-
-        mock.expect_get_thumbnail()
-            .with(eq(Cursor::new(b"IMAGE".to_vec())))
-            .returning(|_| ByteStream::from_static(b"THUMBNAIL"));
+            .returning(|_1, _2| Ok(get_file("testdata/image.png")));
 
         mock.expect_put_file()
-            .withf(|bu: &str, ke: &str, _by| bu.eq("test-bucket-thumbs") && ke.eq(key))
+            .withf(|bu: &str, ke: &str, by| {
+                let thumbnail = get_file("testdata/thumbnail.png");
+                return bu.eq("test-bucket-thumbs") && ke.eq(key) && by == &thumbnail;
+            })
             .returning(|_1, _2, _3| Ok("Done".to_string()));
 
         let payload = get_s3_event("ObjectCreated", bucket, key);
         let event = LambdaEvent { payload, context };
 
-        let result = function_handler(event, &mock).await.unwrap();
+        let result = function_handler(event, 10, &mock).await.unwrap();
 
-        assert_eq!("Done", result);
+        assert_eq!((), result);
+    }
+
+    fn get_file(name: &str) -> Vec<u8> {
+        let f = File::open(name);
+        let mut reader = BufReader::new(f.unwrap());
+        let mut buffer = Vec::new();
+
+        reader.read_to_end(&mut buffer).unwrap();
+
+        return buffer;
     }
 
     fn get_s3_event(event_name: &str, bucket_name: &str, object_key: &str) -> S3Event {

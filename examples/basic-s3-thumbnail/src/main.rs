@@ -28,22 +28,30 @@ pub(crate) async fn function_handler<T: PutFile + GetFile>(
 ) -> Result<(), Error> {
     let records = event.payload.records;
 
-    for record in records.iter() {
-        let (bucket, key) = get_file_props(record);
+    for record in records.into_iter() {
+        let (bucket, key) = match get_file_props(record) {
+            Ok(touple) => touple,
+            Err(msg) => {
+                tracing::info!("Record skipped with reason: {}", msg);
+                continue;
+            }
+        };
 
-        if bucket.is_empty() || key.is_empty() {
-            // The event is not a create event or bucket/object key is missing
-            tracing::info!("record skipped");
-            continue;
-        }
+        let image = match client.get_file(&bucket, &key).await {
+            Ok(vec) => vec,
+            Err(msg) => {
+                tracing::info!("Can not get file from S3: {}", msg);
+                continue;
+            }
+        };
 
-        let reader = client.get_file(&bucket, &key).await;
-
-        if reader.is_err() {
-            continue;
-        }
-
-        let thumbnail = get_thumbnail(reader.unwrap(), size);
+        let thumbnail = match get_thumbnail(image, size) {
+            Ok(vec) => vec,
+            Err(msg) => {
+                tracing::info!("Can not create thumbnail: {}", msg);
+                continue;
+            }
+        };
 
         let mut thumbs_bucket = bucket.to_owned();
         thumbs_bucket.push_str("-thumbs");
@@ -51,49 +59,49 @@ pub(crate) async fn function_handler<T: PutFile + GetFile>(
         // It uploads the thumbnail into a bucket name suffixed with "-thumbs"
         // So it needs file creation permission into that bucket
 
-        let _ = client.put_file(&thumbs_bucket, &key, thumbnail).await;
+        match client.put_file(&thumbs_bucket, &key, thumbnail).await {
+            Ok(msg) => tracing::info!(msg),
+            Err(msg) => tracing::info!("Can not upload thumbnail: {}", msg),
+        }
     }
 
     Ok(())
 }
 
-fn get_file_props(record: &S3EventRecord) -> (String, String) {
-    let empty_response = ("".to_string(), "".to_string());
+fn get_file_props(record: S3EventRecord) -> Result<(String, String), String> {
+    record
+        .event_name
+        .filter(|s| s.starts_with("ObjectCreated"))
+        .ok_or("Wrong event")?;
 
-    if record.event_name.is_none() {
-        return empty_response;
-    }
+    let bucket = record
+        .s3
+        .bucket
+        .name
+        .filter(|s| !s.is_empty())
+        .ok_or("No bucket name")?;
 
-    if !record.event_name.as_ref().unwrap().starts_with("ObjectCreated") {
-        return empty_response;
-    }
+    let key = record.s3.object.key.filter(|s| !s.is_empty()).ok_or("No object key")?;
 
-    if record.s3.bucket.name.is_none() || record.s3.object.key.is_none() {
-        return empty_response;
-    }
-
-    let bucket_name = record.s3.bucket.name.to_owned().unwrap();
-    let object_key = record.s3.object.key.to_owned().unwrap();
-
-    if bucket_name.is_empty() || object_key.is_empty() {
-        tracing::info!("Bucket name or object_key is empty");
-        return empty_response;
-    }
-
-    tracing::info!("Bucket: {}, Object key: {}", bucket_name, object_key);
-
-    (bucket_name, object_key)
+    Ok((bucket, key))
 }
 
-fn get_thumbnail(vec: Vec<u8>, size: u32) -> Vec<u8> {
+fn get_thumbnail(vec: Vec<u8>, size: u32) -> Result<Vec<u8>, String> {
     let reader = Cursor::new(vec);
-    let mut thumbnails = create_thumbnails(reader, mime::IMAGE_PNG, [ThumbnailSize::Custom((size, size))]).unwrap();
+    let mime = mime::IMAGE_PNG;
+    let sizes = [ThumbnailSize::Custom((size, size))];
 
-    let thumbnail = thumbnails.pop().unwrap();
+    let thumbnail = match create_thumbnails(reader, mime, sizes) {
+        Ok(mut thumbnails) => thumbnails.pop().ok_or("No thumbnail created")?,
+        Err(thumb_error) => return Err(thumb_error.to_string()),
+    };
+
     let mut buf = Cursor::new(Vec::new());
-    thumbnail.write_png(&mut buf).unwrap();
 
-    buf.into_inner()
+    match thumbnail.write_png(&mut buf) {
+        Ok(_) => Ok(buf.into_inner()),
+        Err(_) => Err("Unknown error when Thumbnail::write_png".to_string()),
+    }
 }
 
 #[tokio::main]

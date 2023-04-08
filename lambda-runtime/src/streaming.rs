@@ -24,13 +24,14 @@ use tokio_stream::{Stream, StreamExt};
 use tower::{Service, ServiceExt};
 use tracing::{error, trace, Instrument};
 
-/// Starts the Lambda Rust runtime and begins polling for events on the [Lambda
-/// Runtime APIs](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html).
+/// Starts the Lambda Rust runtime and stream response back [Configure Lambda
+/// Streaming Response](https://docs.aws.amazon.com/lambda/latest/dg/configuration-response-streaming.html).
 ///
 /// # Example
 /// ```no_run
-/// use lambda_runtime::{Error, service_fn, LambdaEvent};
 /// use hyper::{body::Body, Response};
+/// use lambda_runtime::{service_fn, Error, LambdaEvent};
+/// use std::{thread, time::Duration};
 /// use serde_json::Value;
 ///
 /// #[tokio::main]
@@ -38,12 +39,23 @@ use tracing::{error, trace, Instrument};
 ///     lambda_runtime::run_with_streaming_response(service_fn(func)).await?;
 ///     Ok(())
 /// }
+/// async fn func(_event: LambdaEvent<Value>) -> Result<Response<Body>, Error> {
+///     let messages = vec!["Hello ", "world ", "from ", "Lambda!"];
 ///
-/// async fn func(event: LambdaEvent<Value>) -> Result<Response<Body>, Error> {
+///     let (mut tx, rx) = Body::channel();
+///
+///     tokio::spawn(async move {
+///         for message in messages.iter() {
+///             tx.send_data((*message).into()).await.unwrap();
+///             thread::sleep(Duration::from_millis(500));
+///         }
+///     });
+///
 ///     let resp = Response::builder()
 ///         .header("content-type", "text/plain")
 ///         .header("CustomHeader", "outerspace")
-///         .body("hello world!")?;
+///         .body(rx)?;
+///     
 ///     Ok(resp)
 /// }
 /// ```
@@ -174,14 +186,13 @@ where
     }
 }
 
-pub(crate) struct EventCompletionStreamingRequest<'a, B> 
-{
+pub(crate) struct EventCompletionStreamingRequest<'a, B> {
     pub(crate) request_id: &'a str,
     pub(crate) body: Response<B>,
 }
 
 impl<'a, B> EventCompletionStreamingRequest<'a, B>
-where 
+where
     B: HttpBody + Unpin + Send + 'static,
     B::Data: Into<Bytes> + Send,
     B::Error: Into<Error> + Send + Debug,
@@ -195,30 +206,46 @@ where
         let mut builder = build_request().method(Method::POST).uri(uri);
         let headers = builder.headers_mut().unwrap();
 
-        headers.insert("content-type", "application/vnd.awslambda.http-integration-response".parse()?);
-        headers.insert("transfer-encoding", "chunked".parse()?);
-        headers.insert("lambda-runtime-function-response-mode", "streaming".parse()?);
-        headers.append("trailer", "Lambda-Runtime-Function-Error-Type".parse()?);
-        headers.append("trailer", "Lambda-Runtime-Function-Error-Body".parse()?);
+        headers.insert("Transfer-Encoding", "chunked".parse()?);
+        headers.insert("Lambda-Runtime-Function-Response-Mode", "streaming".parse()?);
+        headers.insert(
+            "Content-Type",
+            "application/vnd.awslambda.http-integration-response".parse()?,
+        );
 
         let (mut tx, rx) = Body::channel();
 
         tokio::spawn(async move {
             let mut header_map = parts.headers;
-            header_map.entry(CONTENT_TYPE).or_insert("application/octet-stream".parse().unwrap());
-            
+            // default Content-Type
+            header_map
+                .entry(CONTENT_TYPE)
+                .or_insert("application/octet-stream".parse().unwrap());
+
             let cookies = header_map.get_all(SET_COOKIE);
+            let cookies = cookies
+                .iter()
+                .map(|c| String::from_utf8_lossy(c.as_bytes()).to_string())
+                .collect::<Vec<String>>();
+
+            let headers = header_map
+                .iter()
+                .filter(|(k, _)| *k != SET_COOKIE)
+                .map(|(k, v)| (k.as_str(), String::from_utf8_lossy(v.as_bytes()).to_string()))
+                .collect::<HashMap<&str, String>>();
+
             let metadata_prelude = json!({
                 "statusCode": parts.status.as_u16(),
-                "headers": header_map.iter().filter(|(k, _)| *k != SET_COOKIE).map(|(k, v)| (k.as_str(), String::from_utf8_lossy(v.as_bytes()).to_string())).collect::<HashMap<&str, String>>(),
-                "cookies": cookies.iter().map(|c| String::from_utf8_lossy(c.as_bytes()).to_string()).collect::<Vec<String>>(),
-            }).to_string();
+                "headers": headers,
+                "cookies": cookies,
+            })
+            .to_string();
 
             trace!("metadata_prelude: {}", metadata_prelude);
-            
+
             tx.send_data(metadata_prelude.into()).await.unwrap();
             tx.send_data("\u{0}".repeat(8).into()).await.unwrap();
-    
+
             while let Some(chunk) = body.data().await {
                 let chunk = chunk.unwrap();
                 tx.send_data(chunk.into()).await.unwrap();

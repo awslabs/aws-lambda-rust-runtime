@@ -9,11 +9,11 @@ use lambda_runtime::LambdaEvent;
 pub use lambda_runtime::{self, service_fn, tower, Context, Error, Service};
 use std::fmt::{Debug, Display};
 
-/// Starts the Lambda Rust runtime and begins polling for events on the [Lambda
-/// Runtime APIs](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html).
+/// Starts the Lambda Rust runtime and stream response back [Configure Lambda
+/// Streaming Response](https://docs.aws.amazon.com/lambda/latest/dg/configuration-response-streaming.html).
 ///
-/// This takes care of transforming the LambdaEvent into a [`Request`] and then
-/// converting the result into a [`LambdaResponse`].
+/// This takes care of transforming the LambdaEvent into a [`Request`] and 
+/// accepts [`http::Response<http_body::Body>`] as response.
 pub async fn run_with_streaming_response<'a, S, B, E>(handler: S) -> Result<(), Error>
 where
     S: Service<Request, Response = Response<B>, Error = E>,

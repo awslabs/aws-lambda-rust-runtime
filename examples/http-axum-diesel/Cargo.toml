@@ -1,0 +1,23 @@
+[package]
+name = "http-axum-diesel"
+version = "0.1.0"
+edition = "2021"
+
+
+# Use cargo-edit(https://github.com/killercup/cargo-edit#installation)
+# to manage dependencies.
+# Running `cargo add DEPENDENCY_NAME` will
+# add the latest version of a dependency to the list,
+# and it will keep the alphabetic ordering for you.
+
+[dependencies]
+axum = "0.6.4"
+bb8 = "0.8.0"
+diesel = "2.0.3"
+diesel-async = { version = "0.2.1", features = ["postgres", "bb8"] }
+lambda_http = { path = "../../lambda-http" }
+lambda_runtime = { path = "../../lambda-runtime" }
+serde = "1.0.159"
+tokio = { version = "1", features = ["macros"] }
+tracing = { version = "0.1", features = ["log"] }
+tracing-subscriber = { version = "0.3", default-features = false, features = ["ansi", "fmt"] }

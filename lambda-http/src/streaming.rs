@@ -12,7 +12,7 @@ use std::fmt::{Debug, Display};
 /// Starts the Lambda Rust runtime and stream response back [Configure Lambda
 /// Streaming Response](https://docs.aws.amazon.com/lambda/latest/dg/configuration-response-streaming.html).
 ///
-/// This takes care of transforming the LambdaEvent into a [`Request`] and 
+/// This takes care of transforming the LambdaEvent into a [`Request`] and
 /// accepts [`http::Response<http_body::Body>`] as response.
 pub async fn run_with_streaming_response<'a, S, B, E>(handler: S) -> Result<(), Error>
 where

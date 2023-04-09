@@ -185,6 +185,8 @@
 <a href="#185" id="185">185</a>
 <a href="#186" id="186">186</a>
 <a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
 </pre><pre class="rust"><code><span class="attr">#![deny(clippy::all, clippy::cargo)]
 #![warn(missing_docs, nonstandard_style, rust_2018_idioms)]
 #![allow(clippy::multiple_crate_versions)]
@@ -240,7 +242,9 @@
 
     <span class="doccomment">/// Create a new client with a given base URI and HTTP connector.
     </span><span class="kw">pub fn </span>with(base: Uri, connector: C) -&gt; <span class="self">Self </span>{
-        <span class="kw">let </span>client = hyper::Client::builder().build(connector);
+        <span class="kw">let </span>client = hyper::Client::builder()
+            .http1_max_buf_size(<span class="number">1024 </span>* <span class="number">1024</span>)
+            .build(connector);
         <span class="self">Self </span>{ base, client }
     }
 

@@ -587,6 +587,9 @@
 <a href="#587" id="587">587</a>
 <a href="#588" id="588">588</a>
 <a href="#589" id="589">589</a>
+<a href="#590" id="590">590</a>
+<a href="#591" id="591">591</a>
+<a href="#592" id="592">592</a>
 </pre><pre class="rust"><code><span class="attr">#![deny(clippy::all, clippy::cargo)]
 #![allow(clippy::multiple_crate_versions)]
 #![warn(missing_docs, nonstandard_style, rust_2018_idioms)]
@@ -622,6 +625,9 @@
 </span><span class="kw">mod </span>simulated;
 <span class="doccomment">/// Types available to a Lambda function.
 </span><span class="kw">mod </span>types;
+
+<span class="kw">mod </span>streaming;
+<span class="kw">pub use </span>streaming::run_with_streaming_response;
 
 <span class="kw">use </span>requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest};
 <span class="kw">pub use </span>types::{Context, LambdaEvent};

@@ -244,6 +244,9 @@
 <a href="#244" id="244">244</a>
 <a href="#245" id="245">245</a>
 <a href="#246" id="246">246</a>
+<a href="#247" id="247">247</a>
+<a href="#248" id="248">248</a>
+<a href="#249" id="249">249</a>
 </pre><pre class="rust"><code><span class="attr">#![warn(missing_docs, rust_2018_idioms)]
 </span><span class="comment">//#![deny(warnings)]
 </span><span class="doccomment">//! Enriches the `lambda` crate with [`http`](https://github.com/hyperium/http)
@@ -337,6 +340,9 @@
     pin::Pin,
     task::{Context <span class="kw">as </span>TaskContext, Poll},
 };
+
+<span class="kw">mod </span>streaming;
+<span class="kw">pub use </span>streaming::run_with_streaming_response;
 
 <span class="doccomment">/// Type alias for `http::Request`s with a fixed [`Body`](enum.Body.html) type
 </span><span class="kw">pub type </span>Request = http::Request&lt;Body&gt;;

@@ -34,6 +34,9 @@ mod simulated;
 /// Types available to a Lambda function.
 mod types;
 
+mod streaming;
+pub use streaming::run_with_streaming_response;
+
 use requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest};
 pub use types::{Context, LambdaEvent};
 

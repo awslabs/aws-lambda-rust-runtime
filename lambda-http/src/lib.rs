@@ -92,6 +92,9 @@ use std::{
     task::{Context as TaskContext, Poll},
 };
 
+mod streaming;
+pub use streaming::run_with_streaming_response;
+
 /// Type alias for `http::Request`s with a fixed [`Body`](enum.Body.html) type
 pub type Request = http::Request<Body>;
 

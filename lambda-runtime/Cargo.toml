@@ -1,6 +1,6 @@
 [package]
 name = "lambda_runtime"
-version = "0.7.3"
+version = "0.8.0"
 authors = [
     "David Calavera <dcalaver@amazon.com>",
     "Harold Sun <sunhua@amazon.com>",
@@ -40,4 +40,4 @@ async-stream = "0.3"
 tracing = { version = "0.1.37", features = ["log"] }
 tower = { version = "0.4", features = ["util"] }
 tokio-stream = "0.1.2"
-lambda_runtime_api_client = { version = "0.7", path = "../lambda-runtime-api-client" }
+lambda_runtime_api_client = { version = "0.8", path = "../lambda-runtime-api-client" }

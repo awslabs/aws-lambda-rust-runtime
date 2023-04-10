@@ -6,8 +6,8 @@
 
 lambda-http handler is made of:
 
-* Request - Represents an HTTP request
-* IntoResponse - Future that will convert an [`IntoResponse`] into an actual [`LambdaResponse`]
+* `Request` - Represents an HTTP request
+* `IntoResponse` - Future that will convert an [`IntoResponse`] into an actual [`LambdaResponse`]
 
 We are able to handle requests from:
 
@@ -15,32 +15,35 @@ We are able to handle requests from:
 * AWS [ALB](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html)
 * AWS [Lambda function URLs](https://docs.aws.amazon.com/lambda/latest/dg/lambda-urls.html)
 
-Thanks to the Request type we can seemsly handle proxy integrations without the worry to specify the specific service type.
+Thanks to the `Request` type we can seamlessly handle proxy integrations without the worry to specify the specific service type.
 
-There is also an Extentions for `lambda_http::Request` structs that provide access to [API gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format) and [ALB](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html) features.
+There is also an extension for `lambda_http::Request` structs that provide access to [API gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format) and [ALB](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html) features.
 
 For example some handy extensions:
 
-* query_string_parameters - Return pre-parsed http query string parameters, parameters provided after the `?` portion of a url associated with the request
-* path_parameters - Return pre-extracted path parameters, parameter provided in url placeholders `/foo/{bar}/baz/{boom}` associated with the request
-* payload - Return the Result of a payload parsed into a serde Deserializeable type
+* `query_string_parameters` - Return pre-parsed http query string parameters, parameters provided after the `?` portion of a url associated with the request
+* `path_parameters` - Return pre-extracted path parameters, parameter provided in url placeholders `/foo/{bar}/baz/{qux}` associated with the request
+* `lambda_context` - Return the Lambda context for the invocation; see the [runtime docs](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html#runtimes-api-next)
+* `request_context` - Return the ALB/API Gateway request context
+* payload - Return the Result of a payload parsed into a type that implements `serde::Deserialize`
+
+See the `lambda_http::RequestPayloadExt` and `lambda_http::RequestExt` traits for more extensions.
 
 ## Examples
 
-Here you will find a few examples to handle basic scenarions:
+Here you will find a few examples to handle basic scenarios:
 
-* Reading a JSON from a body and deserialise into a structure
-* Reading querystring parameters
+* Reading a JSON from a body and deserialize into a structure
+* Reading query string parameters
 * Lambda Request Authorizer
-* Passing the Lambda execution context initialisation to the handler
+* Passing the Lambda execution context initialization to the handler
 
-### Reading a JSON from a body and deserialise into a structure
+### Reading a JSON from a body and deserialize into a structure
 
 The code below creates a simple API Gateway proxy (HTTP, REST) that accept in input a JSON payload.
 
 ```rust
-use http::Response;
-use lambda_http::{run, http::StatusCode, service_fn, Error, IntoResponse, Request, RequestExt};
+use lambda_http::{run, http::{StatusCode, Response}, service_fn, Error, IntoResponse, Request, RequestPayloadExt};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -77,11 +80,10 @@ pub struct MyPayload {
 }
 ```
 
-### Reading querystring parameters
+### Reading query string parameters
 
 ```rust
-use http::Response;
-use lambda_http::{run, http::StatusCode, service_fn, Error, IntoResponse, Request, RequestExt};
+use lambda_http::{run, http::{StatusCode, Response}, service_fn, Error, RequestExt, IntoResponse, Request};
 use serde_json::json;
 
 #[tokio::main]
@@ -96,8 +98,8 @@ async fn main() -> Result<(), Error> {
 }
 
 pub async fn function_handler(event: Request) -> Result<impl IntoResponse, Error> {
-    let name = event.query_string_parameters()
-        .first("name")
+    let name = event.query_string_parameters_ref()
+        .and_then(|params| params.first("name"))
         .unwrap_or_else(|| "stranger")
         .to_string();
 
@@ -176,15 +178,14 @@ pub fn custom_authorizer_response(effect: &str, principal: &str, method_arn: &st
 }
 ```
 
-## Passing the Lambda execution context initialisation to the handler
+## Passing the Lambda execution context initialization to the handler
 
 One of the [best practices](https://docs.aws.amazon.com/lambda/latest/dg/best-practices.html) is to take advantage of execution environment reuse to improve the performance of your function. Initialize SDK clients and database connections outside the function handler. Subsequent invocations processed by the same instance of your function can reuse these resources. This saves cost by reducing function run time.
 
 ```rust
 use aws_sdk_dynamodb::model::AttributeValue;
 use chrono::Utc;
-use http::Response;
-use lambda_http::{run, http::StatusCode, service_fn, Error, IntoResponse, Request, RequestExt};
+use lambda_http::{run, http::{StatusCode, Response}, service_fn, Error, RequestExt, IntoResponse, Request};
 use serde_json::json;
 
 #[tokio::main]
@@ -207,8 +208,8 @@ async fn main() -> Result<(), Error> {
 pub async fn function_handler(dynamodb_client: &aws_sdk_dynamodb::Client, event: Request) -> Result<impl IntoResponse, Error> {
     let table = std::env::var("TABLE_NAME").expect("TABLE_NAME must be set");
 
-    let name = event.query_string_parameters()
-        .first("name")
+    let name = event.query_string_parameters_ref()
+        .and_then(|params| params.first("name"))
         .unwrap_or_else(|| "stranger")
         .to_string();
 

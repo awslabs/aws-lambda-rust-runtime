@@ -32,11 +32,11 @@
 //!
 //! ## Leveraging trigger provided data
 //!
-//! You can also access information provided directly from the underlying trigger events, like query string parameters,
-//! or Lambda function context, with the [`RequestExt`](trait.RequestExt.html) trait.
+//! You can also access information provided directly from the underlying trigger events,
+//! like query string parameters, or Lambda function context, with the [`RequestExt`] trait.
 //!
 //! ```rust,no_run
-//! use lambda_http::{service_fn, Error, IntoResponse, Request, RequestExt};
+//! use lambda_http::{service_fn, Error, RequestExt, IntoResponse, Request};
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Error> {
@@ -47,13 +47,13 @@
 //! async fn hello(
 //!     request: Request
 //! ) -> Result<impl IntoResponse, std::convert::Infallible> {
-//!     let _context = request.lambda_context();
+//!     let _context = request.lambda_context_ref();
 //!
 //!     Ok(format!(
 //!         "hello {}",
 //!         request
-//!             .query_string_parameters()
-//!             .first("name")
+//!             .query_string_parameters_ref()
+//!             .and_then(|params| params.first("name"))
 //!             .unwrap_or_else(|| "stranger")
 //!     ))
 //! }
@@ -73,7 +73,10 @@ use response::ResponseFuture;
 pub mod ext;
 pub mod request;
 mod response;
-pub use crate::{ext::RequestExt, response::IntoResponse};
+pub use crate::{
+    ext::{RequestExt, RequestPayloadExt},
+    response::IntoResponse,
+};
 use crate::{
     request::{LambdaRequest, RequestOrigin},
     response::LambdaResponse,

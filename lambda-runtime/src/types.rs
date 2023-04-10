@@ -91,7 +91,7 @@ pub struct CognitoIdentity {
 
 /// The Lambda function execution context. The values in this struct
 /// are populated using the [Lambda environment variables](https://docs.aws.amazon.com/lambda/latest/dg/current-supported-versions.html)
-/// and the headers returned by the poll request to the Runtime APIs.
+/// and [the headers returned by the poll request to the Runtime APIs](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html#runtimes-api-next).
 #[non_exhaustive]
 #[derive(Clone, Debug, Eq, PartialEq, Default, Serialize, Deserialize)]
 pub struct Context {

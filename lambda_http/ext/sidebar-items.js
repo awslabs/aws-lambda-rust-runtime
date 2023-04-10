@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":[["PayloadError","Request payload deserialization errors"]],"trait":[["RequestExt","Extensions for `lambda_http::Request` structs that provide access to API gateway and ALB features."]]};
+window.SIDEBAR_ITEMS = {"mod":[["extensions","Extension methods for `http::Extensions` and `http::Request<T>` types"],["request","Extension methods for `Request` types"]]};

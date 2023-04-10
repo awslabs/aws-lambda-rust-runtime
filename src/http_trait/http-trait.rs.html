@@ -90,7 +90,7 @@
     sync::atomic::{AtomicBool, Ordering},
 };
 
-<span class="kw">use </span>lambda_http::{Body, Error, Request, RequestExt, Response, Service};
+<span class="kw">use </span>lambda_http::{ext::RequestExt, Body, Error, Request, Response, Service};
 <span class="kw">use </span>tracing::info;
 
 <span class="kw">struct </span>MyHandler {

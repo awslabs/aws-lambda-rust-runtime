@@ -27,7 +27,7 @@
 <a href="#27" id="27">27</a>
 <a href="#28" id="28">28</a>
 <a href="#29" id="29">29</a>
-</pre><pre class="rust"><code><span class="kw">use </span>lambda_http::{service_fn, Body, Error, IntoResponse, Request, RequestExt, Response};
+</pre><pre class="rust"><code><span class="kw">use </span>lambda_http::{ext::RequestExt, service_fn, Body, Error, IntoResponse, Request, Response};
 <span class="kw">use </span>tracing::info;
 
 <span class="kw">async fn </span>handler(event: Request) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>IntoResponse, Error&gt; {

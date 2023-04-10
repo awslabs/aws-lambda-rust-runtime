@@ -748,14 +748,35 @@
 <a href="#748" id="748">748</a>
 <a href="#749" id="749">749</a>
 <a href="#750" id="750">750</a>
+<a href="#751" id="751">751</a>
+<a href="#752" id="752">752</a>
+<a href="#753" id="753">753</a>
+<a href="#754" id="754">754</a>
+<a href="#755" id="755">755</a>
+<a href="#756" id="756">756</a>
+<a href="#757" id="757">757</a>
+<a href="#758" id="758">758</a>
+<a href="#759" id="759">759</a>
+<a href="#760" id="760">760</a>
+<a href="#761" id="761">761</a>
+<a href="#762" id="762">762</a>
+<a href="#763" id="763">763</a>
+<a href="#764" id="764">764</a>
+<a href="#765" id="765">765</a>
+<a href="#766" id="766">766</a>
+<a href="#767" id="767">767</a>
+<a href="#768" id="768">768</a>
 </pre><pre class="rust"><code><span class="doccomment">//! ALB and API Gateway request adaptations
 //!
-//! Typically these are exposed via the `request_context`
-//! request extension method provided by [lambda_http::RequestExt](../trait.RequestExt.html)
+//! Typically these are exposed via the [`request_context()`] or [`request_context_ref()`]
+//! request extension methods provided by the [`RequestExt`] trait.
 //!
+//! [`request_context()`]: crate::RequestExt::request_context()
+//! [`request_context_ref()`]: crate::RequestExt::request_context_ref()
+//! [`RequestExt`]: crate::RequestExt
 </span><span class="attr">#[cfg(any(feature = <span class="string">&quot;apigw_rest&quot;</span>, feature = <span class="string">&quot;apigw_http&quot;</span>, feature = <span class="string">&quot;apigw_websockets&quot;</span>))]
-</span><span class="kw">use </span><span class="kw">crate</span>::ext::{PathParameters, StageVariables};
-<span class="kw">use </span><span class="kw">crate</span>::ext::{QueryStringParameters, RawHttpPath};
+</span><span class="kw">use </span><span class="kw">crate</span>::ext::extensions::{PathParameters, StageVariables};
+<span class="kw">use </span><span class="kw">crate</span>::ext::extensions::{QueryStringParameters, RawHttpPath};
 <span class="attr">#[cfg(feature = <span class="string">&quot;alb&quot;</span>)]
 </span><span class="kw">use </span>aws_lambda_events::alb::{AlbTargetGroupRequest, AlbTargetGroupRequestContext};
 <span class="attr">#[cfg(feature = <span class="string">&quot;apigw_rest&quot;</span>)]
@@ -1197,7 +1218,7 @@
 <span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use </span><span class="kw">crate</span>::RequestExt;
+    <span class="kw">use </span><span class="kw">crate</span>::ext::RequestExt;
     <span class="kw">use </span>std::fs::File;
 
     <span class="attr">#[test]
@@ -1224,9 +1245,9 @@
         <span class="macro">assert_eq!</span>(req.uri(), <span class="string">&quot;https://xxx.execute-api.us-east-1.amazonaws.com/&quot;</span>);
 
         <span class="comment">// Ensure this is an APIGWv2 request
-        </span><span class="kw">let </span>req_context = req.request_context();
+        </span><span class="kw">let </span>req_context = req.request_context_ref().expect(<span class="string">&quot;Request is missing RequestContext&quot;</span>);
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(req_context, RequestContext::ApiGatewayV2(<span class="kw">_</span>)),
+            <span class="macro">matches!</span>(req_context, <span class="kw-2">&amp;</span>RequestContext::ApiGatewayV2(<span class="kw">_</span>)),
             <span class="string">&quot;expected ApiGatewayV2 context, got {req_context:?}&quot;
         </span>);
     }
@@ -1253,9 +1274,9 @@
         <span class="macro">assert_eq!</span>(cookie_header, <span class="prelude-val">Ok</span>(<span class="string">&quot;cookie1=value1;cookie2=value2&quot;</span>));
 
         <span class="comment">// Ensure this is an APIGWv2 request
-        </span><span class="kw">let </span>req_context = req.request_context();
+        </span><span class="kw">let </span>req_context = req.request_context_ref().expect(<span class="string">&quot;Request is missing RequestContext&quot;</span>);
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(req_context, RequestContext::ApiGatewayV2(<span class="kw">_</span>)),
+            <span class="macro">matches!</span>(req_context, <span class="kw-2">&amp;</span>RequestContext::ApiGatewayV2(<span class="kw">_</span>)),
             <span class="string">&quot;expected ApiGatewayV2 context, got {req_context:?}&quot;
         </span>);
     }
@@ -1279,9 +1300,9 @@
         </span>);
 
         <span class="comment">// Ensure this is an APIGW request
-        </span><span class="kw">let </span>req_context = req.request_context();
+        </span><span class="kw">let </span>req_context = req.request_context_ref().expect(<span class="string">&quot;Request is missing RequestContext&quot;</span>);
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(req_context, RequestContext::ApiGatewayV1(<span class="kw">_</span>)),
+            <span class="macro">matches!</span>(req_context, <span class="kw-2">&amp;</span>RequestContext::ApiGatewayV1(<span class="kw">_</span>)),
             <span class="string">&quot;expected ApiGateway context, got {req_context:?}&quot;
         </span>);
     }
@@ -1312,9 +1333,9 @@
         <span class="macro">assert_eq!</span>(cookie_header, <span class="prelude-val">Some</span>(<span class="string">&quot;test=hi&quot;</span>.to_string()));
 
         <span class="comment">// Ensure this is an APIGWv2 request (Lambda Function URL requests confirm to API GW v2 Request format)
-        </span><span class="kw">let </span>req_context = req.request_context();
+        </span><span class="kw">let </span>req_context = req.request_context_ref().expect(<span class="string">&quot;Request is missing RequestContext&quot;</span>);
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(req_context, RequestContext::ApiGatewayV2(<span class="kw">_</span>)),
+            <span class="macro">matches!</span>(req_context, <span class="kw-2">&amp;</span>RequestContext::ApiGatewayV2(<span class="kw">_</span>)),
             <span class="string">&quot;expected ApiGatewayV2 context, got {req_context:?}&quot;
         </span>);
     }
@@ -1337,9 +1358,9 @@
         </span>);
 
         <span class="comment">// Ensure this is an ALB request
-        </span><span class="kw">let </span>req_context = req.request_context();
+        </span><span class="kw">let </span>req_context = req.request_context_ref().expect(<span class="string">&quot;Request is missing RequestContext&quot;</span>);
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(req_context, RequestContext::Alb(<span class="kw">_</span>)),
+            <span class="macro">matches!</span>(req_context, <span class="kw-2">&amp;</span>RequestContext::Alb(<span class="kw">_</span>)),
             <span class="string">&quot;expected Alb context, got {req_context:?}&quot;
         </span>);
     }
@@ -1362,9 +1383,9 @@
         </span>);
 
         <span class="comment">// Ensure this is an ALB request
-        </span><span class="kw">let </span>req_context = req.request_context();
+        </span><span class="kw">let </span>req_context = req.request_context_ref().expect(<span class="string">&quot;Request is missing RequestContext&quot;</span>);
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(req_context, RequestContext::Alb(<span class="kw">_</span>)),
+            <span class="macro">matches!</span>(req_context, <span class="kw-2">&amp;</span>RequestContext::Alb(<span class="kw">_</span>)),
             <span class="string">&quot;expected Alb context, got {req_context:?}&quot;
         </span>);
     }
@@ -1381,11 +1402,16 @@
         </span>);
         <span class="kw">let </span>request = result.expect(<span class="string">&quot;failed to parse request&quot;</span>);
 
-        <span class="macro">assert!</span>(!request.query_string_parameters().is_empty());
+        <span class="macro">assert!</span>(!request
+            .query_string_parameters_ref()
+            .expect(<span class="string">&quot;Request is missing query parameters&quot;</span>)
+            .is_empty());
 
-        <span class="comment">// test RequestExt#query_string_parameters does the right thing
+        <span class="comment">// test RequestExt#query_string_parameters_ref does the right thing
         </span><span class="macro">assert_eq!</span>(
-            request.query_string_parameters().all(<span class="string">&quot;multivalueName&quot;</span>),
+            request
+                .query_string_parameters_ref()
+                .and_then(|params| params.all(<span class="string">&quot;multivalueName&quot;</span>)),
             <span class="prelude-val">Some</span>(<span class="macro">vec!</span>[<span class="string">&quot;you&quot;</span>, <span class="string">&quot;me&quot;</span>])
         );
     }
@@ -1401,11 +1427,16 @@
             <span class="string">&quot;event is was not parsed as expected {result:?} given {input}&quot;
         </span>);
         <span class="kw">let </span>request = result.expect(<span class="string">&quot;failed to parse request&quot;</span>);
-        <span class="macro">assert!</span>(!request.query_string_parameters().is_empty());
+        <span class="macro">assert!</span>(!request
+            .query_string_parameters_ref()
+            .expect(<span class="string">&quot;Request is missing query parameters&quot;</span>)
+            .is_empty());
 
-        <span class="comment">// test RequestExt#query_string_parameters does the right thing
+        <span class="comment">// test RequestExt#query_string_parameters_ref does the right thing
         </span><span class="macro">assert_eq!</span>(
-            request.query_string_parameters().all(<span class="string">&quot;myKey&quot;</span>),
+            request
+                .query_string_parameters_ref()
+                .and_then(|params| params.all(<span class="string">&quot;myKey&quot;</span>)),
             <span class="prelude-val">Some</span>(<span class="macro">vec!</span>[<span class="string">&quot;val1&quot;</span>, <span class="string">&quot;val2&quot;</span>])
         );
     }
@@ -1421,11 +1452,16 @@
             <span class="string">&quot;event is was not parsed as expected {result:?} given {input}&quot;
         </span>);
         <span class="kw">let </span>request = result.expect(<span class="string">&quot;failed to parse request&quot;</span>);
-        <span class="macro">assert!</span>(!request.query_string_parameters().is_empty());
+        <span class="macro">assert!</span>(!request
+            .query_string_parameters_ref()
+            .expect(<span class="string">&quot;Request is missing query parameters&quot;</span>)
+            .is_empty());
 
-        <span class="comment">// test RequestExt#query_string_parameters does the right thing
+        <span class="comment">// test RequestExt#query_string_parameters_ref does the right thing
         </span><span class="macro">assert_eq!</span>(
-            request.query_string_parameters().all(<span class="string">&quot;myKey&quot;</span>),
+            request
+                .query_string_parameters_ref()
+                .and_then(|params| params.all(<span class="string">&quot;myKey&quot;</span>)),
             <span class="prelude-val">Some</span>(<span class="macro">vec!</span>[<span class="string">&quot;?showAll=true&quot;</span>, <span class="string">&quot;?showAll=false&quot;</span>])
         );
     }

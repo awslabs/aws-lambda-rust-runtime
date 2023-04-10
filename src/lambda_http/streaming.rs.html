@@ -32,9 +32,9 @@
 <a href="#32" id="32">32</a>
 <a href="#33" id="33">33</a>
 <a href="#34" id="34">34</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::request::LambdaRequest;
-<span class="kw">use </span><span class="kw">crate</span>::tower::ServiceBuilder;
-<span class="kw">use crate</span>::{Request, RequestExt};
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::tower::ServiceBuilder;
+<span class="kw">use </span><span class="kw">crate</span>::Request;
+<span class="kw">use crate</span>::{request::LambdaRequest, RequestExt};
 <span class="kw">pub use </span>aws_lambda_events::encodings::Body <span class="kw">as </span>LambdaEventBody;
 <span class="kw">use </span>bytes::Bytes;
 <span class="kw">pub use </span>http::{<span class="self">self</span>, Response};

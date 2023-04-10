@@ -247,6 +247,9 @@
 <a href="#247" id="247">247</a>
 <a href="#248" id="248">248</a>
 <a href="#249" id="249">249</a>
+<a href="#250" id="250">250</a>
+<a href="#251" id="251">251</a>
+<a href="#252" id="252">252</a>
 </pre><pre class="rust"><code><span class="attr">#![warn(missing_docs, rust_2018_idioms)]
 </span><span class="comment">//#![deny(warnings)]
 </span><span class="doccomment">//! Enriches the `lambda` crate with [`http`](https://github.com/hyperium/http)
@@ -281,11 +284,11 @@
 //!
 //! ## Leveraging trigger provided data
 //!
-//! You can also access information provided directly from the underlying trigger events, like query string parameters,
-//! or Lambda function context, with the [`RequestExt`](trait.RequestExt.html) trait.
+//! You can also access information provided directly from the underlying trigger events,
+//! like query string parameters, or Lambda function context, with the [`RequestExt`] trait.
 //!
 //! ```rust,no_run
-//! use lambda_http::{service_fn, Error, IntoResponse, Request, RequestExt};
+//! use lambda_http::{service_fn, Error, RequestExt, IntoResponse, Request};
 //!
 //! #[tokio::main]
 //! async fn main() -&gt; Result&lt;(), Error&gt; {
@@ -296,13 +299,13 @@
 //! async fn hello(
 //!     request: Request
 //! ) -&gt; Result&lt;impl IntoResponse, std::convert::Infallible&gt; {
-//!     let _context = request.lambda_context();
+//!     let _context = request.lambda_context_ref();
 //!
 //!     Ok(format!(
 //!         &quot;hello {}&quot;,
 //!         request
-//!             .query_string_parameters()
-//!             .first(&quot;name&quot;)
+//!             .query_string_parameters_ref()
+//!             .and_then(|params| params.first(&quot;name&quot;))
 //!             .unwrap_or_else(|| &quot;stranger&quot;)
 //!     ))
 //! }
@@ -322,7 +325,10 @@
 <span class="kw">pub mod </span>ext;
 <span class="kw">pub mod </span>request;
 <span class="kw">mod </span>response;
-<span class="kw">pub use crate</span>::{ext::RequestExt, response::IntoResponse};
+<span class="kw">pub use crate</span>::{
+    ext::{RequestExt, RequestPayloadExt},
+    response::IntoResponse,
+};
 <span class="kw">use crate</span>::{
     request::{LambdaRequest, RequestOrigin},
     response::LambdaResponse,

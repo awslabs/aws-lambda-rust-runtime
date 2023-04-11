@@ -1,6 +1,6 @@
-use crate::request::LambdaRequest;
 use crate::tower::ServiceBuilder;
-use crate::{Request, RequestExt};
+use crate::Request;
+use crate::{request::LambdaRequest, RequestExt};
 pub use aws_lambda_events::encodings::Body as LambdaEventBody;
 use bytes::Bytes;
 pub use http::{self, Response};

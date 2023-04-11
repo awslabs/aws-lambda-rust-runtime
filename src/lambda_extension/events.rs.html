@@ -64,11 +64,6 @@
 <a href="#64" id="64">64</a>
 <a href="#65" id="65">65</a>
 <a href="#66" id="66">66</a>
-<a href="#67" id="67">67</a>
-<a href="#68" id="68">68</a>
-<a href="#69" id="69">69</a>
-<a href="#70" id="70">70</a>
-<a href="#71" id="71">71</a>
 </pre><pre class="rust"><code><span class="kw">use </span>serde::Deserialize;
 
 <span class="doccomment">/// Request tracing information
@@ -126,18 +121,13 @@
 <span class="doccomment">/// Wrapper with information about the next
 /// event that the Lambda Runtime is going to process
 </span><span class="kw">pub struct </span>LambdaEvent {
-    <span class="doccomment">/// ID assigned to this extension by the Lambda Runtime
-    </span><span class="kw">pub </span>extension_id: String,
     <span class="doccomment">/// Next incoming event
     </span><span class="kw">pub </span>next: NextEvent,
 }
 
 <span class="kw">impl </span>LambdaEvent {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new(ex_id: <span class="kw-2">&amp;</span>str, next: NextEvent) -&gt; LambdaEvent {
-        LambdaEvent {
-            extension_id: ex_id.into(),
-            next,
-        }
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new(next: NextEvent) -&gt; LambdaEvent {
+        LambdaEvent { next }
     }
 }
 </code></pre></div>

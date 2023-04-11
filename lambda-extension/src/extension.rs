@@ -315,7 +315,7 @@ where
             let event: NextEvent = serde_json::from_slice(&body)?;
             let is_invoke = event.is_invoke();
 
-            let event = LambdaEvent::new(extension_id, event);
+            let event = LambdaEvent::new(event);
 
             let ep = match ep.ready().await {
                 Ok(ep) => ep,

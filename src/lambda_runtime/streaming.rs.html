@@ -269,10 +269,9 @@
 <a href="#269" id="269">269</a>
 <a href="#270" id="270">270</a>
 <a href="#271" id="271">271</a>
-<a href="#272" id="272">272</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
-    build_event_error_request, incoming, type_name_of_val, Config, Context, Error, EventErrorRequest, IntoRequest,
-    LambdaEvent, Runtime,
+    build_event_error_request, deserializer, incoming, type_name_of_val, Config, Context, Error, EventErrorRequest,
+    IntoRequest, LambdaEvent, Runtime,
 };
 <span class="kw">use </span>bytes::Bytes;
 <span class="kw">use </span>futures::FutureExt;
@@ -414,8 +413,8 @@
                     <span class="kw">return </span><span class="prelude-val">Err</span>(parts.status.to_string().into());
                 }
 
-                <span class="kw">let </span>body = <span class="kw">match </span>serde_json::from_slice(<span class="kw-2">&amp;</span>body) {
-                    <span class="prelude-val">Ok</span>(body) =&gt; body,
+                <span class="kw">let </span>lambda_event = <span class="kw">match </span>deserializer::deserialize(<span class="kw-2">&amp;</span>body, ctx) {
+                    <span class="prelude-val">Ok</span>(lambda_event) =&gt; lambda_event,
                     <span class="prelude-val">Err</span>(err) =&gt; {
                         <span class="kw">let </span>req = build_event_error_request(request_id, err)<span class="question-mark">?</span>;
                         client.call(req).<span class="kw">await</span>.expect(<span class="string">&quot;Unable to send response to Runtime APIs&quot;</span>);
@@ -426,8 +425,7 @@
                 <span class="kw">let </span>req = <span class="kw">match </span>handler.ready().<span class="kw">await </span>{
                     <span class="prelude-val">Ok</span>(handler) =&gt; {
                         <span class="comment">// Catches panics outside of a `Future`
-                        </span><span class="kw">let </span>task =
-                            panic::catch_unwind(panic::AssertUnwindSafe(|| handler.call(LambdaEvent::new(body, ctx))));
+                        </span><span class="kw">let </span>task = panic::catch_unwind(panic::AssertUnwindSafe(|| handler.call(lambda_event)));
 
                         <span class="kw">let </span>task = <span class="kw">match </span>task {
                             <span class="comment">// Catches panics inside of the `Future`

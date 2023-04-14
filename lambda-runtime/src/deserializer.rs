@@ -4,6 +4,8 @@ use serde::Deserialize;
 
 use crate::{Context, LambdaEvent};
 
+const ERROR_CONTEXT: &str = "failed to deserialize the incoming data into the function payload's type";
+
 /// Event payload deserialization error.
 /// Returned when the data sent to the function cannot be deserialized
 /// into the type that the function receives.
@@ -16,17 +18,9 @@ impl fmt::Display for DeserializeError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let path = self.inner.path().to_string();
         if path == "." {
-            writeln!(
-                f,
-                "failed to deserialize the incoming data into the function payload's type: {}",
-                self.inner
-            )
+            writeln!(f, "{ERROR_CONTEXT}: {}", self.inner)
         } else {
-            writeln!(
-                f,
-                "failed to deserialize the incoming data into the function payload's type: [{}] {}",
-                path, self.inner
-            )
+            writeln!(f, "{ERROR_CONTEXT}: [{path}] {}", self.inner)
         }
     }
 }

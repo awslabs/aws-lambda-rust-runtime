@@ -28,6 +28,7 @@ pub use tower::{self, service_fn, Service};
 use tower::{util::ServiceFn, ServiceExt};
 use tracing::{error, trace, Instrument};
 
+mod deserializer;
 mod requests;
 #[cfg(test)]
 mod simulated;
@@ -149,8 +150,8 @@ where
                     return Err(parts.status.to_string().into());
                 }
 
-                let body = match serde_json::from_slice(&body) {
-                    Ok(body) => body,
+                let lambda_event = match deserializer::deserialize(&body, ctx) {
+                    Ok(lambda_event) => lambda_event,
                     Err(err) => {
                         let req = build_event_error_request(request_id, err)?;
                         client.call(req).await.expect("Unable to send response to Runtime APIs");
@@ -161,8 +162,7 @@ where
                 let req = match handler.ready().await {
                     Ok(handler) => {
                         // Catches panics outside of a `Future`
-                        let task =
-                            panic::catch_unwind(panic::AssertUnwindSafe(|| handler.call(LambdaEvent::new(body, ctx))));
+                        let task = panic::catch_unwind(panic::AssertUnwindSafe(|| handler.call(lambda_event)));
 
                         let task = match task {
                             // Catches panics inside of the `Future`

@@ -39,7 +39,7 @@ url = "2.2"
 percent-encoding = "2.2"
 
 [dependencies.aws_lambda_events]
-version = "^0.7.2"
+version = "0.8.3"
 default-features = false
 features = ["alb", "apigw"]
 

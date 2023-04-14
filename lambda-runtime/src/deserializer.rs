@@ -4,7 +4,7 @@ use serde::Deserialize;
 
 use crate::{Context, LambdaEvent};
 
-const ERROR_CONTEXT: &str = "failed to deserialize the incoming data into the function payload's type";
+const ERROR_CONTEXT: &str = "failed to deserialize the incoming data into the function's payload type";
 
 /// Event payload deserialization error.
 /// Returned when the data sent to the function cannot be deserialized

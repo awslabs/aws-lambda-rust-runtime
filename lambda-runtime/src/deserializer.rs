@@ -14,11 +14,20 @@ pub(crate) struct DeserializeError {
 
 impl fmt::Display for DeserializeError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(
-            f,
-            "failed to deserialize the incoming data into the function payload's type: {}",
-            self.inner
-        )
+        let path = self.inner.path().to_string();
+        if path == "." {
+            writeln!(
+                f,
+                "failed to deserialize the incoming data into the function payload's type: {}",
+                self.inner
+            )
+        } else {
+            writeln!(
+                f,
+                "failed to deserialize the incoming data into the function payload's type: [{}] {}",
+                path, self.inner
+            )
+        }
     }
 }
 

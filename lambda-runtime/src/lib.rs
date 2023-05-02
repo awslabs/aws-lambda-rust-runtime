@@ -87,6 +87,7 @@ where
 
 struct Runtime<C: Service<http::Uri> = HttpConnector> {
     client: Client<C>,
+    config: Config,
 }
 
 impl<C> Runtime<C>
@@ -96,11 +97,10 @@ where
     C::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
     C::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
 {
-    pub async fn run<F, A, B>(
+    async fn run<F, A, B>(
         &self,
         incoming: impl Stream<Item = Result<http::Response<hyper::Body>, Error>> + Send,
         mut handler: F,
-        config: &Config,
     ) -> Result<(), Error>
     where
         F: Service<LambdaEvent<A>>,
@@ -125,7 +125,7 @@ where
             }
 
             let ctx: Context = Context::try_from(parts.headers)?;
-            let ctx: Context = ctx.with_config(config);
+            let ctx: Context = ctx.with_config(&self.config);
             let request_id = &ctx.request_id.clone();
 
             let request_span = match &ctx.xray_trace_id {
@@ -254,11 +254,11 @@ where
     trace!("Loading config from env");
     let config = Config::from_env()?;
     let client = Client::builder().build().expect("Unable to create a runtime client");
-    let runtime = Runtime { client };
+    let runtime = Runtime { client, config };
 
     let client = &runtime.client;
     let incoming = incoming(client);
-    runtime.run(incoming, handler, &config).await
+    runtime.run(incoming, handler).await
 }
 
 fn type_name_of_val<T>(_: T) -> &'static str {
@@ -522,10 +522,10 @@ mod endpoint_tests {
         }
         let config = crate::Config::from_env().expect("Failed to read env vars");
 
-        let runtime = Runtime { client };
+        let runtime = Runtime { client, config };
         let client = &runtime.client;
         let incoming = incoming(client).take(1);
-        runtime.run(incoming, f, &config).await?;
+        runtime.run(incoming, f).await?;
 
         // shutdown server
         tx.send(()).expect("Receiver has been dropped");
@@ -565,10 +565,10 @@ mod endpoint_tests {
             log_group: "test_log".to_string(),
         };
 
-        let runtime = Runtime { client };
+        let runtime = Runtime { client, config };
         let client = &runtime.client;
         let incoming = incoming(client).take(1);
-        runtime.run(incoming, f, &config).await?;
+        runtime.run(incoming, f).await?;
 
         match server.await {
             Ok(_) => Ok(()),

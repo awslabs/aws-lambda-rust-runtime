@@ -72,11 +72,11 @@ where
     trace!("Loading config from env");
     let config = Config::from_env()?;
     let client = Client::builder().build().expect("Unable to create a runtime client");
-    let runtime = Runtime { client };
+    let runtime = Runtime { client, config };
 
     let client = &runtime.client;
     let incoming = incoming(client);
-    runtime.run_with_streaming_response(incoming, handler, &config).await
+    runtime.run_with_streaming_response(incoming, handler).await
 }
 
 impl<C> Runtime<C>
@@ -86,11 +86,10 @@ where
     C::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
     C::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
 {
-    pub async fn run_with_streaming_response<F, A, B>(
+    async fn run_with_streaming_response<F, A, B>(
         &self,
         incoming: impl Stream<Item = Result<Response<Body>, Error>> + Send,
         mut handler: F,
-        config: &Config,
     ) -> Result<(), Error>
     where
         F: Service<LambdaEvent<A>>,
@@ -117,7 +116,7 @@ where
             }
 
             let ctx: Context = Context::try_from(parts.headers)?;
-            let ctx: Context = ctx.with_config(config);
+            let ctx: Context = ctx.with_config(&self.config);
             let request_id = &ctx.request_id.clone();
 
             let request_span = match &ctx.xray_trace_id {
@@ -204,7 +203,7 @@ pub(crate) struct EventCompletionStreamingRequest<'a, B> {
     pub(crate) body: Response<B>,
 }
 
-impl<'a, B> EventCompletionStreamingRequest<'a, B>
+impl<'a, B> IntoRequest for EventCompletionStreamingRequest<'a, B>
 where
     B: HttpBody + Unpin + Send + 'static,
     B::Data: Into<Bytes> + Send,

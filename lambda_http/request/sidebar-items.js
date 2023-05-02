@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":[["RequestContext","Event request context as an enumeration of request contexts for both ALB and API Gateway and HTTP API events"]],"fn":[["from_reader","Deserializes a `Request` from a `Read` impl providing JSON events."],["from_str","Deserializes a `Request` from a string of JSON text."]],"type":[["RequestFuture","RequestFuture type"]]};
+window.SIDEBAR_ITEMS = {"enum":["RequestContext"],"fn":["from_reader","from_str"],"type":["RequestFuture"]};

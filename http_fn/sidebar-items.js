@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["handler",""],["main",""]]};
+window.SIDEBAR_ITEMS = {"fn":["handler","main"],"static":["CALLSITE","META"]};

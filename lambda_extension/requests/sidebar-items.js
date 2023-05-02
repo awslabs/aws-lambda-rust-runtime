@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["exit_error","Create a new exit error request to send to the Extensions API"],["init_error","Create a new init error request to send to the Extensions API"]],"struct":[["ErrorRequest","Payload to send error information to the Extensions API."]]};
+window.SIDEBAR_ITEMS = {"fn":["exit_error","init_error"],"struct":["ErrorRequest"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["build_request","Create a request builder. This builder uses `aws-lambda-rust/CRATE_VERSION` as the default User-Agent. Configure environment variable `LAMBDA_RUNTIME_USER_AGENT` at compile time to modify User-Agent value."]],"struct":[["Client","API client to interact with the AWS Lambda Runtime API."],["ClientBuilder","Builder implementation to construct any Runtime API clients."]],"type":[["Error","Error type that lambdas may result in"]]};
+window.SIDEBAR_ITEMS = {"fn":["build_request"],"struct":["Client","ClientBuilder"],"type":["Error"]};

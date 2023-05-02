@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"trait":[["RequestExt","Extensions for `lambda_http::Request`, `http::request::Parts`, and `http::Extensions` structs that provide access to API gateway and ALB features."]]};
+window.SIDEBAR_ITEMS = {"trait":["RequestExt"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["main",""]],"struct":[["MyExtension",""]]};
+window.SIDEBAR_ITEMS = {"fn":["main"],"static":["CALLSITE","META"],"struct":["MyExtension"]};

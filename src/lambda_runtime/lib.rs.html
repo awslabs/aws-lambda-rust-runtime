@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lambda-runtime/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-93196c7a1c3542a8.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-4743e13df3dfe8c4.css"><link rel="stylesheet" disabled href="../../static.files/dark-0e1b889528bd466b.css"><link rel="stylesheet" disabled href="../../static.files/ayu-65289d5d067c7c66.css"><script id="default-settings" ></script><script src="../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../static.files/source-script-ea63cb6500f71309.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-3367e395607fafc1.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../lambda_runtime/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lambda-runtime/src/lib.rs`."><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-c4dbdcde0fbd8430.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-db279b6232be9c13.css"><link rel="stylesheet" disabled href="../../static.files/dark-cf923f49f397b216.css"><link rel="stylesheet" disabled href="../../static.files/ayu-be46fdc453a55015.css"><script src="../../static.files/storage-3891ce972e3a2bf8.js"></script><script defer src="../../static.files/source-script-1b95b7cca98b26e5.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-98a684e84ae5b08b.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../lambda_runtime/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -679,6 +679,7 @@
 
 <span class="kw">struct </span>Runtime&lt;C: Service&lt;http::Uri&gt; = HttpConnector&gt; {
     client: Client&lt;C&gt;,
+    config: Config,
 }
 
 <span class="kw">impl</span>&lt;C&gt; Runtime&lt;C&gt;
@@ -688,11 +689,10 @@
     C::Error: Into&lt;Box&lt;<span class="kw">dyn </span>std::error::Error + Send + Sync&gt;&gt;,
     C::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + <span class="lifetime">&#39;static</span>,
 {
-    <span class="kw">pub async fn </span>run&lt;F, A, B&gt;(
+    <span class="kw">async fn </span>run&lt;F, A, B&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         incoming: <span class="kw">impl </span>Stream&lt;Item = <span class="prelude-ty">Result</span>&lt;http::Response&lt;hyper::Body&gt;, Error&gt;&gt; + Send,
         <span class="kw-2">mut </span>handler: F,
-        config: <span class="kw-2">&amp;</span>Config,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt;
     <span class="kw">where
         </span>F: Service&lt;LambdaEvent&lt;A&gt;&gt;,
@@ -717,7 +717,7 @@
             }
 
             <span class="kw">let </span>ctx: Context = Context::try_from(parts.headers)<span class="question-mark">?</span>;
-            <span class="kw">let </span>ctx: Context = ctx.with_config(config);
+            <span class="kw">let </span>ctx: Context = ctx.with_config(<span class="kw-2">&amp;</span><span class="self">self</span>.config);
             <span class="kw">let </span>request_id = <span class="kw-2">&amp;</span>ctx.request_id.clone();
 
             <span class="kw">let </span>request_span = <span class="kw">match </span><span class="kw-2">&amp;</span>ctx.xray_trace_id {
@@ -846,11 +846,11 @@
     <span class="macro">trace!</span>(<span class="string">&quot;Loading config from env&quot;</span>);
     <span class="kw">let </span>config = Config::from_env()<span class="question-mark">?</span>;
     <span class="kw">let </span>client = Client::builder().build().expect(<span class="string">&quot;Unable to create a runtime client&quot;</span>);
-    <span class="kw">let </span>runtime = Runtime { client };
+    <span class="kw">let </span>runtime = Runtime { client, config };
 
     <span class="kw">let </span>client = <span class="kw-2">&amp;</span>runtime.client;
     <span class="kw">let </span>incoming = incoming(client);
-    runtime.run(incoming, handler, <span class="kw-2">&amp;</span>config).<span class="kw">await
+    runtime.run(incoming, handler).<span class="kw">await
 </span>}
 
 <span class="kw">fn </span>type_name_of_val&lt;T&gt;(<span class="kw">_</span>: T) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str {
@@ -1114,10 +1114,10 @@
         }
         <span class="kw">let </span>config = <span class="kw">crate</span>::Config::from_env().expect(<span class="string">&quot;Failed to read env vars&quot;</span>);
 
-        <span class="kw">let </span>runtime = Runtime { client };
+        <span class="kw">let </span>runtime = Runtime { client, config };
         <span class="kw">let </span>client = <span class="kw-2">&amp;</span>runtime.client;
         <span class="kw">let </span>incoming = incoming(client).take(<span class="number">1</span>);
-        runtime.run(incoming, f, <span class="kw-2">&amp;</span>config).<span class="kw">await</span><span class="question-mark">?</span>;
+        runtime.run(incoming, f).<span class="kw">await</span><span class="question-mark">?</span>;
 
         <span class="comment">// shutdown server
         </span>tx.send(()).expect(<span class="string">&quot;Receiver has been dropped&quot;</span>);
@@ -1157,10 +1157,10 @@
             log_group: <span class="string">&quot;test_log&quot;</span>.to_string(),
         };
 
-        <span class="kw">let </span>runtime = Runtime { client };
+        <span class="kw">let </span>runtime = Runtime { client, config };
         <span class="kw">let </span>client = <span class="kw-2">&amp;</span>runtime.client;
         <span class="kw">let </span>incoming = incoming(client).take(<span class="number">1</span>);
-        runtime.run(incoming, f, <span class="kw-2">&amp;</span>config).<span class="kw">await</span><span class="question-mark">?</span>;
+        runtime.run(incoming, f).<span class="kw">await</span><span class="question-mark">?</span>;
 
         <span class="kw">match </span>server.<span class="kw">await </span>{
             <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
@@ -1183,4 +1183,4 @@
     </span>}
 }
 </code></pre></div>
-</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="lambda_runtime" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.2 (9eb3afe9e 2023-03-27)" data-search-js="search-98d53477a794af0b.js" data-settings-js="settings-c3c521c753752a1a.js" data-settings-css="settings-08ddfdda51b8ee2e.css" ></div></body></html>
+</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="lambda_runtime" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0 (84c898d65 2023-04-16)" data-search-js="search-8a59a8356673ec1f.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>

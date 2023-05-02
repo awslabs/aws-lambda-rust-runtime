@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":[["extensions","Extension methods for `http::Extensions` and `http::Request<T>` types"],["request","Extension methods for `Request` types"]]};
+window.SIDEBAR_ITEMS = {"mod":["extensions","request"]};

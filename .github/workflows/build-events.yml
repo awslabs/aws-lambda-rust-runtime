@@ -1,0 +1,28 @@
+name: Check Lambda Events
+
+on:
+  push:
+    paths:
+      - 'lambda-events/**'
+  pull_request:
+    paths:
+      - 'lambda-events/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        toolchain:
+          - "1.62.0" # Current MSRV
+          - stable
+    env:
+      RUST_BACKTRACE: 1
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build events
+        uses: ./.github/actions/rust-build
+        with:
+          package: aws_lambda_events
+          toolchain: ${{ matrix.toolchain}}

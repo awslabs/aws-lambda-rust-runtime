@@ -192,7 +192,7 @@ fn into_proxy_request(ag: ApiGatewayProxyRequest) -> http::Request<Body> {
     headers.extend(ag.headers);
     update_xray_trace_id_header(&mut headers);
 
-    let base64 = ag.is_base64_encoded.unwrap_or_default();
+    let base64 = ag.is_base64_encoded;
     let mut req = builder
         .body(
             ag.body
@@ -306,7 +306,7 @@ fn into_websocket_request(ag: ApiGatewayWebsocketProxyRequest) -> http::Request<
     headers.extend(ag.headers);
     update_xray_trace_id_header(&mut headers);
 
-    let base64 = ag.is_base64_encoded.unwrap_or_default();
+    let base64 = ag.is_base64_encoded;
     let mut req = builder
         .body(
             ag.body

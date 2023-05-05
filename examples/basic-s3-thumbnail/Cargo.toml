@@ -15,7 +15,7 @@ edition = "2021"
 # and it will keep the alphabetic ordering for you.
 
 [dependencies]
-aws_lambda_events = "0.7.2"
+aws_lambda_events = { path = "../../lambda-events" }
 lambda_runtime = { path = "../../lambda-runtime" }
 serde = "1"
 tokio = { version = "1", features = ["macros"] }

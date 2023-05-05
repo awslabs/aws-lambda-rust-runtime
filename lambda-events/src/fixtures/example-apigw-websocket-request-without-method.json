@@ -1,0 +1,58 @@
+{
+  "headers": {
+      "Host": "asdfasdf.execute-api.us-west-2.amazonaws.com",
+      "Sec-WebSocket-Key": "asdfasdf==",
+      "Sec-WebSocket-Version": "13",
+      "X-Amzn-Trace-Id": "Root=1-asdf-asdfasdf",
+      "x-api-key": "asdfasdf",
+      "X-Forwarded-For": "10.0.0.13",
+      "X-Forwarded-Port": "443",
+      "X-Forwarded-Proto": "https"
+  },
+  "multiValueHeaders": {
+      "Host": [
+          "asdfasdf.execute-api.us-west-2.amazonaws.com"
+      ],
+      "Sec-WebSocket-Key": [
+          "asdfasdf=="
+      ],
+      "Sec-WebSocket-Version": [
+          "13"
+      ],
+      "X-Amzn-Trace-Id": [
+          "Root=1-asdf-asdfasdf"
+      ],
+      "x-api-key": [
+          "asdfasdf"
+      ],
+      "X-Forwarded-For": [
+          "10.0.0.13"
+      ],
+      "X-Forwarded-Port": [
+          "443"
+      ],
+      "X-Forwarded-Proto": [
+          "https"
+      ]
+  },
+  "requestContext": {
+      "routeKey": "$connect",
+      "eventType": "CONNECT",
+      "extendedRequestId": "asdfasdf=",
+      "requestTime": "22/Feb/2022:19:07:37 +0000",
+      "messageDirection": "IN",
+      "stage": "dev",
+      "connectedAt": 1645556857902,
+      "requestTimeEpoch": 1645556857902,
+      "identity": {
+          "apiKey": "asdfasdf",
+          "apiKeyId": "asdf",
+          "sourceIp": "10.0.0.13"
+      },
+      "requestId": "asdf=",
+      "domainName": "asdfasdf.execute-api.us-west-2.amazonaws.com",
+      "connectionId": "asdfasdf=",
+      "apiId": "asdfasdf"
+  },
+  "isBase64Encoded": false
+}

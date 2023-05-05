@@ -65,8 +65,8 @@ impl LambdaResponse {
             #[cfg(feature = "apigw_rest")]
             RequestOrigin::ApiGatewayV1 => LambdaResponse::ApiGatewayV1(ApiGatewayProxyResponse {
                 body,
+                is_base64_encoded,
                 status_code: status_code as i64,
-                is_base64_encoded: Some(is_base64_encoded),
                 headers: headers.clone(),
                 multi_value_headers: headers,
             }),
@@ -86,8 +86,8 @@ impl LambdaResponse {
 
                 LambdaResponse::ApiGatewayV2(ApiGatewayV2httpResponse {
                     body,
+                    is_base64_encoded,
                     status_code: status_code as i64,
-                    is_base64_encoded: Some(is_base64_encoded),
                     cookies,
                     headers: headers.clone(),
                     multi_value_headers: headers,
@@ -109,8 +109,8 @@ impl LambdaResponse {
             #[cfg(feature = "apigw_websockets")]
             RequestOrigin::WebSocket => LambdaResponse::ApiGatewayV1(ApiGatewayProxyResponse {
                 body,
+                is_base64_encoded,
                 status_code: status_code as i64,
-                is_base64_encoded: Some(is_base64_encoded),
                 headers: headers.clone(),
                 multi_value_headers: headers,
             }),

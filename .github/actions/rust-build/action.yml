@@ -1,0 +1,26 @@
+name: "Rust builds"
+description: "Builds, tests, and formats Rust code"
+inputs:
+  package:
+    required: true
+    description: "the Rust package to test"
+  toolchain:
+    required: true
+    description: "the Rust toolchain to use"
+
+runs:
+  using: "composite"
+  steps:
+    - uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: ${{ inputs.toolchain }}
+        components: clippy, rustfmt
+    - uses: Swatinem/rust-cache@v2
+
+    - name: Build
+      shell: bash
+      run: cargo build --all-features --verbose --package ${{ inputs.package }}
+
+    - name: Run tests
+      shell: bash
+      run: cargo test --all-features --verbose --package ${{ inputs.package }}

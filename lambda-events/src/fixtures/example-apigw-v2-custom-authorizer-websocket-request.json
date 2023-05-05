@@ -1,0 +1,51 @@
+{
+  "version": "$LATEST",
+  "type": "REQUEST",
+  "methodArn": "arn:aws:execute-api:eu-west-1:123456789012:abcdef123/test/$connect",
+  "headers": {
+    "Header1": "value1",
+    "Header2": "value2"
+  },
+  "multiValueHeaders": {
+    "Header1": ["value1"],
+    "Header2": ["value2"]
+  },
+  "multiValueQueryStringParameters": {},
+  "queryStringParameters": {
+    "parameter1": "value1,value2",
+    "parameter2": "value"
+  },
+  "requestContext": {
+    "apiId": "api-id",
+    "connectedAt": 1655103417248,
+    "connectionId": "connection-id",
+    "domainName": "example.com",
+    "eventType": "CONNECT",
+    "extendedRequestId": "extended-req-id",
+    "identity": {
+      "sourceIp": "1.2.3.4",
+      "userAgent": "user-agent"
+    },
+    "messageDirection": "IN",
+    "requestId": "req-id",
+    "requestTime": "13/Jun/2022:06:56:57 +0000",
+    "requestTimeEpoch": 1655103417249,
+    "routeKey": "$connect",
+    "stage": "test"
+  },
+  "stageVariables": {},
+  "context": {
+    "request_id": "5req-id"
+  },
+  "deadline": 1655103420483,
+  "invoked_function_arn": "arn:aws:lambda:eu-west-1:123456789012:function:a-lambda",
+  "xray_trace_id": "xray-trace-id",
+  "client_context": null,
+  "identity": null,
+  "env_config": {
+    "function_name": "a-lambda"
+  },
+  "memory": 128,
+  "log_stream": "log-stream-id",
+  "log_group": "log-group-id"
+}

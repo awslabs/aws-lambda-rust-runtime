@@ -1,0 +1,45 @@
+name: Check Lambda Runtime
+
+on:
+  push:
+    paths:
+      - 'lambda-runtime-api-client/**'
+      - 'lambda-runtime/**'
+      - 'lambda-http/**'
+
+  pull_request:
+    paths:
+      - 'lambda-runtime-api-client/**'
+      - 'lambda-runtime/**'
+      - 'lambda-http/**'
+
+jobs:
+  build-runtime:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        toolchain:
+          - "1.62.0" # Current MSRV
+          - stable
+    env:
+      RUST_BACKTRACE: 1
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Runtime API Client
+        uses: ./.github/actions/rust-build
+        with:
+          package: lambda_runtime_api_client
+          toolchain: ${{ matrix.toolchain}}
+
+      - name: Build Functions runtime
+        uses: ./.github/actions/rust-build
+        with:
+          package: lambda_runtime
+          toolchain: ${{ matrix.toolchain}}
+
+      - name: Build HTTP layer
+        uses: ./.github/actions/rust-build
+        with:
+          package: lambda_http
+          toolchain: ${{ matrix.toolchain}}

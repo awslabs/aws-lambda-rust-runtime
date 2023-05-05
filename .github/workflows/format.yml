@@ -1,0 +1,55 @@
+name: Formatting and Linting
+
+on: [push, pull_request]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Run fmt check
+        id: cargoFmt
+        shell: bash
+        run: cargo fmt --all -- --check
+      - name: Notify fmt check
+        if: failure() && steps.cargoFmt.outcome == 'failure'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const message = `👋 It looks like your code is not formatted like we expect.
+              
+              Please run \`cargo fmt\` and push the code again.`;
+      
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message,
+            });
+            core.setFailed('It looks like there are formatting errors');
+      
+      - name: Run clippy check
+        id: cargoClippy
+        shell: bash
+        run: cargo clippy --workspace --all-features -- -D warnings
+      - name: Notify fmt check
+        if: failure() && steps.cargoClippy.outcome == 'failure'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const message = `👋 It looks like your code has some linting issues.
+              
+              Please run \`cargo clippy --fix\` and push the code again.`;
+      
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message,
+            });
+            core.setFailed('It looks like there are linting errors');
+      
+      

@@ -1,0 +1,26 @@
+{
+  "awsRegion":"eu-west-1",
+  "eventID":"00000000-0000-0000-0000-000000000000",
+  "eventName":"INSERT",
+  "userIdentity":null,
+  "recordFormat":"application/json",
+  "tableName":"examples",
+  "dynamodb":{
+    "ApproximateCreationDateTime":1649809356015,
+    "Keys":{
+      "id":{
+        "S":"00000000-0000-0000-0000-000000000000"
+      }
+    },
+    "NewImage":{
+      "id":{
+        "S":"00000000-0000-0000-0000-000000000000"
+      },
+      "created":{
+        "S":"2022-02-16T15:12:00.14Z"
+      }
+    },
+    "SizeBytes":292
+  },
+  "eventSource":"aws:dynamodb"
+}

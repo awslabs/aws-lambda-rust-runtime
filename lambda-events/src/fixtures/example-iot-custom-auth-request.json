@@ -1,0 +1,25 @@
+{
+  "token" :"aToken",
+  "signatureVerified": true,
+  "protocols": ["tls", "http", "mqtt"],
+  "protocolData": {
+    "tls" : {
+      "serverName": "serverName"
+    },
+    "http": {
+      "headers": {
+        "X-Request-ID": "abc123"
+      },
+      "queryString": "?foo=bar"
+    },
+    "mqtt": {
+      "username": "myUserName",
+      "password": "bXlQYXNzd29yZA==",
+      "clientId": "myClientId"
+    }
+  },
+  "connectionMetadata": {
+    "id": "e56f08c3-c559-490f-aa9f-7e8427d0f57b"
+  }
+}
+

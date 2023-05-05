@@ -1,0 +1,10 @@
+{
+  "batchItemFailures": [
+    {
+      "itemIdentifier": "id2"
+    },
+    {
+      "itemIdentifier": "id4"
+    }
+  ]
+}

@@ -4,7 +4,8 @@ members = [
     "lambda-integration-tests",
     "lambda-runtime-api-client",
     "lambda-runtime",
-    "lambda-extension"
+    "lambda-extension",
+    "lambda-events"
 ]
 
 exclude = ["examples"]

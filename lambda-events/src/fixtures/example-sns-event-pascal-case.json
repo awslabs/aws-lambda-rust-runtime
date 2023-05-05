@@ -1,0 +1,22 @@
+{
+  "Records": [
+    {
+      "EventVersion": "1.0",
+      "EventSubscriptionArn": "arn:aws:sns:EXAMPLE",
+      "EventSource": "aws:sns",
+      "Sns": {
+        "Type" : "Notification",
+        "MessageId" : "82833b5c-8d5d-56d0-b0e1-7511f8253eb8",
+        "TopicArn" : "arn:aws:sns:us-east-1:246796806071:snsNetTest",
+        "Subject" : "Greetings",
+        "Message" : "Hello\r\nworld!",
+        "Timestamp" : "2015-08-18T18:02:32.111Z",
+        "SignatureVersion" : "1",
+        "Signature" : "e+khMfZriwAOTkF0OVm3tmdVq9eY6s5Bj6rXZty4B2TYssx7SSSBpvsDCiDuzgeHe++MNsGLDDT+5OpGEFBqCcd/K7iXhofz+KabMEtvM2Ku3aXcFixjOCAY1BF8hH6zU6nKzOy+m7K4UIoVqIOOhqsLWoXNFWgwQseBol1pFQ/MRi9UH84/WGdU8//dH+1/zjLxCud8Lg1vY9Yi/jxMU1HVpZ2JuvzJBdNBFJWc/VYAiw8K1r/J+dxAiLr87P96MgUqyg1wWxYe00HaEXGtjIctCNcd92s3pngOOeGvPYGaTIZEbYhSf2leMYd+CXujUHRqozru5K0Zp+l99fUNTg==",
+        "SigningCertUrl" : "https://sns.us-east-1.amazonaws.com/SimpleNotificationService-d6d679a1d18e95c2f9ffcf11f4f9e198.pem",
+        "UnsubscribeUrl" : "https://sns.us-east-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-east-1:246796806071:snsNetTest:228cc6c9-dcd8-4c92-9f3a-77f55176b9e3"
+      }
+    }
+  ]
+}
+

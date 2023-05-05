@@ -1,0 +1,16 @@
+name: Check examples
+
+on: [push, pull_request]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Check examples
+        working-directory: examples
+        shell: bash
+        run: ./check-examples.sh

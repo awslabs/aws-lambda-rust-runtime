@@ -1,3 +1,4 @@
+use base64::Engine;
 use event::serde_dynamo::AttributeValue;
 use std::collections::HashMap;
 
@@ -62,7 +63,9 @@ mod test {
         let attr: AttributeValue = serde_json::from_value(value.clone()).unwrap();
         match attr {
             AttributeValue::B(ref b) => {
-                let expected = base64::decode("dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmNvZGVk").unwrap();
+                let expected = base64::engine::general_purpose::STANDARD
+                    .decode("dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmNvZGVk")
+                    .unwrap();
                 assert_eq!(&expected, b)
             }
             other => panic!("unexpected value {:?}", other),
@@ -137,7 +140,7 @@ mod test {
             AttributeValue::Bs(ref s) => {
                 let expected = vec!["U3Vubnk=", "UmFpbnk=", "U25vd3k="]
                     .into_iter()
-                    .flat_map(base64::decode)
+                    .flat_map(|s| base64::engine::general_purpose::STANDARD.decode(s))
                     .collect::<Vec<_>>();
                 assert_eq!(&expected, s);
             }

@@ -1,5 +1,5 @@
 #[allow(unused)]
-use base64::{decode, encode};
+use base64::Engine;
 use chrono::{DateTime, Duration, TimeZone, Utc};
 use serde;
 use serde::de::{Deserialize, Deserializer, Error as DeError};
@@ -122,14 +122,16 @@ where
     D: Deserializer<'de>,
 {
     let s: String = String::deserialize(deserializer)?;
-    decode(s).map_err(DeError::custom)
+    base64::engine::general_purpose::STANDARD
+        .decode(s)
+        .map_err(DeError::custom)
 }
 
 pub(crate) fn serialize_base64<S>(value: &[u8], serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
-    serializer.serialize_str(&encode(value))
+    serializer.serialize_str(&base64::engine::general_purpose::STANDARD.encode(value))
 }
 
 /// Deserializes `HashMap<_>`, mapping JSON `null` to an empty map.

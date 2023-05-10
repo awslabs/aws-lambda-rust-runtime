@@ -15,7 +15,7 @@ keywords = ["lambda", "aws", "amazon", "events", "S3"]
 categories = ["api-bindings", "encoding", "web-programming"]
 
 [dependencies]
-base64 = "0.13"
+base64 = "0.21"
 http = "0.2"
 http-body = "0.4"
 http-serde = "^1"

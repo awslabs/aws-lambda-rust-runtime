@@ -129,7 +129,8 @@ mod test {
     }
 }"#;
         let event: LogsEvent = serde_json::from_str(json).expect("failed to deserialize");
-        let data = event.aws_logs.data.clone();
+
+        let data = event.clone().aws_logs.data;
         assert_eq!("DATA_MESSAGE", data.message_type);
         assert_eq!("123456789012", data.owner);
         assert_eq!("/aws/lambda/echo-nodejs", data.log_group);
@@ -144,7 +145,7 @@ mod test {
         assert_eq!(1552518348220, data.log_events[0].timestamp);
         assert_eq!("REPORT RequestId: 6234bffe-149a-b642-81ff-2e8e376d8aff\tDuration: 46.84 ms\tBilled Duration: 47 ms \tMemory Size: 192 MB\tMax Memory Used: 72 MB\t\n", data.log_events[0].message);
 
-        let new_json = serde_json::to_string_pretty(&event).unwrap();
+        let new_json: String = serde_json::to_string_pretty(&event).unwrap();
         let new_event: LogsEvent = serde_json::from_str(&new_json).expect("failed to deserialize");
         assert_eq!(new_event, event);
     }

@@ -192,8 +192,14 @@ impl Body {
     /// Panics when aws communicates to handler that request is base64 encoded but
     /// it can not be base64 decoded
     pub fn from_maybe_encoded(is_base64_encoded: bool, body: &str) -> Body {
+        use base64::Engine;
+
         if is_base64_encoded {
-            Body::from(::base64::decode(body).expect("failed to decode aws base64 encoded body"))
+            Body::from(
+                ::base64::engine::general_purpose::STANDARD
+                    .decode(body)
+                    .expect("failed to decode aws base64 encoded body"),
+            )
         } else {
             Body::from(body)
         }
@@ -289,7 +295,9 @@ impl Serialize for Body {
             Body::Text(data) => {
                 serializer.serialize_str(::std::str::from_utf8(data.as_ref()).map_err(S::Error::custom)?)
             }
-            Body::Binary(data) => serializer.collect_str(&Base64Display::with_config(data, base64::STANDARD)),
+            Body::Binary(data) => {
+                serializer.collect_str(&Base64Display::new(data, &base64::engine::general_purpose::STANDARD))
+            }
             Body::Empty => serializer.serialize_unit(),
         }
     }

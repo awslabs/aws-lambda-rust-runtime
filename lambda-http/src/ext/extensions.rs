@@ -32,7 +32,7 @@ pub(crate) struct RawHttpPath(pub(crate) String);
 /// [`lambda_http::Request`]: crate::Request
 pub trait RequestExt {
     /// Return the raw http path for a request without any stage information.
-    fn raw_http_path(&self) -> &str;
+    fn raw_http_path(&self) -> Option<&str>;
 
     /// Configures instance with the raw http path.
     fn with_raw_http_path<S>(self, path: S) -> Self
@@ -142,10 +142,8 @@ pub trait RequestExt {
 }
 
 impl RequestExt for http::Extensions {
-    fn raw_http_path(&self) -> &str {
-        self.get::<RawHttpPath>()
-            .map(|RawHttpPath(path)| path.as_str())
-            .unwrap_or_default()
+    fn raw_http_path(&self) -> Option<&str> {
+        self.get::<RawHttpPath>().map(|RawHttpPath(path)| path.as_str())
     }
 
     fn with_raw_http_path<S>(self, path: S) -> Self
@@ -260,7 +258,7 @@ impl RequestExt for http::Extensions {
 }
 
 impl RequestExt for Parts {
-    fn raw_http_path(&self) -> &str {
+    fn raw_http_path(&self) -> Option<&str> {
         self.extensions.raw_http_path()
     }
 
@@ -371,7 +369,7 @@ where
 }
 
 impl<B> RequestExt for http::Request<B> {
-    fn raw_http_path(&self) -> &str {
+    fn raw_http_path(&self) -> Option<&str> {
         self.extensions().raw_http_path()
     }
 
@@ -609,19 +607,19 @@ mod tests {
     #[test]
     fn extensions_can_mock_raw_http_path_ext() {
         let ext = Extensions::default().with_raw_http_path("/raw-path");
-        assert_eq!("/raw-path", ext.raw_http_path());
+        assert_eq!(Some("/raw-path"), ext.raw_http_path());
     }
 
     #[test]
     fn parts_can_mock_raw_http_path_ext() {
         let (parts, _) = Request::default().into_parts();
         let parts = parts.with_raw_http_path("/raw-path");
-        assert_eq!("/raw-path", parts.raw_http_path());
+        assert_eq!(Some("/raw-path"), parts.raw_http_path());
     }
 
     #[test]
     fn requests_can_mock_raw_http_path_ext() {
         let request = Request::default().with_raw_http_path("/raw-path");
-        assert_eq!("/raw-path", request.raw_http_path());
+        assert_eq!(Some("/raw-path"), request.raw_http_path());
     }
 }

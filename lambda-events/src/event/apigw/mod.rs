@@ -81,6 +81,7 @@ where
     pub account_id: Option<String>,
     #[serde(default)]
     pub resource_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub operation_name: Option<String>,
     #[serde(default)]
     pub stage: Option<String>,
@@ -125,6 +126,7 @@ pub struct ApiGatewayV2httpRequest {
     pub raw_path: Option<String>,
     #[serde(default)]
     pub raw_query_string: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub cookies: Option<Vec<String>>,
     #[serde(deserialize_with = "deserialize_headers", default)]
     #[serde(serialize_with = "serialize_headers")]
@@ -133,14 +135,17 @@ pub struct ApiGatewayV2httpRequest {
         default,
         deserialize_with = "query_map::serde::aws_api_gateway_v2::deserialize_empty"
     )]
+    #[serde(skip_serializing_if = "QueryMap::is_empty")]
     pub query_string_parameters: QueryMap,
     #[serde(deserialize_with = "deserialize_lambda_map")]
     #[serde(default)]
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
     pub path_parameters: HashMap<String, String>,
     pub request_context: ApiGatewayV2httpRequestContext,
     #[serde(deserialize_with = "deserialize_lambda_map")]
     #[serde(default)]
     pub stage_variables: HashMap<String, String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub body: Option<String>,
     #[serde(default)]
     pub is_base64_encoded: bool,
@@ -163,6 +168,7 @@ where
     #[serde(default)]
     pub request_id: Option<String>,
     #[serde(bound = "", default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub authorizer: Option<ApiGatewayV2httpRequestContextAuthorizerDescription<T1>>,
     /// The API Gateway HTTP API Id
     #[serde(default)]
@@ -176,6 +182,7 @@ where
     pub time: Option<String>,
     pub time_epoch: i64,
     pub http: ApiGatewayV2httpRequestContextHttpDescription,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub authentication: Option<ApiGatewayV2httpRequestContextAuthentication>,
 }
 
@@ -187,11 +194,14 @@ where
     T1: DeserializeOwned,
     T1: Serialize,
 {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub jwt: Option<ApiGatewayV2httpRequestContextAuthorizerJwtDescription>,
     #[serde(deserialize_with = "deserialize_lambda_map")]
     #[serde(default)]
     #[serde(bound = "")]
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
     pub lambda: HashMap<String, T1>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub iam: Option<ApiGatewayV2httpRequestContextAuthorizerIamDescription>,
 }
 
@@ -202,6 +212,7 @@ pub struct ApiGatewayV2httpRequestContextAuthorizerJwtDescription {
     #[serde(deserialize_with = "deserialize_lambda_map")]
     #[serde(default)]
     pub claims: HashMap<String, String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub scopes: Option<Vec<String>>,
 }
 
@@ -215,6 +226,7 @@ pub struct ApiGatewayV2httpRequestContextAuthorizerIamDescription {
     pub account_id: Option<String>,
     #[serde(default)]
     pub caller_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub cognito_identity: Option<ApiGatewayV2httpRequestContextAuthorizerCognitoIdentity>,
     #[serde(default)]
     pub principal_org_id: Option<String>,

@@ -107,6 +107,7 @@ where
     pub http_method: Method,
     #[serde(default)]
     pub request_time: Option<String>,
+    #[serde(default)]
     pub request_time_epoch: i64,
     /// The API Gateway rest API Id
     #[serde(default)]
@@ -180,6 +181,7 @@ where
     pub domain_prefix: Option<String>,
     #[serde(default)]
     pub time: Option<String>,
+    #[serde(default)]
     pub time_epoch: i64,
     pub http: ApiGatewayV2httpRequestContextHttpDescription,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -918,6 +920,16 @@ mod test {
         let parsed: ApiGatewayV2CustomAuthorizerV2Request = serde_json::from_slice(data).unwrap();
         let output: String = serde_json::to_string(&parsed).unwrap();
         let reparsed: ApiGatewayV2CustomAuthorizerV2Request = serde_json::from_slice(output.as_bytes()).unwrap();
+        assert_eq!(parsed, reparsed);
+    }
+
+    #[test]
+    #[cfg(feature = "apigw")]
+    fn example_apigw_console_request() {
+        let data = include_bytes!("../../fixtures/example-apigw-console-request.json");
+        let parsed: ApiGatewayProxyRequest = serde_json::from_slice(data).unwrap();
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: ApiGatewayProxyRequest = serde_json::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

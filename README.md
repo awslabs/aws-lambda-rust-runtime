@@ -358,7 +358,7 @@ An simpler alternative is to cURL the following endpoint based on the address an
 
 ```bash
 curl -v -X POST \
-  'http://127.0.0.1:9001/lambda-url/<lambda-function-name>' \
+  'http://127.0.0.1:9001/lambda-url/<lambda-function-name>/' \
   -H 'content-type: application/json' \
   -d '{ "command": "hi" }'
 ```

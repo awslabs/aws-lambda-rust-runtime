@@ -277,7 +277,8 @@ fn into_websocket_request(ag: ApiGatewayWebsocketProxyRequest) -> http::Request<
         .get(http::header::HOST)
         .and_then(|s| s.to_str().ok())
         .or(ag.request_context.domain_name.as_deref());
-    let path = apigw_path_with_stage(&ag.request_context.stage, &ag.path.unwrap_or_default());
+    let raw_path = ag.path.unwrap_or_default();
+    let path = apigw_path_with_stage(&ag.request_context.stage, &raw_path);
 
     let builder = http::Request::builder()
         .uri(build_request_uri(
@@ -286,6 +287,7 @@ fn into_websocket_request(ag: ApiGatewayWebsocketProxyRequest) -> http::Request<
             host,
             Some((&ag.multi_value_query_string_parameters, &ag.query_string_parameters)),
         ))
+        .extension(RawHttpPath(raw_path))
         // multi-valued query string parameters are always a super
         // set of singly valued query string parameters,
         // when present, multi-valued query string parameters are preferred

@@ -1,5 +1,4 @@
 use super::custom_serde::*;
-use chrono::{DateTime, Duration, Utc};
 use std::{borrow::Cow, mem::take, ops::Deref, ops::DerefMut, pin::Pin, task::Poll};
 
 use base64::display::Base64Display;
@@ -9,6 +8,11 @@ use serde::de::{Deserialize, Deserializer, Error as DeError, Visitor};
 use serde::ser::{Error as SerError, Serialize, Serializer};
 
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
+
+#[cfg(feature = "chrono")]
+mod time;
+#[cfg(feature = "chrono")]
+pub use self::time::*;
 
 /// Binary data encoded in base64.
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -27,94 +31,6 @@ impl Deref for Base64Data {
 }
 
 impl DerefMut for Base64Data {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-/// Timestamp with millisecond precision.
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-pub struct MillisecondTimestamp(
-    #[serde(deserialize_with = "deserialize_milliseconds")]
-    #[serde(serialize_with = "serialize_milliseconds")]
-    pub DateTime<Utc>,
-);
-
-impl Deref for MillisecondTimestamp {
-    type Target = DateTime<Utc>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for MillisecondTimestamp {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-/// Timestamp with second precision.
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-pub struct SecondTimestamp(
-    #[serde(deserialize_with = "deserialize_seconds")]
-    #[serde(serialize_with = "serialize_seconds")]
-    pub DateTime<Utc>,
-);
-
-impl Deref for SecondTimestamp {
-    type Target = DateTime<Utc>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for SecondTimestamp {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-/// Duration with second precision.
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-pub struct SecondDuration(
-    #[serde(deserialize_with = "deserialize_duration_seconds")]
-    #[serde(serialize_with = "serialize_duration_seconds")]
-    pub Duration,
-);
-
-impl Deref for SecondDuration {
-    type Target = Duration;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for SecondDuration {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-/// Duration with minute precision.
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-pub struct MinuteDuration(
-    #[serde(deserialize_with = "deserialize_duration_minutes")]
-    #[serde(serialize_with = "serialize_duration_minutes")]
-    pub Duration,
-);
-
-impl Deref for MinuteDuration {
-    type Target = Duration;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for MinuteDuration {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }

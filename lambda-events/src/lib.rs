@@ -11,6 +11,7 @@ extern crate serde_json;
 
 // Crates with types that we use publicly. Reexported for ease of interoperability.
 pub extern crate bytes;
+#[cfg(feature = "chrono")]
 pub extern crate chrono;
 pub extern crate http;
 pub extern crate http_body;
@@ -22,6 +23,7 @@ pub extern crate serde_json;
 mod custom_serde;
 /// Encodings used in AWS Lambda json event values.
 pub mod encodings;
+#[cfg(feature = "chrono")]
 pub mod time_window;
 
 /// AWS Lambda event definitions.

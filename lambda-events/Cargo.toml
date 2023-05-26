@@ -30,7 +30,7 @@ chrono = { version = "0.4.23", default-features = false, features = [
   "serde",
   "std",
 ], optional = true }
-query_map = { version = "^0.6", features = ["serde", "url-query"] }
+query_map = { version = "^0.6", features = ["serde", "url-query"], optional = true }
 flate2 = { version = "1.0.24", optional = true }
 
 [dev-dependencies]
@@ -78,8 +78,8 @@ default = [
 ]
 
 activemq = []
-alb = []
-apigw = []
+alb = ["query_map"]
+apigw = ["query_map"]
 appsync = []
 autoscaling = ["chrono"]
 chime_bot = ["chrono"]

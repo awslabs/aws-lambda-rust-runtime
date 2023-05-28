@@ -1,6 +1,7 @@
-use crate::custom_serde::*;
 use chrono::{DateTime, Utc};
 use std::collections::HashMap;
+
+use crate::custom_serde::deserialize_lambda_map;
 
 /// `S3Event` which wrap an array of `S3Event`Record
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]

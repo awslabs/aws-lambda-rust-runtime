@@ -1,5 +1,5 @@
 use base64::Engine;
-use event::serde_dynamo::AttributeValue;
+use serde_dynamo::AttributeValue;
 use std::collections::HashMap;
 
 #[cfg(test)]

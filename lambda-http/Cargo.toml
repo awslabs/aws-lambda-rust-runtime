@@ -42,7 +42,7 @@ percent-encoding = "2.2"
 path = "../lambda-events"
 version = "0.9.0"
 default-features = false
-features = ["alb", "apigw"]
+features = ["alb", "apigw", "query_map"]
 
 [dev-dependencies]
 log = "^0.4"

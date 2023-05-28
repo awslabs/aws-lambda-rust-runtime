@@ -1,24 +1,13 @@
-extern crate base64;
-extern crate http_serde;
-#[cfg(test)]
-#[macro_use]
-extern crate pretty_assertions;
 #[macro_use]
 extern crate serde_derive;
 #[cfg(test)]
 #[macro_use]
 extern crate serde_json;
 
-// Crates with types that we use publicly. Reexported for ease of interoperability.
-pub extern crate bytes;
-#[cfg(feature = "chrono")]
-pub extern crate chrono;
-pub extern crate http;
-pub extern crate http_body;
-pub extern crate query_map;
-pub extern crate serde;
-#[cfg(not(test))]
-pub extern crate serde_json;
+#[cfg(feature = "http")]
+pub use http;
+#[cfg(feature = "query_map")]
+pub use query_map;
 
 mod custom_serde;
 /// Encodings used in AWS Lambda json event values.

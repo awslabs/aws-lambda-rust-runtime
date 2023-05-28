@@ -1,5 +1,6 @@
-use crate::custom_serde::*;
 use std::collections::HashMap;
+
+use crate::custom_serde::deserialize_lambda_map;
 
 /// `ConnectEvent` contains the data structure for a Connect event.
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]

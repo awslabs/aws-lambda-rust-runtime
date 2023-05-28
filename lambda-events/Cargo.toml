@@ -13,18 +13,19 @@ repository = "https://github.com/awslabs/aws-lambda-rust-runtime"
 readme = "README.md"
 keywords = ["lambda", "aws", "amazon", "events", "S3"]
 categories = ["api-bindings", "encoding", "web-programming"]
+edition = "2021"
 
 [dependencies]
 base64 = "0.21"
-http = "0.2"
-http-body = "0.4"
-http-serde = "^1"
+http = { version = "0.2", optional = true }
+http-body = { version = "0.4", optional = true }
+http-serde = { version = "^1", optional = true }
 serde = "^1"
 serde_derive = "^1"
 serde_with = { version = "^3", features = ["json"], optional = true }
 serde_json = "^1"
 serde_dynamo = { version = "^4.1", optional = true }
-bytes = { version = "1", features = ["serde"] }
+bytes = { version = "1", features = ["serde"], optional = true }
 chrono = { version = "0.4.23", default-features = false, features = [
   "clock",
   "serde",
@@ -78,8 +79,8 @@ default = [
 ]
 
 activemq = []
-alb = ["query_map"]
-apigw = ["query_map"]
+alb = ["bytes", "http", "http-body", "http-serde", "query_map"]
+apigw = ["bytes", "http", "http-body", "http-serde", "query_map"]
 appsync = []
 autoscaling = ["chrono"]
 chime_bot = ["chrono"]
@@ -97,19 +98,19 @@ config = []
 connect = []
 dynamodb = ["chrono", "serde_dynamo", "streams"]
 ecr_scan = []
-firehose = []
+firehose = ["chrono"]
 iam = []
-iot = ["iam"]
+iot = ["bytes", "http", "http-body", "http-serde", "iam"]
 iot_1_click = []
 iot_button = []
 iot_deprecated = ["iot"]
-kafka = []
-kinesis = []
+kafka = ["chrono"]
+kinesis = ["chrono"]
 kinesis_analytics = ["kinesis"]
-lambda_function_urls = []
+lambda_function_urls = ["bytes", "http", "http-body", "http-serde"]
 lex = []
 rabbitmq = []
-s3 = ["chrono"]
+s3 = ["bytes", "chrono", "http", "http-body", "http-serde"]
 s3_batch_job = ["s3"]
 ses = ["chrono"]
 sns = ["chrono", "serde_with"]

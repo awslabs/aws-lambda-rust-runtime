@@ -1,5 +1,4 @@
 use base64::Engine;
-use serde;
 use serde::de::{Deserialize, Deserializer, Error as DeError};
 use serde::ser::Serializer;
 use std::collections::HashMap;
@@ -80,6 +79,7 @@ where
     feature = "apigw",
     feature = "cloudwatch_events",
     feature = "code_commit",
+    feature = "cognito",
     test
 ))]
 pub(crate) fn deserialize_nullish_boolean<'de, D>(deserializer: D) -> Result<bool, D::Error>

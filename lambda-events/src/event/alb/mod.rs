@@ -1,4 +1,6 @@
-use crate::custom_serde::{http_method, serialize_headers, serialize_multi_value_headers};
+use crate::custom_serde::{
+    deserialize_headers, deserialize_nullish_boolean, http_method, serialize_headers, serialize_multi_value_headers,
+};
 use crate::encodings::Body;
 use http::{HeaderMap, Method};
 use query_map::QueryMap;
@@ -15,13 +17,14 @@ pub struct AlbTargetGroupRequest {
     pub query_string_parameters: QueryMap,
     #[serde(default)]
     pub multi_value_query_string_parameters: QueryMap,
-    #[serde(deserialize_with = "http_serde::header_map::deserialize", default)]
+    #[serde(deserialize_with = "deserialize_headers", default)]
     #[serde(serialize_with = "serialize_headers")]
     pub headers: HeaderMap,
-    #[serde(deserialize_with = "http_serde::header_map::deserialize", default)]
+    #[serde(deserialize_with = "deserialize_headers", default)]
     #[serde(serialize_with = "serialize_multi_value_headers")]
     pub multi_value_headers: HeaderMap,
     pub request_context: AlbTargetGroupRequestContext,
+    #[serde(default, deserialize_with = "deserialize_nullish_boolean")]
     pub is_base64_encoded: bool,
     pub body: Option<String>,
 }
@@ -57,6 +60,7 @@ pub struct AlbTargetGroupResponse {
     pub multi_value_headers: HeaderMap,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub body: Option<Body>,
+    #[serde(default, deserialize_with = "deserialize_nullish_boolean")]
     pub is_base64_encoded: bool,
 }
 

@@ -1,8 +1,9 @@
-use crate::custom_serde::*;
 use chrono::{DateTime, Utc};
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+
+use crate::custom_serde::deserialize_lambda_map;
 
 /// The `Event` notification event handled by Lambda
 ///

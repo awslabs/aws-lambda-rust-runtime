@@ -1,5 +1,6 @@
-use crate::custom_serde::*;
 use std::collections::HashMap;
+
+use crate::custom_serde::deserialize_lambda_map;
 
 /// `IoTOneClickEvent` represents a click event published by clicking button type
 /// device.
@@ -57,8 +58,7 @@ pub struct IoTOneClickPlacementInfo {
 #[cfg(test)]
 mod test {
     use super::*;
-
-    extern crate serde_json;
+    use serde_json;
 
     #[test]
     #[cfg(feature = "iot_1_click")]

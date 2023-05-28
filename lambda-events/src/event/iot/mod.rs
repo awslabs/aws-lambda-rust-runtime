@@ -1,4 +1,4 @@
-use crate::custom_serde::*;
+use crate::custom_serde::serialize_headers;
 use crate::encodings::Base64Data;
 use crate::iam::IamPolicyDocument;
 use http::HeaderMap;

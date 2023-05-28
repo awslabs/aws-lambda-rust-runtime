@@ -1,9 +1,10 @@
-use crate::custom_serde::*;
 use chrono::{DateTime, Utc};
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
 use serde_json::Value;
 use std::collections::HashMap;
+
+use crate::custom_serde::deserialize_lambda_map;
 
 /// `AutoScalingEvent` struct is used to parse the json for auto scaling event types //
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]

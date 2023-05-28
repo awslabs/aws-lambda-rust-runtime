@@ -1,8 +1,9 @@
-use crate::custom_serde::*;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
 use serde_json::Value;
 use std::collections::HashMap;
+
+use crate::custom_serde::deserialize_lambda_map;
 
 /// Deprecated: `AppSyncResolverTemplate` does not represent resolver events sent by AppSync. Instead directly model your input schema, or use map[string]string, json.RawMessage, interface{}, etc..
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]

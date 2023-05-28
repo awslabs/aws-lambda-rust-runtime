@@ -1,4 +1,4 @@
-use crate::custom_serde::*;
+use crate::custom_serde::{codebuild_time, CodeBuildNumber};
 use crate::encodings::{MinuteDuration, SecondDuration};
 use chrono::{DateTime, Utc};
 use serde::de::DeserializeOwned;

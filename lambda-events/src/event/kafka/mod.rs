@@ -1,4 +1,5 @@
 use crate::{custom_serde::deserialize_lambda_map, encodings::MillisecondTimestamp};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
@@ -34,7 +35,7 @@ pub struct KafkaRecord {
 mod test {
     use super::*;
 
-    extern crate serde_json;
+    use serde_json;
 
     #[test]
     #[cfg(feature = "kafka")]

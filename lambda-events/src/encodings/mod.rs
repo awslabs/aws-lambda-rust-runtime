@@ -1,6 +1,5 @@
+use serde::{Deserialize, Serialize};
 use std::{ops::Deref, ops::DerefMut};
-
-pub type Error = Box<dyn std::error::Error + Send + Sync>;
 
 #[cfg(feature = "chrono")]
 mod time;
@@ -12,6 +11,8 @@ pub use self::time::*;
 mod http;
 #[cfg(feature = "http")]
 pub use self::http::*;
+
+pub type Error = Box<dyn std::error::Error + Send + Sync>;
 
 /// Binary data encoded in base64.
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]

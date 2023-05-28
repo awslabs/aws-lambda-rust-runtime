@@ -1,3 +1,4 @@
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use crate::custom_serde::deserialize_lambda_map;
@@ -93,7 +94,7 @@ pub type ConnectResponse = HashMap<String, String>;
 mod test {
     use super::*;
 
-    extern crate serde_json;
+    use serde_json;
 
     #[test]
     #[cfg(feature = "connect")]

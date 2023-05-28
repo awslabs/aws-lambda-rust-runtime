@@ -2,6 +2,7 @@ use crate::{
     custom_serde::deserialize_lambda_map,
     encodings::{Base64Data, MillisecondTimestamp},
 };
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// `KinesisFirehoseEvent` represents the input event from Amazon Kinesis Firehose. It is used as the input parameter.
@@ -75,7 +76,7 @@ pub struct KinesisFirehoseRecordMetadata {
 mod test {
     use super::*;
 
-    extern crate serde_json;
+    use serde_json;
 
     #[test]
     #[cfg(feature = "firehose")]

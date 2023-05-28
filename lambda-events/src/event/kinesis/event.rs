@@ -1,5 +1,6 @@
 use crate::encodings::{Base64Data, SecondTimestamp};
 use crate::time_window::{TimeWindowEventResponseProperties, TimeWindowProperties};
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -74,7 +75,7 @@ pub struct KinesisRecord {
 mod test {
     use super::*;
 
-    extern crate serde_json;
+    use serde_json;
 
     #[test]
     #[cfg(feature = "kinesis")]

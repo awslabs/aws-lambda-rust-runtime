@@ -1,6 +1,9 @@
 use chrono::{DateTime, TimeZone, Utc};
-use serde::de::{Deserialize, Deserializer, Error as DeError, Visitor};
 use serde::ser::Serializer;
+use serde::{
+    de::{Deserializer, Error as DeError, Visitor},
+    Deserialize,
+};
 use std::fmt;
 
 // Jan 2, 2006 3:04:05 PM
@@ -10,7 +13,7 @@ struct TimeVisitor;
 impl<'de> Visitor<'de> for TimeVisitor {
     type Value = DateTime<Utc>;
 
-    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(formatter, "valid codebuild time: {}", CODEBUILD_TIME_FORMAT)
     }
 
@@ -74,7 +77,7 @@ mod tests {
             #[serde(with = "str_time")]
             pub date: TestTime,
         }
-        let data = json!({
+        let data = serde_json::json!({
             "date": "Sep 1, 2017 4:12:29 PM"
         });
 
@@ -92,7 +95,7 @@ mod tests {
             #[serde(with = "optional_time")]
             pub date: Option<TestTime>,
         }
-        let data = json!({
+        let data = serde_json::json!({
             "date": "Sep 1, 2017 4:12:29 PM"
         });
 

@@ -2,7 +2,7 @@ use crate::custom_serde::{codebuild_time, CodeBuildNumber};
 use crate::encodings::{MinuteDuration, SecondDuration};
 use chrono::{DateTime, Utc};
 use serde::de::DeserializeOwned;
-use serde::ser::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 pub type CodeBuildPhaseStatus = String;
@@ -213,7 +213,7 @@ pub type CodeBuildTime = DateTime<Utc>;
 mod test {
     use super::*;
 
-    extern crate serde_json;
+    use serde_json;
 
     #[test]
     #[cfg(feature = "codebuild")]

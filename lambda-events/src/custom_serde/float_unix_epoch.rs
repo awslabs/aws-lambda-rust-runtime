@@ -14,13 +14,13 @@ fn ne_timestamp<T: fmt::Display>(ts: T) -> SerdeError<T, u8> {
 }
 
 impl<V: fmt::Display, D: fmt::Display> fmt::Debug for SerdeError<V, D> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "ChronoSerdeError({})", self)
     }
 }
 
 impl<V: fmt::Display, D: fmt::Display> fmt::Display for SerdeError<V, D> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             SerdeError::NonExistent { ref timestamp } => {
                 write!(f, "value is not a legal timestamp: {}", timestamp)
@@ -77,7 +77,7 @@ where
 impl<'de> de::Visitor<'de> for SecondsFloatTimestampVisitor {
     type Value = DateTime<Utc>;
 
-    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter.write_str("a unix timestamp as a float")
     }
 

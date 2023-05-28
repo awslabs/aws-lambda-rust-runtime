@@ -1,4 +1,5 @@
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 
 /// `SimpleEmailEvent` is the outer structure of an event sent via SES.
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
@@ -121,7 +122,7 @@ pub struct SimpleEmailDisposition {
 mod test {
     use super::*;
 
-    extern crate serde_json;
+    use serde_json;
 
     #[test]
     #[cfg(feature = "ses")]

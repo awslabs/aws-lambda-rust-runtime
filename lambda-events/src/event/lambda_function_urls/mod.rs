@@ -1,4 +1,5 @@
 use http::HeaderMap;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use crate::custom_serde::{deserialize_lambda_map, serialize_headers};

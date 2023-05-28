@@ -116,7 +116,7 @@ pub struct BatchItemFailure {
 mod test {
     use super::*;
 
-    extern crate serde_json;
+    use serde_json;
 
     #[test]
     #[cfg(feature = "sqs")]

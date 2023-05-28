@@ -179,7 +179,7 @@ pub struct MessageAttribute {
 mod test {
     use super::*;
 
-    extern crate serde_json;
+    use serde_json;
 
     #[test]
     #[cfg(feature = "sns")]

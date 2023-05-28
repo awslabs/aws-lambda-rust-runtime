@@ -2,6 +2,7 @@ use crate::custom_serde::deserialize_lambda_dynamodb_item;
 use crate::time_window::*;
 use crate::{custom_serde::float_unix_epoch, streams::DynamoDbBatchItemFailure};
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 use std::fmt;
 
 #[cfg(test)]
@@ -251,7 +252,7 @@ mod test {
     use super::*;
     use chrono::TimeZone;
 
-    extern crate serde_json;
+    use serde_json;
 
     #[test]
     #[cfg(feature = "dynamodb")]

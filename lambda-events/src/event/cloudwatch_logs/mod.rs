@@ -59,7 +59,7 @@ impl<'de> Deserialize<'de> for AwsLogs {
         impl<'de> Visitor<'de> for AwsLogsVisitor {
             type Value = AwsLogs;
 
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
                 formatter.write_str("a base64 gzipped string")
             }
 

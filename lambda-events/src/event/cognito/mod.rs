@@ -1,5 +1,5 @@
 use serde::de::DeserializeOwned;
-use serde::ser::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
 
@@ -458,7 +458,7 @@ pub struct CognitoEventUserPoolsCustomMessageResponse {
 mod test {
     use super::*;
 
-    extern crate serde_json;
+    use serde_json;
 
     #[test]
     #[cfg(feature = "cognito")]

@@ -4,6 +4,7 @@ use crate::custom_serde::{
 use crate::encodings::Body;
 use http::{HeaderMap, Method};
 use query_map::QueryMap;
+use serde::{Deserialize, Serialize};
 
 /// `AlbTargetGroupRequest` contains data originating from the ALB Lambda target group integration
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
@@ -68,7 +69,7 @@ pub struct AlbTargetGroupResponse {
 mod test {
     use super::*;
 
-    extern crate serde_json;
+    use serde_json;
 
     #[test]
     #[cfg(feature = "alb")]

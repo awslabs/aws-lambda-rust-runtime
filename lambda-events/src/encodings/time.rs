@@ -1,6 +1,9 @@
 use chrono::{DateTime, Duration, TimeZone, Utc};
-use serde::de::{Deserialize, Deserializer, Error as DeError};
 use serde::ser::Serializer;
+use serde::{
+    de::{Deserializer, Error as DeError},
+    Deserialize, Serialize,
+};
 use std::ops::{Deref, DerefMut};
 
 /// Timestamp with millisecond precision.
@@ -224,7 +227,7 @@ mod test {
         let expected = Utc.ymd(2017, 10, 5).and_hms_nano(15, 33, 44, 302_000_000);
 
         // Test parsing strings.
-        let data = json!({
+        let data = serde_json::json!({
             "v": "1507217624302",
         });
         let decoded: Test = serde_json::from_value(data).unwrap();
@@ -233,7 +236,7 @@ mod test {
         let decoded: Test = serde_json::from_slice(r#"{"v":1507217624302}"#.as_bytes()).unwrap();
         assert_eq!(expected, decoded.v,);
         // Test parsing floats.
-        let data = json!({
+        let data = serde_json::json!({
             "v": 1507217624302.0,
         });
         let decoded: Test = serde_json::from_value(data).unwrap();
@@ -294,13 +297,13 @@ mod test {
 
         let expected = Duration::seconds(36);
 
-        let data = json!({
+        let data = serde_json::json!({
             "v": 36,
         });
         let decoded: Test = serde_json::from_value(data).unwrap();
         assert_eq!(expected, decoded.v,);
 
-        let data = json!({
+        let data = serde_json::json!({
             "v": 36.1,
         });
         let decoded: Test = serde_json::from_value(data).unwrap();
@@ -331,13 +334,13 @@ mod test {
 
         let expected = Duration::minutes(36);
 
-        let data = json!({
+        let data = serde_json::json!({
             "v": 36,
         });
         let decoded: Test = serde_json::from_value(data).unwrap();
         assert_eq!(expected, decoded.v,);
 
-        let data = json!({
+        let data = serde_json::json!({
             "v": 36.1,
         });
         let decoded: Test = serde_json::from_value(data).unwrap();

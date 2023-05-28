@@ -2,6 +2,7 @@ use crate::custom_serde::serialize_headers;
 use crate::encodings::Base64Data;
 use crate::iam::IamPolicyDocument;
 use http::HeaderMap;
+use serde::{Deserialize, Serialize};
 
 /// `IoTCoreCustomAuthorizerRequest` represents the request to an IoT Core custom authorizer.
 /// See https://docs.aws.amazon.com/iot/latest/developerguide/config-custom-auth.html
@@ -75,7 +76,7 @@ pub struct IoTCoreCustomAuthorizerResponse {
 mod test {
     use super::*;
 
-    extern crate serde_json;
+    use serde_json;
 
     #[test]
     #[cfg(feature = "iot")]

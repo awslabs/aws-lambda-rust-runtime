@@ -6,7 +6,7 @@ use crate::encodings::Body;
 use http::{HeaderMap, Method};
 use query_map::QueryMap;
 use serde::de::DeserializeOwned;
-use serde::ser::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
 
@@ -751,7 +751,7 @@ pub struct IamPolicyStatement {
 mod test {
     use super::*;
 
-    extern crate serde_json;
+    use serde_json;
 
     #[test]
     #[cfg(feature = "apigw")]

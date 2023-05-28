@@ -67,8 +67,6 @@ pub mod connect;
 
 /// AWS Lambda event definitions for dynamodb.
 #[cfg(feature = "dynamodb")]
-extern crate serde_dynamo;
-#[cfg(feature = "dynamodb")]
 pub mod dynamodb;
 
 /// AWS Lambda event definitions for ecr_scan.

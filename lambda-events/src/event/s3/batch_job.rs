@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 /// `S3BatchJobEvent` encapsulates the detail of a s3 batch job
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]

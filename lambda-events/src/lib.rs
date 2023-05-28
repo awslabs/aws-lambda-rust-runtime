@@ -1,9 +1,4 @@
-#[macro_use]
-extern crate serde_derive;
-#[cfg(test)]
-#[macro_use]
-extern crate serde_json;
-
+#![deny(rust_2018_idioms)]
 #[cfg(feature = "http")]
 pub use http;
 #[cfg(feature = "query_map")]

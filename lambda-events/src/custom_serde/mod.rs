@@ -95,6 +95,7 @@ where
 #[allow(deprecated)]
 mod test {
     use super::*;
+    use serde::{Deserialize, Serialize};
     use serde_json;
 
     #[test]
@@ -104,7 +105,7 @@ mod test {
             #[serde(deserialize_with = "deserialize_base64")]
             v: Vec<u8>,
         }
-        let data = json!({
+        let data = serde_json::json!({
             "v": "SGVsbG8gV29ybGQ=",
         });
         let decoded: Test = serde_json::from_value(data).unwrap();
@@ -132,13 +133,13 @@ mod test {
             #[serde(deserialize_with = "deserialize_lambda_map")]
             v: HashMap<String, String>,
         }
-        let input = json!({
+        let input = serde_json::json!({
           "v": {},
         });
         let decoded: Test = serde_json::from_value(input).unwrap();
         assert_eq!(HashMap::new(), decoded.v);
 
-        let input = json!({
+        let input = serde_json::json!({
           "v": null,
         });
         let decoded: Test = serde_json::from_value(input).unwrap();
@@ -153,13 +154,13 @@ mod test {
             #[serde(deserialize_with = "deserialize_lambda_dynamodb_item")]
             v: serde_dynamo::Item,
         }
-        let input = json!({
+        let input = serde_json::json!({
           "v": {},
         });
         let decoded: Test = serde_json::from_value(input).unwrap();
         assert_eq!(serde_dynamo::Item::from(HashMap::new()), decoded.v);
 
-        let input = json!({
+        let input = serde_json::json!({
           "v": null,
         });
         let decoded: Test = serde_json::from_value(input).unwrap();

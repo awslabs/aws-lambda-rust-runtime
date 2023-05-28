@@ -1,4 +1,5 @@
 use crate::iot::*;
+use serde::{Deserialize, Serialize};
 
 /// `IoTCustomAuthorizerRequest` contains data coming in to a custom IoT device gateway authorizer function.
 /// Deprecated: Use IoTCoreCustomAuthorizerRequest instead. `IoTCustomAuthorizerRequest` does not correctly model the request schema

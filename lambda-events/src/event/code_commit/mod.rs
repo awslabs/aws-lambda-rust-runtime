@@ -1,4 +1,5 @@
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 
 use crate::custom_serde::deserialize_nullish_boolean;
 
@@ -68,7 +69,7 @@ pub struct CodeCommitReference {
 mod test {
     use super::*;
 
-    extern crate serde_json;
+    use serde_json;
 
     #[test]
     #[cfg(feature = "code_commit")]

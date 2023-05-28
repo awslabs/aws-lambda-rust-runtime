@@ -1,5 +1,7 @@
-use crate::custom_serde::*;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+
+use crate::custom_serde::deserialize_lambda_map;
 
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -52,7 +54,7 @@ pub struct ActiveMqDestination {
 mod test {
     use super::*;
 
-    extern crate serde_json;
+    use serde_json;
 
     #[test]
     #[cfg(feature = "activemq")]

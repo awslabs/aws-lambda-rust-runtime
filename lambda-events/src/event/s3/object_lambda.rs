@@ -1,9 +1,10 @@
-use crate::custom_serde::*;
 use http::HeaderMap;
 use serde::de::DeserializeOwned;
-use serde::ser::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
+
+use crate::custom_serde::{deserialize_headers, serialize_headers};
 
 /// `S3ObjectLambdaEvent` contains data coming from S3 object lambdas
 /// See: https://docs.aws.amazon.com/AmazonS3/latest/userguide/olap-writing-lambda.html
@@ -117,7 +118,7 @@ pub struct SessionIssuer {
 mod test {
     use super::*;
 
-    extern crate serde_json;
+    use serde_json;
 
     #[test]
     #[cfg(feature = "s3")]

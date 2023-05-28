@@ -1,4 +1,5 @@
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 
 pub type CodePipelineStageState = String;
 
@@ -80,7 +81,7 @@ pub struct CodePipelineEventDetailType {
 mod test {
     use super::*;
 
-    extern crate serde_json;
+    use serde_json;
 
     #[test]
     #[cfg(feature = "codepipeline_cloudwatch")]

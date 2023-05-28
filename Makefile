@@ -60,3 +60,47 @@ invoke-integration-api-%:
 	curl -X POST -d '{"command": "hello"}' $(API_URL)/trait/post
 	curl -X POST -d '{"command": "hello"}' $(API_URL)/al2/post
 	curl -X POST -d '{"command": "hello"}' $(API_URL)/al2-trait/post
+
+# Test individual event features to ensure optional dependencies
+# are correctly loaded when all default features are disabled.
+check-event-features:
+	cargo test --package aws_lambda_events --no-default-features --features activemq
+	cargo test --package aws_lambda_events --no-default-features --features alb
+	cargo test --package aws_lambda_events --no-default-features --features apigw
+	cargo test --package aws_lambda_events --no-default-features --features appsync
+	cargo test --package aws_lambda_events --no-default-features --features autoscaling
+	cargo test --package aws_lambda_events --no-default-features --features chime_bot
+	cargo test --package aws_lambda_events --no-default-features --features clientvpn
+	cargo test --package aws_lambda_events --no-default-features --features cloudwatch_events
+	cargo test --package aws_lambda_events --no-default-features --features cloudwatch_logs
+	cargo test --package aws_lambda_events --no-default-features --features code_commit
+	cargo test --package aws_lambda_events --no-default-features --features codebuild
+	cargo test --package aws_lambda_events --no-default-features --features codedeploy
+	cargo test --package aws_lambda_events --no-default-features --features codepipeline_cloudwatch
+	cargo test --package aws_lambda_events --no-default-features --features codepipeline_job
+	cargo test --package aws_lambda_events --no-default-features --features cognito
+	cargo test --package aws_lambda_events --no-default-features --features config
+	cargo test --package aws_lambda_events --no-default-features --features connect
+	cargo test --package aws_lambda_events --no-default-features --features dynamodb
+	cargo test --package aws_lambda_events --no-default-features --features ecr_scan
+	cargo test --package aws_lambda_events --no-default-features --features firehose
+	cargo test --package aws_lambda_events --no-default-features --features iam
+	cargo test --package aws_lambda_events --no-default-features --features iot
+	cargo test --package aws_lambda_events --no-default-features --features iot_1_click
+	cargo test --package aws_lambda_events --no-default-features --features iot_button
+	cargo test --package aws_lambda_events --no-default-features --features iot_deprecated
+	cargo test --package aws_lambda_events --no-default-features --features kafka
+	cargo test --package aws_lambda_events --no-default-features --features kinesis
+	cargo test --package aws_lambda_events --no-default-features --features kinesis_analytics
+	cargo test --package aws_lambda_events --no-default-features --features lambda_function_urls
+	cargo test --package aws_lambda_events --no-default-features --features lex
+	cargo test --package aws_lambda_events --no-default-features --features rabbitmq
+	cargo test --package aws_lambda_events --no-default-features --features s3
+	cargo test --package aws_lambda_events --no-default-features --features s3_batch_job
+	cargo test --package aws_lambda_events --no-default-features --features ses
+	cargo test --package aws_lambda_events --no-default-features --features sns
+	cargo test --package aws_lambda_events --no-default-features --features sqs
+	cargo test --package aws_lambda_events --no-default-features --features streams
+
+fmt:
+	cargo +nightly fmt --all

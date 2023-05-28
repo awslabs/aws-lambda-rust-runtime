@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 /// `IamPolicyDocument` represents an IAM policy document.
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]

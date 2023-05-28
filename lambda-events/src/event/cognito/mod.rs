@@ -1,8 +1,9 @@
-use crate::custom_serde::*;
 use serde::de::DeserializeOwned;
-use serde::ser::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
+
+use crate::custom_serde::{deserialize_lambda_map, deserialize_nullish_boolean};
 
 /// `CognitoEvent` contains data from an event sent from AWS Cognito Sync
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -457,7 +458,7 @@ pub struct CognitoEventUserPoolsCustomMessageResponse {
 mod test {
     use super::*;
 
-    extern crate serde_json;
+    use serde_json;
 
     #[test]
     #[cfg(feature = "cognito")]

@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 /// `KinesisEventResponse` is the outer structure to report batch item failures for KinesisEvent.
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]

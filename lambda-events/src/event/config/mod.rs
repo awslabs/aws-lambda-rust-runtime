@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 /// `ConfigEvent` contains data from an event sent from AWS Config
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -38,7 +40,7 @@ pub struct ConfigEvent {
 mod test {
     use super::*;
 
-    extern crate serde_json;
+    use serde_json;
 
     #[test]
     #[cfg(feature = "config")]

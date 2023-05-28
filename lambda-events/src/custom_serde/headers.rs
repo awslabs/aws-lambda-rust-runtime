@@ -49,7 +49,7 @@ impl<'de> Visitor<'de> for HeaderMapVisitor {
     type Value = HeaderMap;
 
     // Format a message stating what data this Visitor expects to receive.
-    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter.write_str("lots of things can go wrong with HeaderMap")
     }
 
@@ -81,7 +81,7 @@ impl<'de> Visitor<'de> for HeaderMapVisitor {
         let mut map = HeaderMap::with_capacity(access.size_hint().unwrap_or(0));
 
         if !self.is_human_readable {
-            while let Some((key, arr)) = access.next_entry::<Cow<str>, Vec<Cow<[u8]>>>()? {
+            while let Some((key, arr)) = access.next_entry::<Cow<'_, str>, Vec<Cow<'_, [u8]>>>()? {
                 let key = HeaderName::from_bytes(key.as_bytes())
                     .map_err(|_| de::Error::invalid_value(Unexpected::Str(&key), &self))?;
                 for val in arr {
@@ -91,7 +91,7 @@ impl<'de> Visitor<'de> for HeaderMapVisitor {
                 }
             }
         } else {
-            while let Some((key, val)) = access.next_entry::<Cow<str>, OneOrMore>()? {
+            while let Some((key, val)) = access.next_entry::<Cow<'_, str>, OneOrMore<'_>>()? {
                 let key = HeaderName::from_bytes(key.as_bytes())
                     .map_err(|_| de::Error::invalid_value(Unexpected::Str(&key), &self))?;
                 match val {
@@ -135,6 +135,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde::{Deserialize, Serialize};
 
     #[test]
     fn test_deserialize_missing_http_headers() {
@@ -143,7 +144,7 @@ mod tests {
             #[serde(deserialize_with = "deserialize_headers", default)]
             pub headers: HeaderMap,
         }
-        let data = json!({
+        let data = serde_json::json!({
             "not_headers": {}
         });
 
@@ -161,7 +162,7 @@ mod tests {
             #[serde(serialize_with = "serialize_multi_value_headers")]
             headers: HeaderMap,
         }
-        let data = json!({
+        let data = serde_json::json!({
             "headers": {
                 "Accept": ["*/*"]
             }
@@ -181,7 +182,7 @@ mod tests {
             #[serde(deserialize_with = "deserialize_headers")]
             headers: HeaderMap,
         }
-        let data = json!({ "headers": null });
+        let data = serde_json::json!({ "headers": null });
 
         let decoded: Test = serde_json::from_value(data).unwrap();
         assert!(decoded.headers.is_empty());

@@ -1,4 +1,5 @@
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 
 pub type CodeDeployDeploymentState = String;
 
@@ -68,7 +69,7 @@ pub struct CodeDeployEventDetail {
 mod test {
     use super::*;
 
-    extern crate serde_json;
+    use serde_json;
 
     #[test]
     #[cfg(feature = "codedeploy")]

@@ -1,124 +1,9 @@
-use super::custom_serde::*;
-use chrono::{DateTime, Duration, Utc};
-use std::{borrow::Cow, mem::take, ops::Deref, ops::DerefMut, pin::Pin, task::Poll};
-
 use base64::display::Base64Display;
 use bytes::Bytes;
 use http_body::{Body as HttpBody, SizeHint};
 use serde::de::{Deserialize, Deserializer, Error as DeError, Visitor};
 use serde::ser::{Error as SerError, Serialize, Serializer};
-
-pub type Error = Box<dyn std::error::Error + Send + Sync>;
-
-/// Binary data encoded in base64.
-#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
-pub struct Base64Data(
-    #[serde(deserialize_with = "deserialize_base64")]
-    #[serde(serialize_with = "serialize_base64")]
-    pub Vec<u8>,
-);
-
-impl Deref for Base64Data {
-    type Target = Vec<u8>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for Base64Data {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-/// Timestamp with millisecond precision.
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-pub struct MillisecondTimestamp(
-    #[serde(deserialize_with = "deserialize_milliseconds")]
-    #[serde(serialize_with = "serialize_milliseconds")]
-    pub DateTime<Utc>,
-);
-
-impl Deref for MillisecondTimestamp {
-    type Target = DateTime<Utc>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for MillisecondTimestamp {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-/// Timestamp with second precision.
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-pub struct SecondTimestamp(
-    #[serde(deserialize_with = "deserialize_seconds")]
-    #[serde(serialize_with = "serialize_seconds")]
-    pub DateTime<Utc>,
-);
-
-impl Deref for SecondTimestamp {
-    type Target = DateTime<Utc>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for SecondTimestamp {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-/// Duration with second precision.
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-pub struct SecondDuration(
-    #[serde(deserialize_with = "deserialize_duration_seconds")]
-    #[serde(serialize_with = "serialize_duration_seconds")]
-    pub Duration,
-);
-
-impl Deref for SecondDuration {
-    type Target = Duration;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for SecondDuration {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-/// Duration with minute precision.
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-pub struct MinuteDuration(
-    #[serde(deserialize_with = "deserialize_duration_minutes")]
-    #[serde(serialize_with = "serialize_duration_minutes")]
-    pub Duration,
-);
-
-impl Deref for MinuteDuration {
-    type Target = Duration;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for MinuteDuration {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
+use std::{borrow::Cow, mem::take, ops::Deref, pin::Pin, task::Poll};
 
 /// Representation of http request and response bodies as supported
 /// by API Gateway and ALBs.
@@ -313,7 +198,7 @@ impl<'de> Deserialize<'de> for Body {
         impl<'de> Visitor<'de> for BodyVisitor {
             type Value = Body;
 
-            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                 formatter.write_str("string")
             }
 
@@ -331,7 +216,7 @@ impl<'de> Deserialize<'de> for Body {
 
 impl HttpBody for Body {
     type Data = Bytes;
-    type Error = Error;
+    type Error = super::Error;
 
     fn poll_data(
         self: Pin<&mut Self>,

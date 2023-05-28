@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 /// `CodePipelineJobEvent` contains data from an event sent from AWS CodePipeline
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -115,7 +117,7 @@ pub struct CodePipelineArtifactCredentials {
 mod test {
     use super::*;
 
-    extern crate serde_json;
+    use serde_json;
 
     #[test]
     #[cfg(feature = "codepipeline_job")]

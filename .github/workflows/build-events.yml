@@ -26,3 +26,12 @@ jobs:
         with:
           package: aws_lambda_events
           toolchain: ${{ matrix.toolchain}}
+  check-event-features:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Test individual event features
+        run: make check-event-features

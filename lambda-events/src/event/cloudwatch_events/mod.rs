@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::de::DeserializeOwned;
-use serde::ser::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 pub mod cloudtrail;

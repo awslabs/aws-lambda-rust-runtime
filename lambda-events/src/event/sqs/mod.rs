@@ -1,4 +1,5 @@
-use crate::{custom_serde::*, encodings::Base64Data};
+use crate::custom_serde::deserialize_lambda_map;
+use crate::encodings::Base64Data;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -115,7 +116,7 @@ pub struct BatchItemFailure {
 mod test {
     use super::*;
 
-    extern crate serde_json;
+    use serde_json;
 
     #[test]
     #[cfg(feature = "sqs")]

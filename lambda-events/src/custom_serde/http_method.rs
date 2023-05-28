@@ -11,7 +11,7 @@ struct MethodVisitor;
 impl<'de> Visitor<'de> for MethodVisitor {
     type Value = Method;
 
-    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(formatter, "valid method name")
     }
 
@@ -56,6 +56,7 @@ pub fn serialize_optional<S: Serializer>(method: &Option<Method>, ser: S) -> Res
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde::{Deserialize, Serialize};
 
     #[test]
     fn test_http_method_serializer() {
@@ -64,7 +65,7 @@ mod tests {
             #[serde(with = "crate::custom_serde::http_method")]
             pub method: http::Method,
         }
-        let data = json!({
+        let data = serde_json::json!({
             "method": "DELETE"
         });
         let decoded: Test = serde_json::from_value(data.clone()).unwrap();
@@ -83,7 +84,7 @@ mod tests {
             #[serde(default)]
             pub method: Option<http::Method>,
         }
-        let data = json!({
+        let data = serde_json::json!({
             "method": "DELETE"
         });
         let decoded: Test = serde_json::from_value(data.clone()).unwrap();
@@ -92,11 +93,11 @@ mod tests {
         let recoded = serde_json::to_value(decoded).unwrap();
         assert_eq!(data, recoded);
 
-        let data = json!({ "method": null });
+        let data = serde_json::json!({ "method": null });
         let decoded: Test = serde_json::from_value(data).unwrap();
         assert_eq!(None, decoded.method);
 
-        let data = json!({});
+        let data = serde_json::json!({});
         let decoded: Test = serde_json::from_value(data).unwrap();
         assert_eq!(None, decoded.method);
     }

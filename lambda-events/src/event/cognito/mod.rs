@@ -254,7 +254,9 @@ pub struct CognitoEventUserPoolsMigrateUserResponse {
     pub final_user_status: Option<String>,
     #[serde(default)]
     pub message_action: Option<String>,
-    pub desired_delivery_mediums: Vec<String>,
+    #[serde(default)]
+    pub desired_delivery_mediums: Option<Vec<String>>,
+    #[serde(default, deserialize_with = "deserialize_nullish_boolean")]
     pub force_alias_creation: bool,
 }
 

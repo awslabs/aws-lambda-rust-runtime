@@ -30,3 +30,4 @@ async-trait = "0.1.66"
 [dev-dependencies]
 mockall = "0.11.3"
 tokio-test = "0.4.2"
+chrono = "0.4"

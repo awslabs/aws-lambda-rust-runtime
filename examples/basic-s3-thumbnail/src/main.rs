@@ -138,7 +138,7 @@ mod tests {
 
     use super::*;
     use async_trait::async_trait;
-    use aws_lambda_events::chrono::DateTime;
+    //use aws_lambda_events::chrono::DateTime;
     use aws_lambda_events::s3::S3Bucket;
     use aws_lambda_events::s3::S3Entity;
     use aws_lambda_events::s3::S3Object;
@@ -214,7 +214,7 @@ mod tests {
             configuration_id: (Some(String::default())),
             bucket: (S3Bucket {
                 name: (Some(bucket_name.to_string())),
-                owner_identity: (S3UserIdentity {
+                owner_identity: Some(S3UserIdentity {
                     principal_id: (Some(String::default())),
                 }),
                 arn: (Some(String::default())),
@@ -233,7 +233,7 @@ mod tests {
             event_version: (Some(String::default())),
             event_source: (Some(String::default())),
             aws_region: (Some(String::default())),
-            event_time: (DateTime::default()),
+            event_time: (chrono::DateTime::default()),
             event_name: (Some(event_name.to_string())),
             principal_id: (S3UserIdentity {
                 principal_id: (Some("X".to_string())),

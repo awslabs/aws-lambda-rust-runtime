@@ -1,5 +1,5 @@
 [package]
-name = "basic-s3-thumbnail"
+name = "basic-s3-object-lambda-thumbnail"
 version = "0.1.0"
 edition = "2021"
 
@@ -15,19 +15,20 @@ edition = "2021"
 # and it will keep the alphabetic ordering for you.
 
 [dependencies]
-aws_lambda_events = { path = "../../lambda-events" }
+aws_lambda_events = "0.8.3"
 lambda_runtime = { path = "../../lambda-runtime" }
 serde = "1"
 tokio = { version = "1", features = ["macros"] }
 tracing = { version = "0.1" }
 tracing-subscriber = { version = "0.3", default-features = false, features = ["ansi", "fmt"] }
-aws-config = "0.54.1"
-aws-sdk-s3 = "0.24.0"
+aws-config = "0.55.3"
+aws-sdk-s3 = "0.28.0"
 thumbnailer = "0.4.0"
 mime = "0.3.16"
 async-trait = "0.1.66"
+ureq = "2.6.2"
+aws-smithy-http = "0.55.3"
 
 [dev-dependencies]
 mockall = "0.11.3"
 tokio-test = "0.4.2"
-chrono = "0.4"

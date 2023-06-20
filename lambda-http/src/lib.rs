@@ -70,6 +70,7 @@ pub use lambda_runtime::{self, service_fn, tower, Context, Error, Service};
 use request::RequestFuture;
 use response::ResponseFuture;
 
+mod deserializer;
 pub mod ext;
 pub mod request;
 mod response;

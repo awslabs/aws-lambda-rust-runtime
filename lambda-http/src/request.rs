@@ -20,8 +20,10 @@ use aws_lambda_events::apigw::{ApiGatewayWebsocketProxyRequest, ApiGatewayWebsoc
 use aws_lambda_events::{encodings::Body, query_map::QueryMap};
 use http::header::HeaderName;
 use http::{HeaderMap, HeaderValue};
+
 use serde::{Deserialize, Serialize};
 use serde_json::error::Error as JsonError;
+
 use std::future::Future;
 use std::pin::Pin;
 use std::{env, io::Read, mem};
@@ -33,8 +35,7 @@ use url::Url;
 /// This is not intended to be a type consumed by crate users directly. The order
 /// of the variants are notable. Serde will try to deserialize in this order.
 #[doc(hidden)]
-#[derive(Deserialize, Debug)]
-#[serde(untagged)]
+#[derive(Debug)]
 pub enum LambdaRequest {
     #[cfg(feature = "apigw_rest")]
     ApiGatewayV1(ApiGatewayProxyRequest),

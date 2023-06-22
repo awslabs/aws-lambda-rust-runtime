@@ -13,6 +13,7 @@ use std::collections::HashMap;
 /// `ApiGatewayProxyRequest` contains data coming from the API Gateway proxy
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 pub struct ApiGatewayProxyRequest<T1 = Value>
 where
     T1: DeserializeOwned,
@@ -118,12 +119,25 @@ where
 /// `ApiGatewayV2httpRequest` contains data coming from the new HTTP API Gateway
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 pub struct ApiGatewayV2httpRequest {
+    #[serde(default, rename = "type")]
+    pub kind: Option<String>,
+    #[serde(default)]
+    pub method_arn: Option<String>,
+    #[serde(with = "http_method", default = "default_http_method")]
+    pub http_method: Method,
+    #[serde(default)]
+    pub identity_source: Option<String>,
+    #[serde(default)]
+    pub authorization_token: Option<String>,
+    #[serde(default)]
+    pub resource: Option<String>,
     #[serde(default)]
     pub version: Option<String>,
     #[serde(default)]
     pub route_key: Option<String>,
-    #[serde(default)]
+    #[serde(default, alias = "path")]
     pub raw_path: Option<String>,
     #[serde(default)]
     pub raw_query_string: Option<String>,
@@ -319,6 +333,7 @@ pub struct ApiGatewayRequestIdentity {
 /// `ApiGatewayWebsocketProxyRequest` contains data coming from the API Gateway proxy
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 pub struct ApiGatewayWebsocketProxyRequest<T1 = Value, T2 = Value>
 where
     T1: DeserializeOwned,
@@ -747,6 +762,10 @@ pub struct IamPolicyStatement {
     pub resource: Vec<String>,
 }
 
+fn default_http_method() -> Method {
+    Method::GET
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -901,6 +920,8 @@ mod test {
         let output: String = serde_json::to_string(&parsed).unwrap();
         let reparsed: ApiGatewayV2httpRequest = serde_json::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
+        assert_eq!("REQUEST", parsed.kind.unwrap());
+        assert_eq!(Method::GET, parsed.http_method);
     }
 
     #[test]

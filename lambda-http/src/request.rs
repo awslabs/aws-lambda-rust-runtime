@@ -327,10 +327,17 @@ fn into_websocket_request(ag: ApiGatewayWebsocketProxyRequest) -> http::Request<
 
 #[cfg(any(feature = "apigw_rest", feature = "apigw_http", feature = "apigw_websockets"))]
 fn apigw_path_with_stage(stage: &Option<String>, path: &str) -> String {
-    match stage {
-        None => path.into(),
-        Some(stage) if stage == "$default" => path.into(),
-        Some(stage) => format!("/{stage}{path}"),
+    let stage = match stage {
+        None => return path.into(),
+        Some(stage) if stage == "$default" => return path.into(),
+        Some(stage) => stage,
+    };
+
+    let prefix = format!("/{stage}/");
+    if path.starts_with(&prefix) {
+        path.into()
+    } else {
+        format!("/{stage}{path}")
     }
 }
 
@@ -531,7 +538,7 @@ mod tests {
         assert_eq!(req.method(), "GET");
         assert_eq!(
             req.uri(),
-            "https://wt6mne2s9k.execute-api.us-west-2.amazonaws.com/test/test/hello?name=me"
+            "https://wt6mne2s9k.execute-api.us-west-2.amazonaws.com/test/hello?name=me"
         );
 
         // Ensure this is an APIGW request
@@ -733,7 +740,7 @@ mod tests {
         );
         let req = result.expect("failed to parse request");
         assert_eq!(req.method(), "GET");
-        assert_eq!(req.uri(), "/test/test/hello?name=me");
+        assert_eq!(req.uri(), "/test/hello?name=me");
     }
 
     #[test]
@@ -767,5 +774,26 @@ mod tests {
     fn parse_paths_with_spaces() {
         let url = build_request_uri("/path with spaces/and multiple segments", &HeaderMap::new(), None, None);
         assert_eq!("/path%20with%20spaces/and%20multiple%20segments", url);
+    }
+
+    #[test]
+    fn deserializes_apigw_http_request_with_stage_in_path() {
+        let input = include_str!("../tests/data/apigw_v2_proxy_request_with_stage_in_path.json");
+        let result = from_str(input);
+        assert!(
+            result.is_ok(),
+            "event was not parsed as expected {result:?} given {input}"
+        );
+        let req = result.expect("failed to parse request");
+        assert_eq!("/Prod/my/path", req.uri().path());
+        assert_eq!("/Prod/my/path", req.raw_http_path());
+    }
+
+    #[test]
+    fn test_apigw_path_with_stage() {
+        assert_eq!("/path", apigw_path_with_stage(&None, "/path"));
+        assert_eq!("/path", apigw_path_with_stage(&Some("$default".into()), "/path"));
+        assert_eq!("/Prod/path", apigw_path_with_stage(&Some("Prod".into()), "/Prod/path"));
+        assert_eq!("/Prod/path", apigw_path_with_stage(&Some("Prod".into()), "/path"));
     }
 }

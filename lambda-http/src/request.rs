@@ -327,6 +327,10 @@ fn into_websocket_request(ag: ApiGatewayWebsocketProxyRequest) -> http::Request<
 
 #[cfg(any(feature = "apigw_rest", feature = "apigw_http", feature = "apigw_websockets"))]
 fn apigw_path_with_stage(stage: &Option<String>, path: &str) -> String {
+    if env::var("AWS_LAMBDA_HTTP_IGNORE_STAGE_IN_PATH").is_ok() {
+        return path.into();
+    }
+
     let stage = match stage {
         None => return path.into(),
         Some(stage) if stage == "$default" => return path.into(),

@@ -19,4 +19,4 @@ lambda-extension = { path = "../lambda-extension" }
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
 tracing = { version = "0.1", features = ["log"] }
-tracing-subscriber = "0.3"
+tracing-subscriber = { version = "0.3", default-features = false, features = ["fmt"] }

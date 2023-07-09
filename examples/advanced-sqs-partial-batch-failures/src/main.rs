@@ -33,9 +33,6 @@ async fn main() -> Result<(), Error> {
         .with_max_level(tracing::Level::INFO)
         // disable printing the name of the module in every log line.
         .with_target(false)
-        // this needs to be set to false, otherwise ANSI color codes will
-        // show up in a confusing manner in CloudWatch logs.
-        .with_ansi(false)
         // disabling time is handy because CloudWatch will add the ingestion time.
         .without_time()
         .init();
@@ -78,9 +75,7 @@ where
     tracing::trace!("Handling batch size {}", event.payload.records.len());
     let create_task = |msg| {
         // We need to keep the message_id to report failures to SQS
-        let SqsMessageObj {
-            message_id, body, ..
-        } = msg;
+        let SqsMessageObj { message_id, body, .. } = msg;
         let span = tracing::span!(tracing::Level::INFO, "Handling SQS msg", message_id);
         let task = async {
             //TODO catch panics like the `run` function from lambda_runtime
@@ -104,9 +99,7 @@ where
                 }
             },
         )
-        .map(|id| BatchItemFailure {
-            item_identifier: id,
-        })
+        .map(|id| BatchItemFailure { item_identifier: id })
         .collect();
 
     Ok(SqsBatchResponse {

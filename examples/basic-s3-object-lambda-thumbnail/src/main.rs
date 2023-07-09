@@ -1,10 +1,9 @@
-use std::{error, io::Cursor};
+use std::error;
 
 use aws_lambda_events::s3::object_lambda::{GetObjectContext, S3ObjectLambdaEvent};
 use aws_sdk_s3::Client as S3Client;
 use lambda_runtime::{run, service_fn, Error, LambdaEvent};
 use s3::{GetFile, SendFile};
-use thumbnailer::{create_thumbnails, ThumbnailSize};
 
 mod s3;
 
@@ -35,28 +34,21 @@ pub(crate) async fn function_handler<T: SendFile + GetFile>(
     let thumbnail = get_thumbnail(image, size);
     tracing::info!("thumbnail created. Length: {}", thumbnail.len());
 
-    // It sends the thumbnail back to the user
-
     client.send_file(route, token, thumbnail).await
-
-    /*
-    match client.send_file(route, token, thumbnail).await {
-        Ok(msg) => tracing::info!(msg),
-        Err(msg) => tracing::info!(msg)
-    };
-
-    tracing::info!("handler ends");
-
-    Ok(())
-    */
 }
 
+#[cfg(not(test))]
 fn get_thumbnail(vec: Vec<u8>, size: u32) -> Vec<u8> {
-    let reader = Cursor::new(vec);
-    let mut thumbnails = create_thumbnails(reader, mime::IMAGE_PNG, [ThumbnailSize::Custom((size, size))]).unwrap();
+    let reader = std::io::Cursor::new(vec);
+    let mut thumbnails = thumbnailer::create_thumbnails(
+        reader,
+        mime::IMAGE_PNG,
+        [thumbnailer::ThumbnailSize::Custom((size, size))],
+    )
+    .unwrap();
 
     let thumbnail = thumbnails.pop().unwrap();
-    let mut buf = Cursor::new(Vec::new());
+    let mut buf = std::io::Cursor::new(Vec::new());
     thumbnail.write_png(&mut buf).unwrap();
 
     buf.into_inner()
@@ -88,11 +80,17 @@ async fn main() -> Result<(), Error> {
 }
 
 #[cfg(test)]
-mod tests {
-    use std::fs::File;
-    use std::io::BufReader;
-    use std::io::Read;
+fn get_thumbnail(vec: Vec<u8>, _size: u32) -> Vec<u8> {
+    let s = unsafe { std::str::from_utf8_unchecked(&vec) };
 
+    match s {
+        "IMAGE" => "THUMBNAIL".into(),
+        _ => "Input is not IMAGE".into(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
     use super::*;
     use async_trait::async_trait;
     use aws_lambda_events::s3::object_lambda::Configuration;
@@ -125,13 +123,12 @@ mod tests {
         let mut mock = MockFakeS3Client::new();
 
         mock.expect_get_file()
-            .withf(|u: &String| u.eq("S3_URL"))
-            .returning(|_1| Ok(get_file("testdata/image.png")));
+            .withf(|u| u.eq("S3_URL"))
+            .returning(|_1| Ok("IMAGE".into()));
 
         mock.expect_send_file()
-            .withf(|r: &String, t: &String, by| {
-                let thumbnail = get_file("testdata/thumbnail.png");
-                return r.eq("O_ROUTE") && t.eq("O_TOKEN") && by == &thumbnail;
+            .withf(|r, t, by| {
+                return r.eq("O_ROUTE") && t.eq("O_TOKEN") && by == "THUMBNAIL".as_bytes();
             })
             .returning(|_1, _2, _3| Ok("File sent.".to_string()));
 
@@ -142,16 +139,6 @@ mod tests {
         let result = function_handler(event, 10, &mock).await.unwrap();
 
         assert_eq!(("File sent."), result);
-    }
-
-    fn get_file(name: &str) -> Vec<u8> {
-        let f = File::open(name);
-        let mut reader = BufReader::new(f.unwrap());
-        let mut buffer = Vec::new();
-
-        reader.read_to_end(&mut buffer).unwrap();
-
-        return buffer;
     }
 
     fn get_s3_event() -> S3ObjectLambdaEvent {

@@ -1,5 +1,7 @@
 use async_trait::async_trait;
-use aws_sdk_s3::{error::GetObjectError, types::ByteStream, Client as S3Client};
+use aws_sdk_s3::operation::get_object::GetObjectError;
+use aws_sdk_s3::Client as S3Client;
+use aws_smithy_http::byte_stream::ByteStream;
 
 #[async_trait]
 pub trait GetFile {

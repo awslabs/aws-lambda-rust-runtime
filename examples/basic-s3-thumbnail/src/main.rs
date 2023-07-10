@@ -1,10 +1,7 @@
-use std::io::Cursor;
-
 use aws_lambda_events::{event::s3::S3Event, s3::S3EventRecord};
 use aws_sdk_s3::Client as S3Client;
 use lambda_runtime::{run, service_fn, Error, LambdaEvent};
 use s3::{GetFile, PutFile};
-use thumbnailer::{create_thumbnails, ThumbnailSize};
 
 mod s3;
 
@@ -86,7 +83,12 @@ fn get_file_props(record: S3EventRecord) -> Result<(String, String), String> {
     Ok((bucket, key))
 }
 
+#[cfg(not(test))]
 fn get_thumbnail(vec: Vec<u8>, size: u32) -> Result<Vec<u8>, String> {
+    use std::io::Cursor;
+
+    use thumbnailer::{create_thumbnails, ThumbnailSize};
+
     let reader = Cursor::new(vec);
     let mime = mime::IMAGE_PNG;
     let sizes = [ThumbnailSize::Custom((size, size))];
@@ -127,11 +129,18 @@ async fn main() -> Result<(), Error> {
 }
 
 #[cfg(test)]
+fn get_thumbnail(vec: Vec<u8>, _size: u32) -> Result<Vec<u8>, String> {
+    let s = unsafe { std::str::from_utf8_unchecked(&vec) };
+
+    match s {
+        "IMAGE" => Ok("THUMBNAIL".into()),
+        _ => Err("Input is not IMAGE".to_string()),
+    }
+}
+
+#[cfg(test)]
 mod tests {
     use std::collections::HashMap;
-    use std::fs::File;
-    use std::io::BufReader;
-    use std::io::Read;
 
     use super::*;
     use async_trait::async_trait;
@@ -141,7 +150,7 @@ mod tests {
     use aws_lambda_events::s3::S3Object;
     use aws_lambda_events::s3::S3RequestParameters;
     use aws_lambda_events::s3::S3UserIdentity;
-    use aws_sdk_s3::error::GetObjectError;
+    use aws_sdk_s3::operation::get_object::GetObjectError;
     use lambda_runtime::{Context, LambdaEvent};
     use mockall::mock;
     use s3::GetFile;
@@ -171,15 +180,14 @@ mod tests {
         let mut mock = MockFakeS3Client::new();
 
         mock.expect_get_file()
-            .withf(|b: &str, k: &str| b.eq(bucket) && k.eq(key))
-            .returning(|_1, _2| Ok(get_file("testdata/image.png")));
+            .withf(|b, k| b.eq(bucket) && k.eq(key))
+            .returning(|_1, _2| Ok("IMAGE".into()));
 
         mock.expect_put_file()
-            .withf(|bu: &str, ke: &str, by| {
-                let thumbnail = get_file("testdata/thumbnail.png");
-                return bu.eq("test-bucket-thumbs") && ke.eq(key) && by == &thumbnail;
+            .withf(|bu, ke, by| {
+                return bu.eq("test-bucket-thumbs") && ke.eq(key) && by.eq("THUMBNAIL".as_bytes());
             })
-            .returning(|_1, _2, _3| Ok("Done".to_string()));
+            .return_const(Ok("Done".to_string()));
 
         let payload = get_s3_event("ObjectCreated", bucket, key);
         let event = LambdaEvent { payload, context };
@@ -187,16 +195,6 @@ mod tests {
         let result = function_handler(event, 10, &mock).await.unwrap();
 
         assert_eq!((), result);
-    }
-
-    fn get_file(name: &str) -> Vec<u8> {
-        let f = File::open(name);
-        let mut reader = BufReader::new(f.unwrap());
-        let mut buffer = Vec::new();
-
-        reader.read_to_end(&mut buffer).unwrap();
-
-        return buffer;
     }
 
     fn get_s3_event(event_name: &str, bucket_name: &str, object_key: &str) -> S3Event {

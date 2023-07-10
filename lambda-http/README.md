@@ -50,9 +50,8 @@ use serde_json::json;
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     tracing_subscriber::fmt()
-        .with_ansi(false)
         .without_time()
-        .with_max_level(tracing_subscriber::filter::LevelFilter::INFO)
+        .with_max_level(tracing::Level::INFO)
         .init();
 
     run(service_fn(function_handler)).await
@@ -89,9 +88,8 @@ use serde_json::json;
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     tracing_subscriber::fmt()
-        .with_ansi(false)
         .without_time()
-        .with_max_level(tracing_subscriber::filter::LevelFilter::INFO)
+        .with_max_level(tracing::Level::INFO)
         .init();
 
     run(service_fn(function_handler)).await
@@ -131,9 +129,8 @@ use serde_json::json;
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     tracing_subscriber::fmt()
-        .with_ansi(false)
         .without_time()
-        .with_max_level(tracing_subscriber::filter::LevelFilter::INFO)
+        .with_max_level(tracing::Level::INFO)
         .init();
 
     run(service_fn(function_handler)).await
@@ -191,9 +188,8 @@ use serde_json::json;
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     tracing_subscriber::fmt()
-        .with_ansi(false)
         .without_time()
-        .with_max_level(tracing_subscriber::filter::LevelFilter::INFO)
+        .with_max_level(tracing::Level::INFO)
         .init();
 
     let config = aws_config::from_env()

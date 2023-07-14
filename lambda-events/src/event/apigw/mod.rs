@@ -34,6 +34,7 @@ where
     #[serde(serialize_with = "serialize_multi_value_headers")]
     pub multi_value_headers: HeaderMap,
     #[serde(default, deserialize_with = "query_map::serde::standard::deserialize_empty")]
+    #[serde(serialize_with = "query_map::serde::aws_api_gateway_v1::serialize_query_string_parameters")]
     pub query_string_parameters: QueryMap,
     #[serde(default, deserialize_with = "query_map::serde::standard::deserialize_empty")]
     pub multi_value_query_string_parameters: QueryMap,
@@ -151,6 +152,7 @@ pub struct ApiGatewayV2httpRequest {
         deserialize_with = "query_map::serde::aws_api_gateway_v2::deserialize_empty"
     )]
     #[serde(skip_serializing_if = "QueryMap::is_empty")]
+    #[serde(serialize_with = "query_map::serde::aws_api_gateway_v2::serialize_query_string_parameters")]
     pub query_string_parameters: QueryMap,
     #[serde(deserialize_with = "deserialize_lambda_map")]
     #[serde(default)]
@@ -834,6 +836,21 @@ mod test {
 
     #[test]
     #[cfg(feature = "apigw")]
+    fn example_apigw_request_multi_value_parameters() {
+        let data = include_bytes!("../../fixtures/example-apigw-request-multi-value-parameters.json");
+        let parsed: ApiGatewayProxyRequest = serde_json::from_slice(data).unwrap();
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: ApiGatewayProxyRequest = serde_json::from_slice(output.as_bytes()).unwrap();
+        assert_eq!(parsed, reparsed);
+
+        assert!(output.contains(r#""multiValueQueryStringParameters":{"name":["me","me2"]}"#));
+        assert!(output.contains(r#""queryStringParameters":{"name":"me"}"#));
+        assert!(output.contains(r#""headername":["headerValue","headerValue2"]"#));
+        assert!(output.contains(r#""headername":"headerValue2""#));
+    }
+
+    #[test]
+    #[cfg(feature = "apigw")]
     fn example_apigw_restapi_openapi_request() {
         let data = include_bytes!("../../fixtures/example-apigw-restapi-openapi-request.json");
         let parsed: ApiGatewayProxyRequest = serde_json::from_slice(data).unwrap();
@@ -870,6 +887,19 @@ mod test {
         let output: String = serde_json::to_string(&parsed).unwrap();
         let reparsed: ApiGatewayV2httpRequest = serde_json::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
+    }
+
+    #[test]
+    #[cfg(feature = "apigw")]
+    fn example_apigw_v2_request_multi_value_parameters() {
+        let data = include_bytes!("../../fixtures/example-apigw-v2-request-multi-value-parameters.json");
+        let parsed: ApiGatewayV2httpRequest = serde_json::from_slice(data).unwrap();
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: ApiGatewayV2httpRequest = serde_json::from_slice(output.as_bytes()).unwrap();
+        assert_eq!(parsed, reparsed);
+
+        assert!(output.contains(r#""header2":"value1,value2""#));
+        assert!(output.contains(r#""queryStringParameters":{"Parameter1":"value1,value2"}"#));
     }
 
     #[test]

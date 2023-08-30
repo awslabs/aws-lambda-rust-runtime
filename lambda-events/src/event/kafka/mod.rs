@@ -28,7 +28,7 @@ pub struct KafkaRecord {
     pub timestamp_type: Option<String>,
     pub key: Option<String>,
     pub value: Option<String>,
-    pub headers: Vec<HashMap<String, Vec<u8>>>,
+    pub headers: Vec<HashMap<String, Vec<i8>>>,
 }
 
 #[cfg(test)]

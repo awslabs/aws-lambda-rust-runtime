@@ -5,13 +5,11 @@ use crate::{
 use bytes::Bytes;
 use futures::FutureExt;
 use http::header::{CONTENT_TYPE, SET_COOKIE};
-use http::{Method, Request, Response, Uri};
+use http::{HeaderMap, Method, Request, Response, StatusCode, Uri};
 use hyper::body::HttpBody;
 use hyper::{client::connect::Connection, Body};
 use lambda_runtime_api_client::{build_request, Client};
-use serde::Deserialize;
-use serde_json::json;
-use std::collections::HashMap;
+use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use std::{
     env,
@@ -203,6 +201,16 @@ pub(crate) struct EventCompletionStreamingRequest<'a, B> {
     pub(crate) body: Response<B>,
 }
 
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct MetadataPrelude {
+    #[serde(serialize_with = "http_serde::status_code::serialize")]
+    status_code: StatusCode,
+    #[serde(serialize_with = "http_serde::header_map::serialize")]
+    headers: HeaderMap,
+    cookies: Vec<String>,
+}
+
 impl<'a, B> IntoRequest for EventCompletionStreamingRequest<'a, B>
 where
     B: HttpBody + Unpin + Send + 'static,
@@ -216,45 +224,39 @@ where
         let (parts, mut body) = self.body.into_parts();
 
         let mut builder = build_request().method(Method::POST).uri(uri);
-        let headers = builder.headers_mut().unwrap();
+        let req_headers = builder.headers_mut().unwrap();
 
-        headers.insert("Transfer-Encoding", "chunked".parse()?);
-        headers.insert("Lambda-Runtime-Function-Response-Mode", "streaming".parse()?);
-        headers.insert(
+        req_headers.insert("Transfer-Encoding", "chunked".parse()?);
+        req_headers.insert("Lambda-Runtime-Function-Response-Mode", "streaming".parse()?);
+        req_headers.insert(
             "Content-Type",
             "application/vnd.awslambda.http-integration-response".parse()?,
         );
 
+        let mut prelude_headers = parts.headers;
+        // default Content-Type
+        prelude_headers
+            .entry(CONTENT_TYPE)
+            .or_insert("application/octet-stream".parse().unwrap());
+
+        let cookies = prelude_headers.get_all(SET_COOKIE);
+        let cookies = cookies
+            .iter()
+            .map(|c| String::from_utf8_lossy(c.as_bytes()).to_string())
+            .collect::<Vec<String>>();
+        prelude_headers.remove(SET_COOKIE);
+
+        let metadata_prelude = serde_json::to_string(&MetadataPrelude {
+            status_code: parts.status,
+            headers: prelude_headers,
+            cookies,
+        })?;
+
+        trace!(?metadata_prelude);
+
         let (mut tx, rx) = Body::channel();
 
         tokio::spawn(async move {
-            let mut header_map = parts.headers;
-            // default Content-Type
-            header_map
-                .entry(CONTENT_TYPE)
-                .or_insert("application/octet-stream".parse().unwrap());
-
-            let cookies = header_map.get_all(SET_COOKIE);
-            let cookies = cookies
-                .iter()
-                .map(|c| String::from_utf8_lossy(c.as_bytes()).to_string())
-                .collect::<Vec<String>>();
-
-            let headers = header_map
-                .iter()
-                .filter(|(k, _)| *k != SET_COOKIE)
-                .map(|(k, v)| (k.as_str(), String::from_utf8_lossy(v.as_bytes()).to_string()))
-                .collect::<HashMap<&str, String>>();
-
-            let metadata_prelude = json!({
-                "statusCode": parts.status.as_u16(),
-                "headers": headers,
-                "cookies": cookies,
-            })
-            .to_string();
-
-            trace!("metadata_prelude: {}", metadata_prelude);
-
             tx.send_data(metadata_prelude.into()).await.unwrap();
             tx.send_data("\u{0}".repeat(8).into()).await.unwrap();
 

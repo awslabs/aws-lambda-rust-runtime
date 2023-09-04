@@ -237,7 +237,7 @@ where
         // default Content-Type
         prelude_headers
             .entry(CONTENT_TYPE)
-            .or_insert("application/octet-stream".parse().unwrap());
+            .or_insert("application/octet-stream".parse()?);
 
         let cookies = prelude_headers.get_all(SET_COOKIE);
         let cookies = cookies

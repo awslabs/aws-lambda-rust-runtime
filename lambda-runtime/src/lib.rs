@@ -20,7 +20,7 @@ use std::{
     env,
     fmt::{self, Debug, Display},
     future::Future,
-    panic,
+    panic, sync::Arc,
 };
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio_stream::{Stream, StreamExt};
@@ -101,6 +101,7 @@ where
         &self,
         incoming: impl Stream<Item = Result<http::Response<hyper::Body>, Error>> + Send,
         mut handler: F,
+        callback: Option<Arc<impl Fn()>>
     ) -> Result<(), Error>
     where
         F: Service<LambdaEvent<A>>,
@@ -202,7 +203,13 @@ where
             }
             .instrument(request_span)
             .await?;
+        
+            if let Some(callback) = callback.clone() {
+                callback();
+            }
         }
+
+
         Ok(())
     }
 }
@@ -258,7 +265,52 @@ where
 
     let client = &runtime.client;
     let incoming = incoming(client);
-    runtime.run(incoming, handler).await
+    let callback : Option<Arc<fn()>>= None;
+    runtime.run(incoming, handler, callback).await
+}
+
+/// Starts the Lambda Rust runtime and begins polling for events on the [Lambda
+/// Runtime APIs](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html).
+/// 
+/// The callback function is called at the end of a single invocation of the runtime.
+///
+/// # Example
+/// ```no_run
+/// use lambda_runtime::{Error, service_fn, LambdaEvent};
+/// use serde_json::Value;
+///
+/// #[tokio::main]
+/// async fn main() -> Result<(), Error> {
+///     let func = service_fn(func);
+///     lambda_runtime::run_with_callback(func, callback_func).await?;
+///     Ok(())
+/// }
+///
+/// async fn func(event: LambdaEvent<Value>) -> Result<Value, Error> {
+///     Ok(event.payload)
+/// }
+/// 
+/// async fn callback_func() -> () {
+///     println!("Callback function called!");
+///     ()
+/// }
+/// ```
+pub async fn run_with_callback<A, B, F>(handler: F, callback: Arc<impl Fn()>) -> Result<(), Error>
+where
+    F: Service<LambdaEvent<A>>,
+    F::Future: Future<Output = Result<B, F::Error>>,
+    F::Error: fmt::Debug + fmt::Display,
+    A: for<'de> Deserialize<'de>,
+    B: Serialize,
+{
+    trace!("Loading config from env");
+    let config = Config::from_env()?;
+    let client = Client::builder().build().expect("Unable to create a runtime client");
+    let runtime = Runtime { client, config };
+
+    let client = &runtime.client;
+    let incoming = incoming(client);
+    runtime.run(incoming, handler, Some(callback)).await
 }
 
 fn type_name_of_val<T>(_: T) -> &'static str {
@@ -293,7 +345,7 @@ mod endpoint_tests {
     use lambda_runtime_api_client::Client;
     use serde_json::json;
     use simulated::DuplexStreamWrapper;
-    use std::{convert::TryFrom, env};
+    use std::{convert::TryFrom, env, sync::Arc};
     use tokio::{
         io::{self, AsyncRead, AsyncWrite},
         select,
@@ -525,7 +577,8 @@ mod endpoint_tests {
         let runtime = Runtime { client, config };
         let client = &runtime.client;
         let incoming = incoming(client).take(1);
-        runtime.run(incoming, f).await?;
+        let callback: Option<Arc<fn()>> = None;
+        runtime.run(incoming, f, callback).await?;
 
         // shutdown server
         tx.send(()).expect("Receiver has been dropped");
@@ -568,7 +621,9 @@ mod endpoint_tests {
         let runtime = Runtime { client, config };
         let client = &runtime.client;
         let incoming = incoming(client).take(1);
-        runtime.run(incoming, f).await?;
+        let callback: Option<Arc<fn()>> = None;
+        
+        runtime.run(incoming, f, callback).await?;
 
         match server.await {
             Ok(_) => Ok(()),

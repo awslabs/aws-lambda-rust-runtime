@@ -1,0 +1,20 @@
+{
+  "ServiceToken": "arn:aws:lambda:eu-west-2:123456789012:function:custom-resource-handler",
+  "RequestType" : "Update",
+  "RequestId" : "49347ca5-c603-44e5-a34b-10cf1854a887",
+  "ResponseURL": "https://cr-response-bucket.s3.us-east-1.amazonaws.com/cr-response-key?sig-params=sig-values",
+  "StackId" : "arn:aws:cloudformation:us-east-1:123456789012:stack/stack-name/16580499-7622-4a9c-b32f-4eba35da93da",
+  "ResourceType" : "Custom::MyCustomResourceType",
+  "LogicalResourceId" : "CustomResource",
+  "PhysicalResourceId" : "custom-resource-f4bd5382-3de3-4caf-b7ad-1be06b899647",
+  "ResourceProperties" : {
+     "Key1" : "new-string",
+     "Key2" : [ "new-list" ],
+     "Key3" : { "Key4" : "new-map" }
+  },
+  "OldResourceProperties" : {
+     "Key1" : "string",
+     "Key2" : [ "list" ],
+     "Key3" : { "Key4" : "map" }
+  }
+}

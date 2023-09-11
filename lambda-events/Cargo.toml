@@ -42,6 +42,7 @@ default = [
   "autoscaling",
   "chime_bot",
   "clientvpn",
+  "cloudformation",
   "cloudwatch_events",
   "cloudwatch_logs",
   "code_commit",
@@ -81,6 +82,7 @@ appsync = []
 autoscaling = ["chrono"]
 chime_bot = ["chrono"]
 clientvpn = []
+cloudformation = []
 cloudwatch_events = ["chrono"]
 cloudwatch_logs = ["flate2"]
 code_commit = ["chrono"]

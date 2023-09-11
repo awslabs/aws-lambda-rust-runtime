@@ -101,7 +101,10 @@ mod test {
         let data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-create-request.json");
         let parsed: TestRequest = serde_json::from_slice(data).unwrap();
 
-        let Create(_) = parsed else { panic!("expected Create request") };
+        match parsed {
+            Create(_) => (),
+            _ => panic!("expected Create request"),
+        }
 
         let output: String = serde_json::to_string(&parsed).unwrap();
         let reparsed: TestRequest = serde_json::from_slice(output.as_bytes()).unwrap();
@@ -113,7 +116,10 @@ mod test {
         let data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-update-request.json");
         let parsed: TestRequest = serde_json::from_slice(data).unwrap();
 
-        let Update(_) = parsed else { panic!("expected Update request") };
+        match parsed {
+            Update(_) => (),
+            _ => panic!("expected Update request"),
+        }
 
         let output: String = serde_json::to_string(&parsed).unwrap();
         let reparsed: TestRequest = serde_json::from_slice(output.as_bytes()).unwrap();
@@ -125,7 +131,10 @@ mod test {
         let data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-delete-request.json");
         let parsed: TestRequest = serde_json::from_slice(data).unwrap();
 
-        let Delete(_) = parsed else { panic!("expected Delete request") };
+        match parsed {
+            Delete(_) => (),
+            _ => panic!("expected Delete request"),
+        }
 
         let output: String = serde_json::to_string(&parsed).unwrap();
         let reparsed: TestRequest = serde_json::from_slice(output.as_bytes()).unwrap();

@@ -1,4 +1,4 @@
-use chrono::{DateTime, TimeZone, Utc};
+use chrono::{DateTime, NaiveDateTime, Utc};
 use serde::ser::Serializer;
 use serde::{
     de::{Deserializer, Error as DeError, Visitor},
@@ -18,7 +18,8 @@ impl<'de> Visitor<'de> for TimeVisitor {
     }
 
     fn visit_str<E: DeError>(self, val: &str) -> Result<Self::Value, E> {
-        Utc.datetime_from_str(val, CODEBUILD_TIME_FORMAT)
+        NaiveDateTime::parse_from_str(val, CODEBUILD_TIME_FORMAT)
+            .map(|naive| naive.and_utc())
             .map_err(|e| DeError::custom(format!("Parse error {} for {}", e, val)))
     }
 }
@@ -81,9 +82,9 @@ mod tests {
             "date": "Sep 1, 2017 4:12:29 PM"
         });
 
-        let expected = Utc
-            .datetime_from_str("Sep 1, 2017 4:12:29 PM", CODEBUILD_TIME_FORMAT)
-            .unwrap();
+        let expected = NaiveDateTime::parse_from_str("Sep 1, 2017 4:12:29 PM", CODEBUILD_TIME_FORMAT)
+            .unwrap()
+            .and_utc();
         let decoded: Test = serde_json::from_value(data).unwrap();
         assert_eq!(expected, decoded.date);
     }
@@ -99,9 +100,9 @@ mod tests {
             "date": "Sep 1, 2017 4:12:29 PM"
         });
 
-        let expected = Utc
-            .datetime_from_str("Sep 1, 2017 4:12:29 PM", CODEBUILD_TIME_FORMAT)
-            .unwrap();
+        let expected = NaiveDateTime::parse_from_str("Sep 1, 2017 4:12:29 PM", CODEBUILD_TIME_FORMAT)
+            .unwrap()
+            .and_utc();
         let decoded: Test = serde_json::from_value(data).unwrap();
         assert_eq!(Some(expected), decoded.date);
     }

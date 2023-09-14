@@ -114,6 +114,8 @@ where
 
                 req_headers.insert("Transfer-Encoding", "chunked".parse()?);
                 req_headers.insert("Lambda-Runtime-Function-Response-Mode", "streaming".parse()?);
+                // Report midstream errors using error trailers.
+                // See the details in Lambda Developer Doc: https://docs.aws.amazon.com/lambda/latest/dg/runtimes-custom.html#runtimes-custom-response-streaming
                 req_headers.append("Trailer", "Lambda-Runtime-Function-Error-Type".parse()?);
                 req_headers.append("Trailer", "Lambda-Runtime-Function-Error-Body".parse()?);
                 req_headers.insert(

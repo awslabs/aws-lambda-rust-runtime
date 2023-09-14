@@ -33,6 +33,7 @@ lambda_runtime = { path = "../lambda-runtime", version = "0.8" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_urlencoded = "0.7"
+tokio-stream = "0.1.2"
 mime = "0.3"
 encoding_rs = "0.8"
 url = "2.2"

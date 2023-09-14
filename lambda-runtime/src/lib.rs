@@ -96,7 +96,7 @@ where
     C::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
     C::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
 {
-    pub async fn run<F, A, R, B, S, D, E>(
+    async fn run<F, A, R, B, S, D, E>(
         &self,
         incoming: impl Stream<Item = Result<http::Response<hyper::Body>, Error>> + Send,
         mut handler: F,

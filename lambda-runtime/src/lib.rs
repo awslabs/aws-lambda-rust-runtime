@@ -7,6 +7,7 @@
 //! Create a type that conforms to the [`tower::Service`] trait. This type can
 //! then be passed to the the `lambda_runtime::run` function, which launches
 //! and runs the Lambda runtime.
+use bytes::Bytes;
 use futures::FutureExt;
 use hyper::{
     client::{connect::Connection, HttpConnector},
@@ -20,6 +21,7 @@ use std::{
     env,
     fmt::{self, Debug, Display},
     future::Future,
+    marker::PhantomData,
     panic,
 };
 use tokio::io::{AsyncRead, AsyncWrite};
@@ -35,11 +37,8 @@ mod simulated;
 /// Types available to a Lambda function.
 mod types;
 
-mod streaming;
-pub use streaming::run_with_streaming_response;
-
 use requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest};
-pub use types::{Context, LambdaEvent};
+pub use types::{Context, FunctionResponse, IntoFunctionResponse, LambdaEvent, MetadataPrelude, StreamResponse};
 
 /// Error type that lambdas may result in
 pub type Error = lambda_runtime_api_client::Error;
@@ -97,17 +96,21 @@ where
     C::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
     C::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
 {
-    async fn run<F, A, B>(
+    async fn run<F, A, R, B, S, D, E>(
         &self,
         incoming: impl Stream<Item = Result<http::Response<hyper::Body>, Error>> + Send,
         mut handler: F,
     ) -> Result<(), Error>
     where
         F: Service<LambdaEvent<A>>,
-        F::Future: Future<Output = Result<B, F::Error>>,
+        F::Future: Future<Output = Result<R, F::Error>>,
         F::Error: fmt::Debug + fmt::Display,
         A: for<'de> Deserialize<'de>,
+        R: IntoFunctionResponse<B, S>,
         B: Serialize,
+        S: Stream<Item = Result<D, E>> + Unpin + Send + 'static,
+        D: Into<Bytes> + Send,
+        E: Into<Error> + Send + Debug,
     {
         let client = &self.client;
         tokio::pin!(incoming);
@@ -177,6 +180,8 @@ where
                                     EventCompletionRequest {
                                         request_id,
                                         body: response,
+                                        _unused_b: PhantomData,
+                                        _unused_s: PhantomData,
                                     }
                                     .into_req()
                                 }
@@ -243,13 +248,17 @@ where
 ///     Ok(event.payload)
 /// }
 /// ```
-pub async fn run<A, B, F>(handler: F) -> Result<(), Error>
+pub async fn run<A, F, R, B, S, D, E>(handler: F) -> Result<(), Error>
 where
     F: Service<LambdaEvent<A>>,
-    F::Future: Future<Output = Result<B, F::Error>>,
+    F::Future: Future<Output = Result<R, F::Error>>,
     F::Error: fmt::Debug + fmt::Display,
     A: for<'de> Deserialize<'de>,
+    R: IntoFunctionResponse<B, S>,
     B: Serialize,
+    S: Stream<Item = Result<D, E>> + Unpin + Send + 'static,
+    D: Into<Bytes> + Send,
+    E: Into<Error> + Send + Debug,
 {
     trace!("Loading config from env");
     let config = Config::from_env()?;
@@ -293,7 +302,7 @@ mod endpoint_tests {
     use lambda_runtime_api_client::Client;
     use serde_json::json;
     use simulated::DuplexStreamWrapper;
-    use std::{convert::TryFrom, env};
+    use std::{convert::TryFrom, env, marker::PhantomData};
     use tokio::{
         io::{self, AsyncRead, AsyncWrite},
         select,
@@ -430,6 +439,8 @@ mod endpoint_tests {
         let req = EventCompletionRequest {
             request_id: "156cb537-e2d4-11e8-9b34-d36013741fb9",
             body: "done",
+            _unused_b: PhantomData::<&str>,
+            _unused_s: PhantomData::<Body>,
         };
         let req = req.into_req()?;
 

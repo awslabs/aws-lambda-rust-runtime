@@ -1,8 +1,4 @@
 use crate::request::LambdaRequest;
-use aws_lambda_events::{
-    alb::AlbTargetGroupRequest,
-    apigw::{ApiGatewayProxyRequest, ApiGatewayV2httpRequest, ApiGatewayWebsocketProxyRequest},
-};
 use serde::{de::Error, Deserialize};
 
 const ERROR_CONTEXT: &str = "this function expects a JSON payload from Amazon API Gateway, Amazon Elastic Load Balancer, or AWS Lambda Function URLs, but the data doesn't match any of those services' events";
@@ -17,28 +13,29 @@ impl<'de> Deserialize<'de> for LambdaRequest {
             Err(err) => return Err(err),
         };
         #[cfg(feature = "apigw_rest")]
-        if let Ok(res) =
-            ApiGatewayProxyRequest::deserialize(serde::__private::de::ContentRefDeserializer::<D::Error>::new(&content))
-        {
+        if let Ok(res) = aws_lambda_events::apigw::ApiGatewayProxyRequest::deserialize(
+            serde::__private::de::ContentRefDeserializer::<D::Error>::new(&content),
+        ) {
             return Ok(LambdaRequest::ApiGatewayV1(res));
         }
         #[cfg(feature = "apigw_http")]
-        if let Ok(res) = ApiGatewayV2httpRequest::deserialize(
+        if let Ok(res) = aws_lambda_events::apigw::ApiGatewayV2httpRequest::deserialize(
             serde::__private::de::ContentRefDeserializer::<D::Error>::new(&content),
         ) {
             return Ok(LambdaRequest::ApiGatewayV2(res));
         }
         #[cfg(feature = "alb")]
         if let Ok(res) =
-            AlbTargetGroupRequest::deserialize(serde::__private::de::ContentRefDeserializer::<D::Error>::new(&content))
+            aws_lambda_events::alb::AlbTargetGroupRequest::deserialize(serde::__private::de::ContentRefDeserializer::<
+                D::Error,
+            >::new(&content))
         {
             return Ok(LambdaRequest::Alb(res));
         }
         #[cfg(feature = "apigw_websockets")]
-        if let Ok(res) = ApiGatewayWebsocketProxyRequest::deserialize(serde::__private::de::ContentRefDeserializer::<
-            D::Error,
-        >::new(&content))
-        {
+        if let Ok(res) = aws_lambda_events::apigw::ApiGatewayWebsocketProxyRequest::deserialize(
+            serde::__private::de::ContentRefDeserializer::<D::Error>::new(&content),
+        ) {
             return Ok(LambdaRequest::WebSocket(res));
         }
 

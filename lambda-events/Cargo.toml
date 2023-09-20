@@ -30,7 +30,10 @@ chrono = { version = "0.4.23", default-features = false, features = [
   "serde",
   "std",
 ], optional = true }
-query_map = { version = "^0.7", features = ["serde", "url-query"], optional = true }
+query_map = { version = "^0.7", features = [
+  "serde",
+  "url-query",
+], optional = true }
 flate2 = { version = "1.0.24", optional = true }
 
 [features]
@@ -72,6 +75,7 @@ default = [
   "sns",
   "sqs",
   "streams",
+  "eventbridge",
 ]
 
 activemq = []
@@ -112,3 +116,4 @@ ses = ["chrono"]
 sns = ["chrono", "serde_with"]
 sqs = ["serde_with"]
 streams = []
+eventbridge = ["chrono", "serde_with"]

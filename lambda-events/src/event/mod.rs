@@ -136,3 +136,7 @@ pub mod sqs;
 /// AWS Lambda event definitions for streams.
 #[cfg(feature = "streams")]
 pub mod streams;
+
+// AWS Lambda event definitions for DocumentDB
+#[cfg(feature = "documentdb")]
+pub mod documentdb;

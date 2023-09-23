@@ -2,12 +2,9 @@ use serde::{Deserialize, Serialize};
 
 use super::commom_types::{DocumentId, DocumentKeyId, Timestamp, InsertNs};
 
-
-// TODO: Campos pendentes, carece insumo de teste
-
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ChangeInsertEvent<T: Serialize> {
+pub struct ChangeDeleteEvent<> {
     #[serde(rename = "_id")]
     id: DocumentId,
     cluster_time: Timestamp,
@@ -15,11 +12,12 @@ pub struct ChangeInsertEvent<T: Serialize> {
     #[serde(rename = "collectionUUID")]
     collection_uuid: Option<String>,
     document_key: DocumentKeyId,
-    full_document: T,
     #[serde(default)]
     lsid: Option<String>,
     ns: InsertNs,
     operation_type: String,
+    #[serde(default)]
+    operation_decription: Option<String>,
     #[serde(default)]
     txt_number: Option<String>,
     #[serde(default)]

@@ -64,9 +64,11 @@
 #[macro_use]
 extern crate maplit;
 
+use bytes::Bytes;
 pub use http::{self, Response};
-use lambda_runtime::LambdaEvent;
-pub use lambda_runtime::{self, service_fn, tower, Context, Error, Service};
+pub use lambda_runtime::{
+    self, crac, service_fn, tower, Context, Error, LambdaEvent, MetadataPrelude, Service, StreamResponse,
+};
 use request::RequestFuture;
 use response::ResponseFuture;
 
@@ -89,15 +91,165 @@ use crate::{
 pub use aws_lambda_events;
 
 pub use aws_lambda_events::encodings::Body;
+use http::header::SET_COOKIE;
 use std::{
+    fmt::Debug,
+    fmt::Display,
     future::Future,
     marker::PhantomData,
     pin::Pin,
     task::{Context as TaskContext, Poll},
 };
+use tokio_stream::Stream;
+use tower::{ServiceBuilder, ServiceExt};
 
-mod streaming;
-pub use streaming::run_with_streaming_response;
+/// Starts the Lambda Rust runtime and begins polling for events on the [Lambda
+/// Runtime APIs](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html).
+///
+/// This takes care of transforming the LambdaEvent into a [`Request`] and then
+/// converting the result into a [`LambdaResponse`].
+pub async fn run<'a, R, S, E>(handler: S) -> Result<(), Error>
+where
+    S: Service<Request, Response = R, Error = E>,
+    S::Future: Send + 'a,
+    R: IntoResponse,
+    E: std::fmt::Debug + std::fmt::Display,
+{
+    Runtime::new().register(&()).run(handler).await
+}
+
+/// Starts the Lambda Rust runtime and stream response back [Configure Lambda
+/// Streaming Response](https://docs.aws.amazon.com/lambda/latest/dg/configuration-response-streaming.html).
+///
+/// This takes care of transforming the LambdaEvent into a [`Request`] and
+/// accepts [`http::Response<http_body::Body>`] as response.
+pub async fn run_with_streaming_response<'a, S, B, E>(handler: S) -> Result<(), Error>
+where
+    S: Service<Request, Response = Response<B>, Error = E>,
+    S::Future: Send + 'a,
+    E: Debug + Display,
+    B: http_body::Body + Unpin + Send + 'static,
+    B::Data: Into<Bytes> + Send,
+    B::Error: Into<Error> + Send + Debug,
+{
+    Runtime::new().register(&()).run_with_streaming_response(handler).await
+}
+
+/// The entry point for the lambda function using Builder pattern.
+pub struct Runtime<'a, T: crac::Resource> {
+    inner: lambda_runtime::Runtime<'a, T>,
+}
+
+impl<'a, T: crac::Resource> Default for Runtime<'a, T> {
+    fn default() -> Self {
+        Runtime::new()
+    }
+}
+
+impl<'a, T: crac::Resource> Runtime<'a, T> {
+    /// Creates a new `Runtime`
+    pub fn new() -> Self {
+        Self {
+            inner: lambda_runtime::Runtime::new(),
+        }
+    }
+
+    /// Registers a new crac::Resource with the `Runtime`
+    pub fn register(&mut self, resource: &'a T) -> &mut Self {
+        self.inner.register(resource);
+        self
+    }
+
+    /// Runs the lambda function with the provided handler `Service`
+    pub async fn run<R, S, E>(&self, handler: S) -> Result<(), Error>
+    where
+        S: Service<Request, Response = R, Error = E>,
+        S::Future: Send + 'a,
+        R: IntoResponse,
+        E: std::fmt::Debug + std::fmt::Display,
+    {
+        self.inner.run(Adapter::from(handler)).await
+    }
+
+    /// Starts the Lambda Rust runtime and stream response back [Configure Lambda
+    /// Streaming Response](https://docs.aws.amazon.com/lambda/latest/dg/configuration-response-streaming.html).
+    ///
+    /// This takes care of transforming the LambdaEvent into a [`Request`] and
+    /// accepts [`http::Response<http_body::Body>`] as response.
+    pub async fn run_with_streaming_response<S, B, E>(&self, handler: S) -> Result<(), Error>
+    where
+        S: Service<Request, Response = Response<B>, Error = E>,
+        S::Future: Send + 'a,
+        E: Debug + Display,
+        B: http_body::Body + Unpin + Send + 'static,
+        B::Data: Into<Bytes> + Send,
+        B::Error: Into<Error> + Send + Debug,
+    {
+        let svc = ServiceBuilder::new()
+            .map_request(|req: LambdaEvent<LambdaRequest>| {
+                let event: Request = req.payload.into();
+                event.with_lambda_context(req.context)
+            })
+            .service(handler)
+            .map_response(|res| {
+                let (parts, body) = res.into_parts();
+
+                let mut prelude_headers = parts.headers;
+
+                let cookies = prelude_headers.get_all(SET_COOKIE);
+                let cookies = cookies
+                    .iter()
+                    .map(|c| String::from_utf8_lossy(c.as_bytes()).to_string())
+                    .collect::<Vec<String>>();
+
+                prelude_headers.remove(SET_COOKIE);
+
+                let metadata_prelude = MetadataPrelude {
+                    headers: prelude_headers,
+                    status_code: parts.status,
+                    cookies,
+                };
+
+                StreamResponse {
+                    metadata_prelude,
+                    stream: BodyStream { body },
+                }
+            });
+
+        self.inner.run(svc).await
+    }
+}
+
+/// Stream wrapper for [`http_body::Body`]
+pub struct BodyStream<B> {
+    /// Wrapped [`http_body::Body`]
+    pub body: B,
+}
+
+impl<B> BodyStream<B>
+where
+    B: http_body::Body + Unpin + Send + 'static,
+    B::Data: Into<Bytes> + Send,
+    B::Error: Into<Error> + Send + Debug,
+{
+    fn project(self: Pin<&mut Self>) -> Pin<&mut B> {
+        unsafe { self.map_unchecked_mut(|s| &mut s.body) }
+    }
+}
+
+impl<B> Stream for BodyStream<B>
+where
+    B: http_body::Body + Unpin + Send + 'static,
+    B::Data: Into<Bytes> + Send,
+    B::Error: Into<Error> + Send + Debug,
+{
+    type Item = Result<B::Data, B::Error>;
+
+    fn poll_next(self: Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> Poll<Option<Self::Item>> {
+        let body = self.project();
+        body.poll_data(cx)
+    }
+}
 
 /// Type alias for `http::Request`s with a fixed [`Body`](enum.Body.html) type
 pub type Request = http::Request<Body>;
@@ -179,21 +331,6 @@ where
 
         TransformResponse::Request(request_origin, fut)
     }
-}
-
-/// Starts the Lambda Rust runtime and begins polling for events on the [Lambda
-/// Runtime APIs](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html).
-///
-/// This takes care of transforming the LambdaEvent into a [`Request`] and then
-/// converting the result into a [`LambdaResponse`].
-pub async fn run<'a, R, S, E>(handler: S) -> Result<(), Error>
-where
-    S: Service<Request, Response = R, Error = E>,
-    S::Future: Send + 'a,
-    R: IntoResponse,
-    E: std::fmt::Debug + std::fmt::Display,
-{
-    lambda_runtime::run(Adapter::from(handler)).await
 }
 
 #[cfg(test)]

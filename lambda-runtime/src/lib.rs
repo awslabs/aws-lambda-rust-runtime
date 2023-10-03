@@ -9,11 +9,7 @@
 //! and runs the Lambda runtime.
 use bytes::Bytes;
 use futures::FutureExt;
-use hyper::{
-    client::{connect::Connection, HttpConnector},
-    http::Request,
-    Body,
-};
+use hyper::{client::HttpConnector, http::Request, Body};
 use lambda_runtime_api_client::Client;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -24,20 +20,21 @@ use std::{
     marker::PhantomData,
     panic,
 };
-use tokio::io::{AsyncRead, AsyncWrite};
 use tokio_stream::{Stream, StreamExt};
 pub use tower::{self, service_fn, Service};
 use tower::{util::ServiceFn, ServiceExt};
 use tracing::{error, trace, Instrument};
 
+/// CRAC module contains the Resource trait for receiving checkpoint/restore notifications.
+pub mod crac;
 mod deserializer;
 mod requests;
-#[cfg(test)]
-mod simulated;
 /// Types available to a Lambda function.
 mod types;
 
-use requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest};
+use requests::{
+    EventCompletionRequest, EventErrorRequest, InitErrorRequest, IntoRequest, NextEventRequest, RestoreNextRequest,
+};
 pub use types::{Context, FunctionResponse, IntoFunctionResponse, LambdaEvent, MetadataPrelude, StreamResponse};
 
 /// Error type that lambdas may result in
@@ -56,6 +53,8 @@ pub struct Config {
     pub log_stream: String,
     /// The name of the Amazon CloudWatch Logs group for the function.
     pub log_group: String,
+    /// The initialization type of the functin, which is 'on-demand', 'provisioned-concurrency', or 'snap-start'.
+    pub init_type: String,
 }
 
 impl Config {
@@ -70,6 +69,7 @@ impl Config {
             version: env::var("AWS_LAMBDA_FUNCTION_VERSION").expect("Missing AWS_LAMBDA_FUNCTION_VERSION env var"),
             log_stream: env::var("AWS_LAMBDA_LOG_STREAM_NAME").unwrap_or_default(),
             log_group: env::var("AWS_LAMBDA_LOG_GROUP_NAME").unwrap_or_default(),
+            init_type: env::var("AWS_LAMBDA_INITIALIZATION_TYPE").unwrap_or_default(),
         };
         Ok(conf)
     }
@@ -84,19 +84,15 @@ where
     service_fn(move |req: LambdaEvent<A>| f(req.payload, req.context))
 }
 
-struct Runtime<C: Service<http::Uri> = HttpConnector> {
-    client: Client<C>,
+/// The entry point for the lambda function using Builder pattern.
+pub struct Runtime<'a, T: crac::Resource> {
+    client: Client<HttpConnector>,
     config: Config,
+    crac_context: crac::Context<'a, T>,
 }
 
-impl<C> Runtime<C>
-where
-    C: Service<http::Uri> + Clone + Send + Sync + Unpin + 'static,
-    C::Future: Unpin + Send,
-    C::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
-    C::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
-{
-    async fn run<F, A, R, B, S, D, E>(
+impl<'a, T: crac::Resource> Runtime<'a, T> {
+    async fn execute<F, A, R, B, S, D, E>(
         &self,
         incoming: impl Stream<Item = Result<http::Response<hyper::Body>, Error>> + Send,
         mut handler: F,
@@ -113,6 +109,9 @@ where
         E: Into<Error> + Send + Debug,
     {
         let client = &self.client;
+        if "snap-start" == self.config.init_type {
+            self.on_init_complete(client).await?;
+        }
         tokio::pin!(incoming);
         while let Some(next_event_response) = incoming.next().await {
             trace!("New event arrived (run loop)");
@@ -210,15 +209,73 @@ where
         }
         Ok(())
     }
+
+    async fn on_init_complete(&self, client: &Client<HttpConnector>) -> Result<(), Error> {
+        let res = self.crac_context.before_checkpoint();
+        if let Err(err) = res {
+            error!("{:?}", err);
+            let req = InitErrorRequest::new("runtime.BeforeCheckpointError", &err.to_string()).into_req()?;
+            client.call(req).await?;
+            std::process::exit(64)
+        }
+
+        let req = RestoreNextRequest
+            .into_req()
+            .expect("Unable to build restore next requests");
+        // Blocking call to RAPID /runtime/restore/next API, will return after taking snapshot.
+        // This will also be the 'entrypoint' when resuming from snapshots.
+        client.call(req).await?;
+
+        let res = self.crac_context.after_restore();
+        if let Err(err) = res {
+            error!("{:?}", err);
+            let req = InitErrorRequest::new("runtime.AfterRestoreError", &err.to_string()).into_req()?;
+            client.call(req).await?;
+            std::process::exit(64)
+        }
+
+        Ok(())
+    }
+
+    /// Creates a new Lambda Rust runtime.
+    pub fn new() -> Self {
+        trace!("Loading config from env");
+        let config = Config::from_env().expect("Unable to parse config from environment variables");
+        let client = Client::builder().build().expect("Unable to create a runtime client");
+        Runtime {
+            client,
+            config,
+            crac_context: crac::Context::new(),
+        }
+    }
+
+    /// Registers a crac::Resource with the runtime.
+    pub fn register(&mut self, resource: &'a T) -> &mut Self {
+        self.crac_context.register(resource);
+        self
+    }
+
+    /// Runs the Lambda Rust runtime.
+    pub async fn run<A, F, R, B, S, D, E>(&self, handler: F) -> Result<(), Error>
+    where
+        F: Service<LambdaEvent<A>>,
+        F::Future: Future<Output = Result<R, F::Error>>,
+        F::Error: fmt::Debug + fmt::Display,
+        A: for<'de> Deserialize<'de>,
+        R: IntoFunctionResponse<B, S>,
+        B: Serialize,
+        S: Stream<Item = Result<D, E>> + Unpin + Send + 'static,
+        D: Into<Bytes> + Send,
+        E: Into<Error> + Send + Debug,
+    {
+        let incoming = incoming(&self.client);
+        self.execute(incoming, handler).await
+    }
 }
 
-fn incoming<C>(client: &Client<C>) -> impl Stream<Item = Result<http::Response<hyper::Body>, Error>> + Send + '_
-where
-    C: Service<http::Uri> + Clone + Send + Sync + Unpin + 'static,
-    <C as Service<http::Uri>>::Future: Unpin + Send,
-    <C as Service<http::Uri>>::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
-    <C as Service<http::Uri>>::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
-{
+fn incoming(
+    client: &Client<HttpConnector>,
+) -> impl Stream<Item = Result<http::Response<hyper::Body>, Error>> + Send + '_ {
     async_stream::stream! {
         loop {
             trace!("Waiting for next event (incoming loop)");
@@ -226,6 +283,12 @@ where
             let res = client.call(req).await;
             yield res;
         }
+    }
+}
+
+impl<'a, T: crac::Resource> Default for Runtime<'a, T> {
+    fn default() -> Self {
+        Runtime::new()
     }
 }
 
@@ -260,14 +323,7 @@ where
     D: Into<Bytes> + Send,
     E: Into<Error> + Send + Debug,
 {
-    trace!("Loading config from env");
-    let config = Config::from_env()?;
-    let client = Client::builder().build().expect("Unable to create a runtime client");
-    let runtime = Runtime { client, config };
-
-    let client = &runtime.client;
-    let incoming = incoming(client);
-    runtime.run(incoming, handler).await
+    Runtime::new().register(&()).run(handler).await
 }
 
 fn type_name_of_val<T>(_: T) -> &'static str {
@@ -288,223 +344,136 @@ where
 #[cfg(test)]
 mod endpoint_tests {
     use crate::{
-        incoming,
-        requests::{
-            EventCompletionRequest, EventErrorRequest, IntoRequest, IntoResponse, NextEventRequest, NextEventResponse,
-        },
-        simulated,
+        crac, incoming,
+        requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest},
         types::Diagnostic,
         Error, Runtime,
     };
     use futures::future::BoxFuture;
-    use http::{uri::PathAndQuery, HeaderValue, Method, Request, Response, StatusCode, Uri};
-    use hyper::{server::conn::Http, service::service_fn, Body};
+    use http::{HeaderValue, StatusCode, Uri};
+    use httpmock::prelude::*;
+    use hyper::{client::HttpConnector, Body};
     use lambda_runtime_api_client::Client;
     use serde_json::json;
-    use simulated::DuplexStreamWrapper;
     use std::{convert::TryFrom, env, marker::PhantomData};
-    use tokio::{
-        io::{self, AsyncRead, AsyncWrite},
-        select,
-        sync::{self, oneshot},
-    };
     use tokio_stream::StreamExt;
 
-    #[cfg(test)]
-    async fn next_event(req: &Request<Body>) -> Result<Response<Body>, Error> {
-        let path = "/2018-06-01/runtime/invocation/next";
-        assert_eq!(req.method(), Method::GET);
-        assert_eq!(req.uri().path_and_query().unwrap(), &PathAndQuery::from_static(path));
-        let body = json!({"message": "hello"});
-
-        let rsp = NextEventResponse {
-            request_id: "8476a536-e9f4-11e8-9739-2dfe598c3fcd",
-            deadline: 1_542_409_706_888,
-            arn: "arn:aws:lambda:us-east-2:123456789012:function:custom-runtime",
-            trace_id: "Root=1-5bef4de7-ad49b0e87f6ef6c87fc2e700;Parent=9a9197af755a6419",
-            body: serde_json::to_vec(&body)?,
-        };
-        rsp.into_rsp()
-    }
-
-    #[cfg(test)]
-    async fn complete_event(req: &Request<Body>, id: &str) -> Result<Response<Body>, Error> {
-        assert_eq!(Method::POST, req.method());
-        let rsp = Response::builder()
-            .status(StatusCode::ACCEPTED)
-            .body(Body::empty())
-            .expect("Unable to construct response");
-
-        let expected = format!("/2018-06-01/runtime/invocation/{id}/response");
-        assert_eq!(expected, req.uri().path());
-
-        Ok(rsp)
-    }
-
-    #[cfg(test)]
-    async fn event_err(req: &Request<Body>, id: &str) -> Result<Response<Body>, Error> {
-        let expected = format!("/2018-06-01/runtime/invocation/{id}/error");
-        assert_eq!(expected, req.uri().path());
-
-        assert_eq!(req.method(), Method::POST);
-        let header = "lambda-runtime-function-error-type";
-        let expected = "unhandled";
-        assert_eq!(req.headers()[header], HeaderValue::try_from(expected)?);
-
-        let rsp = Response::builder().status(StatusCode::ACCEPTED).body(Body::empty())?;
-        Ok(rsp)
-    }
-
-    #[cfg(test)]
-    async fn handle_incoming(req: Request<Body>) -> Result<Response<Body>, Error> {
-        let path: Vec<&str> = req
-            .uri()
-            .path_and_query()
-            .expect("PathAndQuery not found")
-            .as_str()
-            .split('/')
-            .collect::<Vec<&str>>();
-        match path[1..] {
-            ["2018-06-01", "runtime", "invocation", "next"] => next_event(&req).await,
-            ["2018-06-01", "runtime", "invocation", id, "response"] => complete_event(&req, id).await,
-            ["2018-06-01", "runtime", "invocation", id, "error"] => event_err(&req, id).await,
-            ["2018-06-01", "runtime", "init", "error"] => unimplemented!(),
-            _ => unimplemented!(),
-        }
-    }
-
-    #[cfg(test)]
-    async fn handle<I>(io: I, rx: oneshot::Receiver<()>) -> Result<(), hyper::Error>
-    where
-        I: AsyncRead + AsyncWrite + Unpin + 'static,
-    {
-        let conn = Http::new().serve_connection(io, service_fn(handle_incoming));
-        select! {
-            _ = rx => {
-                Ok(())
-            }
-            res = conn => {
-                match res {
-                    Ok(()) => Ok(()),
-                    Err(e) => {
-                        Err(e)
-                    }
-                }
-            }
-        }
-    }
-
     #[tokio::test]
-    async fn test_next_event() -> Result<(), Error> {
-        let base = Uri::from_static("http://localhost:9001");
-        let (client, server) = io::duplex(64);
-
-        let (tx, rx) = sync::oneshot::channel();
-        let server = tokio::spawn(async {
-            handle(server, rx).await.expect("Unable to handle request");
+    async fn test_next_event() {
+        // Start mock runtime api server
+        let rapid = MockServer::start();
+        let request_id = "156cb537-e2d4-11e8-9b34-d36013741fb9";
+        let endpoint = rapid.mock(|when, then| {
+            when.method(GET).path("/2018-06-01/runtime/invocation/next");
+            then.status(StatusCode::OK.as_u16())
+                .header("Lambda-Runtime-Aws-Request-Id", request_id)
+                .header("Lambda-Runtime-Deadline-Ms", "1542409706888")
+                .body("ok");
         });
 
-        let conn = simulated::Connector::with(base.clone(), DuplexStreamWrapper::new(client))?;
-        let client = Client::with(base, conn);
-
-        let req = NextEventRequest.into_req()?;
+        // build the next event request and send to the mock endpoint
+        let base = Uri::try_from(format!("http://{}", rapid.address())).unwrap();
+        let client = Client::with(base, HttpConnector::new());
+        let req = NextEventRequest.into_req().unwrap();
         let rsp = client.call(req).await.expect("Unable to send request");
 
+        // Assert endpoint was called once
+        endpoint.assert();
+        // and response has expected content
         assert_eq!(rsp.status(), StatusCode::OK);
-        let header = "lambda-runtime-deadline-ms";
-        assert_eq!(rsp.headers()[header], &HeaderValue::try_from("1542409706888")?);
-
-        // shutdown server...
-        tx.send(()).expect("Receiver has been dropped");
-        match server.await {
-            Ok(_) => Ok(()),
-            Err(e) if e.is_panic() => Err::<(), Error>(e.into()),
-            Err(_) => unreachable!("This branch shouldn't be reachable"),
-        }
+        assert_eq!(
+            rsp.headers()["Lambda-Runtime-Aws-Request-Id"],
+            &HeaderValue::try_from(request_id).unwrap()
+        );
+        assert_eq!(
+            rsp.headers()["Lambda-Runtime-Deadline-Ms"],
+            &HeaderValue::try_from("1542409706888").unwrap()
+        );
     }
 
     #[tokio::test]
-    async fn test_ok_response() -> Result<(), Error> {
-        let (client, server) = io::duplex(64);
-        let (tx, rx) = sync::oneshot::channel();
-        let base = Uri::from_static("http://localhost:9001");
-
-        let server = tokio::spawn(async {
-            handle(server, rx).await.expect("Unable to handle request");
+    async fn test_ok_response() {
+        // Start mock runtime api server
+        let rapid = MockServer::start();
+        let request_id = "156cb537-e2d4-11e8-9b34-d36013741fb9";
+        let endpoint = rapid.mock(|when, then| {
+            when.method(POST)
+                .path(format!("/2018-06-01/runtime/invocation/{}/response", request_id));
+            then.status(StatusCode::ACCEPTED.as_u16());
         });
 
-        let conn = simulated::Connector::with(base.clone(), DuplexStreamWrapper::new(client))?;
-        let client = Client::with(base, conn);
+        // build the OK response and send to the mock endpoint
+        let base = Uri::try_from(format!("http://{}", rapid.address())).unwrap();
+        let client = Client::with(base, HttpConnector::new());
 
         let req = EventCompletionRequest {
-            request_id: "156cb537-e2d4-11e8-9b34-d36013741fb9",
+            request_id,
             body: "done",
             _unused_b: PhantomData::<&str>,
             _unused_s: PhantomData::<Body>,
         };
-        let req = req.into_req()?;
+        let req = req.into_req().unwrap();
 
-        let rsp = client.call(req).await?;
+        let rsp = client.call(req).await.unwrap();
+
+        // Assert endpoint was called once
+        endpoint.assert();
+        // and response has expected content
         assert_eq!(rsp.status(), StatusCode::ACCEPTED);
-
-        // shutdown server
-        tx.send(()).expect("Receiver has been dropped");
-        match server.await {
-            Ok(_) => Ok(()),
-            Err(e) if e.is_panic() => Err::<(), Error>(e.into()),
-            Err(_) => unreachable!("This branch shouldn't be reachable"),
-        }
     }
 
     #[tokio::test]
-    async fn test_error_response() -> Result<(), Error> {
-        let (client, server) = io::duplex(200);
-        let (tx, rx) = sync::oneshot::channel();
-        let base = Uri::from_static("http://localhost:9001");
-
-        let server = tokio::spawn(async {
-            handle(server, rx).await.expect("Unable to handle request");
+    async fn test_error_response() {
+        // Start mock runtime api server
+        let rapid = MockServer::start();
+        let request_id = "156cb537-e2d4-11e8-9b34-d36013741fb9";
+        let endpoint = rapid.mock(|when, then| {
+            when.method(POST)
+                .path(format!("/2018-06-01/runtime/invocation/{}/error", request_id));
+            then.status(StatusCode::ACCEPTED.as_u16());
         });
 
-        let conn = simulated::Connector::with(base.clone(), DuplexStreamWrapper::new(client))?;
-        let client = Client::with(base, conn);
+        // build the ERROR response and send to the mock endpoint
+        let base = Uri::try_from(format!("http://{}", rapid.address())).unwrap();
+        let client = Client::with(base, HttpConnector::new());
 
         let req = EventErrorRequest {
-            request_id: "156cb537-e2d4-11e8-9b34-d36013741fb9",
+            request_id,
             diagnostic: Diagnostic {
                 error_type: "InvalidEventDataError",
                 error_message: "Error parsing event data",
             },
         };
-        let req = req.into_req()?;
-        let rsp = client.call(req).await?;
-        assert_eq!(rsp.status(), StatusCode::ACCEPTED);
+        let req = req.into_req().unwrap();
+        let rsp = client.call(req).await.unwrap();
 
-        // shutdown server
-        tx.send(()).expect("Receiver has been dropped");
-        match server.await {
-            Ok(_) => Ok(()),
-            Err(e) if e.is_panic() => Err::<(), Error>(e.into()),
-            Err(_) => unreachable!("This branch shouldn't be reachable"),
-        }
+        // Assert endpoint was called once
+        endpoint.assert();
+        // and response has expected content
+        assert_eq!(rsp.status(), StatusCode::ACCEPTED);
     }
 
     #[tokio::test]
-    async fn successful_end_to_end_run() -> Result<(), Error> {
-        let (client, server) = io::duplex(64);
-        let (tx, rx) = sync::oneshot::channel();
-        let base = Uri::from_static("http://localhost:9001");
-
-        let server = tokio::spawn(async {
-            handle(server, rx).await.expect("Unable to handle request");
+    async fn successful_end_to_end_run() {
+        // Start mock runtime api server
+        let rapid = MockServer::start();
+        let request_id = "156cb537-e2d4-11e8-9b34-d36013741fb9";
+        let next_endpoint = rapid.mock(|when, then| {
+            when.method(GET).path("/2018-06-01/runtime/invocation/next");
+            then.status(StatusCode::OK.as_u16())
+                .header("Lambda-Runtime-Aws-Request-Id", request_id)
+                .header("Lambda-Runtime-Deadline-Ms", "1542409706888")
+                .body(json!({"command": "hello"}).to_string());
         });
-        let conn = simulated::Connector::with(base.clone(), DuplexStreamWrapper::new(client))?;
+        let response_endpoint = rapid.mock(|when, then| {
+            when.method(POST)
+                .path(format!("/2018-06-01/runtime/invocation/{}/response", request_id));
+            then.status(StatusCode::ACCEPTED.as_u16());
+        });
 
-        let client = Client::builder()
-            .with_endpoint(base)
-            .with_connector(conn)
-            .build()
-            .expect("Unable to build client");
+        // build the client to the mock endpoint
+        let base = Uri::try_from(format!("http://{}", rapid.address())).unwrap();
+        let client = Client::with(base, HttpConnector::new());
 
         async fn func(event: crate::LambdaEvent<serde_json::Value>) -> Result<serde_json::Value, Error> {
             let (event, _) = event.into_parts();
@@ -533,38 +502,43 @@ mod endpoint_tests {
         }
         let config = crate::Config::from_env().expect("Failed to read env vars");
 
-        let runtime = Runtime { client, config };
+        let runtime = Runtime {
+            client,
+            config,
+            crac_context: crac::Context::<()>::new(),
+        };
         let client = &runtime.client;
         let incoming = incoming(client).take(1);
-        runtime.run(incoming, f).await?;
+        runtime.execute(incoming, f).await.unwrap();
 
-        // shutdown server
-        tx.send(()).expect("Receiver has been dropped");
-        match server.await {
-            Ok(_) => Ok(()),
-            Err(e) if e.is_panic() => Err::<(), Error>(e.into()),
-            Err(_) => unreachable!("This branch shouldn't be reachable"),
-        }
+        // Assert endpoints were called
+        next_endpoint.assert();
+        response_endpoint.assert();
     }
 
-    async fn run_panicking_handler<F>(func: F) -> Result<(), Error>
+    async fn run_panicking_handler<F>(func: F)
     where
         F: FnMut(crate::LambdaEvent<serde_json::Value>) -> BoxFuture<'static, Result<serde_json::Value, Error>>,
     {
-        let (client, server) = io::duplex(64);
-        let (_tx, rx) = oneshot::channel();
-        let base = Uri::from_static("http://localhost:9001");
-
-        let server = tokio::spawn(async {
-            handle(server, rx).await.expect("Unable to handle request");
+        // Start mock runtime api server
+        let rapid = MockServer::start();
+        let request_id = "156cb537-e2d4-11e8-9b34-d36013741fb9";
+        let next_endpoint = rapid.mock(|when, then| {
+            when.method(GET).path("/2018-06-01/runtime/invocation/next");
+            then.status(StatusCode::OK.as_u16())
+                .header("Lambda-Runtime-Aws-Request-Id", request_id)
+                .header("Lambda-Runtime-Deadline-Ms", "1542409706888")
+                .body(json!({"command": "hello"}).to_string());
         });
-        let conn = simulated::Connector::with(base.clone(), DuplexStreamWrapper::new(client))?;
+        let error_endpoint = rapid.mock(|when, then| {
+            when.method(POST)
+                .path(format!("/2018-06-01/runtime/invocation/{}/error", request_id));
+            then.status(StatusCode::ACCEPTED.as_u16());
+        });
 
-        let client = Client::builder()
-            .with_endpoint(base)
-            .with_connector(conn)
-            .build()
-            .expect("Unable to build client");
+        // build the client to the mock endpoint
+        let base = Uri::try_from(format!("http://{}", rapid.address())).unwrap();
+        let client = Client::with(base, HttpConnector::new());
 
         let f = crate::service_fn(func);
 
@@ -574,30 +548,36 @@ mod endpoint_tests {
             version: "1".to_string(),
             log_stream: "test_stream".to_string(),
             log_group: "test_log".to_string(),
+            init_type: "on-demand".to_string(),
         };
 
-        let runtime = Runtime { client, config };
+        let runtime = Runtime {
+            client,
+            config,
+            crac_context: crac::Context::<()>::new(),
+        };
         let client = &runtime.client;
         let incoming = incoming(client).take(1);
-        runtime.run(incoming, f).await?;
+        runtime.execute(incoming, f).await.unwrap();
 
-        match server.await {
-            Ok(_) => Ok(()),
-            Err(e) if e.is_panic() => Err::<(), Error>(e.into()),
-            Err(_) => unreachable!("This branch shouldn't be reachable"),
-        }
+        // Assert endpoints were called
+        next_endpoint.assert();
+        error_endpoint.assert();
     }
 
     #[tokio::test]
-    async fn panic_in_async_run() -> Result<(), Error> {
+    async fn panic_in_async_run() {
         run_panicking_handler(|_| Box::pin(async { panic!("This is intentionally here") })).await
     }
 
     #[tokio::test]
-    async fn panic_outside_async_run() -> Result<(), Error> {
+    async fn panic_outside_async_run() {
         run_panicking_handler(|_| {
             panic!("This is intentionally here");
         })
         .await
     }
+
+    #[tokio::test]
+    async fn test_snapstart_runtime_hooks() {}
 }

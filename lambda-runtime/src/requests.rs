@@ -227,29 +227,72 @@ fn test_event_error_request() {
 }
 
 // /runtime/init/error
-struct InitErrorRequest;
+pub(crate) struct InitErrorRequest<'a> {
+    pub(crate) diagnostic: Diagnostic<'a>,
+}
 
-impl IntoRequest for InitErrorRequest {
+impl<'a> InitErrorRequest<'a> {
+    pub(crate) fn new(error_type: &'a str, error_message: &'a str) -> InitErrorRequest<'a> {
+        InitErrorRequest {
+            diagnostic: Diagnostic {
+                error_type,
+                error_message,
+            },
+        }
+    }
+}
+
+impl<'a> IntoRequest for InitErrorRequest<'a> {
     fn into_req(self) -> Result<Request<Body>, Error> {
         let uri = "/2018-06-01/runtime/init/error".to_string();
         let uri = Uri::from_str(&uri)?;
+        let body = serde_json::to_vec(&self.diagnostic)?;
+        let body = Body::from(body);
 
         let req = build_request()
             .method(Method::POST)
             .uri(uri)
             .header("lambda-runtime-function-error-type", "unhandled")
-            .body(Body::empty())?;
+            .body(body)?;
         Ok(req)
     }
 }
 
 #[test]
 fn test_init_error_request() {
-    let req = InitErrorRequest;
+    let req = InitErrorRequest {
+        diagnostic: Diagnostic {
+            error_type: "runtime.InitError",
+            error_message: "SnapShot Runtime Hook Error",
+        },
+    };
     let req = req.into_req().unwrap();
     let expected = Uri::from_static("/2018-06-01/runtime/init/error");
     assert_eq!(req.method(), Method::POST);
     assert_eq!(req.uri(), &expected);
+    assert!(match req.headers().get("User-Agent") {
+        Some(header) => header.to_str().unwrap().starts_with("aws-lambda-rust/"),
+        None => false,
+    });
+}
+
+pub(crate) struct RestoreNextRequest;
+
+impl IntoRequest for RestoreNextRequest {
+    fn into_req(self) -> Result<Request<Body>, Error> {
+        let req = build_request()
+            .method(Method::GET)
+            .uri(Uri::from_static("/2018-06-01/runtime/restore/next"))
+            .body(Body::empty())?;
+        Ok(req)
+    }
+}
+#[test]
+fn test_restore_next_event_request() {
+    let req = RestoreNextRequest;
+    let req = req.into_req().unwrap();
+    assert_eq!(req.method(), Method::GET);
+    assert_eq!(req.uri(), &Uri::from_static("/2018-06-01/runtime/restore/next"));
     assert!(match req.headers().get("User-Agent") {
         Some(header) => header.to_str().unwrap().starts_with("aws-lambda-rust/"),
         None => false,

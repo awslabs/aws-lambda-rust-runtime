@@ -1,25 +1,20 @@
 use serde::{Deserialize, Serialize};
 
-use super::commom_types::{DocumentId, DocumentKeyId, Timestamp, InsertNs};
+use super::commom_types::{AnyDocument, DocumentId, DocumentKeyId, InsertNs, Timestamp};
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ChangeDeleteEvent<> {
+pub struct ChangeDeleteEvent {
     #[serde(rename = "_id")]
     id: DocumentId,
-    cluster_time: Timestamp,
     #[serde(default)]
-    #[serde(rename = "collectionUUID")]
-    collection_uuid: Option<String>,
+    cluster_time: Option<Timestamp>,
     document_key: DocumentKeyId,
     #[serde(default)]
-    lsid: Option<String>,
+    #[serde(rename = "lsid")]
+    ls_id: Option<AnyDocument>,
     ns: InsertNs,
-    operation_type: String,
+    // operation_type: String,
     #[serde(default)]
-    operation_decription: Option<String>,
-    #[serde(default)]
-    txt_number: Option<String>,
-    #[serde(default)]
-    wall_time: Option<String>
+    txn_number: Option<String>,
 }

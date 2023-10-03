@@ -17,12 +17,6 @@
             "$oid": "63eeb6e7d418cd98afb1c1d7"
           }
         },
-        "fullDocument": {
-          "_id": {
-            "$oid": "63eeb6e7d418cd98afb1c1d7"
-          },
-          "anyField": "sampleValue"
-        },
         "ns": {
           "db": "test_database",
           "coll": "test_collection"

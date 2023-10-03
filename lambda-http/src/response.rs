@@ -114,6 +114,13 @@ impl LambdaResponse {
                 headers: headers.clone(),
                 multi_value_headers: headers,
             }),
+            #[cfg(not(any(
+                feature = "apigw_rest",
+                feature = "apigw_http",
+                feature = "alb",
+                feature = "apigw_websockets"
+            )))]
+            _ => compile_error!("Either feature `apigw_rest`, `apigw_http`, `alb`, or `apigw_websockets` must be enabled for the `lambda-http` crate."),
         }
     }
 }

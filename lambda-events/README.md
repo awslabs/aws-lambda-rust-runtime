@@ -27,6 +27,12 @@ This crate divides all Lambda Events into features named after the service that 
 cargo add aws_lambda_events --no-default-features --features apigw,alb
 ```
 
+## History
+
+The AWS Lambda Events crate was created by [Christian Legnitto](https://github.com/LegNeato). Without all his work and dedication, this project could have not been possible.
+
+In 2023, the AWS Lambda Event crate was moved into this repository to continue its support for all AWS customers that use Rust on AWS Lambda.
+
 [//]: # 'badges'
 [crate-image]: https://img.shields.io/crates/v/aws_lambda_events.svg
 [crate-link]: https://crates.io/crates/aws_lambda_events

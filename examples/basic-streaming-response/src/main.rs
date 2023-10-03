@@ -1,9 +1,9 @@
-use hyper::{body::Body, Response};
-use lambda_runtime::{service_fn, Error, LambdaEvent};
+use hyper::body::Body;
+use lambda_runtime::{service_fn, Error, LambdaEvent, StreamResponse};
 use serde_json::Value;
 use std::{thread, time::Duration};
 
-async fn func(_event: LambdaEvent<Value>) -> Result<Response<Body>, Error> {
+async fn func(_event: LambdaEvent<Value>) -> Result<StreamResponse<Body>, Error> {
     let messages = vec!["Hello", "world", "from", "Lambda!"];
 
     let (mut tx, rx) = Body::channel();
@@ -15,12 +15,10 @@ async fn func(_event: LambdaEvent<Value>) -> Result<Response<Body>, Error> {
         }
     });
 
-    let resp = Response::builder()
-        .header("content-type", "text/html")
-        .header("CustomHeader", "outerspace")
-        .body(rx)?;
-
-    Ok(resp)
+    Ok(StreamResponse {
+        metadata_prelude: Default::default(),
+        stream: rx,
+    })
 }
 
 #[tokio::main]
@@ -34,6 +32,6 @@ async fn main() -> Result<(), Error> {
         .without_time()
         .init();
 
-    lambda_runtime::run_with_streaming_response(service_fn(func)).await?;
+    lambda_runtime::run(service_fn(func)).await?;
     Ok(())
 }

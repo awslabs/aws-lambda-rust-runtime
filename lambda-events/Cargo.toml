@@ -1,6 +1,6 @@
 [package]
 name = "aws_lambda_events"
-version = "0.11.0"
+version = "0.11.1"
 description = "AWS Lambda event definitions"
 authors = [
   "Christian Legnitto <christian@legnitto.com>",
@@ -45,6 +45,7 @@ default = [
   "autoscaling",
   "chime_bot",
   "clientvpn",
+  "cloudformation",
   "cloudwatch_events",
   "cloudwatch_logs",
   "code_commit",
@@ -85,6 +86,7 @@ appsync = []
 autoscaling = ["chrono"]
 chime_bot = ["chrono"]
 clientvpn = []
+cloudformation = []
 cloudwatch_events = ["chrono"]
 cloudwatch_logs = ["flate2"]
 code_commit = ["chrono"]

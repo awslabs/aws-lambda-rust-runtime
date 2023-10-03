@@ -278,7 +278,7 @@ $ docker run --rm \
     rustserverless/lambda-rust
 ```
 
-With your application build and packaged, it's ready to ship to production. You can also invoke it locally to verify is behavior using the [lambci :provided docker container](https://hub.docker.com/r/lambci/lambda/), which is also a mirror of the AWS Lambda provided runtime with build dependencies omitted:
+With your application built and packaged, it's ready to ship to production. You can also invoke it locally to verify is behavior using the [lambci :provided docker container](https://hub.docker.com/r/lambci/lambda/), which is also a mirror of the AWS Lambda provided runtime with build dependencies omitted:
 
 ```bash
 # start a docker container replicating the "provided" lambda runtime
@@ -440,7 +440,7 @@ This will make your function compile much faster.
 
 ## Supported Rust Versions (MSRV)
 
-The AWS Lambda Rust Runtime requires a minimum of Rust 1.62, and is not guaranteed to build on compiler versions earlier than that.
+The AWS Lambda Rust Runtime requires a minimum of Rust 1.64, and is not guaranteed to build on compiler versions earlier than that.
 
 ## Security
 

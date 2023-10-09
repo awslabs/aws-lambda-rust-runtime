@@ -1,6 +1,9 @@
 pub mod events;
 
-use self::events::{delete_event::ChangeDeleteEvent, drop_event::ChangeDropEvent, insert_event::ChangeInsertEvent};
+use self::events::{
+    delete_event::ChangeDeleteEvent, drop_event::ChangeDropEvent, insert_event::ChangeInsertEvent,
+    replace_event::ChangeReplaceEvent,
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -9,6 +12,7 @@ pub enum ChangeEvent {
     Insert(ChangeInsertEvent),
     Delete(ChangeDeleteEvent),
     Drop(ChangeDropEvent),
+    Replace(ChangeReplaceEvent),
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -58,6 +62,17 @@ mod test {
     #[test]
     fn example_documentdb_drop_event() {
         let data = include_bytes!("../../fixtures/example-documentdb-drop-event.json");
+
+        let parsed: Event = serde_json::from_slice(data).unwrap();
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: Event = serde_json::from_slice(output.as_bytes()).unwrap();
+
+        assert_eq!(parsed, reparsed);
+    }
+
+    #[test]
+    fn example_documentdb_replace_event() {
+        let data = include_bytes!("../../fixtures/example-documentdb-replace-event.json");
 
         let parsed: Event = serde_json::from_slice(data).unwrap();
         let output: String = serde_json::to_string(&parsed).unwrap();

@@ -28,6 +28,8 @@ pub struct DocumentKeyIdOid {
 pub struct DocumentKeyId {
     #[serde(rename = "_id")]
     pub id: DocumentKeyIdOid,
+    db: String,
+    coll: String,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]

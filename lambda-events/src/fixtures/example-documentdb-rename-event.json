@@ -21,10 +21,6 @@
             "db": "test_database",
             "coll": "test_collection"
           },
-          "to":{
-            "db": "test_database",
-            "coll": "test_collection"
-          },
           "operationType": "rename"
         }
       }

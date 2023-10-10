@@ -15,7 +15,7 @@ pub struct ChangeInsertEvent {
     #[serde(rename = "lsid")]
     ls_id: Option<String>,
     ns: InsertNs,
-    operation_type: String,
+    //operation_type: String,
     #[serde(default)]
     txn_number: Option<AnyDocument>,
 }

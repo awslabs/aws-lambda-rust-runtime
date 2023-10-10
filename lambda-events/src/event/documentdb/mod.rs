@@ -1,6 +1,9 @@
 pub mod events;
 
-use self::events::{delete_event::ChangeDeleteEvent, drop_event::ChangeDropEvent, insert_event::ChangeInsertEvent, invalidate_event::ChangeInvalidateEvent};
+use self::events::{
+    delete_event::ChangeDeleteEvent, drop_event::ChangeDropEvent, insert_event::ChangeInsertEvent,
+    invalidate_event::ChangeInvalidateEvent,
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]

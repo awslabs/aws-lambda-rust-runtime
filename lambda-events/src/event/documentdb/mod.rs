@@ -2,7 +2,7 @@ pub mod events;
 
 use self::events::{
     delete_event::ChangeDeleteEvent, drop_event::ChangeDropEvent, insert_event::ChangeInsertEvent,
-    replace_event::ChangeReplaceEvent, rename_event::ChangeRenameEvent
+    rename_event::ChangeRenameEvent, replace_event::ChangeReplaceEvent,
 };
 use serde::{Deserialize, Serialize};
 

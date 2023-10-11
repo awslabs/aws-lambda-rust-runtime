@@ -13,13 +13,6 @@ pub struct InsertNs {
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RenameTo {
-    db: String,
-    coll: String,
-}
-
-#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct DocumentId {
     #[serde(rename = "_data")]
     pub data: String,

@@ -1,6 +1,13 @@
 use serde::{Deserialize, Serialize};
 
-use super::commom_types::{AnyDocument, DocumentId, InsertNs, RenameTo, Timestamp};
+use super::commom_types::{AnyDocument, DocumentId, InsertNs, Timestamp};
+
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RenameTo {
+    db: String,
+    coll: String,
+}
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]

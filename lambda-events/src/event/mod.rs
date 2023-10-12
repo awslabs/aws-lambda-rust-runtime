@@ -137,5 +137,6 @@ pub mod sqs;
 #[cfg(feature = "streams")]
 pub mod streams;
 
+/// AWS Lambda event definitions for EventBridge.
 #[cfg(feature = "eventbridge")]
 pub mod eventbridge;

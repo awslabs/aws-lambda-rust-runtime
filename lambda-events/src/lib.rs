@@ -159,3 +159,6 @@ pub use event::sqs;
 /// AWS Lambda event definitions for streams.
 #[cfg(feature = "streams")]
 pub use event::streams;
+
+#[cfg(feature = "eventbridge")]
+pub use event::eventbridge;

@@ -1,4 +1,4 @@
-use super::commom_types::{AnyDocument, DocumentId, DocumentKeyId, InsertNs, Timestamp};
+use super::commom_types::{AnyDocument, DatabaseCollection, DocumentId, DocumentKeyId, Timestamp};
 use serde::{Deserialize, Serialize};
 
 // TODO: Campos pendentes, carece insumo de teste
@@ -14,7 +14,7 @@ pub struct ChangeDropEvent {
     #[serde(default)]
     #[serde(rename = "lsid")]
     ls_id: Option<AnyDocument>,
-    ns: InsertNs,
+    ns: DatabaseCollection,
     // operation_type: String,
     #[serde(default)]
     txn_number: Option<String>,

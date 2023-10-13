@@ -20,6 +20,7 @@ pub use event::activemq;
 /// AWS Lambda event definitions for alb.
 #[cfg(feature = "alb")]
 pub use event::alb;
+
 /// AWS Lambda event definitions for apigw.
 #[cfg(feature = "apigw")]
 pub use event::apigw;
@@ -39,6 +40,10 @@ pub use event::chime_bot;
 /// AWS Lambda event definitions for clientvpn.
 #[cfg(feature = "clientvpn")]
 pub use event::clientvpn;
+
+/// AWS Lambda event definitions for cloudformation
+#[cfg(feature = "cloudformation")]
+pub use event::cloudformation;
 
 /// CloudWatch Events payload
 #[cfg(feature = "cloudwatch_events")]
@@ -159,3 +164,7 @@ pub use event::sqs;
 /// AWS Lambda event definitions for streams.
 #[cfg(feature = "streams")]
 pub use event::streams;
+
+/// AWS Lambda event definitions for documentdb.
+#[cfg(feature = "documentdb")]
+pub use event::documentdb;

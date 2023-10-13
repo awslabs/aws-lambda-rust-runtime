@@ -1,24 +1,18 @@
 use serde::{Deserialize, Serialize};
 
-use super::commom_types::{DocumentId, Timestamp, InsertNs};
+use super::commom_types::{DocumentId, Timestamp, DatabaseCollection, AnyDocument};
 
-
-// TODO: Campos pendentes, carece insumo de teste
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ChangeDropDatabaseEvent<> {
+pub struct ChangeDropDatabaseEvent {
     #[serde(rename = "_id")]
     id: DocumentId,
     cluster_time: Timestamp,
+    #[serde(rename = "lsid")]
+    ls_id: Option<AnyDocument>,
+    ns: DatabaseCollection,
+    // operation_type: String,
     #[serde(default)]
-    lsid: Option<String>,
-    ns: InsertNs,
-    operation_type: String,
-    #[serde(default)]
-    #[serde(rename = "txnNumber")]
     txn_number: Option<String>,
-    #[serde(default)]
-    #[serde(rename = "wallTime")]
-    wall_time: Option<String>
 }

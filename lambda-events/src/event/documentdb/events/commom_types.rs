@@ -1,12 +1,16 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
+
+pub type AnyDocument = HashMap<String, Value>;
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct InsertNs {
-    #[serde(default)]
+pub struct DatabaseCollection {
     db: String,
     #[serde(default)]
-    coll: String,
+    coll: Option<String>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]

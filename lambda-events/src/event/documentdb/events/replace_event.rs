@@ -4,8 +4,7 @@ use super::commom_types::{AnyDocument, DatabaseCollection, DocumentId, DocumentK
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-
-pub struct ChangeInsertEvent {
+pub struct ChangeReplaceEvent {
     #[serde(rename = "_id")]
     id: DocumentId,
     #[serde(default)]
@@ -15,7 +14,7 @@ pub struct ChangeInsertEvent {
     #[serde(rename = "lsid")]
     ls_id: Option<String>,
     ns: DatabaseCollection,
-    //operation_type: String,
+    // operation_type: String,
     #[serde(default)]
     txn_number: Option<AnyDocument>,
 }

@@ -6,22 +6,22 @@
         "_id": {
           "_data": "0163eeb6e7000000090100000009000041e1"
         },
+        "operationType": "replace",
         "clusterTime": {
           "$timestamp": {
             "t": 1676588775,
             "i": 9
           }
         },
+        "ns": {
+          "db": "engineering",
+          "coll": "users"
+        },
         "documentKey": {
           "_id": {
             "$oid": "63eeb6e7d418cd98afb1c1d7"
           }
-        },
-        "ns": {
-          "db": "test_database",
-          "coll": "test_collection"
-        },
-        "operationType": "insert"
+        }
       }
     }
   ],

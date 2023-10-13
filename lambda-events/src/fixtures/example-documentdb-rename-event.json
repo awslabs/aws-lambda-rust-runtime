@@ -21,7 +21,11 @@
           "db": "test_database",
           "coll": "test_collection"
         },
-        "operationType": "insert"
+        "to": {
+          "db": "test_database_new",
+          "coll": "test_collection_new"
+        },
+        "operationType": "rename"
       }
     }
   ],

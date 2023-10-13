@@ -7,7 +7,7 @@ pub type AnyDocument = HashMap<String, Value>;
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct InsertNs {
+pub struct DatabaseCollection {
     db: String,
     coll: String,
 }

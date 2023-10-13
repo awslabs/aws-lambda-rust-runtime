@@ -164,3 +164,7 @@ pub use event::sqs;
 /// AWS Lambda event definitions for streams.
 #[cfg(feature = "streams")]
 pub use event::streams;
+
+/// AWS Lambda event definitions for documentdb.
+#[cfg(feature = "documentdb")]
+pub use event::documentdb;

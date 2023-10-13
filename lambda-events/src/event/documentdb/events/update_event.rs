@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use super::commom_types::{AnyDocument, DocumentId, DocumentKeyId, InsertNs, Timestamp};
+use super::commom_types::{AnyDocument, DocumentId, DocumentKeyId, DatabaseCollection, Timestamp};
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -12,7 +12,7 @@ pub struct ChangeUpdateEvent {
     document_key: DocumentKeyId,
     #[serde(rename = "lsid")]
     ls_id: Option<String>,
-    ns: InsertNs,
+    ns: DatabaseCollection,
     // operation_type: String,
     #[serde(default)]
     txn_number: Option<AnyDocument>,

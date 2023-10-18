@@ -8,6 +8,12 @@
 //! [`RequestExt`]: crate::RequestExt
 #[cfg(any(feature = "apigw_rest", feature = "apigw_http", feature = "apigw_websockets"))]
 use crate::ext::extensions::{PathParameters, StageVariables};
+#[cfg(any(
+    feature = "apigw_rest",
+    feature = "apigw_http",
+    feature = "alb",
+    feature = "apigw_websockets"
+))]
 use crate::ext::extensions::{QueryStringParameters, RawHttpPath};
 #[cfg(feature = "alb")]
 use aws_lambda_events::alb::{AlbTargetGroupRequest, AlbTargetGroupRequestContext};
@@ -26,7 +32,7 @@ use serde_json::error::Error as JsonError;
 
 use std::future::Future;
 use std::pin::Pin;
-use std::{env, io::Read, mem};
+use std::{env, io::Read};
 use url::Url;
 
 /// Internal representation of an Lambda http event from
@@ -61,6 +67,13 @@ impl LambdaRequest {
             LambdaRequest::Alb { .. } => RequestOrigin::Alb,
             #[cfg(feature = "apigw_websockets")]
             LambdaRequest::WebSocket { .. } => RequestOrigin::WebSocket,
+            #[cfg(not(any(
+                feature = "apigw_rest",
+                feature = "apigw_http",
+                feature = "alb",
+                feature = "apigw_websockets"
+            )))]
+            _ => compile_error!("Either feature `apigw_rest`, `apigw_http`, `alb`, or `apigw_websockets` must be enabled for the `lambda-http` crate."),
         }
     }
 }
@@ -141,8 +154,8 @@ fn into_api_gateway_v2_request(ag: ApiGatewayV2httpRequest) -> http::Request<Bod
         .expect("failed to build request");
 
     // no builder method that sets headers in batch
-    let _ = mem::replace(req.headers_mut(), headers);
-    let _ = mem::replace(req.method_mut(), http_method);
+    let _ = std::mem::replace(req.headers_mut(), headers);
+    let _ = std::mem::replace(req.method_mut(), http_method);
 
     req
 }
@@ -203,8 +216,8 @@ fn into_proxy_request(ag: ApiGatewayProxyRequest) -> http::Request<Body> {
         .expect("failed to build request");
 
     // no builder method that sets headers in batch
-    let _ = mem::replace(req.headers_mut(), headers);
-    let _ = mem::replace(req.method_mut(), http_method);
+    let _ = std::mem::replace(req.headers_mut(), headers);
+    let _ = std::mem::replace(req.method_mut(), http_method);
 
     req
 }
@@ -255,8 +268,8 @@ fn into_alb_request(alb: AlbTargetGroupRequest) -> http::Request<Body> {
         .expect("failed to build request");
 
     // no builder method that sets headers in batch
-    let _ = mem::replace(req.headers_mut(), headers);
-    let _ = mem::replace(req.method_mut(), http_method);
+    let _ = std::mem::replace(req.headers_mut(), headers);
+    let _ = std::mem::replace(req.method_mut(), http_method);
 
     req
 }
@@ -319,8 +332,8 @@ fn into_websocket_request(ag: ApiGatewayWebsocketProxyRequest) -> http::Request<
         .expect("failed to build request");
 
     // no builder method that sets headers in batch
-    let _ = mem::replace(req.headers_mut(), headers);
-    let _ = mem::replace(req.method_mut(), http_method.unwrap_or(http::Method::GET));
+    let _ = std::mem::replace(req.headers_mut(), headers);
+    let _ = std::mem::replace(req.method_mut(), http_method.unwrap_or(http::Method::GET));
 
     req
 }

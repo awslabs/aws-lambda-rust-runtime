@@ -1,11 +1,14 @@
 use crate::{Config, Error};
-use http::{HeaderMap, HeaderValue};
+use bytes::Bytes;
+use http::{HeaderMap, HeaderValue, StatusCode};
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
     convert::TryFrom,
+    fmt::Debug,
     time::{Duration, SystemTime},
 };
+use tokio_stream::Stream;
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -179,6 +182,90 @@ impl<T> LambdaEvent<T> {
     /// Split the Lambda event into its payload and context.
     pub fn into_parts(self) -> (T, Context) {
         (self.payload, self.context)
+    }
+}
+
+/// Metadata prelude for a stream response.
+#[derive(Debug, Default, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MetadataPrelude {
+    #[serde(with = "http_serde::status_code")]
+    /// The HTTP status code.
+    pub status_code: StatusCode,
+    #[serde(with = "http_serde::header_map")]
+    /// The HTTP headers.
+    pub headers: HeaderMap,
+    /// The HTTP cookies.
+    pub cookies: Vec<String>,
+}
+
+pub trait ToStreamErrorTrailer {
+    /// Convert the hyper error into a stream error trailer.
+    fn to_tailer(&self) -> String;
+}
+
+impl ToStreamErrorTrailer for Error {
+    fn to_tailer(&self) -> String {
+        format!(
+            "Lambda-Runtime-Function-Error-Type: Runtime.StreamError\r\nLambda-Runtime-Function-Error-Body: {}\r\n",
+            base64::encode(self.to_string())
+        )
+    }
+}
+
+/// A streaming response that contains the metadata prelude and the stream of bytes that will be
+/// sent to the client.
+#[derive(Debug)]
+pub struct StreamResponse<S> {
+    ///  The metadata prelude.
+    pub metadata_prelude: MetadataPrelude,
+    /// The stream of bytes that will be sent to the client.
+    pub stream: S,
+}
+
+/// An enum representing the response of a function that can return either a buffered
+/// response of type `B` or a streaming response of type `S`.
+pub enum FunctionResponse<B, S> {
+    /// A buffered response containing the entire payload of the response. This is useful
+    /// for responses that can be processed quickly and have a relatively small payload size(<= 6MB).
+    BufferedResponse(B),
+    /// A streaming response that delivers the payload incrementally. This is useful for
+    /// large payloads(> 6MB) or responses that take a long time to generate. The client can start
+    /// processing the response as soon as the first chunk is available, without waiting
+    /// for the entire payload to be generated.
+    StreamingResponse(StreamResponse<S>),
+}
+
+/// a trait that can be implemented for any type that can be converted into a FunctionResponse.
+/// This allows us to use the `into` method to convert a type into a FunctionResponse.
+pub trait IntoFunctionResponse<B, S> {
+    /// Convert the type into a FunctionResponse.
+    fn into_response(self) -> FunctionResponse<B, S>;
+}
+
+impl<B, S> IntoFunctionResponse<B, S> for FunctionResponse<B, S> {
+    fn into_response(self) -> FunctionResponse<B, S> {
+        self
+    }
+}
+
+impl<B> IntoFunctionResponse<B, hyper::Body> for B
+where
+    B: Serialize,
+{
+    fn into_response(self) -> FunctionResponse<B, hyper::Body> {
+        FunctionResponse::BufferedResponse(self)
+    }
+}
+
+impl<S, D, E> IntoFunctionResponse<(), S> for StreamResponse<S>
+where
+    S: Stream<Item = Result<D, E>> + Unpin + Send + 'static,
+    D: Into<Bytes> + Send,
+    E: Into<Error> + Send + Debug,
+{
+    fn into_response(self) -> FunctionResponse<(), S> {
+        FunctionResponse::StreamingResponse(self)
     }
 }
 

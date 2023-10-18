@@ -25,6 +25,10 @@ pub mod chime_bot;
 #[cfg(feature = "clientvpn")]
 pub mod clientvpn;
 
+/// AWS Lambda event definitions for cloudformation.
+#[cfg(feature = "cloudformation")]
+pub mod cloudformation;
+
 /// CloudWatch Events payload
 #[cfg(feature = "cloudwatch_events")]
 pub mod cloudwatch_events;

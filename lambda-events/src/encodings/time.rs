@@ -279,12 +279,12 @@ mod test {
         let encoded = serde_json::to_string(&instance).unwrap();
         assert_eq!(encoded, String::from(r#"{"v":"427683600.002"}"#));
 
-        // Make sure milliseconds are included.
+        // Make sure leap seconds are included.
         let instance = Test {
-            v: Utc.ymd(1983, 7, 22).and_hms_nano(1, 0, 0, 1_234_000_000),
+            v: Utc.ymd(1983, 7, 22).and_hms_nano(23, 59, 59, 1_999_999_999),
         };
         let encoded = serde_json::to_string(&instance).unwrap();
-        assert_eq!(encoded, String::from(r#"{"v":"427683601.234"}"#));
+        assert_eq!(encoded, String::from(r#"{"v":"427766400.999"}"#));
     }
 
     #[test]

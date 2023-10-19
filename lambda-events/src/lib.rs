@@ -168,3 +168,7 @@ pub use event::streams;
 /// AWS Lambda event definitions for documentdb.
 #[cfg(feature = "documentdb")]
 pub use event::documentdb;
+
+/// AWS Lambda event definitions for EventBridge.
+#[cfg(feature = "eventbridge")]
+pub use event::eventbridge;

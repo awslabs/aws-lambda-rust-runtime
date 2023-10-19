@@ -144,3 +144,7 @@ pub mod streams;
 // AWS Lambda event definitions for DocumentDB
 #[cfg(feature = "documentdb")]
 pub mod documentdb;
+
+/// AWS Lambda event definitions for EventBridge.
+#[cfg(feature = "eventbridge")]
+pub mod eventbridge;

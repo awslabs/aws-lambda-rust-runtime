@@ -77,6 +77,7 @@ default = [
   "sqs",
   "streams",
   "documentdb",
+  "eventbridge",
 ]
 
 activemq = []
@@ -119,3 +120,4 @@ sns = ["chrono", "serde_with"]
 sqs = ["serde_with"]
 streams = []
 documentdb = []
+eventbridge = ["chrono", "serde_with"]

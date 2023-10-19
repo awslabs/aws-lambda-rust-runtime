@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use super::commom_types::{AnyDocument, DocumentId, DocumentKeyId, DatabaseCollection, Timestamp};
+use super::commom_types::{AnyDocument, DatabaseCollection, DocumentId, DocumentKeyId, Timestamp};
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]

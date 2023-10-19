@@ -1,14 +1,9 @@
 pub mod events;
 
 use self::events::{
-    delete_event::ChangeDeleteEvent, 
-    drop_event::ChangeDropEvent, 
-    insert_event::ChangeInsertEvent,
-    invalidate_event::ChangeInvalidateEvent,
-    replace_event::ChangeReplaceEvent, 
-    update_event::ChangeUpdateEvent,
-    rename_event::ChangeRenameEvent,
-    drop_database_event::ChangeDropDatabaseEvent,
+    delete_event::ChangeDeleteEvent, drop_database_event::ChangeDropDatabaseEvent, drop_event::ChangeDropEvent,
+    insert_event::ChangeInsertEvent, invalidate_event::ChangeInvalidateEvent, rename_event::ChangeRenameEvent,
+    replace_event::ChangeReplaceEvent, update_event::ChangeUpdateEvent,
 };
 use serde::{Deserialize, Serialize};
 
@@ -57,7 +52,7 @@ mod test {
 
     #[test]
     fn example_documentdb_insert_event() {
-        test_example(include_bytes!( "../../fixtures/example-documentdb-insert-event.json"));
+        test_example(include_bytes!("../../fixtures/example-documentdb-insert-event.json"));
     }
 
     #[test]
@@ -87,11 +82,15 @@ mod test {
 
     #[test]
     fn example_documentdb_invalidate_event() {
-        test_example(include_bytes!("../../fixtures/example-documentdb-invalidate-event.json"));
+        test_example(include_bytes!(
+            "../../fixtures/example-documentdb-invalidate-event.json"
+        ));
     }
 
     #[test]
-    fn example_documentdb_drop_database_event(){
-        test_example(include_bytes!("../../fixtures/example-documentdb-drop-database-event.json"));
+    fn example_documentdb_drop_database_event() {
+        test_example(include_bytes!(
+            "../../fixtures/example-documentdb-drop-database-event.json"
+        ));
     }
 }

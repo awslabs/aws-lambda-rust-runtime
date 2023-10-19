@@ -81,8 +81,10 @@ check-event-features:
 	cargo test --package aws_lambda_events --no-default-features --features cognito
 	cargo test --package aws_lambda_events --no-default-features --features config
 	cargo test --package aws_lambda_events --no-default-features --features connect
+	cargo test --package aws_lambda_events --no-default-features --features documentdb
 	cargo test --package aws_lambda_events --no-default-features --features dynamodb
 	cargo test --package aws_lambda_events --no-default-features --features ecr_scan
+	cargo test --package aws_lambda_events --no-default-features --features eventbridge
 	cargo test --package aws_lambda_events --no-default-features --features firehose
 	cargo test --package aws_lambda_events --no-default-features --features iam
 	cargo test --package aws_lambda_events --no-default-features --features iot
@@ -101,7 +103,6 @@ check-event-features:
 	cargo test --package aws_lambda_events --no-default-features --features sns
 	cargo test --package aws_lambda_events --no-default-features --features sqs
 	cargo test --package aws_lambda_events --no-default-features --features streams
-	cargo test --package aws_lambda_events --no-default-features --features eventbridge
 
 fmt:
 	cargo +nightly fmt --all

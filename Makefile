@@ -101,6 +101,7 @@ check-event-features:
 	cargo test --package aws_lambda_events --no-default-features --features sns
 	cargo test --package aws_lambda_events --no-default-features --features sqs
 	cargo test --package aws_lambda_events --no-default-features --features streams
+	cargo test --package aws_lambda_events --no-default-features --features eventbridge
 
 fmt:
 	cargo +nightly fmt --all

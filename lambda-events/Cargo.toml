@@ -76,6 +76,7 @@ default = [
   "sns",
   "sqs",
   "streams",
+  "eventbridge",
 ]
 
 activemq = []
@@ -117,3 +118,4 @@ ses = ["chrono"]
 sns = ["chrono", "serde_with"]
 sqs = ["serde_with"]
 streams = []
+eventbridge = ["chrono", "serde_with"]

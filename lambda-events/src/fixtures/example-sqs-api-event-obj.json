@@ -1,0 +1,10 @@
+{
+  "Messages": [
+    {
+      "Body": "{\"country\": \"usa\", \"city\": \"provincetown\"}",
+      "Md5OfBody": "2b3e4f40b57e80d67ac5b9660c56d787",
+      "MessageId": "f663a189-97e2-41f5-9c0e-cfb595d8322c",
+      "ReceiptHandle": "AQEBdObBZIl7FWJiK9c3KmqKNvusy6+eqG51SLIp5Gs6lQ6+e4SI0lJ6Glw+qcOi+2RRrnfOjlsF8uDlo13TgubmtgP+CH7s+YKDdpbg2jA931vLi6qnU0ZFXcf/H8BDZ4kcz29npMu9/N2DT9F+kI9Q9pTfLsISg/7XFMvRTqAtjSfa2wI5TVcOPZBdkGqTLUoKqAYni0L7NTLzFUTjCN/HiOcvG+16zahhsTniM1MwOTSpbOO2uTZmY25V/PCfNdF1PBXtdNA9mWW2Ym6THV28ug3cuK6dXbFQBuxIGVhOq+mRVU6gKN/eZpZediiBt75oHD6ASu8jIUpJGeUWEZm6qSWU+YTivr6QoqGLwAVvI3CXOIZQ/+Wp/RJAxMQxtRIe/MOsOITcmGlFqhWnjlGQdg=="
+    }
+  ]
+}

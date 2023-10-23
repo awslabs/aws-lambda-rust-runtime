@@ -112,6 +112,74 @@ pub struct BatchItemFailure {
     pub item_identifier: String,
 }
 
+/// The Event sent to Lambda from the SQS API. Contains 1 or more individual SQS Messages
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "PascalCase")]
+#[serde(bound(deserialize = "T: DeserializeOwned"))]
+pub struct SqsApiEventObj<T: Serialize> {
+    #[serde(bound(deserialize = "T: DeserializeOwned"))]
+    pub messages: Vec<SqsApiMessageObj<T>>,
+}
+
+/// The Event sent to Lambda from SQS API. Contains 1 or more individual SQS Messages
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SqsApiEvent {
+    pub messages: Vec<SqsApiMessage>,
+}
+
+/// Alternative to SqsApiEvent to be used alongside SqsApiMessageObj<T> when you need to
+/// deserialize a nested object into a struct of type T within the SQS Message rather
+/// than just using the raw SQS Message string
+#[serde_with::serde_as]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(bound(deserialize = "T: DeserializeOwned"))]
+#[serde(rename_all = "PascalCase")]
+pub struct SqsApiMessageObj<T: Serialize> {
+    /// nolint: stylecheck
+    #[serde(default)]
+    pub message_id: Option<String>,
+    #[serde(default)]
+    pub receipt_handle: Option<String>,
+    /// Deserialized into a `T` from nested JSON inside the SQS body string. `T` must implement the `Deserialize` or `DeserializeOwned` trait.
+    #[serde_as(as = "serde_with::json::JsonString")]
+    #[serde(bound(deserialize = "T: DeserializeOwned"))]
+    pub body: T,
+    #[serde(default)]
+    pub md5_of_body: Option<String>,
+    #[serde(default)]
+    pub md5_of_message_attributes: Option<String>,
+    #[serde(deserialize_with = "deserialize_lambda_map")]
+    #[serde(default)]
+    pub attributes: HashMap<String, String>,
+    #[serde(deserialize_with = "deserialize_lambda_map")]
+    #[serde(default)]
+    pub message_attributes: HashMap<String, SqsMessageAttribute>,
+}
+
+/// An individual SQS API Message, its metadata, and Message Attributes
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct SqsApiMessage {
+    /// nolint: stylecheck
+    #[serde(default)]
+    pub message_id: Option<String>,
+    #[serde(default)]
+    pub receipt_handle: Option<String>,
+    #[serde(default)]
+    pub body: Option<String>,
+    #[serde(default)]
+    pub md5_of_body: Option<String>,
+    #[serde(default)]
+    pub md5_of_message_attributes: Option<String>,
+    #[serde(deserialize_with = "deserialize_lambda_map")]
+    #[serde(default)]
+    pub attributes: HashMap<String, String>,
+    #[serde(deserialize_with = "deserialize_lambda_map")]
+    #[serde(default)]
+    pub message_attributes: HashMap<String, SqsMessageAttribute>,
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -157,6 +225,28 @@ mod test {
         let parsed: SqsBatchResponse = serde_json::from_slice(data).unwrap();
         let output: String = serde_json::to_string(&parsed).unwrap();
         let reparsed: SqsBatchResponse = serde_json::from_slice(output.as_bytes()).unwrap();
+        assert_eq!(parsed, reparsed);
+    }
+
+    #[test]
+    #[cfg(feature = "sqs")]
+    fn example_sqs_api_obj_event() {
+        // Example sqs api receive message response, fetched 2023-10-23, inspired from:
+        // https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_ReceiveMessage.html#API_ReceiveMessage_ResponseSyntax
+        #[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
+        struct CustStruct {
+            city: String,
+            country: String,
+        }
+
+        let data = include_bytes!("../../fixtures/example-sqs-api-event-obj.json");
+        let parsed: SqsApiEventObj<CustStruct> = serde_json::from_slice(data).unwrap();
+
+        assert_eq!(parsed.messages[0].body.city, "provincetown");
+        assert_eq!(parsed.messages[0].body.country, "usa");
+
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: SqsApiEventObj<CustStruct> = serde_json::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

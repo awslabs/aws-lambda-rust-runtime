@@ -1,9 +1,10 @@
-use aws_sdk_dynamodb::model::AttributeValue;
-use aws_sdk_dynamodb::{Client, Error as OtherError};
+use aws_sdk_dynamodb::{Client};
 use lambda_http::{run, service_fn, Body, Error, Request, Response};
+use serde::{Deserialize, Serialize};
+use serde_dynamo::to_attribute_value;
 use tracing::info;
 
-#[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Item {
     pub p_type: String,
     pub age: String,
@@ -76,12 +77,12 @@ async fn main() -> Result<(), Error> {
 
 // Add an item to a table.
 // snippet-start:[dynamodb.rust.add-item]
-pub async fn add_item(client: &Client, item: Item, table: &str) -> Result<(), OtherError> {
-    let user_av = AttributeValue::S(item.username);
-    let type_av = AttributeValue::S(item.p_type);
-    let age_av = AttributeValue::S(item.age);
-    let first_av = AttributeValue::S(item.first);
-    let last_av = AttributeValue::S(item.last);
+pub async fn add_item(client: &Client, item: Item, table: &str) -> Result<(), Error> {
+    let user_av = to_attribute_value(item.username)?;
+    let type_av = to_attribute_value(item.p_type)?;
+    let age_av = to_attribute_value(item.age)?;
+    let first_av = to_attribute_value(item.first)?;
+    let last_av = to_attribute_value(item.last)?;
 
     let request = client
         .put_item()

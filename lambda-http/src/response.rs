@@ -282,20 +282,9 @@ where
         }
 
         for suffix in TEXT_ENCODING_SUFFIXES {
-            let parts = content_type.trim().split(';');
-
-            let mut media_type = String::new();
-            for part in parts {
-                let trimmed_part = part.trim();
-
-                // Check if the part is a media type
-                if trimmed_part.contains('/') {
-                    media_type = trimmed_part.to_string();
-                    break;
-                }
-            }
-
-            if media_type.ends_with(suffix) {
+            let mut parts = content_type.trim().split(';');
+            let mime_type = parts.next().unwrap_or_default();
+            if mime_type.ends_with(suffix) {
                 return convert_to_text(self, content_type);
             }
         }

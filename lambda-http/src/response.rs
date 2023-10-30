@@ -282,7 +282,9 @@ where
         }
 
         for suffix in TEXT_ENCODING_SUFFIXES {
-            if content_type.ends_with(suffix) {
+            let mut parts = content_type.trim().split(';');
+            let mime_type = parts.next().unwrap_or_default();
+            if mime_type.ends_with(suffix) {
                 return convert_to_text(self, content_type);
             }
         }
@@ -481,6 +483,24 @@ mod tests {
         assert_eq!(
             json,
             r#"{"statusCode":200,"headers":{"content-type":"application/json; charset=utf-16"},"multiValueHeaders":{"content-type":["application/json; charset=utf-16"]},"body":"〰〰〰","isBase64Encoded":false,"cookies":[]}"#
+        )
+    }
+
+    #[tokio::test]
+    async fn charset_content_type_header_suffix() {
+        // Drive the implementation by using `hyper::Body` instead of
+        // of `aws_lambda_events::encodings::Body`
+        let response = Response::builder()
+            .header(CONTENT_TYPE, "application/graphql-response+json; charset=utf-16")
+            .body(HyperBody::from("000000".as_bytes()))
+            .expect("unable to build http::Response");
+        let response = response.into_response().await;
+        let response = LambdaResponse::from_response(&RequestOrigin::ApiGatewayV2, response);
+
+        let json = serde_json::to_string(&response).expect("failed to serialize to json");
+        assert_eq!(
+            json,
+            r#"{"statusCode":200,"headers":{"content-type":"application/graphql-response+json; charset=utf-16"},"multiValueHeaders":{"content-type":["application/graphql-response+json; charset=utf-16"]},"body":"〰〰〰","isBase64Encoded":false,"cookies":[]}"#
         )
     }
 

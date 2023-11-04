@@ -7,7 +7,7 @@
     "awsSdkVersion": "aws-sdk-unknown-unknown",
     "clientId": "<clientId>"
   },
-  "triggerSource": "CreateAuthChallenge_Authentication",
+  "triggerSource": "VerifyAuthChallengeResponse_Authentication",
   "request": {
     "userAttributes": {
       "sub": "<sub>",
@@ -16,26 +16,16 @@
       "cognito:phone_number_alias": "+12223334455",
       "phone_number": "+12223334455"
     },
-    "challengeName": "CUSTOM_CHALLENGE",
-    "session": [
-      {
-        "challengeName": "PASSWORD_VERIFIER",
-        "challengeResult": true,
-        "challengeMetadata": "metadata"
-      }
-    ],
+    "privateChallengeParameters": {
+      "secret": "11122233"
+    },
+    "challengeAnswer": "123xxxx",
     "clientMetadata": {
       "exampleMetadataKey": "example metadata value"
     },
-    "userNotFound": false
+    "userNotFound": true
   },
   "response": {
-    "publicChallengeParameters": {
-      "a": "b"
-    },
-    "privateChallengeParameters": {
-      "c": "d"
-    },
-    "challengeMetadata": "challengeMetadata"
+    "answerCorrect": true
   }
 }

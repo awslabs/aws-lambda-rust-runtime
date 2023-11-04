@@ -22,7 +22,8 @@
     "challengeAnswer": "123xxxx",
     "clientMetadata": {
       "exampleMetadataKey": "example metadata value"
-    }
+    },
+    "userNotFound": false
   },
   "response": {
     "answerCorrect": true

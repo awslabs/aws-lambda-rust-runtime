@@ -1,0 +1,25 @@
+[package]
+name = "producer"
+version = "0.1.0"
+edition = "2021"
+
+[package.metadata.lambda.deploy]
+env = { "QUEUE_URL" = "https://changeMe" } 
+
+[dependencies]
+#tracing
+tracing = "0.1.40"
+tracing-subscriber = "0.3.17"
+
+#aws dependencies
+aws-config = "0.57.1"
+aws-sdk-config = "0.35.0"
+aws-sdk-sqs = "0.35.0"
+
+#lambda runtime
+lambda_runtime = "0.8.1"
+serde_json = "1.0.108"
+tokio = { version = "1", features = ["macros"] }
+
+#shared lib
+pizza_lib = { path = "../pizza_lib" }

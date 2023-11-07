@@ -1,0 +1,13 @@
+[workspace]
+
+members = [
+    "producer",
+    "consumer",
+    "pizza_lib",
+]
+
+[profile.release]
+opt-level = 'z'
+lto = true
+codegen-units = 1
+panic = 'abort'

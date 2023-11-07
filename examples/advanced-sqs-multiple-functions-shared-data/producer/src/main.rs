@@ -32,7 +32,7 @@ async fn main() -> Result<(), Error> {
 
     // no need to create a SQS Client for each incoming request, let's use a shared state
     let handler_func_closure = |event: LambdaEvent<Value>| async move {
-        Result::<(), Error>::Ok(process_event(event, sqs_manager_ref).await?)
+        process_event(event, sqs_manager_ref).await
     };
     lambda_runtime::run(service_fn(handler_func_closure)).await?;
     Ok(())

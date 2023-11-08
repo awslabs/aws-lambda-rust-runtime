@@ -1,6 +1,6 @@
 [package]
 name = "lambda_http"
-version = "0.8.1"
+version = "0.8.2"
 authors = [
     "David Calavera <dcalaver@amazon.com>",
     "Harold Sun <sunhua@amazon.com>",
@@ -41,7 +41,7 @@ percent-encoding = "2.2"
 
 [dependencies.aws_lambda_events]
 path = "../lambda-events"
-version = "0.11.0"
+version = "0.12.0"
 default-features = false
 features = ["alb", "apigw"]
 

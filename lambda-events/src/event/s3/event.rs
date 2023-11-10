@@ -13,7 +13,7 @@ pub struct S3Event {
 }
 
 /// `S3EventRecord` which wrap record data
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct S3EventRecord {
     #[serde(default)]

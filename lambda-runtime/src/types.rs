@@ -1,4 +1,5 @@
 use crate::{Config, Error};
+use base64::prelude::*;
 use bytes::Bytes;
 use http::{HeaderMap, HeaderValue, StatusCode};
 use serde::{Deserialize, Serialize};
@@ -208,7 +209,7 @@ impl ToStreamErrorTrailer for Error {
     fn to_tailer(&self) -> String {
         format!(
             "Lambda-Runtime-Function-Error-Type: Runtime.StreamError\r\nLambda-Runtime-Function-Error-Body: {}\r\n",
-            base64::encode(self.to_string())
+            BASE64_STANDARD.encode(self.to_string())
         )
     }
 }

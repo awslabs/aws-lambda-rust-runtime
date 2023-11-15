@@ -226,10 +226,7 @@ where
         if let Some(mut log_processor) = self.logs_processor {
             trace!("Log processor found");
 
-            let log_buffering_validation_result = validate_buffering_configuration(self.log_buffering);
-            if log_buffering_validation_result.is_err() {
-                return log_buffering_validation_result;
-            }
+            validate_buffering_configuration(self.log_buffering)?;
 
             // Spawn task to run processor
             let addr = SocketAddr::from(([0, 0, 0, 0], self.log_port_number));
@@ -268,10 +265,7 @@ where
         if let Some(mut telemetry_processor) = self.telemetry_processor {
             trace!("Telemetry processor found");
 
-            let telemetry_buffering_validation_result = validate_buffering_configuration(self.telemetry_buffering);
-            if telemetry_buffering_validation_result.is_err() {
-                return telemetry_buffering_validation_result;
-            }
+            validate_buffering_configuration(self.telemetry_buffering)?;
 
             // Spawn task to run processor
             let addr = SocketAddr::from(([0, 0, 0, 0], self.telemetry_port_number));

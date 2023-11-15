@@ -178,7 +178,7 @@ impl Default for LogBuffering {
 pub(crate) fn validate_buffering_configuration(log_buffering: Option<LogBuffering>) -> Result<(), Error> {
     match log_buffering {
         Some(log_buffering) => log_buffering.validate(),
-        None => return Ok(()),
+        None => Ok(()),
     }
 }
 

@@ -111,7 +111,7 @@ pub struct LogPlatformReportMetrics {
 }
 
 /// Log buffering configuration.
-/// Allows Lambda to buffer logs before deliverying them to a subscriber.
+/// Allows Lambda to buffer logs before delivering them to a subscriber.
 #[derive(Debug, Serialize, Copy, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct LogBuffering {

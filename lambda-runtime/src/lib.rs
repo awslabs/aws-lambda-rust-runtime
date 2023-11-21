@@ -131,16 +131,20 @@ where
             }
 
             let ctx: Context = Context::try_from((self.config.clone(), parts.headers))?;
-            let request_id = &ctx.request_id.clone();
+            let request_id = ctx.request_id.clone();
 
             let request_span = match &ctx.xray_trace_id {
                 Some(trace_id) => {
                     env::set_var("_X_AMZN_TRACE_ID", trace_id);
-                    tracing::info_span!("Lambda runtime invoke", requestId = request_id, xrayTraceId = trace_id)
+                    tracing::info_span!(
+                        "Lambda runtime invoke",
+                        requestId = request_id.as_ref(),
+                        xrayTraceId = trace_id
+                    )
                 }
                 None => {
                     env::remove_var("_X_AMZN_TRACE_ID");
-                    tracing::info_span!("Lambda runtime invoke", requestId = request_id)
+                    tracing::info_span!("Lambda runtime invoke", requestId = request_id.as_ref())
                 }
             };
 
@@ -158,7 +162,7 @@ where
                 let lambda_event = match deserializer::deserialize(&body, ctx) {
                     Ok(lambda_event) => lambda_event,
                     Err(err) => {
-                        let req = build_event_error_request(request_id, err)?;
+                        let req = build_event_error_request(&request_id, err)?;
                         client.call(req).await.expect("Unable to send response to Runtime APIs");
                         return Ok(());
                     }
@@ -180,14 +184,14 @@ where
                                 Ok(response) => {
                                     trace!("Ok response from handler (run loop)");
                                     EventCompletionRequest {
-                                        request_id,
+                                        request_id: &request_id,
                                         body: response,
                                         _unused_b: PhantomData,
                                         _unused_s: PhantomData,
                                     }
                                     .into_req()
                                 }
-                                Err(err) => build_event_error_request(request_id, err),
+                                Err(err) => build_event_error_request(&request_id, err),
                             },
                             Err(err) => {
                                 error!("{:?}", err);
@@ -197,11 +201,11 @@ where
                                 } else {
                                     "Lambda panicked".to_string()
                                 };
-                                EventErrorRequest::new(request_id, error_type, &msg).into_req()
+                                EventErrorRequest::new(&request_id, error_type, &msg).into_req()
                             }
                         }
                     }
-                    Err(err) => build_event_error_request(request_id, err),
+                    Err(err) => build_event_error_request(&request_id, err),
                 }?;
 
                 client.call(req).await.expect("Unable to send response to Runtime APIs");

@@ -17,7 +17,6 @@ use hyper::{
 use lambda_runtime_api_client::Client;
 use serde::{Deserialize, Serialize};
 use std::{
-    convert::TryFrom,
     env,
     fmt::{self, Debug, Display},
     future::Future,
@@ -40,6 +39,8 @@ mod types;
 
 use requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest};
 pub use types::{Context, FunctionResponse, IntoFunctionResponse, LambdaEvent, MetadataPrelude, StreamResponse};
+
+use types::invoke_request_id;
 
 /// Error type that lambdas may result in
 pub type Error = lambda_runtime_api_client::Error;
@@ -121,6 +122,7 @@ where
             trace!("New event arrived (run loop)");
             let event = next_event_response?;
             let (parts, body) = event.into_parts();
+            let request_id = invoke_request_id(&parts.headers)?;
 
             #[cfg(debug_assertions)]
             if parts.status == http::StatusCode::NO_CONTENT {
@@ -130,19 +132,8 @@ where
                 continue;
             }
 
-            let ctx: Context = Context::try_from((self.config.clone(), parts.headers))?;
-            let request_id = &ctx.request_id.clone();
-
-            let request_span = match &ctx.xray_trace_id {
-                Some(trace_id) => {
-                    env::set_var("_X_AMZN_TRACE_ID", trace_id);
-                    tracing::info_span!("Lambda runtime invoke", requestId = request_id, xrayTraceId = trace_id)
-                }
-                None => {
-                    env::remove_var("_X_AMZN_TRACE_ID");
-                    tracing::info_span!("Lambda runtime invoke", requestId = request_id)
-                }
-            };
+            let ctx: Context = Context::new(request_id, self.config.clone(), &parts.headers)?;
+            let request_span = ctx.request_span();
 
             // Group the handling in one future and instrument it with the span
             async {

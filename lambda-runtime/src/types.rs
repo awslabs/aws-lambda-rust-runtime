@@ -18,34 +18,6 @@ pub(crate) struct Diagnostic<'a> {
     pub(crate) error_message: &'a str,
 }
 
-/// The request ID, which identifies the request that triggered the function invocation. This header
-/// tracks the invocation within the Lambda control plane. The request ID is used to specify completion
-/// of a given invocation.
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub struct RequestId(pub String);
-
-/// The date that the function times out in Unix time milliseconds. For example, `1542409706888`.
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub struct InvocationDeadline(pub u64);
-
-/// The ARN of the Lambda function, version, or alias that is specified in the invocation.
-/// For instance, `arn:aws:lambda:us-east-2:123456789012:function:custom-runtime`.
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub struct FunctionArn(pub String);
-
-/// The AWS X-Ray Tracing header. For more information,
-/// please see [AWS' documentation](https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-tracingheader).
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub struct XRayTraceId(pub String);
-
-/// For invocations from the AWS Mobile SDK contains data about client application and device.
-#[derive(Debug, Clone, Eq, PartialEq)]
-struct MobileClientContext(String);
-
-/// For invocations from the AWS Mobile SDK, data about the Amazon Cognito identity provider.
-#[derive(Debug, Clone, Eq, PartialEq)]
-struct MobileClientIdentity(String);
-
 /// Client context sent by the AWS Mobile SDK.
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
 pub struct ClientContext {

@@ -5,12 +5,8 @@
 //! This crate includes a base HTTP client to interact with
 //! the AWS Lambda Runtime API.
 use http::{uri::PathAndQuery, uri::Scheme, Request, Response, Uri};
-use hyper::{
-    client::{connect::Connection, HttpConnector},
-    Body,
-};
+use hyper_util::client::legacy::connect::{Connection, HttpConnector};
 use std::{convert::TryInto, fmt::Debug};
-use tokio::io::{AsyncRead, AsyncWrite};
 use tower_service::Service;
 
 const USER_AGENT_HEADER: &str = "User-Agent";
@@ -26,7 +22,7 @@ pub struct Client<C = HttpConnector> {
     /// The runtime API URI
     pub base: Uri,
     /// The client that manages the API connections
-    pub client: hyper::Client<C>,
+    pub client: hyper_util::client::legacy::Client<C, hyper::body::Incoming>,
 }
 
 impl Client {
@@ -41,11 +37,11 @@ impl Client {
 
 impl<C> Client<C>
 where
-    C: hyper::client::connect::Connect + Sync + Send + Clone + 'static,
+    C: hyper_util::client::legacy::connect::Connect + Sync + Send + Clone + 'static,
 {
     /// Send a given request to the Runtime API.
     /// Use the client's base URI to ensure the API endpoint is correct.
-    pub async fn call(&self, req: Request<Body>) -> Result<Response<Body>, Error> {
+    pub async fn call(&self, req: Request<hyper::body::Incoming>) -> Result<Response<hyper::body::Incoming>, Error> {
         let req = self.set_origin(req)?;
         let response = self.client.request(req).await?;
         Ok(response)
@@ -53,7 +49,7 @@ where
 
     /// Create a new client with a given base URI and HTTP connector.
     pub fn with(base: Uri, connector: C) -> Self {
-        let client = hyper::Client::builder()
+        let client = hyper_util::client::legacy::Client::builder(hyper_util::rt::TokioExecutor::new())
             .http1_max_buf_size(1024 * 1024)
             .build(connector);
         Self { base, client }
@@ -83,7 +79,7 @@ where
 }
 
 /// Builder implementation to construct any Runtime API clients.
-pub struct ClientBuilder<C: Service<http::Uri> = hyper::client::HttpConnector> {
+pub struct ClientBuilder<C: Service<http::Uri> = HttpConnector> {
     connector: C,
     uri: Option<http::Uri>,
 }
@@ -93,7 +89,7 @@ where
     C: Service<http::Uri> + Clone + Send + Sync + Unpin + 'static,
     <C as Service<http::Uri>>::Future: Unpin + Send,
     <C as Service<http::Uri>>::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
-    <C as Service<http::Uri>>::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
+    <C as Service<http::Uri>>::Response: Connection + Unpin + Send + 'static,
 {
     /// Create a new builder with a given HTTP connector.
     pub fn with_connector<C2>(self, connector: C2) -> ClientBuilder<C2>
@@ -101,7 +97,7 @@ where
         C2: Service<http::Uri> + Clone + Send + Sync + Unpin + 'static,
         <C2 as Service<http::Uri>>::Future: Unpin + Send,
         <C2 as Service<http::Uri>>::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
-        <C2 as Service<http::Uri>>::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
+        <C2 as Service<http::Uri>>::Response: Connection + Unpin + Send + 'static,
     {
         ClientBuilder {
             connector,
@@ -116,7 +112,10 @@ where
     }
 
     /// Create the new client to interact with the Runtime API.
-    pub fn build(self) -> Result<Client<C>, Error> {
+    pub fn build(self) -> Result<Client<C>, Error>
+    where
+        C: hyper_util::client::legacy::connect::Connect + Sync + Send + Clone + 'static,
+    {
         let uri = match self.uri {
             Some(uri) => uri,
             None => {

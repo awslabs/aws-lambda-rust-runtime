@@ -15,6 +15,14 @@ readme = "README.md"
 
 [dependencies]
 http = "1.0"
+http-body = "1.0"
+http-body-util = "0.1"
 hyper = { version = "1.0", features = ["http1", "client"] }
+hyper-util = { version = "0.1.1", features = [
+    "client",
+    "client-legacy",
+    "http1",
+    "tokio",
+] }
 tower-service = "0.3"
 tokio = { version = "1.0", features = ["io-util"] }

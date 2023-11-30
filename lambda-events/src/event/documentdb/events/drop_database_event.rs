@@ -9,6 +9,7 @@ pub struct ChangeDropDatabaseEvent {
     id: DocumentId,
     #[serde(default)]
     cluster_time: Option<Timestamp>,
+    #[serde(default)]
     #[serde(rename = "lsid")]
     ls_id: Option<AnyDocument>,
     ns: DatabaseCollection,

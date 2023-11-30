@@ -343,6 +343,8 @@ pub struct CognitoEventUserPoolsCreateAuthChallengeRequest {
     #[serde(deserialize_with = "deserialize_lambda_map")]
     #[serde(default)]
     pub client_metadata: HashMap<String, String>,
+    #[serde(default)]
+    pub user_not_found: bool,
 }
 
 /// `CognitoEventUserPoolsCreateAuthChallengeResponse` defines create auth challenge response parameters
@@ -389,6 +391,8 @@ where
     #[serde(deserialize_with = "deserialize_lambda_map")]
     #[serde(default)]
     pub client_metadata: HashMap<String, String>,
+    #[serde(default)]
+    pub user_not_found: bool,
 }
 
 /// `CognitoEventUserPoolsVerifyAuthChallengeResponse` defines verify auth challenge response parameters
@@ -484,6 +488,20 @@ mod test {
 
     #[test]
     #[cfg(feature = "cognito")]
+    fn example_cognito_event_userpools_create_auth_challenge_user_not_found() {
+        let data =
+            include_bytes!("../../fixtures/example-cognito-event-userpools-create-auth-challenge-user-not-found.json");
+        let parsed: CognitoEventUserPoolsCreateAuthChallenge = serde_json::from_slice(data).unwrap();
+
+        assert!(parsed.request.user_not_found);
+
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: CognitoEventUserPoolsCreateAuthChallenge = serde_json::from_slice(output.as_bytes()).unwrap();
+        assert_eq!(parsed, reparsed);
+    }
+
+    #[test]
+    #[cfg(feature = "cognito")]
     fn example_cognito_event_userpools_custommessage() {
         let data = include_bytes!("../../fixtures/example-cognito-event-userpools-custommessage.json");
         let parsed: CognitoEventUserPoolsCustomMessage = serde_json::from_slice(data).unwrap();
@@ -512,6 +530,20 @@ mod test {
 
         assert!(!parsed.response.fail_authentication);
         assert!(!parsed.response.issue_tokens);
+
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: CognitoEventUserPoolsDefineAuthChallenge = serde_json::from_slice(output.as_bytes()).unwrap();
+        assert_eq!(parsed, reparsed);
+    }
+
+    #[test]
+    #[cfg(feature = "cognito")]
+    fn example_cognito_event_userpools_define_auth_challenge_user_not_found() {
+        let data =
+            include_bytes!("../../fixtures/example-cognito-event-userpools-define-auth-challenge-user-not-found.json");
+        let parsed: CognitoEventUserPoolsDefineAuthChallenge = serde_json::from_slice(data).unwrap();
+
+        assert!(parsed.request.user_not_found);
 
         let output: String = serde_json::to_string(&parsed).unwrap();
         let reparsed: CognitoEventUserPoolsDefineAuthChallenge = serde_json::from_slice(output.as_bytes()).unwrap();
@@ -607,6 +639,20 @@ mod test {
         let parsed: CognitoEventUserPoolsVerifyAuthChallenge = serde_json::from_slice(data).unwrap();
 
         assert!(!parsed.response.answer_correct);
+
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: CognitoEventUserPoolsVerifyAuthChallenge = serde_json::from_slice(output.as_bytes()).unwrap();
+        assert_eq!(parsed, reparsed);
+    }
+
+    #[test]
+    #[cfg(feature = "cognito")]
+    fn example_cognito_event_userpools_verify_auth_challenge_user_not_found() {
+        let data =
+            include_bytes!("../../fixtures/example-cognito-event-userpools-verify-auth-challenge-user-not-found.json");
+        let parsed: CognitoEventUserPoolsVerifyAuthChallenge = serde_json::from_slice(data).unwrap();
+
+        assert!(parsed.request.user_not_found);
 
         let output: String = serde_json::to_string(&parsed).unwrap();
         let reparsed: CognitoEventUserPoolsVerifyAuthChallenge = serde_json::from_slice(output.as_bytes()).unwrap();

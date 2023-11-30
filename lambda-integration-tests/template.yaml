@@ -8,6 +8,17 @@ Globals:
     Timeout: 5
 
 Resources:
+  # Rust function using runtime_fn running on AL2023
+  RuntimeFnAl2023:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../build/runtime-fn/
+      Runtime: provided.al2023
+      Layers:
+        - !Ref LogsTrait
+        - !Ref ExtensionFn
+        - !Ref ExtensionTrait
+
   # Rust function using runtime_fn running on AL2
   RuntimeFnAl2:
     Type: AWS::Serverless::Function
@@ -25,6 +36,17 @@ Resources:
     Properties:
       CodeUri: ../build/runtime-fn/
       Runtime: provided
+      Layers:
+        - !Ref LogsTrait
+        - !Ref ExtensionFn
+        - !Ref ExtensionTrait
+
+  # Rust function using a Service implementation running on AL2023
+  RuntimeTraitAl2023:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../build/runtime-trait/
+      Runtime: provided.al2023
       Layers:
         - !Ref LogsTrait
         - !Ref ExtensionFn
@@ -52,6 +74,38 @@ Resources:
         - !Ref ExtensionFn
         - !Ref ExtensionTrait
   
+  # Rust function using lambda_http::service_fn running on AL2023
+  HttpFnAl2023:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../build/http-fn/
+      Runtime: provided.al2023
+      Events:
+        ApiGet:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /al2/get
+        ApiPost:
+          Type: Api
+          Properties:
+            Method: POST
+            Path: /al2/post
+        ApiV2Get:
+          Type: HttpApi
+          Properties:
+            Method: GET
+            Path: /al2/get
+        ApiV2Post:
+          Type: HttpApi
+          Properties:
+            Method: POST
+            Path: /al2/post
+      Layers:
+        - !Ref LogsTrait
+        - !Ref ExtensionFn
+        - !Ref ExtensionTrait
+
   # Rust function using lambda_http::service_fn running on AL2
   HttpFnAl2:
     Type: AWS::Serverless::Function
@@ -84,6 +138,38 @@ Resources:
         - !Ref ExtensionFn
         - !Ref ExtensionTrait
   
+  # Rust function using lambda_http with Service running on AL2023
+  HttpTraitAl2023:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../build/http-trait/
+      Runtime: provided.al2023
+      Events:
+        ApiGet:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /al2-trait/get
+        ApiPost:
+          Type: Api
+          Properties:
+            Method: POST
+            Path: /al2-trait/post
+        ApiV2Get:
+          Type: HttpApi
+          Properties:
+            Method: GET
+            Path: /al2-trait/get
+        ApiV2Post:
+          Type: HttpApi
+          Properties:
+            Method: POST
+            Path: /al2-trait/post
+      Layers:
+        - !Ref LogsTrait
+        - !Ref ExtensionFn
+        - !Ref ExtensionTrait
+
   # Rust function using lambda_http with Service running on AL2
   HttpTraitAl2:
     Type: AWS::Serverless::Function

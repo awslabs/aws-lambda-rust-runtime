@@ -162,7 +162,7 @@ You can find the resulting zip file in `target/lambda/YOUR_PACKAGE/bootstrap.zip
 $ aws lambda create-function --function-name rustTest \
   --handler bootstrap \
   --zip-file fileb://./target/lambda/basic/bootstrap.zip \
-  --runtime provided.al2 \ # Change this to provided.al if you would like to use Amazon Linux 1.
+  --runtime provided.al2023 \ # Change this to provided.al2 if you would like to use Amazon Linux 2 (or to provided.al for Amazon Linux 1).
   --role arn:aws:iam::XXXXXXXXXXXXX:role/your_lambda_execution_role \
   --environment Variables={RUST_BACKTRACE=1} \
   --tracing-config Mode=Active
@@ -202,7 +202,7 @@ Resources:
       MemorySize: 128
       Architectures: ["arm64"]
       Handler: bootstrap
-      Runtime: provided.al2
+      Runtime: provided.al2023
       Timeout: 5
       CodeUri: target/lambda/basic/
 

@@ -108,10 +108,9 @@ pub trait RequestExt {
     /// These will always be `None` for ALB triggered requests.
     fn stage_variables_ref(&self) -> Option<&QueryMap>;
 
-    /// Configures instance with stage variables under `#[cfg(test)]` configurations
+    /// Configures instance with stage variables
     ///
     /// This is intended for use in mock testing contexts.
-    #[cfg(test)]
     fn with_stage_variables<V>(self, variables: V) -> Self
     where
         V: Into<QueryMap>;
@@ -216,7 +215,6 @@ impl RequestExt for http::Extensions {
             .and_then(|StageVariables(vars)| if vars.is_empty() { None } else { Some(vars) })
     }
 
-    #[cfg(test)]
     fn with_stage_variables<V>(self, variables: V) -> Self
     where
         V: Into<QueryMap>,
@@ -318,7 +316,6 @@ impl RequestExt for Parts {
         self.extensions.stage_variables_ref()
     }
 
-    #[cfg(test)]
     fn with_stage_variables<V>(self, variables: V) -> Self
     where
         V: Into<QueryMap>,
@@ -420,7 +417,6 @@ impl<B> RequestExt for http::Request<B> {
         self.extensions().stage_variables_ref()
     }
 
-    #[cfg(test)]
     fn with_stage_variables<V>(self, variables: V) -> Self
     where
         V: Into<QueryMap>,

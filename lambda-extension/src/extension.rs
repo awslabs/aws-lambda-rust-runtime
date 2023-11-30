@@ -225,6 +225,9 @@ where
 
         if let Some(mut log_processor) = self.logs_processor {
             trace!("Log processor found");
+
+            validate_buffering_configuration(self.log_buffering)?;
+
             // Spawn task to run processor
             let addr = SocketAddr::from(([0, 0, 0, 0], self.log_port_number));
             let make_service = service_fn(move |_socket: &AddrStream| {
@@ -261,6 +264,9 @@ where
 
         if let Some(mut telemetry_processor) = self.telemetry_processor {
             trace!("Telemetry processor found");
+
+            validate_buffering_configuration(self.telemetry_buffering)?;
+
             // Spawn task to run processor
             let addr = SocketAddr::from(([0, 0, 0, 0], self.telemetry_port_number));
             let make_service = service_fn(move |_socket: &AddrStream| {

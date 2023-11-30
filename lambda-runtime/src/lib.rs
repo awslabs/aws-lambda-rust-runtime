@@ -17,12 +17,12 @@ use hyper::{
 use lambda_runtime_api_client::Client;
 use serde::{Deserialize, Serialize};
 use std::{
-    convert::TryFrom,
     env,
     fmt::{self, Debug, Display},
     future::Future,
     marker::PhantomData,
     panic,
+    sync::Arc,
 };
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio_stream::{Stream, StreamExt};
@@ -39,6 +39,8 @@ mod types;
 
 use requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest};
 pub use types::{Context, FunctionResponse, IntoFunctionResponse, LambdaEvent, MetadataPrelude, StreamResponse};
+
+use types::invoke_request_id;
 
 /// Error type that lambdas may result in
 pub type Error = lambda_runtime_api_client::Error;
@@ -57,6 +59,8 @@ pub struct Config {
     /// The name of the Amazon CloudWatch Logs group for the function.
     pub log_group: String,
 }
+
+type RefConfig = Arc<Config>;
 
 impl Config {
     /// Attempts to read configuration from environment variables.
@@ -86,7 +90,7 @@ where
 
 struct Runtime<C: Service<http::Uri> = HttpConnector> {
     client: Client<C>,
-    config: Config,
+    config: RefConfig,
 }
 
 impl<C> Runtime<C>
@@ -118,6 +122,7 @@ where
             trace!("New event arrived (run loop)");
             let event = next_event_response?;
             let (parts, body) = event.into_parts();
+            let request_id = invoke_request_id(&parts.headers)?;
 
             #[cfg(debug_assertions)]
             if parts.status == http::StatusCode::NO_CONTENT {
@@ -127,20 +132,8 @@ where
                 continue;
             }
 
-            let ctx: Context = Context::try_from(parts.headers)?;
-            let ctx: Context = ctx.with_config(&self.config);
-            let request_id = &ctx.request_id.clone();
-
-            let request_span = match &ctx.xray_trace_id {
-                Some(trace_id) => {
-                    env::set_var("_X_AMZN_TRACE_ID", trace_id);
-                    tracing::info_span!("Lambda runtime invoke", requestId = request_id, xrayTraceId = trace_id)
-                }
-                None => {
-                    env::remove_var("_X_AMZN_TRACE_ID");
-                    tracing::info_span!("Lambda runtime invoke", requestId = request_id)
-                }
-            };
+            let ctx: Context = Context::new(request_id, self.config.clone(), &parts.headers)?;
+            let request_span = ctx.request_span();
 
             // Group the handling in one future and instrument it with the span
             async {
@@ -263,7 +256,10 @@ where
     trace!("Loading config from env");
     let config = Config::from_env()?;
     let client = Client::builder().build().expect("Unable to create a runtime client");
-    let runtime = Runtime { client, config };
+    let runtime = Runtime {
+        client,
+        config: Arc::new(config),
+    };
 
     let client = &runtime.client;
     let incoming = incoming(client);
@@ -294,7 +290,7 @@ mod endpoint_tests {
         },
         simulated,
         types::Diagnostic,
-        Error, Runtime,
+        Config, Error, Runtime,
     };
     use futures::future::BoxFuture;
     use http::{uri::PathAndQuery, HeaderValue, Method, Request, Response, StatusCode, Uri};
@@ -302,7 +298,7 @@ mod endpoint_tests {
     use lambda_runtime_api_client::Client;
     use serde_json::json;
     use simulated::DuplexStreamWrapper;
-    use std::{convert::TryFrom, env, marker::PhantomData};
+    use std::{convert::TryFrom, env, marker::PhantomData, sync::Arc};
     use tokio::{
         io::{self, AsyncRead, AsyncWrite},
         select,
@@ -531,9 +527,12 @@ mod endpoint_tests {
         if env::var("AWS_LAMBDA_LOG_GROUP_NAME").is_err() {
             env::set_var("AWS_LAMBDA_LOG_GROUP_NAME", "test_log");
         }
-        let config = crate::Config::from_env().expect("Failed to read env vars");
+        let config = Config::from_env().expect("Failed to read env vars");
 
-        let runtime = Runtime { client, config };
+        let runtime = Runtime {
+            client,
+            config: Arc::new(config),
+        };
         let client = &runtime.client;
         let incoming = incoming(client).take(1);
         runtime.run(incoming, f).await?;
@@ -568,13 +567,13 @@ mod endpoint_tests {
 
         let f = crate::service_fn(func);
 
-        let config = crate::Config {
+        let config = Arc::new(Config {
             function_name: "test_fn".to_string(),
             memory: 128,
             version: "1".to_string(),
             log_stream: "test_stream".to_string(),
             log_group: "test_log".to_string(),
-        };
+        });
 
         let runtime = Runtime { client, config };
         let client = &runtime.client;

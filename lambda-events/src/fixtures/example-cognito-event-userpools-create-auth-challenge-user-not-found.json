@@ -27,7 +27,7 @@
     "clientMetadata": {
       "exampleMetadataKey": "example metadata value"
     },
-    "userNotFound": false
+    "userNotFound": true
   },
   "response": {
     "publicChallengeParameters": {

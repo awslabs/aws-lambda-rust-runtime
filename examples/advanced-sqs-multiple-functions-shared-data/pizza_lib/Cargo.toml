@@ -1,0 +1,7 @@
+[package]
+name = "pizza_lib"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1.0.191", features = ["derive"] }

@@ -11,7 +11,7 @@ pub struct ChangeUpdateEvent {
     cluster_time: Option<Timestamp>,
     document_key: DocumentKeyId,
     #[serde(rename = "lsid")]
-    ls_id: Option<String>,
+    ls_id: Option<AnyDocument>,
     ns: DatabaseCollection,
     // operation_type: String,
     #[serde(default)]

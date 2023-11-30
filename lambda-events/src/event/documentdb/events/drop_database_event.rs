@@ -7,7 +7,8 @@ use super::commom_types::{AnyDocument, DatabaseCollection, DocumentId, Timestamp
 pub struct ChangeDropDatabaseEvent {
     #[serde(rename = "_id")]
     id: DocumentId,
-    cluster_time: Timestamp,
+    #[serde(default)]
+    cluster_time: Option<Timestamp>,
     #[serde(rename = "lsid")]
     ls_id: Option<AnyDocument>,
     ns: DatabaseCollection,

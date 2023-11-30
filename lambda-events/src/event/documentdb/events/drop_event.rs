@@ -6,7 +6,8 @@ use serde::{Deserialize, Serialize};
 pub struct ChangeDropEvent {
     #[serde(rename = "_id")]
     id: DocumentId,
-    cluster_time: Timestamp,
+    #[serde(default)]
+    cluster_time: Option<Timestamp>,
     #[serde(default)]
     #[serde(rename = "lsid")]
     ls_id: Option<AnyDocument>,

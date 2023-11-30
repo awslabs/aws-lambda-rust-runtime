@@ -12,7 +12,7 @@ pub struct ChangeReplaceEvent {
     document_key: DocumentKeyId,
     #[serde(default)]
     #[serde(rename = "lsid")]
-    ls_id: Option<String>,
+    ls_id: Option<AnyDocument>,
     ns: DatabaseCollection,
     // operation_type: String,
     #[serde(default)]

@@ -1,29 +1,43 @@
 {
-    "eventSourceArn": "arn:aws:rds:us-east-1:123456789012:cluster:canaryclusterb2a659a2-qo5tcmqkcl03",
-    "events": [
-      {
-        "event": {
+  "eventSourceArn": "arn:aws:rds:us-east-1:123456789012:cluster:canaryclusterb2a659a2-qo5tcmqkcl03",
+  "events": [
+    {
+      "event": {
+        "_id": {
+          "_data": "0163eeb6e7000000090100000009000041e1"
+        },
+        "operationType": "update",
+        "clusterTime": {
+          "$timestamp": {
+            "t": 1676588775,
+            "i": 9
+          }
+        },
+        "ns": {
+          "db": "test_database",
+          "coll": "test_collection"
+        },
+        "documentKey": {
           "_id": {
-            "_data": "0163eeb6e7000000090100000009000041e1"
+            "$oid": "63eeb6e7d418cd98afb1c1d7"
+          }
+        },
+        "updateDescription": {
+          "updatedFields": {
+            "email": "alice@10gen.com"
           },
-          "clusterTime": {
-            "$timestamp": {
-              "t": 1676588775,
-              "i": 9
+          "removedFields": [
+            "phoneNumber"
+          ],
+          "truncatedArrays": [
+            {
+              "field": "vacation_time",
+              "newSize": 36
             }
-          },
-          "documentKey": {
-            "_id": {
-              "$oid": "63eeb6e7d418cd98afb1c1d7"
-            }
-          },
-          "ns": {
-            "db": "test_database",
-            "coll": "test_collection"
-          },
-          "operationType": "update"
+          ]
         }
       }
-    ],
-    "eventSource": "aws:docdb"
-  }
+    }
+  ],
+  "eventSource": "aws:docdb"
+}

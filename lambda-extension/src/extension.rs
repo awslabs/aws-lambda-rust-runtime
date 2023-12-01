@@ -215,14 +215,21 @@ where
         }
     }
 
-    /// Execute the given extension
-    pub async fn run(self) -> Result<(), Error> {
+    /// Register the extension.
+    ///
+    /// Performs the
+    /// [init phase](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtime-environment.html#runtimes-lifecycle-ib)
+    /// Lambda lifecycle operations to register the extension. When implementing an internal Lambda
+    /// extension, it is safe to call `lambda_runtime::run` once the future returned by this
+    /// function resolves.
+    pub async fn register(self) -> Result<RegisteredExtension<E>, Error> {
         let client = &Client::builder().build()?;
 
         let extension_id = register(client, self.extension_name, self.events).await?;
         let extension_id = extension_id.to_str()?;
-        let mut ep = self.events_processor;
 
+        // Logs API subscriptions must be requested during the Lambda init phase (see
+        // https://docs.aws.amazon.com/lambda/latest/dg/runtimes-logs-api.html#runtimes-logs-api-subscribing).
         if let Some(mut log_processor) = self.logs_processor {
             trace!("Log processor found");
 
@@ -262,6 +269,8 @@ where
             trace!("Registered extension with Logs API");
         }
 
+        // Telemetry API subscriptions must be requested during the Lambda init phase (see
+        // https://docs.aws.amazon.com/lambda/latest/dg/telemetry-api.html#telemetry-api-registration
         if let Some(mut telemetry_processor) = self.telemetry_processor {
             trace!("Telemetry processor found");
 
@@ -300,6 +309,42 @@ where
             }
             trace!("Registered extension with Telemetry API");
         }
+
+        Ok(RegisteredExtension {
+            extension_id: extension_id.to_string(),
+            events_processor: self.events_processor,
+        })
+    }
+
+    /// Execute the given extension.
+    pub async fn run(self) -> Result<(), Error> {
+        self.register().await?.run().await
+    }
+}
+
+/// An extension registered by calling [`Extension::register`].
+pub struct RegisteredExtension<E> {
+    extension_id: String,
+    events_processor: E,
+}
+
+impl<E> RegisteredExtension<E>
+where
+    E: Service<LambdaEvent>,
+    E::Future: Future<Output = Result<(), E::Error>>,
+    E::Error: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Display + fmt::Debug,
+{
+    /// Execute the extension's run loop.
+    ///
+    /// Performs the
+    /// [invoke](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtime-environment.html#runtimes-lifecycle-invoke)
+    /// and, for external Lambda extensions registered to receive the `SHUTDOWN` event, the
+    /// [shutdown](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtime-environment.html#runtimes-lifecycle-shutdown)
+    /// Lambda lifecycle phases.
+    pub async fn run(self) -> Result<(), Error> {
+        let client = &Client::builder().build()?;
+        let mut ep = self.events_processor;
+        let extension_id = &self.extension_id;
 
         let incoming = async_stream::stream! {
             loop {
@@ -351,6 +396,8 @@ where
                 return Err(err.into());
             }
         }
+
+        // Unreachable.
         Ok(())
     }
 }

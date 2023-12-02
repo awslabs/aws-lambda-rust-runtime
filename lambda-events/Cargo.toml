@@ -43,6 +43,7 @@ default = [
   "apigw",
   "appsync",
   "autoscaling",
+  "bedrock_runtime_agent",
   "chime_bot",
   "clientvpn",
   "cloudformation",
@@ -85,6 +86,7 @@ alb = ["bytes", "http", "http-body", "http-serde", "query_map"]
 apigw = ["bytes", "http", "http-body", "http-serde", "query_map"]
 appsync = []
 autoscaling = ["chrono"]
+bedrock_runtime_agent = []
 chime_bot = ["chrono"]
 clientvpn = []
 cloudformation = []

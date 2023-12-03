@@ -93,6 +93,8 @@ async fn main() -> Result<(), Error> {
             let flush_extension = flush_extension.clone();
             async move { flush_extension.invoke(event).await }
         }))
+        // Internal extension names MUST be unique within a given Lambda function.
+        .with_extension_name("internal-flush")
         // Extensions MUST be registered before calling lambda_runtime::run(), which ends the Init
         // phase and begins the Invoke phase.
         .register()

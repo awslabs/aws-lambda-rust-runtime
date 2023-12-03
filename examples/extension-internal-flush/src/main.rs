@@ -9,13 +9,13 @@ use std::sync::Arc;
 
 /// Implements an internal Lambda extension to flush logs/telemetry after each request.
 struct FlushExtension {
-    request_done_receiver: Arc<Mutex<UnboundedReceiver<()>>>,
+    request_done_receiver: Mutex<UnboundedReceiver<()>>,
 }
 
 impl FlushExtension {
     pub fn new(request_done_receiver: UnboundedReceiver<()>) -> Self {
         Self {
-            request_done_receiver: Arc::new(Mutex::new(request_done_receiver)),
+            request_done_receiver: Mutex::new(request_done_receiver),
         }
     }
 
@@ -55,14 +55,12 @@ struct Data {
 
 /// Implements the main event handler for processing events from an SQS queue.
 struct EventHandler {
-    request_done_sender: Arc<Mutex<UnboundedSender<()>>>,
+    request_done_sender: UnboundedSender<()>,
 }
 
 impl EventHandler {
     pub fn new(request_done_sender: UnboundedSender<()>) -> Self {
-        Self {
-            request_done_sender: Arc::new(Mutex::new(request_done_sender)),
-        }
+        Self { request_done_sender }
     }
 
     pub async fn invoke(
@@ -75,7 +73,7 @@ impl EventHandler {
         // <process event here>
 
         // Notify the extension to flush traces.
-        self.request_done_sender.lock().await.send(()).map_err(Box::new)?;
+        self.request_done_sender.send(()).map_err(Box::new)?;
 
         Ok(SqsBatchResponse::default())
     }

@@ -152,4 +152,3 @@ pub mod documentdb;
 /// AWS Lambda event definitions for EventBridge.
 #[cfg(feature = "eventbridge")]
 pub mod eventbridge;
-mod bedrock_agent_runtime;

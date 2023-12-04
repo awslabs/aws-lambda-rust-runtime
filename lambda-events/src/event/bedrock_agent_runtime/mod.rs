@@ -31,6 +31,7 @@ pub struct AgentEvent {
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RequestBody {
+    /// Contains the request body and its properties
     pub content: HashMap<String, Content>,
 }
 
@@ -38,22 +39,29 @@ pub struct RequestBody {
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Content {
+    /// The content of the request body
     pub properties: Vec<Property>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Property {
+    /// The name of the parameter
     pub name: String,
+    /// The type of the parameter
     pub r#type: String,
+    /// The value of the parameter
     pub value: String,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Parameter {
+    /// The name of the parameter
     pub name: String,
+    /// The type of the parameter
     pub r#type: String,
+    /// The value of the parameter
     pub value: String,
 }
 
@@ -61,9 +69,13 @@ pub struct Parameter {
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Agent {
+    /// The name of the agent.
     pub name: String,
+    /// The unique identifier of the agent.
     pub id: String,
+    /// The alias of the agent.
     pub alias: String,
+    /// The version of the agent.
     pub version: String,
 }
 

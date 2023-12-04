@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 /// The Event sent to Lambda from Agents for Amazon Bedrock.
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -36,7 +36,6 @@ pub struct RequestBody {
     pub content: HashMap<String, Content>,
 }
 
-
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Content {
@@ -65,7 +64,6 @@ pub struct Parameter {
     /// The value of the parameter
     pub value: String,
 }
-
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]

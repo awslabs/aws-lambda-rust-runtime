@@ -17,6 +17,10 @@ pub mod appsync;
 #[cfg(feature = "autoscaling")]
 pub mod autoscaling;
 
+/// AWS Lambda event definitions for agent for amazon bedrock
+#[cfg(feature = "bedrock_agent_runtime")]
+pub mod bedrock_agent_runtime;
+
 /// AWS Lambda event definitions for chime_bot.
 #[cfg(feature = "chime_bot")]
 pub mod chime_bot;

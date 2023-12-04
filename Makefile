@@ -69,6 +69,7 @@ check-event-features:
 	cargo test --package aws_lambda_events --no-default-features --features apigw
 	cargo test --package aws_lambda_events --no-default-features --features appsync
 	cargo test --package aws_lambda_events --no-default-features --features autoscaling
+	cargo test --package aws_lambda_events --no-default-features --features bedrock_agent_runtime
 	cargo test --package aws_lambda_events --no-default-features --features chime_bot
 	cargo test --package aws_lambda_events --no-default-features --features clientvpn
 	cargo test --package aws_lambda_events --no-default-features --features cloudwatch_events

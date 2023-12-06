@@ -1,0 +1,33 @@
+{
+  "messageVersion": "1.0",
+  "agent": {
+    "name": "AgentName",
+    "id": "AgentID",
+    "alias": "AgentAlias",
+    "version": "AgentVersion"
+  },
+  "inputText": "InputText",
+  "sessionId": "SessionID",
+  "actionGroup": "ActionGroup",
+  "apiPath": "/api/path",
+  "httpMethod": "POST",
+  "requestBody": {
+    "content": {
+      "application/json": {
+        "properties": [
+          {
+            "name": "prop1",
+            "type": "string",
+            "value": "value1"
+          }
+        ]
+      }
+    }
+  },
+  "sessionAttributes": {
+    "attr1": "value1"
+  },
+  "promptSessionAttributes": {
+    "promptAttr1": "value1"
+  }
+}

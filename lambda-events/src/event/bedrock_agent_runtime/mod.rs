@@ -20,9 +20,11 @@ pub struct AgentEvent {
     /// The method of the API operation, as defined in the OpenAPI schema.
     pub http_method: String,
     /// Contains a list of objects. Each object contains the name, type, and value of a parameter in the API operation, as defined in the OpenAPI schema.
-    pub parameters: Vec<Parameter>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub parameters: Option<Vec<Parameter>>,
     /// Contains the request body and its properties, as defined in the OpenAPI schema.
-    pub request_body: RequestBody,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub request_body: Option<RequestBody>,
     /// Contains session attributes and their values.
     pub session_attributes: HashMap<String, String>,
     /// Contains prompt attributes and their values.
@@ -86,6 +88,24 @@ mod tests {
     #[cfg(feature = "bedrock-agent-runtime")]
     fn example_bedrock_agent__runtime_event() {
         let data = include!("../../fixtures/example-bedrock-agent-runtime-event.json");
+        let parsed: AgentEvent = serde_json::from_str(&data).unwrap();
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: AgentEvent = serde_json::from_slice(&output.as_bytes()).unwrap();
+        assert_eq!(parsed, reparsed);
+    }
+    #[test]
+    #[cfg(feature = "bedrock-agent-runtime")]
+    fn example_bedrock_agent_runtime_event_without_parameters() {
+        let data = include!("../../fixtures/example-bedrock-agent-runtime-event-without-parameters.json");
+        let parsed: AgentEvent = serde_json::from_str(&data).unwrap();
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: AgentEvent = serde_json::from_slice(&output.as_bytes()).unwrap();
+        assert_eq!(parsed, reparsed);
+    }
+    #[test]
+    #[cfg(feature = "bedrock-agent-runtime")]
+    fn example_bedrock_agent_runtime_event_without_request_body() {
+        let data = include!("../../fixtures/example-bedrock-agent-runtime-event-without-request-body.json");
         let parsed: AgentEvent = serde_json::from_str(&data).unwrap();
         let output: String = serde_json::to_string(&parsed).unwrap();
         let reparsed: AgentEvent = serde_json::from_slice(&output.as_bytes()).unwrap();

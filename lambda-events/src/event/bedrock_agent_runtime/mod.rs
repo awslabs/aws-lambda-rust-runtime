@@ -23,7 +23,7 @@ pub struct AgentEvent {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub parameters: Option<Vec<Parameter>>,
     /// Contains the request body and its properties, as defined in the OpenAPI schema.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub request_body: Option<RequestBody>,
     /// Contains session attributes and their values.
     pub session_attributes: HashMap<String, String>,

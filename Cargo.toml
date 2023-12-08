@@ -10,3 +10,18 @@ members = [
 ]
 
 exclude = ["examples"]
+
+[workspace.dependencies]
+bytes = "1"
+futures = "0.3"
+futures-channel = "0.3"
+futures-util = "0.3"
+http = "1.0"
+http-body = "1.0"
+http-body-util = "0.1"
+http-serde = "2.0.0"
+hyper = "1.0"
+hyper-util = "0.1.1"
+pin-project-lite = "0.2"
+tower = "0.4"
+tower-service = "0.3"

@@ -9,22 +9,18 @@
 //! and runs the Lambda runtime.
 use bytes::Bytes;
 use futures::FutureExt;
-use hyper::{
-    client::{connect::Connection, HttpConnector},
-    http::Request,
-    Body,
-};
-use lambda_runtime_api_client::Client;
+use http_body_util::BodyExt;
+use hyper::{body::Incoming, http::Request};
+use hyper_util::client::legacy::connect::{Connect, Connection, HttpConnector};
+use lambda_runtime_api_client::{body::Body, BoxError, Client};
 use serde::{Deserialize, Serialize};
 use std::{
     env,
     fmt::{self, Debug, Display},
     future::Future,
-    marker::PhantomData,
     panic,
     sync::Arc,
 };
-use tokio::io::{AsyncRead, AsyncWrite};
 use tokio_stream::{Stream, StreamExt};
 pub use tower::{self, service_fn, Service};
 use tower::{util::ServiceFn, ServiceExt};
@@ -43,7 +39,7 @@ pub use types::{Context, FunctionResponse, IntoFunctionResponse, LambdaEvent, Me
 use types::invoke_request_id;
 
 /// Error type that lambdas may result in
-pub type Error = lambda_runtime_api_client::Error;
+pub type Error = lambda_runtime_api_client::BoxError;
 
 /// Configuration derived from environment variables.
 #[derive(Debug, Default, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -95,16 +91,16 @@ struct Runtime<C: Service<http::Uri> = HttpConnector> {
 
 impl<C> Runtime<C>
 where
-    C: Service<http::Uri> + Clone + Send + Sync + Unpin + 'static,
+    C: Service<http::Uri> + Connect + Clone + Send + Sync + Unpin + 'static,
     C::Future: Unpin + Send,
     C::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
-    C::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
+    C::Response: Connection + Unpin + Send + 'static,
 {
     async fn run<F, A, R, B, S, D, E>(
         &self,
-        incoming: impl Stream<Item = Result<http::Response<hyper::Body>, Error>> + Send,
+        incoming: impl Stream<Item = Result<http::Response<Incoming>, Error>> + Send,
         mut handler: F,
-    ) -> Result<(), Error>
+    ) -> Result<(), BoxError>
     where
         F: Service<LambdaEvent<A>>,
         F::Future: Future<Output = Result<R, F::Error>>,
@@ -137,7 +133,7 @@ where
 
             // Group the handling in one future and instrument it with the span
             async {
-                let body = hyper::body::to_bytes(body).await?;
+                let body = body.collect().await?.to_bytes();
                 trace!("response body - {}", std::str::from_utf8(&body)?);
 
                 #[cfg(debug_assertions)]
@@ -170,13 +166,7 @@ where
                             Ok(response) => match response {
                                 Ok(response) => {
                                     trace!("Ok response from handler (run loop)");
-                                    EventCompletionRequest {
-                                        request_id,
-                                        body: response,
-                                        _unused_b: PhantomData,
-                                        _unused_s: PhantomData,
-                                    }
-                                    .into_req()
+                                    EventCompletionRequest::new(request_id, response).into_req()
                                 }
                                 Err(err) => build_event_error_request(request_id, err),
                             },
@@ -205,12 +195,12 @@ where
     }
 }
 
-fn incoming<C>(client: &Client<C>) -> impl Stream<Item = Result<http::Response<hyper::Body>, Error>> + Send + '_
+fn incoming<C>(client: &Client<C>) -> impl Stream<Item = Result<http::Response<Incoming>, Error>> + Send + '_
 where
-    C: Service<http::Uri> + Clone + Send + Sync + Unpin + 'static,
+    C: Service<http::Uri> + Connect + Clone + Send + Sync + Unpin + 'static,
     <C as Service<http::Uri>>::Future: Unpin + Send,
     <C as Service<http::Uri>>::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
-    <C as Service<http::Uri>>::Response: AsyncRead + AsyncWrite + Connection + Unpin + Send + 'static,
+    <C as Service<http::Uri>>::Response: Connection + Unpin + Send + 'static,
 {
     async_stream::stream! {
         loop {
@@ -294,20 +284,23 @@ mod endpoint_tests {
     };
     use futures::future::BoxFuture;
     use http::{uri::PathAndQuery, HeaderValue, Method, Request, Response, StatusCode, Uri};
-    use hyper::{server::conn::Http, service::service_fn, Body};
-    use lambda_runtime_api_client::Client;
+    use hyper::body::Incoming;
+    use hyper::rt::{Read, Write};
+    use hyper::service::service_fn;
+
+    use hyper_util::server::conn::auto::Builder;
+    use lambda_runtime_api_client::{body::Body, Client};
     use serde_json::json;
     use simulated::DuplexStreamWrapper;
-    use std::{convert::TryFrom, env, marker::PhantomData, sync::Arc};
+    use std::{convert::TryFrom, env, sync::Arc};
     use tokio::{
-        io::{self, AsyncRead, AsyncWrite},
-        select,
+        io, select,
         sync::{self, oneshot},
     };
     use tokio_stream::StreamExt;
 
     #[cfg(test)]
-    async fn next_event(req: &Request<Body>) -> Result<Response<Body>, Error> {
+    async fn next_event(req: &Request<Incoming>) -> Result<Response<Body>, Error> {
         let path = "/2018-06-01/runtime/invocation/next";
         assert_eq!(req.method(), Method::GET);
         assert_eq!(req.uri().path_and_query().unwrap(), &PathAndQuery::from_static(path));
@@ -324,7 +317,7 @@ mod endpoint_tests {
     }
 
     #[cfg(test)]
-    async fn complete_event(req: &Request<Body>, id: &str) -> Result<Response<Body>, Error> {
+    async fn complete_event(req: &Request<Incoming>, id: &str) -> Result<Response<Body>, Error> {
         assert_eq!(Method::POST, req.method());
         let rsp = Response::builder()
             .status(StatusCode::ACCEPTED)
@@ -338,7 +331,7 @@ mod endpoint_tests {
     }
 
     #[cfg(test)]
-    async fn event_err(req: &Request<Body>, id: &str) -> Result<Response<Body>, Error> {
+    async fn event_err(req: &Request<Incoming>, id: &str) -> Result<Response<Body>, Error> {
         let expected = format!("/2018-06-01/runtime/invocation/{id}/error");
         assert_eq!(expected, req.uri().path());
 
@@ -352,7 +345,7 @@ mod endpoint_tests {
     }
 
     #[cfg(test)]
-    async fn handle_incoming(req: Request<Body>) -> Result<Response<Body>, Error> {
+    async fn handle_incoming(req: Request<Incoming>) -> Result<Response<Body>, Error> {
         let path: Vec<&str> = req
             .uri()
             .path_and_query()
@@ -370,11 +363,14 @@ mod endpoint_tests {
     }
 
     #[cfg(test)]
-    async fn handle<I>(io: I, rx: oneshot::Receiver<()>) -> Result<(), hyper::Error>
+    async fn handle<I>(io: I, rx: oneshot::Receiver<()>) -> Result<(), Error>
     where
-        I: AsyncRead + AsyncWrite + Unpin + 'static,
+        I: Read + Write + Unpin + 'static,
     {
-        let conn = Http::new().serve_connection(io, service_fn(handle_incoming));
+        use hyper_util::rt::TokioExecutor;
+
+        let builder = Builder::new(TokioExecutor::new());
+        let conn = builder.serve_connection(io, service_fn(handle_incoming));
         select! {
             _ = rx => {
                 Ok(())
@@ -397,7 +393,9 @@ mod endpoint_tests {
 
         let (tx, rx) = sync::oneshot::channel();
         let server = tokio::spawn(async {
-            handle(server, rx).await.expect("Unable to handle request");
+            handle(DuplexStreamWrapper::new(server), rx)
+                .await
+                .expect("Unable to handle request");
         });
 
         let conn = simulated::Connector::with(base.clone(), DuplexStreamWrapper::new(client))?;
@@ -426,18 +424,15 @@ mod endpoint_tests {
         let base = Uri::from_static("http://localhost:9001");
 
         let server = tokio::spawn(async {
-            handle(server, rx).await.expect("Unable to handle request");
+            handle(DuplexStreamWrapper::new(server), rx)
+                .await
+                .expect("Unable to handle request");
         });
 
         let conn = simulated::Connector::with(base.clone(), DuplexStreamWrapper::new(client))?;
         let client = Client::with(base, conn);
 
-        let req = EventCompletionRequest {
-            request_id: "156cb537-e2d4-11e8-9b34-d36013741fb9",
-            body: "done",
-            _unused_b: PhantomData::<&str>,
-            _unused_s: PhantomData::<Body>,
-        };
+        let req = EventCompletionRequest::new("156cb537-e2d4-11e8-9b34-d36013741fb9", "done");
         let req = req.into_req()?;
 
         let rsp = client.call(req).await?;
@@ -459,7 +454,9 @@ mod endpoint_tests {
         let base = Uri::from_static("http://localhost:9001");
 
         let server = tokio::spawn(async {
-            handle(server, rx).await.expect("Unable to handle request");
+            handle(DuplexStreamWrapper::new(server), rx)
+                .await
+                .expect("Unable to handle request");
         });
 
         let conn = simulated::Connector::with(base.clone(), DuplexStreamWrapper::new(client))?;
@@ -492,7 +489,9 @@ mod endpoint_tests {
         let base = Uri::from_static("http://localhost:9001");
 
         let server = tokio::spawn(async {
-            handle(server, rx).await.expect("Unable to handle request");
+            handle(DuplexStreamWrapper::new(server), rx)
+                .await
+                .expect("Unable to handle request");
         });
         let conn = simulated::Connector::with(base.clone(), DuplexStreamWrapper::new(client))?;
 
@@ -555,7 +554,9 @@ mod endpoint_tests {
         let base = Uri::from_static("http://localhost:9001");
 
         let server = tokio::spawn(async {
-            handle(server, rx).await.expect("Unable to handle request");
+            handle(DuplexStreamWrapper::new(server), rx)
+                .await
+                .expect("Unable to handle request");
         });
         let conn = simulated::Connector::with(base.clone(), DuplexStreamWrapper::new(client))?;
 

@@ -92,7 +92,7 @@ where
                 Ok(data) => Poll::Ready(Some(Ok(data))),
                 Err(_frame) => Poll::Ready(None),
             },
-            None => return Poll::Ready(None),
+            None => Poll::Ready(None),
         }
     }
 }

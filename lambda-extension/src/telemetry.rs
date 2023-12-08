@@ -1,4 +1,8 @@
 use chrono::{DateTime, Utc};
+use http::{Request, Response};
+use http_body_util::BodyExt;
+use hyper::body::Incoming;
+use lambda_runtime_api_client::body::Body;
 use serde::Deserialize;
 use std::{boxed::Box, fmt, sync::Arc};
 use tokio::sync::Mutex;
@@ -256,8 +260,8 @@ pub struct RuntimeDoneMetrics {
 /// underlying `Service` to process.
 pub(crate) async fn telemetry_wrapper<S>(
     service: Arc<Mutex<S>>,
-    req: hyper::Request<hyper::Body>,
-) -> Result<hyper::Response<hyper::Body>, Box<dyn std::error::Error + Send + Sync>>
+    req: Request<Incoming>,
+) -> Result<Response<Body>, Box<dyn std::error::Error + Send + Sync>>
 where
     S: Service<Vec<LambdaTelemetry>, Response = ()>,
     S::Error: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Debug,
@@ -265,24 +269,24 @@ where
 {
     trace!("Received telemetry request");
     // Parse the request body as a Vec<LambdaTelemetry>
-    let body = match hyper::body::to_bytes(req.into_body()).await {
+    let body = match req.into_body().collect().await {
         Ok(body) => body,
         Err(e) => {
             error!("Error reading telemetry request body: {}", e);
             return Ok(hyper::Response::builder()
                 .status(hyper::StatusCode::BAD_REQUEST)
-                .body(hyper::Body::empty())
+                .body(Body::empty())
                 .unwrap());
         }
     };
 
-    let telemetry: Vec<LambdaTelemetry> = match serde_json::from_slice(&body) {
+    let telemetry: Vec<LambdaTelemetry> = match serde_json::from_slice(&body.to_bytes()) {
         Ok(telemetry) => telemetry,
         Err(e) => {
             error!("Error parsing telemetry: {}", e);
             return Ok(hyper::Response::builder()
                 .status(hyper::StatusCode::BAD_REQUEST)
-                .body(hyper::Body::empty())
+                .body(Body::empty())
                 .unwrap());
         }
     };
@@ -295,7 +299,7 @@ where
         }
     }
 
-    Ok(hyper::Response::new(hyper::Body::empty()))
+    Ok(hyper::Response::new(Body::empty()))
 }
 
 #[cfg(test)]

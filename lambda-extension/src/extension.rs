@@ -1,13 +1,18 @@
+use http::Request;
+use http_body_util::BodyExt;
+use hyper::body::Incoming;
+use hyper::server::conn::http1;
+use hyper::service::service_fn;
+
+use hyper_util::rt::tokio::TokioIo;
+use lambda_runtime_api_client::Client;
 use std::{
     convert::Infallible, fmt, future::ready, future::Future, net::SocketAddr, path::PathBuf, pin::Pin, sync::Arc,
 };
-
-use hyper::{server::conn::AddrStream, Server};
-use lambda_runtime_api_client::Client;
-use tokio::sync::Mutex;
+use tokio::{net::TcpListener, sync::Mutex};
 use tokio_stream::StreamExt;
-use tower::{service_fn, MakeService, Service, ServiceExt};
-use tracing::{error, trace};
+use tower::{MakeService, Service, ServiceExt};
+use tracing::trace;
 
 use crate::{
     logs::*,
@@ -64,22 +69,22 @@ impl<'a, E, L, T> Extension<'a, E, L, T>
 where
     E: Service<LambdaEvent>,
     E::Future: Future<Output = Result<(), E::Error>>,
-    E::Error: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Display + fmt::Debug,
+    E::Error: Into<Error> + fmt::Display + fmt::Debug,
 
     // Fixme: 'static bound might be too restrictive
     L: MakeService<(), Vec<LambdaLog>, Response = ()> + Send + Sync + 'static,
     L::Service: Service<Vec<LambdaLog>, Response = ()> + Send + Sync,
     <L::Service as Service<Vec<LambdaLog>>>::Future: Send + 'a,
-    L::Error: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Debug,
-    L::MakeError: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Debug,
+    L::Error: Into<Error> + fmt::Debug,
+    L::MakeError: Into<Error> + fmt::Debug,
     L::Future: Send,
 
     // Fixme: 'static bound might be too restrictive
     T: MakeService<(), Vec<LambdaTelemetry>, Response = ()> + Send + Sync + 'static,
     T::Service: Service<Vec<LambdaTelemetry>, Response = ()> + Send + Sync,
     <T::Service as Service<Vec<LambdaTelemetry>>>::Future: Send + 'a,
-    T::Error: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Debug,
-    T::MakeError: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Debug,
+    T::Error: Into<Error> + fmt::Debug,
+    T::MakeError: Into<Error> + fmt::Debug,
     T::Future: Send,
 {
     /// Create a new [`Extension`] with a given extension name
@@ -104,7 +109,7 @@ where
     where
         N: Service<LambdaEvent>,
         N::Future: Future<Output = Result<(), N::Error>>,
-        N::Error: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Display,
+        N::Error: Into<Error> + fmt::Display,
     {
         Extension {
             events_processor: ep,
@@ -126,7 +131,7 @@ where
     where
         N: Service<()>,
         N::Future: Future<Output = Result<NS, N::Error>>,
-        N::Error: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Display,
+        N::Error: Into<Error> + fmt::Display,
     {
         Extension {
             logs_processor: Some(lp),
@@ -173,7 +178,7 @@ where
     where
         N: Service<()>,
         N::Future: Future<Output = Result<NS, N::Error>>,
-        N::Error: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Display,
+        N::Error: Into<Error> + fmt::Display,
     {
         Extension {
             telemetry_processor: Some(lp),
@@ -235,22 +240,26 @@ where
 
             validate_buffering_configuration(self.log_buffering)?;
 
-            // Spawn task to run processor
             let addr = SocketAddr::from(([0, 0, 0, 0], self.log_port_number));
-            let make_service = service_fn(move |_socket: &AddrStream| {
-                trace!("Creating new log processor Service");
-                let service = log_processor.make_service(());
-                async move {
-                    let service = Arc::new(Mutex::new(service.await?));
-                    Ok::<_, L::MakeError>(service_fn(move |req| log_wrapper(service.clone(), req)))
+            tokio::task::spawn(async move {
+                trace!("Creating new logs processor Service");
+
+                loop {
+                    let service = log_processor.make_service(());
+                    let service = Arc::new(Mutex::new(service.await.unwrap()));
+                    let make_service = service_fn(move |req: Request<Incoming>| log_wrapper(service.clone(), req));
+
+                    let listener = TcpListener::bind(addr).await.unwrap();
+                    let (tcp, _) = listener.accept().await.unwrap();
+                    let io = TokioIo::new(tcp);
+                    tokio::task::spawn(async move {
+                        if let Err(err) = http1::Builder::new().serve_connection(io, make_service).await {
+                            println!("Error serving connection: {:?}", err);
+                        }
+                    });
                 }
             });
-            let server = Server::bind(&addr).serve(make_service);
-            tokio::spawn(async move {
-                if let Err(e) = server.await {
-                    error!("Error while running log processor: {}", e);
-                }
-            });
+
             trace!("Log processor started");
 
             // Call Logs API to start receiving events
@@ -277,21 +286,35 @@ where
             validate_buffering_configuration(self.telemetry_buffering)?;
 
             // Spawn task to run processor
+            // let make_service = service_fn(move |_socket: &AddrStream| {
+            //     trace!("Creating new telemetry processor Service");
+            //     let service = telemetry_processor.make_service(());
+            //     async move {
+            //         let service = Arc::new(Mutex::new(service.await?));
+            //         Ok::<_, T::MakeError>(service_fn(move |req| telemetry_wrapper(service.clone(), req)))
+            //     }
+            // });
+
             let addr = SocketAddr::from(([0, 0, 0, 0], self.telemetry_port_number));
-            let make_service = service_fn(move |_socket: &AddrStream| {
+            tokio::task::spawn(async move {
                 trace!("Creating new telemetry processor Service");
-                let service = telemetry_processor.make_service(());
-                async move {
-                    let service = Arc::new(Mutex::new(service.await?));
-                    Ok::<_, T::MakeError>(service_fn(move |req| telemetry_wrapper(service.clone(), req)))
+
+                loop {
+                    let service = telemetry_processor.make_service(());
+                    let service = Arc::new(Mutex::new(service.await.unwrap()));
+                    let make_service = service_fn(move |req| telemetry_wrapper(service.clone(), req));
+
+                    let listener = TcpListener::bind(addr).await.unwrap();
+                    let (tcp, _) = listener.accept().await.unwrap();
+                    let io = TokioIo::new(tcp);
+                    tokio::task::spawn(async move {
+                        if let Err(err) = http1::Builder::new().serve_connection(io, make_service).await {
+                            println!("Error serving connection: {:?}", err);
+                        }
+                    });
                 }
             });
-            let server = Server::bind(&addr).serve(make_service);
-            tokio::spawn(async move {
-                if let Err(e) = server.await {
-                    error!("Error while running telemetry processor: {}", e);
-                }
-            });
+
             trace!("Telemetry processor started");
 
             // Call Telemetry API to start receiving events
@@ -361,7 +384,7 @@ where
             let event = event?;
             let (_parts, body) = event.into_parts();
 
-            let body = hyper::body::to_bytes(body).await?;
+            let body = body.collect().await?.to_bytes();
             trace!("{}", std::str::from_utf8(&body)?); // this may be very verbose
             let event: NextEvent = serde_json::from_slice(&body)?;
             let is_invoke = event.is_invoke();

@@ -1,6 +1,10 @@
 use chrono::{DateTime, Utc};
+use http::{Request, Response};
+use http_body_util::BodyExt;
+use hyper::body::Incoming;
+use lambda_runtime_api_client::body::Body;
 use serde::{Deserialize, Serialize};
-use std::{boxed::Box, fmt, sync::Arc};
+use std::{fmt, sync::Arc};
 use tokio::sync::Mutex;
 use tower::Service;
 use tracing::{error, trace};
@@ -186,34 +190,31 @@ pub(crate) fn validate_buffering_configuration(log_buffering: Option<LogBufferin
 ///
 /// This takes an `hyper::Request` and transforms it into `Vec<LambdaLog>` for the
 /// underlying `Service` to process.
-pub(crate) async fn log_wrapper<S>(
-    service: Arc<Mutex<S>>,
-    req: hyper::Request<hyper::Body>,
-) -> Result<hyper::Response<hyper::Body>, Box<dyn std::error::Error + Send + Sync>>
+pub(crate) async fn log_wrapper<S>(service: Arc<Mutex<S>>, req: Request<Incoming>) -> Result<Response<Body>, Error>
 where
     S: Service<Vec<LambdaLog>, Response = ()>,
-    S::Error: Into<Box<dyn std::error::Error + Send + Sync>> + fmt::Debug,
+    S::Error: Into<Error> + fmt::Debug,
     S::Future: Send,
 {
     trace!("Received logs request");
     // Parse the request body as a Vec<LambdaLog>
-    let body = match hyper::body::to_bytes(req.into_body()).await {
+    let body = match req.into_body().collect().await {
         Ok(body) => body,
         Err(e) => {
             error!("Error reading logs request body: {}", e);
             return Ok(hyper::Response::builder()
                 .status(hyper::StatusCode::BAD_REQUEST)
-                .body(hyper::Body::empty())
+                .body(Body::empty())
                 .unwrap());
         }
     };
-    let logs: Vec<LambdaLog> = match serde_json::from_slice(&body) {
+    let logs: Vec<LambdaLog> = match serde_json::from_slice(&body.to_bytes()) {
         Ok(logs) => logs,
         Err(e) => {
             error!("Error parsing logs: {}", e);
             return Ok(hyper::Response::builder()
                 .status(hyper::StatusCode::BAD_REQUEST)
-                .body(hyper::Body::empty())
+                .body(Body::empty())
                 .unwrap());
         }
     };
@@ -226,7 +227,7 @@ where
         }
     }
 
-    Ok(hyper::Response::new(hyper::Body::empty()))
+    Ok(hyper::Response::new(Body::empty()))
 }
 
 #[cfg(test)]

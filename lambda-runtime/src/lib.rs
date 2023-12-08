@@ -40,6 +40,7 @@ use types::invoke_request_id;
 
 /// Error type that lambdas may result in
 pub type Error = lambda_runtime_api_client::BoxError;
+pub use lambda_runtime_api_client::body;
 
 /// Configuration derived from environment variables.
 #[derive(Debug, Default, Clone, Eq, PartialEq, Serialize, Deserialize)]

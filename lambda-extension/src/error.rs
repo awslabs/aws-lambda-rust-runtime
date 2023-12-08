@@ -1,5 +1,5 @@
 /// Error type that extensions may result in
-pub type Error = lambda_runtime_api_client::Error;
+pub type Error = lambda_runtime_api_client::BoxError;
 
 /// Simple error that encapsulates human readable descriptions
 #[derive(Clone, Debug, PartialEq, Eq)]

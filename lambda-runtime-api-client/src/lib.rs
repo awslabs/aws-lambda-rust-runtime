@@ -5,7 +5,8 @@
 //! This crate includes a base HTTP client to interact with
 //! the AWS Lambda Runtime API.
 use http::{uri::PathAndQuery, uri::Scheme, Request, Response, Uri};
-use hyper_util::client::legacy::connect::{Connection, HttpConnector};
+use hyper::body::Incoming;
+use hyper_util::client::legacy::connect::{Connect, Connection, HttpConnector};
 use std::{convert::TryInto, fmt::Debug};
 use tower_service::Service;
 
@@ -13,8 +14,9 @@ const USER_AGENT_HEADER: &str = "User-Agent";
 const DEFAULT_USER_AGENT: &str = concat!("aws-lambda-rust/", env!("CARGO_PKG_VERSION"));
 const CUSTOM_USER_AGENT: Option<&str> = option_env!("LAMBDA_RUNTIME_USER_AGENT");
 
-/// Error type that lambdas may result in
-pub type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
+mod error;
+pub use error::*;
+pub mod body;
 
 /// API client to interact with the AWS Lambda Runtime API.
 #[derive(Debug)]
@@ -22,7 +24,7 @@ pub struct Client<C = HttpConnector> {
     /// The runtime API URI
     pub base: Uri,
     /// The client that manages the API connections
-    pub client: hyper_util::client::legacy::Client<C, hyper::body::Incoming>,
+    pub client: hyper_util::client::legacy::Client<C, body::Body>,
 }
 
 impl Client {
@@ -37,14 +39,13 @@ impl Client {
 
 impl<C> Client<C>
 where
-    C: hyper_util::client::legacy::connect::Connect + Sync + Send + Clone + 'static,
+    C: Connect + Sync + Send + Clone + 'static,
 {
     /// Send a given request to the Runtime API.
     /// Use the client's base URI to ensure the API endpoint is correct.
-    pub async fn call(&self, req: Request<hyper::body::Incoming>) -> Result<Response<hyper::body::Incoming>, Error> {
+    pub async fn call(&self, req: Request<body::Body>) -> Result<Response<Incoming>, BoxError> {
         let req = self.set_origin(req)?;
-        let response = self.client.request(req).await?;
-        Ok(response)
+        self.client.request(req).await.map_err(Into::into)
     }
 
     /// Create a new client with a given base URI and HTTP connector.
@@ -55,7 +56,7 @@ where
         Self { base, client }
     }
 
-    fn set_origin<B>(&self, req: Request<B>) -> Result<Request<B>, Error> {
+    fn set_origin<B>(&self, req: Request<B>) -> Result<Request<B>, BoxError> {
         let (mut parts, body) = req.into_parts();
         let (scheme, authority, base_path) = {
             let scheme = self.base.scheme().unwrap_or(&Scheme::HTTP);
@@ -114,7 +115,7 @@ where
     /// Create the new client to interact with the Runtime API.
     pub fn build(self) -> Result<Client<C>, Error>
     where
-        C: hyper_util::client::legacy::connect::Connect + Sync + Send + Clone + 'static,
+        C: Connect + Sync + Send + Clone + 'static,
     {
         let uri = match self.uri {
             Some(uri) => uri,

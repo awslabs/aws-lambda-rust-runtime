@@ -14,15 +14,21 @@ keywords = ["AWS", "Lambda", "API"]
 readme = "README.md"
 
 [dependencies]
-http = "1.0"
-http-body = "1.0"
-http-body-util = "0.1"
-hyper = { version = "1.0", features = ["http1", "client"] }
-hyper-util = { version = "0.1.1", features = [
+bytes = { workspace = true }
+futures-channel = { workspace = true }
+futures-util = { workspace = true }
+http = { workspace = true }
+http-body = { workspace = true }
+http-body-util = { workspace = true }
+hyper = { workspace = true, features = ["http1", "client"] }
+hyper-util = { workspace = true, features = [
     "client",
     "client-legacy",
     "http1",
     "tokio",
 ] }
-tower-service = "0.3"
+pin-project-lite = "0.2"
+sync_wrapper = "0.1.2"
+tower = { workspace = true, features = ["util"] }
+tower-service = { workspace = true }
 tokio = { version = "1.0", features = ["io-util"] }

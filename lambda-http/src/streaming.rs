@@ -87,7 +87,12 @@ where
     type Item = Result<B::Data, B::Error>;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-        let body = self.project();
-        body.poll_data(cx)
+        match futures_util::ready!(self.project().poll_frame(cx)?) {
+            Some(frame) => match frame.into_data() {
+                Ok(data) => Poll::Ready(Some(Ok(data))),
+                Err(_frame) => Poll::Ready(None),
+            },
+            None => return Poll::Ready(None),
+        }
     }
 }

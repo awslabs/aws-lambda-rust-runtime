@@ -13,7 +13,7 @@ use http::header::CONTENT_ENCODING;
 use http::HeaderMap;
 use http::{header::CONTENT_TYPE, Response, StatusCode};
 use http_body::Body as HttpBody;
-use hyper::body::to_bytes;
+use http_body_util::BodyExt;
 use mime::{Mime, CHARSET};
 use serde::Serialize;
 use std::borrow::Cow;
@@ -305,7 +305,15 @@ where
     B::Data: Send,
     B::Error: fmt::Debug,
 {
-    Box::pin(async move { Body::from(to_bytes(body).await.expect("unable to read bytes from body").to_vec()) })
+    Box::pin(async move {
+        Body::from(
+            body.collect()
+                .await
+                .expect("unable to read bytes from body")
+                .to_bytes()
+                .to_vec(),
+        )
+    })
 }
 
 fn convert_to_text<B>(body: B, content_type: &str) -> BodyFuture
@@ -326,7 +334,8 @@ where
 
     // assumes utf-8
     Box::pin(async move {
-        let bytes = to_bytes(body).await.expect("unable to read bytes from body");
+        let bytes = body.collect().await.expect("unable to read bytes from body").to_bytes();
+        // let bytes = to_bytes(body).await.expect("unable to read bytes from body");
         let (content, _, _) = encoding.decode(&bytes);
 
         match content {
@@ -345,7 +354,7 @@ mod tests {
         header::{CONTENT_ENCODING, CONTENT_TYPE},
         Response, StatusCode,
     };
-    use hyper::Body as HyperBody;
+    use lambda_runtime_api_client::body::Body as HyperBody;
     use serde_json::{self, json};
 
     const SVG_LOGO: &str = include_str!("../tests/data/svg_logo.svg");

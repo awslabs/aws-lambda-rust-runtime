@@ -7,20 +7,24 @@ use lambda_runtime::Context;
 use crate::request::RequestContext;
 
 /// ALB/API gateway pre-parsed http query string parameters
+#[derive(Clone)]
 pub(crate) struct QueryStringParameters(pub(crate) QueryMap);
 
 /// API gateway pre-extracted url path parameters
 ///
 /// These will always be empty for ALB requests
+#[derive(Clone)]
 pub(crate) struct PathParameters(pub(crate) QueryMap);
 
 /// API gateway configured
 /// [stage variables](https://docs.aws.amazon.com/apigateway/latest/developerguide/stage-variables.html)
 ///
 /// These will always be empty for ALB requests
+#[derive(Clone)]
 pub(crate) struct StageVariables(pub(crate) QueryMap);
 
 /// ALB/API gateway raw http path without any stage information
+#[derive(Clone)]
 pub(crate) struct RawHttpPath(pub(crate) String);
 
 /// Extensions for [`lambda_http::Request`], `http::request::Parts`, and `http::Extensions` structs

@@ -16,25 +16,25 @@ categories = ["api-bindings", "encoding", "web-programming"]
 edition = "2021"
 
 [dependencies]
-base64 = "0.21"
-http = { version = "1.0", optional = true }
-http-body = { version = "1.0", optional = true }
-http-serde = { version = "2.0", optional = true }
-serde = { version = "^1", features = ["derive"] }
-serde_with = { version = "^3", features = ["json"], optional = true }
-serde_json = "^1"
-serde_dynamo = { version = "^4.1", optional = true }
-bytes = { version = "1", features = ["serde"], optional = true }
+base64 = { workspace = true }
+bytes = { workspace = true, features = ["serde"], optional = true }
 chrono = { version = "0.4.31", default-features = false, features = [
   "clock",
   "serde",
   "std",
 ], optional = true }
+flate2 = { version = "1.0.24", optional = true }
+http = { workspace = true, optional = true }
+http-body = { workspace = true, optional = true }
+http-serde = { workspace = true, optional = true }
 query_map = { version = "^0.7", features = [
   "serde",
   "url-query",
 ], optional = true }
-flate2 = { version = "1.0.24", optional = true }
+serde = { version = "^1", features = ["derive"] }
+serde_with = { version = "^3", features = ["json"], optional = true }
+serde_json = "^1"
+serde_dynamo = { version = "^4.1", optional = true }
 
 [features]
 default = [

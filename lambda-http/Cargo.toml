@@ -23,7 +23,7 @@ apigw_websockets = []
 alb = []
 
 [dependencies]
-base64 = "0.21"
+base64 = { workspace = true }
 bytes = { workspace = true }
 encoding_rs = "0.8"
 futures = { workspace = true }

@@ -19,7 +19,7 @@ simulated = []
 
 [dependencies]
 async-stream = "0.3"
-base64 = "0.21.0"
+base64 = { workspace = true }
 bytes = { workspace = true }
 futures = { workspace = true }
 http = { workspace = true }
@@ -48,7 +48,7 @@ tokio = { version = "1.0", features = [
 ] }
 tokio-stream = "0.1.2"
 tower = { workspace = true, features = ["util"] }
-tracing = { version = "0.1.37", features = ["log"] }
+tracing = { version = "0.1", features = ["log"] }
 
 [dev-dependencies]
 hyper-util = { workspace = true, features = [

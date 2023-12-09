@@ -241,12 +241,13 @@ where
             validate_buffering_configuration(self.log_buffering)?;
 
             let addr = SocketAddr::from(([0, 0, 0, 0], self.log_port_number));
+            let service = log_processor.make_service(());
+            let service = Arc::new(Mutex::new(service.await.unwrap()));
             tokio::task::spawn(async move {
                 trace!("Creating new logs processor Service");
 
                 loop {
-                    let service = log_processor.make_service(());
-                    let service = Arc::new(Mutex::new(service.await.unwrap()));
+                    let service: Arc<Mutex<_>> = service.clone();
                     let make_service = service_fn(move |req: Request<Incoming>| log_wrapper(service.clone(), req));
 
                     let listener = TcpListener::bind(addr).await.unwrap();
@@ -285,23 +286,14 @@ where
 
             validate_buffering_configuration(self.telemetry_buffering)?;
 
-            // Spawn task to run processor
-            // let make_service = service_fn(move |_socket: &AddrStream| {
-            //     trace!("Creating new telemetry processor Service");
-            //     let service = telemetry_processor.make_service(());
-            //     async move {
-            //         let service = Arc::new(Mutex::new(service.await?));
-            //         Ok::<_, T::MakeError>(service_fn(move |req| telemetry_wrapper(service.clone(), req)))
-            //     }
-            // });
-
             let addr = SocketAddr::from(([0, 0, 0, 0], self.telemetry_port_number));
+            let service = telemetry_processor.make_service(());
+            let service = Arc::new(Mutex::new(service.await.unwrap()));
             tokio::task::spawn(async move {
                 trace!("Creating new telemetry processor Service");
 
                 loop {
-                    let service = telemetry_processor.make_service(());
-                    let service = Arc::new(Mutex::new(service.await.unwrap()));
+                    let service = service.clone();
                     let make_service = service_fn(move |req| telemetry_wrapper(service.clone(), req));
 
                     let listener = TcpListener::bind(addr).await.unwrap();

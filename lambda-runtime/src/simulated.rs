@@ -85,12 +85,6 @@ impl Connection for DuplexStreamWrapper {
     }
 }
 
-// impl AsyncRead for DuplexStreamWrapper {
-//     fn poll_read(mut self: Pin<&mut Self>, cx: &mut Context<'_>, buf: &mut ReadBuf<'_>) -> Poll<IoResult<()>> {
-//         Pin::new(&mut self.0).poll_read(cx, buf)
-//     }
-// }
-
 impl Read for DuplexStreamWrapper {
     fn poll_read(
         self: Pin<&mut Self>,
@@ -137,17 +131,3 @@ impl Write for DuplexStreamWrapper {
         tokio::io::AsyncWrite::poll_write_vectored(self.project().inner, cx, bufs)
     }
 }
-
-// impl AsyncWrite for DuplexStreamWrapper {
-//     fn poll_write(mut self: Pin<&mut Self>, cx: &mut Context<'_>, buf: &[u8]) -> Poll<Result<usize, std::io::Error>> {
-//         Pin::new(&mut self.0).poll_write(cx, buf)
-//     }
-
-//     fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), std::io::Error>> {
-//         Pin::new(&mut self.0).poll_flush(cx)
-//     }
-
-//     fn poll_shutdown(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), std::io::Error>> {
-//         Pin::new(&mut self.0).poll_shutdown(cx)
-//     }
-// }

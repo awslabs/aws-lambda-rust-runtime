@@ -335,7 +335,6 @@ where
     // assumes utf-8
     Box::pin(async move {
         let bytes = body.collect().await.expect("unable to read bytes from body").to_bytes();
-        // let bytes = to_bytes(body).await.expect("unable to read bytes from body");
         let (content, _, _) = encoding.decode(&bytes);
 
         match content {

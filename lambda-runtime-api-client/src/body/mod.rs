@@ -72,20 +72,6 @@ impl Body {
         (sender, Body::new(body))
     }
 
-    // /// Create a new `Body` from a [`Stream`].
-    // ///
-    // /// [`Stream`]: https://docs.rs/futures-core/latest/futures_core/stream/trait.Stream.html
-    // pub fn from_stream<S>(stream: S) -> Self
-    // where
-    //     S: TryStream + Send + 'static,
-    //     S::Ok: Into<Bytes>,
-    //     S::Error: Into<BoxError>,
-    // {
-    //     Self::new(StreamBody {
-    //         stream: SyncWrapper::new(stream),
-    //     })
-    // }
-
     /// Collect the body into `Bytes`
     pub async fn collect(self) -> Result<Collected<Bytes>, Error> {
         self.0.collect().await

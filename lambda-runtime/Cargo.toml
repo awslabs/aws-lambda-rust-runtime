@@ -59,4 +59,4 @@ hyper-util = { workspace = true, features = [
     "server-auto",
     "tokio",
 ] }
-pin-project-lite = "*"
+pin-project-lite = { workspace = true }

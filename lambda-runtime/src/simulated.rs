@@ -1,6 +1,7 @@
 use http::Uri;
 use hyper::rt::{Read, Write};
 use hyper_util::client::legacy::connect::{Connected, Connection};
+use pin_project_lite::pin_project;
 use std::{
     collections::HashMap,
     future::Future,
@@ -16,7 +17,6 @@ use crate::Error;
 pub struct Connector {
     inner: Arc<Mutex<HashMap<Uri, DuplexStreamWrapper>>>,
 }
-use pin_project_lite::pin_project;
 
 pin_project! {
 pub struct DuplexStreamWrapper {

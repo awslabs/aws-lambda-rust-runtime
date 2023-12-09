@@ -1,5 +1,4 @@
-use hyper::body::Body;
-use lambda_runtime::{service_fn, Error, LambdaEvent, StreamResponse};
+use lambda_runtime::{body::Body, service_fn, Error, LambdaEvent, StreamResponse};
 use serde_json::Value;
 use std::{thread, time::Duration};
 

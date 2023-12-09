@@ -3,15 +3,26 @@
 
 use crate::{BoxError, Error};
 use bytes::Bytes;
-use futures_channel::mpsc::{self, Sender};
 use futures_util::stream::Stream;
-use futures_util::TryStream;
 use http_body::{Body as _, Frame};
 use http_body_util::{BodyExt, Collected};
-use pin_project_lite::pin_project;
 use std::pin::Pin;
 use std::task::{Context, Poll};
-use sync_wrapper::SyncWrapper;
+
+use self::channel::Sender;
+
+macro_rules! ready {
+    ($e:expr) => {
+        match $e {
+            std::task::Poll::Ready(v) => v,
+            std::task::Poll::Pending => return std::task::Poll::Pending,
+        }
+    };
+}
+
+mod channel;
+mod sender;
+mod watch;
 
 type BoxBody = http_body_util::combinators::UnsyncBoxBody<Bytes, Error>;
 
@@ -56,24 +67,24 @@ impl Body {
     }
 
     /// Create a new `Body` stream with associated Sender half.
-    pub fn channel() -> (Sender<Result<Bytes, BoxError>>, Body) {
-        let (sender, recv) = mpsc::channel::<Result<Bytes, BoxError>>(0);
-        (sender, Self::from_stream(recv))
+    pub fn channel() -> (Sender, Body) {
+        let (sender, body) = channel::channel();
+        (sender, Body::new(body))
     }
 
-    /// Create a new `Body` from a [`Stream`].
-    ///
-    /// [`Stream`]: https://docs.rs/futures-core/latest/futures_core/stream/trait.Stream.html
-    pub fn from_stream<S>(stream: S) -> Self
-    where
-        S: TryStream + Send + 'static,
-        S::Ok: Into<Bytes>,
-        S::Error: Into<BoxError>,
-    {
-        Self::new(StreamBody {
-            stream: SyncWrapper::new(stream),
-        })
-    }
+    // /// Create a new `Body` from a [`Stream`].
+    // ///
+    // /// [`Stream`]: https://docs.rs/futures-core/latest/futures_core/stream/trait.Stream.html
+    // pub fn from_stream<S>(stream: S) -> Self
+    // where
+    //     S: TryStream + Send + 'static,
+    //     S::Ok: Into<Bytes>,
+    //     S::Error: Into<BoxError>,
+    // {
+    //     Self::new(StreamBody {
+    //         stream: SyncWrapper::new(stream),
+    //     })
+    // }
 
     /// Collect the body into `Bytes`
     pub async fn collect(self) -> Result<Collected<Bytes>, Error> {
@@ -145,36 +156,4 @@ impl Stream for Body {
             }
         }
     }
-}
-
-pin_project! {
-    struct StreamBody<S> {
-        #[pin]
-        stream: SyncWrapper<S>,
-    }
-}
-
-impl<S> http_body::Body for StreamBody<S>
-where
-    S: TryStream,
-    S::Ok: Into<Bytes>,
-    S::Error: Into<BoxError>,
-{
-    type Data = Bytes;
-    type Error = Error;
-
-    fn poll_frame(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Result<Frame<Self::Data>, Self::Error>>> {
-        let stream = self.project().stream.get_pin_mut();
-        match futures_util::ready!(stream.try_poll_next(cx)) {
-            Some(Ok(chunk)) => Poll::Ready(Some(Ok(Frame::data(chunk.into())))),
-            Some(Err(err)) => Poll::Ready(Some(Err(Error::new(err)))),
-            None => Poll::Ready(None),
-        }
-    }
-}
-
-#[test]
-fn test_try_downcast() {
-    assert_eq!(try_downcast::<i32, _>(5_u32), Err(5_u32));
-    assert_eq!(try_downcast::<i32, _>(5_i32), Ok(5_i32));
 }

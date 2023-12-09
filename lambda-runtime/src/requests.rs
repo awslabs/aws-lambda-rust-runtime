@@ -155,15 +155,15 @@ where
                 let (mut tx, rx) = Body::channel();
 
                 tokio::spawn(async move {
-                    tx.try_send(Ok(metadata_prelude.into())).unwrap();
-                    tx.try_send(Ok("\u{0}".repeat(8).into())).unwrap();
+                    tx.send_data(metadata_prelude.into()).await.unwrap();
+                    tx.send_data("\u{0}".repeat(8).into()).await.unwrap();
 
                     while let Some(chunk) = response.stream.next().await {
                         let chunk = match chunk {
                             Ok(chunk) => chunk.into(),
                             Err(err) => err.into().to_tailer().into(),
                         };
-                        tx.try_send(Ok(chunk)).unwrap();
+                        tx.send_data(chunk).await.unwrap();
                     }
                 });
 

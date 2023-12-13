@@ -80,14 +80,12 @@ where
 
     #[inline]
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-        loop {
-            match futures_util::ready!(self.as_mut().project().body.poll_frame(cx)?) {
-                Some(frame) => match frame.into_data() {
-                    Ok(data) => return Poll::Ready(Some(Ok(data))),
-                    Err(_frame) => {}
-                },
-                None => return Poll::Ready(None),
-            }
+        match futures_util::ready!(self.as_mut().project().body.poll_frame(cx)?) {
+            Some(frame) => match frame.into_data() {
+                Ok(data) => Poll::Ready(Some(Ok(data))),
+                Err(_frame) => Poll::Ready(None),
+            },
+            None => Poll::Ready(None),
         }
     }
 }

@@ -96,11 +96,13 @@ impl Sender {
             .map_err(|err| err.into_inner().expect("just sent Ok"))
     }
 
+    /// Send a `SenderError::BodyWriteAborted` error and terminate the stream.
     #[allow(unused)]
     pub fn abort(mut self) {
         self.send_error(Error::new(SenderError::BodyWriteAborted));
     }
 
+    /// Terminate the stream with an error.
     pub fn send_error(&mut self, err: Error) {
         let _ = self
             .data_tx

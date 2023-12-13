@@ -30,6 +30,8 @@ mod deserializer;
 mod requests;
 #[cfg(test)]
 mod simulated;
+/// Utilities for Lambda Streaming functions.
+pub mod streaming;
 /// Types available to a Lambda function.
 mod types;
 

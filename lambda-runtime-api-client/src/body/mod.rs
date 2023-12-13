@@ -21,7 +21,7 @@ macro_rules! ready {
 }
 
 mod channel;
-mod sender;
+pub mod sender;
 mod watch;
 
 type BoxBody = http_body_util::combinators::UnsyncBoxBody<Bytes, Error>;

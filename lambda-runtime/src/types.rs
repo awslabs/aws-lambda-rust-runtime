@@ -272,6 +272,20 @@ where
     }
 }
 
+impl<S, D, E> From<S> for StreamResponse<S>
+where
+    S: Stream<Item = Result<D, E>> + Unpin + Send + 'static,
+    D: Into<Bytes> + Send,
+    E: Into<Error> + Send + Debug,
+{
+    fn from(value: S) -> Self {
+        StreamResponse {
+            metadata_prelude: Default::default(),
+            stream: value,
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;

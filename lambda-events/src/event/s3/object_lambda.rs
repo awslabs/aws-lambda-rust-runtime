@@ -102,6 +102,7 @@ pub struct UserIdentity {
 #[serde(rename_all = "camelCase")]
 pub struct SessionContext {
     pub attributes: HashMap<String, String>,
+    #[serde(default)]
     pub session_issuer: Option<SessionIssuer>,
 }
 

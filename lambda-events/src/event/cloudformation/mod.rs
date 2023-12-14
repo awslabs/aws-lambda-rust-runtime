@@ -18,7 +18,6 @@ where
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "PascalCase")]
-#[serde(deny_unknown_fields)]
 pub struct CreateRequest<P2 = Value>
 where
     P2: DeserializeOwned + Serialize,
@@ -37,7 +36,6 @@ where
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "PascalCase")]
-#[serde(deny_unknown_fields)]
 pub struct UpdateRequest<P1 = Value, P2 = Value>
 where
     P1: DeserializeOwned + Serialize,
@@ -60,7 +58,6 @@ where
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "PascalCase")]
-#[serde(deny_unknown_fields)]
 pub struct DeleteRequest<P2 = Value>
 where
     P2: DeserializeOwned + Serialize,
@@ -87,7 +84,6 @@ mod test {
 
     #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
     #[serde(rename_all = "PascalCase")]
-    #[serde(deny_unknown_fields)]
     struct TestProperties {
         key_1: String,
         key_2: Vec<String>,

@@ -107,7 +107,7 @@ mod tests {
 
     #[test]
     fn test_deserialize_error() {
-        let err = serde_json::from_str::<LambdaRequest>("{\"command\": \"hi\"}").unwrap_err();
+        let err = serde_json::from_str::<LambdaRequest>("{\"body\": {}}").unwrap_err();
 
         assert_eq!(ERROR_CONTEXT, err.to_string());
     }

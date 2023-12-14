@@ -9,7 +9,6 @@ use serde::{Deserialize, Serialize};
 /// `AlbTargetGroupRequest` contains data originating from the ALB Lambda target group integration
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-#[serde(deny_unknown_fields)]
 pub struct AlbTargetGroupRequest {
     #[serde(with = "http_method")]
     pub http_method: Method,

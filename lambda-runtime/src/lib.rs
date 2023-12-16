@@ -64,8 +64,8 @@ type RefConfig = Arc<Config>;
 
 impl Config {
     /// Attempts to read configuration from environment variables.
-    pub fn from_env() -> Result<Self, Error> {
-        let conf = Config {
+    pub fn from_env() -> Self {
+        Config {
             function_name: env::var("AWS_LAMBDA_FUNCTION_NAME").expect("Missing AWS_LAMBDA_FUNCTION_NAME env var"),
             memory: env::var("AWS_LAMBDA_FUNCTION_MEMORY_SIZE")
                 .expect("Missing AWS_LAMBDA_FUNCTION_MEMORY_SIZE env var")
@@ -74,8 +74,7 @@ impl Config {
             version: env::var("AWS_LAMBDA_FUNCTION_VERSION").expect("Missing AWS_LAMBDA_FUNCTION_VERSION env var"),
             log_stream: env::var("AWS_LAMBDA_LOG_STREAM_NAME").unwrap_or_default(),
             log_group: env::var("AWS_LAMBDA_LOG_GROUP_NAME").unwrap_or_default(),
-        };
-        Ok(conf)
+        }
     }
 }
 
@@ -254,7 +253,7 @@ where
     E: Into<Error> + Send + Debug,
 {
     trace!("Loading config from env");
-    let config = Config::from_env()?;
+    let config = Config::from_env();
     let client = Client::builder().build().expect("Unable to create a runtime client");
     let runtime = Runtime {
         client,
@@ -527,7 +526,7 @@ mod endpoint_tests {
         if env::var("AWS_LAMBDA_LOG_GROUP_NAME").is_err() {
             env::set_var("AWS_LAMBDA_LOG_GROUP_NAME", "test_log");
         }
-        let config = Config::from_env().expect("Failed to read env vars");
+        let config = Config::from_env();
 
         let runtime = Runtime {
             client,

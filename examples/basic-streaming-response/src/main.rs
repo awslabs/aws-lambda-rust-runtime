@@ -1,12 +1,15 @@
-use hyper::body::Body;
-use lambda_runtime::{service_fn, Error, LambdaEvent, StreamResponse};
+use lambda_runtime::{
+    service_fn,
+    streaming::{channel, Body, Response},
+    Error, LambdaEvent,
+};
 use serde_json::Value;
 use std::{thread, time::Duration};
 
-async fn func(_event: LambdaEvent<Value>) -> Result<StreamResponse<Body>, Error> {
+async fn func(_event: LambdaEvent<Value>) -> Result<Response<Body>, Error> {
     let messages = vec!["Hello", "world", "from", "Lambda!"];
 
-    let (mut tx, rx) = Body::channel();
+    let (mut tx, rx) = channel();
 
     tokio::spawn(async move {
         for message in messages.iter() {
@@ -15,10 +18,7 @@ async fn func(_event: LambdaEvent<Value>) -> Result<StreamResponse<Body>, Error>
         }
     });
 
-    Ok(StreamResponse {
-        metadata_prelude: Default::default(),
-        stream: rx,
-    })
+    Ok(Response::from(rx))
 }
 
 #[tokio::main]

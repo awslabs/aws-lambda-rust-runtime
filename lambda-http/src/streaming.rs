@@ -63,19 +63,11 @@ where
     lambda_runtime::run(svc).await
 }
 
+pin_project_lite::pin_project! {
 pub struct BodyStream<B> {
+    #[pin]
     pub(crate) body: B,
 }
-
-impl<B> BodyStream<B>
-where
-    B: Body + Unpin + Send + 'static,
-    B::Data: Into<Bytes> + Send,
-    B::Error: Into<Error> + Send + Debug,
-{
-    fn project(self: Pin<&mut Self>) -> Pin<&mut B> {
-        unsafe { self.map_unchecked_mut(|s| &mut s.body) }
-    }
 }
 
 impl<B> Stream for BodyStream<B>
@@ -86,8 +78,14 @@ where
 {
     type Item = Result<B::Data, B::Error>;
 
-    fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-        let body = self.project();
-        body.poll_data(cx)
+    #[inline]
+    fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+        match futures_util::ready!(self.as_mut().project().body.poll_frame(cx)?) {
+            Some(frame) => match frame.into_data() {
+                Ok(data) => Poll::Ready(Some(Ok(data))),
+                Err(_frame) => Poll::Ready(None),
+            },
+            None => Poll::Ready(None),
+        }
     }
 }

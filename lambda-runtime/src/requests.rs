@@ -3,8 +3,7 @@ use crate::{types::Diagnostic, Error, FunctionResponse, IntoFunctionResponse};
 use bytes::Bytes;
 use http::header::CONTENT_TYPE;
 use http::{Method, Request, Response, Uri};
-use hyper::Body;
-use lambda_runtime_api_client::build_request;
+use lambda_runtime_api_client::{body::Body, build_request};
 use serde::Serialize;
 use std::fmt::Debug;
 use std::marker::PhantomData;
@@ -28,7 +27,7 @@ impl IntoRequest for NextEventRequest {
         let req = build_request()
             .method(Method::GET)
             .uri(Uri::from_static("/2018-06-01/runtime/invocation/next"))
-            .body(Body::empty())?;
+            .body(Default::default())?;
         Ok(req)
     }
 }
@@ -49,6 +48,7 @@ pub struct NextEventResponse<'a> {
 
 impl<'a> IntoResponse for NextEventResponse<'a> {
     fn into_rsp(self) -> Result<Response<Body>, Error> {
+        // let body: BoxyBody< = BoxBody::new();
         let rsp = Response::builder()
             .header("lambda-runtime-aws-request-id", self.request_id)
             .header("lambda-runtime-deadline-ms", self.deadline)
@@ -83,6 +83,25 @@ where
     pub(crate) body: R,
     pub(crate) _unused_b: PhantomData<B>,
     pub(crate) _unused_s: PhantomData<S>,
+}
+
+impl<'a, R, B, D, E, S> EventCompletionRequest<'a, R, B, S, D, E>
+where
+    R: IntoFunctionResponse<B, S>,
+    B: Serialize,
+    S: Stream<Item = Result<D, E>> + Unpin + Send + 'static,
+    D: Into<Bytes> + Send,
+    E: Into<Error> + Send + Debug,
+{
+    /// Initialize a new EventCompletionRequest
+    pub(crate) fn new(request_id: &'a str, body: R) -> EventCompletionRequest<'a, R, B, S, D, E> {
+        EventCompletionRequest {
+            request_id,
+            body,
+            _unused_b: PhantomData::<B>,
+            _unused_s: PhantomData::<S>,
+        }
+    }
 }
 
 impl<'a, R, B, S, D, E> IntoRequest for EventCompletionRequest<'a, R, B, S, D, E>
@@ -157,12 +176,7 @@ where
 
 #[test]
 fn test_event_completion_request() {
-    let req = EventCompletionRequest {
-        request_id: "id",
-        body: "hello, world!",
-        _unused_b: PhantomData::<&str>,
-        _unused_s: PhantomData::<Body>,
-    };
+    let req = EventCompletionRequest::new("id", "hello, world!");
     let req = req.into_req().unwrap();
     let expected = Uri::from_static("/2018-06-01/runtime/invocation/id/response");
     assert_eq!(req.method(), Method::POST);

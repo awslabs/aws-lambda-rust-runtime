@@ -15,15 +15,21 @@ readme = "README.md"
 
 [dependencies]
 async-stream = "0.3"
-bytes = "1.0"
+bytes = { workspace = true }
 chrono = { version = "0.4", features = ["serde"] }
-http = "0.2"
-hyper = { version = "0.14.20", features = ["http1", "client", "server", "stream", "runtime"] }
+http = { workspace = true }
+http-body-util = { workspace = true }
+hyper = { workspace = true, features = ["http1", "client", "server"] }
+hyper-util = { workspace = true }
 lambda_runtime_api_client = { version = "0.8", path = "../lambda-runtime-api-client" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "^1"
 tracing = { version = "0.1", features = ["log"] }
-tokio = { version = "1.0", features = ["macros", "io-util", "sync", "rt-multi-thread"] }
+tokio = { version = "1.0", features = [
+    "macros",
+    "io-util",
+    "sync",
+    "rt-multi-thread",
+] }
 tokio-stream = "0.1.2"
 tower = { version = "0.4", features = ["make", "util"] }
-

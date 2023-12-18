@@ -2,6 +2,7 @@ use crate::{Error, RefConfig};
 use base64::prelude::*;
 use bytes::Bytes;
 use http::{header::ToStrError, HeaderMap, HeaderValue, StatusCode};
+use lambda_runtime_api_client::body::Body;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
@@ -251,11 +252,11 @@ impl<B, S> IntoFunctionResponse<B, S> for FunctionResponse<B, S> {
     }
 }
 
-impl<B> IntoFunctionResponse<B, hyper::Body> for B
+impl<B> IntoFunctionResponse<B, Body> for B
 where
     B: Serialize,
 {
-    fn into_response(self) -> FunctionResponse<B, hyper::Body> {
+    fn into_response(self) -> FunctionResponse<B, Body> {
         FunctionResponse::BufferedResponse(self)
     }
 }
@@ -268,6 +269,20 @@ where
 {
     fn into_response(self) -> FunctionResponse<(), S> {
         FunctionResponse::StreamingResponse(self)
+    }
+}
+
+impl<S, D, E> From<S> for StreamResponse<S>
+where
+    S: Stream<Item = Result<D, E>> + Unpin + Send + 'static,
+    D: Into<Bytes> + Send,
+    E: Into<Error> + Send + Debug,
+{
+    fn from(value: S) -> Self {
+        StreamResponse {
+            metadata_prelude: Default::default(),
+            stream: value,
+        }
     }
 }
 

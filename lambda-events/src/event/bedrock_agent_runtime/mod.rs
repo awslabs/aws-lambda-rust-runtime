@@ -82,8 +82,6 @@ pub struct Agent {
 
 #[cfg(test)]
 mod tests {
-    use serde_json;
-
     #[test]
     #[cfg(feature = "bedrock-agent-runtime")]
     fn example_bedrock_agent__runtime_event() {

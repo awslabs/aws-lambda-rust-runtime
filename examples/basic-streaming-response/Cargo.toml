@@ -6,11 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-hyper = { version = "0.14", features = [
-    "http1",
-    "client",
-    "stream",
-] }
 lambda_runtime = { path = "../../lambda-runtime" }
 tokio = { version = "1", features = ["macros"] }
 tracing = { version = "0.1", features = ["log"] }

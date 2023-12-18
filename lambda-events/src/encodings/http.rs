@@ -218,25 +218,6 @@ impl HttpBody for Body {
     type Data = Bytes;
     type Error = super::Error;
 
-    fn poll_data(
-        self: Pin<&mut Self>,
-        _cx: &mut std::task::Context<'_>,
-    ) -> Poll<Option<Result<Self::Data, Self::Error>>> {
-        let body = take(self.get_mut());
-        Poll::Ready(match body {
-            Body::Empty => None,
-            Body::Text(s) => Some(Ok(s.into())),
-            Body::Binary(b) => Some(Ok(b.into())),
-        })
-    }
-
-    fn poll_trailers(
-        self: Pin<&mut Self>,
-        _cx: &mut std::task::Context<'_>,
-    ) -> Poll<Result<Option<http::HeaderMap>, Self::Error>> {
-        Poll::Ready(Ok(None))
-    }
-
     fn is_end_stream(&self) -> bool {
         matches!(self, Body::Empty)
     }
@@ -247,6 +228,18 @@ impl HttpBody for Body {
             Body::Text(ref s) => SizeHint::with_exact(s.len() as u64),
             Body::Binary(ref b) => SizeHint::with_exact(b.len() as u64),
         }
+    }
+
+    fn poll_frame(
+        self: Pin<&mut Self>,
+        _cx: &mut std::task::Context<'_>,
+    ) -> Poll<Option<Result<http_body::Frame<Self::Data>, Self::Error>>> {
+        let body = take(self.get_mut());
+        Poll::Ready(match body {
+            Body::Empty => None,
+            Body::Text(s) => Some(Ok(http_body::Frame::data(s.into()))),
+            Body::Binary(b) => Some(Ok(http_body::Frame::data(b.into()))),
+        })
     }
 }
 

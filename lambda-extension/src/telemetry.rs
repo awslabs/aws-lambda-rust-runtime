@@ -301,9 +301,41 @@ where
 
     Ok(hyper::Response::new(Body::empty()))
 }
+#[cfg(test)]
+mod se_tests {
+    use chrono::TimeZone;
+
+    use super::*;
+    macro_rules! serialize_tests {
+        ($($name:ident: $value:expr,)*) => {
+            $(
+                #[test]
+                fn $name() {
+                    let (input, expected) = $value;
+                    let actual = serde_json::to_string(&input).expect("unable to serialize");
+                    println!("Input: {:?}", input);
+                    println!("Expected: {:?}", expected);
+                    println!("Actual: {:?}", actual);
+
+                    assert!(actual == expected);
+                }
+            )*
+        }
+    }
+
+    serialize_tests! {
+        function: (
+            LambdaTelemetry {
+                time: Utc.with_ymd_and_hms(2023, 11, 28, 12, 0, 9).unwrap(),
+                record: LambdaTelemetryRecord::Function("hello world".to_string()),
+            },
+            r#"{"time":"2023-11-28T12:00:09Z","type":"function","record":"hello world"}"#,
+        ),
+    }
+}
 
 #[cfg(test)]
-mod tests {
+mod de_tests {
     use super::*;
     use chrono::{Duration, TimeZone};
 
@@ -320,6 +352,7 @@ mod tests {
             )*
         }
     }
+
 
     deserialize_tests! {
         // function

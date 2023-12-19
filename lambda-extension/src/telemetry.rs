@@ -3,14 +3,14 @@ use http::{Request, Response};
 use http_body_util::BodyExt;
 use hyper::body::Incoming;
 use lambda_runtime_api_client::body::Body;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::{boxed::Box, fmt, sync::Arc};
 use tokio::sync::Mutex;
 use tower::Service;
 use tracing::{error, trace};
 
 /// Payload received from the Telemetry API
-#[derive(Clone, Debug, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 pub struct LambdaTelemetry {
     /// Time when the telemetry was generated
     pub time: DateTime<Utc>,
@@ -20,7 +20,7 @@ pub struct LambdaTelemetry {
 }
 
 /// Record in a LambdaTelemetry entry
-#[derive(Clone, Debug, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 #[serde(tag = "type", content = "record", rename_all = "lowercase")]
 pub enum LambdaTelemetryRecord {
     /// Function log records
@@ -147,7 +147,7 @@ pub enum LambdaTelemetryRecord {
 }
 
 /// Type of Initialization
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
 #[serde(rename_all = "kebab-case")]
 pub enum InitType {
     /// Initialised on demand
@@ -159,7 +159,7 @@ pub enum InitType {
 }
 
 /// Phase in which initialization occurs
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
 #[serde(rename_all = "kebab-case")]
 pub enum InitPhase {
     /// Initialization phase
@@ -169,7 +169,7 @@ pub enum InitPhase {
 }
 
 /// Status of invocation/initialization
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
 #[serde(rename_all = "kebab-case")]
 pub enum Status {
     /// Success
@@ -183,7 +183,7 @@ pub enum Status {
 }
 
 /// Span
-#[derive(Clone, Debug, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Span {
     /// Duration of the span
@@ -195,7 +195,7 @@ pub struct Span {
 }
 
 /// Tracing Context
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct TraceContext {
     /// Span ID
@@ -207,7 +207,7 @@ pub struct TraceContext {
 }
 
 /// Type of tracing
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
 pub enum TracingType {
     /// Amazon trace type
     #[serde(rename = "X-Amzn-Trace-Id")]
@@ -215,7 +215,7 @@ pub enum TracingType {
 }
 
 ///Init report metrics
-#[derive(Clone, Debug, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct InitReportMetrics {
     /// Duration of initialization
@@ -223,7 +223,7 @@ pub struct InitReportMetrics {
 }
 
 /// Report metrics
-#[derive(Clone, Debug, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ReportMetrics {
     /// Duration in milliseconds
@@ -245,7 +245,7 @@ pub struct ReportMetrics {
 }
 
 /// Runtime done metrics
-#[derive(Clone, Debug, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct RuntimeDoneMetrics {
     /// Duration in milliseconds

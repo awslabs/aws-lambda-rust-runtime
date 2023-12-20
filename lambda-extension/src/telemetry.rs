@@ -312,41 +312,9 @@ where
 
     Ok(hyper::Response::new(Body::empty()))
 }
-#[cfg(test)]
-mod se_tests {
-    use chrono::TimeZone;
-
-    use super::*;
-    macro_rules! serialize_tests {
-        ($($name:ident: $value:expr,)*) => {
-            $(
-                #[test]
-                fn $name() {
-                    let (input, expected) = $value;
-                    let actual = serde_json::to_string(&input).expect("unable to serialize");
-                    println!("Input: {:?}", input);
-                    println!("Expected: {:?}", expected);
-                    println!("Actual: {:?}", actual);
-
-                    assert!(actual == expected);
-                }
-            )*
-        }
-    }
-
-    serialize_tests! {
-        function: (
-            LambdaTelemetry {
-                time: Utc.with_ymd_and_hms(2023, 11, 28, 12, 0, 9).unwrap(),
-                record: LambdaTelemetryRecord::Function("hello world".to_string()),
-            },
-            r#"{"time":"2023-11-28T12:00:09Z","type":"function","record":"hello world"}"#,
-        ),
-    }
-}
 
 #[cfg(test)]
-mod de_tests {
+mod deserialization_tests {
     use super::*;
     use chrono::{Duration, TimeZone};
 
@@ -363,7 +331,6 @@ mod de_tests {
             )*
         }
     }
-
 
     deserialize_tests! {
         // function
@@ -501,5 +468,195 @@ mod de_tests {
                 spans: Vec::new(),
             }
         ),
+    }
+}
+
+#[cfg(test)]
+mod serialization_tests {
+    use chrono::{Duration, TimeZone};
+
+    use super::*;
+    macro_rules! serialize_tests {
+        ($($name:ident: $value:expr,)*) => {
+            $(
+                #[test]
+                fn $name() {
+                    let (input, expected) = $value;
+                    let actual = serde_json::to_string(&input).expect("unable to serialize");
+                    println!("Input: {:?}\n", input);
+                    println!("Expected:\n {:?}\n", expected);
+                    println!("Actual:\n {:?}\n", actual);
+
+                    assert!(actual == expected);
+                }
+            )*
+        }
+    }
+
+    serialize_tests! {
+        // function
+        function: (
+            LambdaTelemetry {
+                time: Utc.with_ymd_and_hms(2023, 11, 28, 12, 0, 9).unwrap(),
+                record: LambdaTelemetryRecord::Function("hello world".to_string()),
+            },
+            r#"{"time":"2023-11-28T12:00:09Z","type":"function","record":"hello world"}"#,
+        ),
+        // extension
+        extension: (
+            LambdaTelemetry {
+                time: Utc.with_ymd_and_hms(2023, 11, 28, 12, 0, 9).unwrap(),
+                record: LambdaTelemetryRecord::Extension("hello world".to_string()),
+            },
+            r#"{"time":"2023-11-28T12:00:09Z","type":"extension","record":"hello world"}"#,
+        ),
+        //platform.Start
+        platform_start: (
+            LambdaTelemetry{
+                time: Utc.with_ymd_and_hms(2023, 11, 28, 12, 0, 9).unwrap(),
+                record: LambdaTelemetryRecord::PlatformStart {
+                        request_id: "459921b5-681c-4a96-beb0-81e0aa586026".to_string(),
+                        version: Some("$LATEST".to_string()),
+                        tracing: Some(TraceContext{
+                            span_id: Some("24cd7d670fa455f0".to_string()),
+                            r#type: TracingType::AmznTraceId,
+                            value: "Root=1-6352a70e-1e2c502e358361800241fd45;Parent=35465b3a9e2f7c6a;Sampled=1".to_string(),
+                    }),
+                }
+            },
+            r#"{"time":"2023-11-28T12:00:09Z","type":"platform.start","record":{"requestId":"459921b5-681c-4a96-beb0-81e0aa586026","version":"$LATEST","tracing":{"spanId":"24cd7d670fa455f0","type":"X-Amzn-Trace-Id","value":"Root=1-6352a70e-1e2c502e358361800241fd45;Parent=35465b3a9e2f7c6a;Sampled=1"}}}"#,
+        ),
+        // platform.initStart
+        platform_init_start: (
+            LambdaTelemetry{
+                time: Utc.with_ymd_and_hms(2023, 11, 28, 12, 0, 9).unwrap(),
+                record: LambdaTelemetryRecord::PlatformInitStart {
+                        initialization_type: InitType::OnDemand,
+                        phase: InitPhase::Init,
+                        runtime_version: None,
+                        runtime_version_arn: None,
+                },
+            },
+            r#"{"time":"2023-11-28T12:00:09Z","type":"platform.initStart","record":{"initializationType":"on-demand","phase":"init"}}"#,
+        ),
+        // platform.runtimeDone
+        platform_runtime_done: (
+            LambdaTelemetry{
+                time: Utc.with_ymd_and_hms(2023, 11, 28, 12, 0, 9).unwrap(),
+                record: LambdaTelemetryRecord::PlatformRuntimeDone {
+                    request_id: "459921b5-681c-4a96-beb0-81e0aa586026".to_string(),
+                    status: Status::Success,
+                    error_type: None,
+                    metrics: Some(RuntimeDoneMetrics {
+                        duration_ms: 2599.0,
+                        produced_bytes: Some(8),
+                    }),
+                    spans: vec!(
+                        Span {
+                            name:"responseLatency".to_string(),
+                            start: Utc
+                                .with_ymd_and_hms(2022, 10, 21, 14, 5, 3)
+                                .unwrap()
+                                .checked_add_signed(Duration::milliseconds(165))
+                                .unwrap(),
+                            duration_ms: 2598.0
+                        },
+                        Span {
+                            name:"responseDuration".to_string(),
+                            start: Utc
+                                .with_ymd_and_hms(2022, 10, 21, 14, 5, 5)
+                                .unwrap()
+                                .checked_add_signed(Duration::milliseconds(763))
+                                .unwrap(),
+                            duration_ms: 0.0
+                        },
+                    ),
+                    tracing: Some(TraceContext{
+                        span_id: Some("24cd7d670fa455f0".to_string()),
+                        r#type: TracingType::AmznTraceId,
+                        value: "Root=1-6352a70e-1e2c502e358361800241fd45;Parent=35465b3a9e2f7c6a;Sampled=1".to_string(),
+                    }),
+                },
+            },
+            r#"{"time":"2023-11-28T12:00:09Z","type":"platform.runtimeDone","record":{"requestId":"459921b5-681c-4a96-beb0-81e0aa586026","status":"success","metrics":{"durationMs":2599.0,"producedBytes":8},"spans":[{"durationMs":2598.0,"name":"responseLatency","start":"2022-10-21T14:05:03.165Z"},{"durationMs":0.0,"name":"responseDuration","start":"2022-10-21T14:05:05.763Z"}],"tracing":{"spanId":"24cd7d670fa455f0","type":"X-Amzn-Trace-Id","value":"Root=1-6352a70e-1e2c502e358361800241fd45;Parent=35465b3a9e2f7c6a;Sampled=1"}}}"#,
+        ),
+        // platform.report
+        platform_report: (
+            LambdaTelemetry{
+                time: Utc.with_ymd_and_hms(2023, 11, 28, 12, 0, 9).unwrap(),
+                record: LambdaTelemetryRecord::PlatformReport {
+                    request_id: "459921b5-681c-4a96-beb0-81e0aa586026".to_string(),
+                    status: Status::Success,
+                    error_type: None,
+                    metrics: ReportMetrics {
+                        duration_ms: 2599.4,
+                        billed_duration_ms: 2600,
+                        memory_size_mb:128,
+                        max_memory_used_mb:94,
+                        init_duration_ms: Some(549.04),
+                        restore_duration_ms: None,
+                    },
+                    spans: Vec::new(),
+                    tracing: Some(TraceContext {
+                        span_id: Some("24cd7d670fa455f0".to_string()),
+                        r#type: TracingType::AmznTraceId,
+                        value: "Root=1-6352a70e-1e2c502e358361800241fd45;Parent=35465b3a9e2f7c6a;Sampled=1".to_string(),
+                    }),
+                },
+            },
+            r#"{"time":"2023-11-28T12:00:09Z","type":"platform.report","record":{"requestId":"459921b5-681c-4a96-beb0-81e0aa586026","status":"success","metrics":{"durationMs":2599.4,"billedDurationMs":2600,"memorySizeMB":128,"maxMemoryUsedMB":94,"initDurationMs":549.04},"spans":[],"tracing":{"spanId":"24cd7d670fa455f0","type":"X-Amzn-Trace-Id","value":"Root=1-6352a70e-1e2c502e358361800241fd45;Parent=35465b3a9e2f7c6a;Sampled=1"}}}"#,
+        ),
+        // platform.telemetrySubscription
+        platform_telemetry_subscription: (
+            LambdaTelemetry{
+                time: Utc.with_ymd_and_hms(2023, 11, 28, 12, 0, 9).unwrap(),
+                record: LambdaTelemetryRecord::PlatformTelemetrySubscription {
+                    name: "my-extension".to_string(),
+                    state: "Subscribed".to_string(),
+                    types: vec!("platform".to_string(), "function".to_string()),
+                },
+            },
+            r#"{"time":"2023-11-28T12:00:09Z","type":"platform.telemetrySubscription","record":{"name":"my-extension","state":"Subscribed","types":["platform","function"]}}"#,
+        ),
+        // platform.initRuntimeDone
+        platform_init_runtime_done: (
+            LambdaTelemetry{
+                time: Utc.with_ymd_and_hms(2023, 11, 28, 12, 0, 9).unwrap(),
+                record: LambdaTelemetryRecord::PlatformInitRuntimeDone {
+                    initialization_type: InitType::OnDemand,
+                    status: Status::Success,
+                    phase: None,
+                    error_type: None,
+                    spans: Vec::new(),
+            },
+            },
+            r#"{"time":"2023-11-28T12:00:09Z","type":"platform.initRuntimeDone","record":{"initializationType":"on-demand","status":"success","spans":[]}}"#,
+        ),
+        // platform.extension
+        platform_extension: (
+            LambdaTelemetry {
+                time: Utc.with_ymd_and_hms(2023, 11, 28, 12, 0, 9).unwrap(),
+                record: LambdaTelemetryRecord::PlatformExtension {
+                    name: "my-extension".to_string(),
+                    state: "Ready".to_string(),
+                    events: vec!("SHUTDOWN".to_string(), "INVOKE".to_string()),
+                },
+            },
+            r#"{"time":"2023-11-28T12:00:09Z","type":"platform.extension","record":{"name":"my-extension","state":"Ready","events":["SHUTDOWN","INVOKE"]}}"#,
+        ),
+        // platform.initReport
+        platform_init_report: (
+            LambdaTelemetry {
+                time: Utc.with_ymd_and_hms(2023, 11, 28, 12, 0, 9).unwrap(),
+                record: LambdaTelemetryRecord::PlatformInitReport {
+                    initialization_type: InitType::OnDemand,
+                    phase: InitPhase::Init,
+                    metrics: InitReportMetrics { duration_ms: 500.0 },
+                    spans: Vec::new(),
+                },
+            },
+            r#"{"time":"2023-11-28T12:00:09Z","type":"platform.initReport","record":{"initializationType":"on-demand","phase":"init","metrics":{"durationMs":500.0},"spans":[]}}"#,
+        ),
+
     }
 }

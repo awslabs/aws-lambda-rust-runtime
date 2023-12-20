@@ -37,8 +37,10 @@ pub enum LambdaTelemetryRecord {
         /// Phase of initialisation
         phase: InitPhase,
         /// Lambda runtime version
+        #[serde(skip_serializing_if = "Option::is_none")]
         runtime_version: Option<String>,
         /// Lambda runtime version ARN
+        #[serde(skip_serializing_if = "Option::is_none")]
         runtime_version_arn: Option<String>,
     },
     /// Platform init runtime done record
@@ -47,10 +49,12 @@ pub enum LambdaTelemetryRecord {
         /// Type of initialization
         initialization_type: InitType,
         /// Phase of initialisation
+        #[serde(skip_serializing_if = "Option::is_none")]
         phase: Option<InitPhase>,
         /// Status of initalization
         status: Status,
         /// When the status = failure, the error_type describes what kind of error occurred
+        #[serde(skip_serializing_if = "Option::is_none")]
         error_type: Option<String>,
         /// Spans
         #[serde(default)]
@@ -75,8 +79,10 @@ pub enum LambdaTelemetryRecord {
         /// Request identifier
         request_id: String,
         /// Version of the Lambda function
+        #[serde(skip_serializing_if = "Option::is_none")]
         version: Option<String>,
         /// Trace Context
+        #[serde(skip_serializing_if = "Option::is_none")]
         tracing: Option<TraceContext>,
     },
     /// Record marking the completion of an invocation
@@ -87,13 +93,16 @@ pub enum LambdaTelemetryRecord {
         /// Status of the invocation
         status: Status,
         /// When unsuccessful, the error_type describes what kind of error occurred
+        #[serde(skip_serializing_if = "Option::is_none")]
         error_type: Option<String>,
         /// Metrics corresponding to the runtime
+        #[serde(skip_serializing_if = "Option::is_none")]
         metrics: Option<RuntimeDoneMetrics>,
         /// Spans
         #[serde(default)]
         spans: Vec<Span>,
         /// Trace Context
+        #[serde(skip_serializing_if = "Option::is_none")]
         tracing: Option<TraceContext>,
     },
     /// Platfor report record
@@ -104,6 +113,7 @@ pub enum LambdaTelemetryRecord {
         /// Status of the invocation
         status: Status,
         /// When unsuccessful, the error_type describes what kind of error occurred
+        #[serde(skip_serializing_if = "Option::is_none")]
         error_type: Option<String>,
         /// Metrics
         metrics: ReportMetrics,
@@ -111,6 +121,7 @@ pub enum LambdaTelemetryRecord {
         #[serde(default)]
         spans: Vec<Span>,
         /// Trace Context
+        #[serde(skip_serializing_if = "Option::is_none")]
         tracing: Option<TraceContext>,
     },
 
@@ -237,10 +248,10 @@ pub struct ReportMetrics {
     #[serde(rename = "maxMemoryUsedMB")]
     pub max_memory_used_mb: u64,
     /// Init duration in case of a cold start
-    #[serde(default = "Option::default")]
+    #[serde(default = "Option::default", skip_serializing_if = "Option::is_none")]
     pub init_duration_ms: Option<f64>,
     /// Restore duration in milliseconds
-    #[serde(default = "Option::default")]
+    #[serde(default = "Option::default", skip_serializing_if = "Option::is_none")]
     pub restore_duration_ms: Option<f64>,
 }
 

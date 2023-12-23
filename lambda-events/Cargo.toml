@@ -47,6 +47,7 @@ default = [
   "chime_bot",
   "clientvpn",
   "cloudformation",
+  "cloudwatch_alarms",
   "cloudwatch_events",
   "cloudwatch_logs",
   "code_commit",
@@ -90,6 +91,7 @@ bedrock_agent_runtime = []
 chime_bot = ["chrono"]
 clientvpn = []
 cloudformation = []
+cloudwatch_alarms = ["chrono"]
 cloudwatch_events = ["chrono"]
 cloudwatch_logs = ["flate2"]
 code_commit = ["chrono"]

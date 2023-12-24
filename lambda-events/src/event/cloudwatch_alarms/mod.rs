@@ -8,7 +8,8 @@ use serde::{
 };
 use serde_json::Value;
 
-/// `CloudWatchAlarm` is the outer structure of an event triggered by a CloudWatch Alarm.
+/// `CloudWatchAlarm` is the generic outer structure of an event triggered by a CloudWatch Alarm.
+/// You probably want to use `CloudWatchMetricAlarm` or `CloudWatchCompositeAlarm` if you know which kind of alarm your function is receiving.
 /// For examples of events that come via CloudWatch Alarms,
 /// see https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/AlarmThatSendsEmail.html#Lambda-action-payload
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]

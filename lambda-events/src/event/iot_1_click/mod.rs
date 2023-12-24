@@ -59,7 +59,6 @@ pub struct IoTOneClickPlacementInfo {
 #[cfg(test)]
 mod test {
     use super::*;
-    use serde_json;
 
     #[test]
     #[cfg(feature = "iot_1_click")]

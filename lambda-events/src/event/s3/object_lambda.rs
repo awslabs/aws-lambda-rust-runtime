@@ -120,7 +120,6 @@ pub struct SessionIssuer {
 mod test {
     use super::*;
 
-    use serde_json;
 
     #[test]
     #[cfg(feature = "s3")]

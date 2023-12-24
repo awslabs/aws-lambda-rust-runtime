@@ -769,7 +769,6 @@ fn default_http_method() -> Method {
 mod test {
     use super::*;
 
-    use serde_json;
 
     #[test]
     #[cfg(feature = "apigw")]

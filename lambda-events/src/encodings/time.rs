@@ -215,7 +215,6 @@ where
 mod test {
     use super::*;
     use chrono::TimeZone;
-    use serde_json;
 
     #[test]
     fn test_deserialize_milliseconds() {

@@ -69,7 +69,6 @@ pub struct CodeCommitReference {
 mod test {
     use super::*;
 
-    use serde_json;
 
     #[test]
     #[cfg(feature = "code_commit")]

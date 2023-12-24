@@ -48,7 +48,6 @@ where
 mod test {
     use super::*;
 
-    use serde_json;
 
     #[test]
     #[cfg(feature = "autoscaling")]

@@ -108,7 +108,6 @@ pub struct Attachment {
 mod test {
     use super::*;
 
-    use serde_json;
 
     #[test]
     #[cfg(feature = "lex")]

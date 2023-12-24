@@ -96,7 +96,6 @@ where
 mod test {
     use super::*;
     use serde::{Deserialize, Serialize};
-    use serde_json;
 
     #[test]
     fn test_deserialize_base64() {

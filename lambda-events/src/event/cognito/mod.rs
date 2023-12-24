@@ -464,7 +464,6 @@ pub struct CognitoEventUserPoolsCustomMessageResponse {
 mod test {
     use super::*;
 
-    use serde_json;
 
     #[test]
     #[cfg(feature = "cognito")]

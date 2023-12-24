@@ -213,7 +213,6 @@ pub type CodeBuildTime = DateTime<Utc>;
 mod test {
     use super::*;
 
-    use serde_json;
 
     #[test]
     #[cfg(feature = "codebuild")]

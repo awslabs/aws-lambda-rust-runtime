@@ -35,7 +35,6 @@ pub struct KafkaRecord {
 mod test {
     use super::*;
 
-
     #[test]
     #[cfg(feature = "kafka")]
     fn example_kafka_event() {

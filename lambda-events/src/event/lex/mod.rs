@@ -108,7 +108,6 @@ pub struct Attachment {
 mod test {
     use super::*;
 
-
     #[test]
     #[cfg(feature = "lex")]
     fn example_lex_event() {

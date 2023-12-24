@@ -213,7 +213,6 @@ pub type CodeBuildTime = DateTime<Utc>;
 mod test {
     use super::*;
 
-
     #[test]
     #[cfg(feature = "codebuild")]
     fn example_codebuild_phase_change() {

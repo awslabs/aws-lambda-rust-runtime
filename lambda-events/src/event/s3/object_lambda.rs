@@ -120,7 +120,6 @@ pub struct SessionIssuer {
 mod test {
     use super::*;
 
-
     #[test]
     #[cfg(feature = "s3")]
     fn example_object_lambda_event_get_object_assumed_role() {

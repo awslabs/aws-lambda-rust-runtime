@@ -81,7 +81,6 @@ pub struct CodePipelineEventDetailType {
 mod test {
     use super::*;
 
-
     #[test]
     #[cfg(feature = "codepipeline_cloudwatch")]
     fn example_codepipeline_action_execution_stage_change_event() {

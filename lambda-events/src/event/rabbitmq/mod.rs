@@ -63,7 +63,6 @@ where
 mod test {
     use super::*;
 
-
     #[test]
     #[cfg(feature = "rabbitmq")]
     fn example_rabbitmq_event() {

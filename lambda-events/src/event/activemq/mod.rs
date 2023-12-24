@@ -54,7 +54,6 @@ pub struct ActiveMqDestination {
 mod test {
     use super::*;
 
-
     #[test]
     #[cfg(feature = "activemq")]
     fn example_activemq_event() {

@@ -15,7 +15,6 @@ pub struct IoTButtonEvent {
 mod test {
     use super::*;
 
-
     #[test]
     #[cfg(feature = "iot_button")]
     fn example_iot_button_event() {

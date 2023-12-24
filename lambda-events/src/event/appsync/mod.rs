@@ -122,7 +122,6 @@ where
 mod test {
     use super::*;
 
-
     #[test]
     #[cfg(feature = "appsync")]
     fn example_appsync_identity_cognito() {

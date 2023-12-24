@@ -76,7 +76,6 @@ pub struct IoTCoreCustomAuthorizerResponse {
 mod test {
     use super::*;
 
-
     #[test]
     #[cfg(feature = "iot")]
     fn example_iot_custom_auth_request() {

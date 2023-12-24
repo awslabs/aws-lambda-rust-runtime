@@ -464,7 +464,6 @@ pub struct CognitoEventUserPoolsCustomMessageResponse {
 mod test {
     use super::*;
 
-
     #[test]
     #[cfg(feature = "cognito")]
     fn example_cognito_event() {

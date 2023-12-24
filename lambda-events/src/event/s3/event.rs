@@ -92,7 +92,6 @@ pub struct S3Object {
 mod test {
     use super::*;
 
-
     #[test]
     #[cfg(feature = "s3")]
     fn example_s3_event() {

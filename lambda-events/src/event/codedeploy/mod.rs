@@ -69,7 +69,6 @@ pub struct CodeDeployEventDetail {
 mod test {
     use super::*;
 
-
     #[test]
     #[cfg(feature = "codedeploy")]
     fn example_codedeploy_deployment_event() {

@@ -179,7 +179,6 @@ pub struct MessageAttribute {
 mod test {
     use super::*;
 
-
     #[test]
     #[cfg(feature = "sns")]
     fn my_example_sns_event() {

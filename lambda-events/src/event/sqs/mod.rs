@@ -184,7 +184,6 @@ pub struct SqsApiMessage {
 mod test {
     use super::*;
 
-
     #[test]
     #[cfg(feature = "sqs")]
     fn example_sqs_event() {

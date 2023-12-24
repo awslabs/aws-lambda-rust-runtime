@@ -48,7 +48,6 @@ where
 mod test {
     use super::*;
 
-
     #[test]
     #[cfg(feature = "autoscaling")]
     fn example_autoscaling_event_launch_successful() {

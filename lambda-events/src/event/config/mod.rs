@@ -40,7 +40,6 @@ pub struct ConfigEvent {
 mod test {
     use super::*;
 
-
     #[test]
     #[cfg(feature = "config")]
     fn example_config_event() {

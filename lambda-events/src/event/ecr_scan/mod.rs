@@ -61,7 +61,6 @@ pub struct EcrScanEventFindingSeverityCounts {
 mod test {
     use super::*;
 
-
     #[test]
     #[cfg(feature = "ecr_scan")]
     fn example_ecr_image_scan_event() {

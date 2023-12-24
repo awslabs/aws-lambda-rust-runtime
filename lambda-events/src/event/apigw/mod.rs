@@ -769,7 +769,6 @@ fn default_http_method() -> Method {
 mod test {
     use super::*;
 
-
     #[test]
     #[cfg(feature = "apigw")]
     fn example_apigw_custom_auth_request_type_request() {

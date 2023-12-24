@@ -69,7 +69,6 @@ pub struct AlbTargetGroupResponse {
 mod test {
     use super::*;
 
-
     #[test]
     #[cfg(feature = "alb")]
     fn example_alb_lambda_target_request_headers_only() {

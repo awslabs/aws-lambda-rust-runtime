@@ -117,7 +117,6 @@ pub struct CodePipelineArtifactCredentials {
 mod test {
     use super::*;
 
-
     #[test]
     #[cfg(feature = "codepipeline_job")]
     fn example_codepipeline_job_event() {

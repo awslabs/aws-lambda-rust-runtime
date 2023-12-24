@@ -94,7 +94,6 @@ pub type ConnectResponse = HashMap<String, String>;
 mod test {
     use super::*;
 
-
     #[test]
     #[cfg(feature = "connect")]
     fn example_connect_event() {

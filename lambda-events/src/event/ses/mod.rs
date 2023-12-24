@@ -122,7 +122,6 @@ pub struct SimpleEmailDisposition {
 mod test {
     use super::*;
 
-
     #[test]
     #[cfg(feature = "ses")]
     fn example_ses_lambda_event() {

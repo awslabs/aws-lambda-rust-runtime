@@ -49,7 +49,6 @@ pub struct ClientVpnConnectionHandlerResponse {
 mod test {
     use super::*;
 
-
     #[test]
     #[cfg(feature = "clientvpn")]
     fn example_clientvpn_connectionhandler_request() {

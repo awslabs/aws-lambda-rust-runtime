@@ -75,7 +75,6 @@ pub struct KinesisRecord {
 mod test {
     use super::*;
 
-
     #[test]
     #[cfg(feature = "kinesis")]
     fn example_kinesis_event() {

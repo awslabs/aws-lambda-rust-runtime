@@ -69,7 +69,6 @@ pub struct CodeCommitReference {
 mod test {
     use super::*;
 
-
     #[test]
     #[cfg(feature = "code_commit")]
     fn example_code_commit_event() {

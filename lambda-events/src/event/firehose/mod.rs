@@ -76,8 +76,6 @@ pub struct KinesisFirehoseRecordMetadata {
 mod test {
     use super::*;
 
-    use serde_json;
-
     #[test]
     #[cfg(feature = "firehose")]
     fn example_firehose_event() {

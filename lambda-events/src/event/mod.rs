@@ -33,7 +33,11 @@ pub mod clientvpn;
 #[cfg(feature = "cloudformation")]
 pub mod cloudformation;
 
-/// CloudWatch Events payload
+/// AWS Lambda event definitions for CloudWatch alarms.
+#[cfg(feature = "cloudwatch_alarms")]
+pub mod cloudwatch_alarms;
+
+/// AWS Lambda event definitions for CloudWatch events.
 #[cfg(feature = "cloudwatch_events")]
 pub mod cloudwatch_events;
 

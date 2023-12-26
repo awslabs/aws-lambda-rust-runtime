@@ -63,8 +63,6 @@ where
 mod test {
     use super::*;
 
-    use serde_json;
-
     #[test]
     #[cfg(feature = "rabbitmq")]
     fn example_rabbitmq_event() {

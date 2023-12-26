@@ -75,8 +75,6 @@ pub struct KinesisRecord {
 mod test {
     use super::*;
 
-    use serde_json;
-
     #[test]
     #[cfg(feature = "kinesis")]
     fn example_kinesis_event() {

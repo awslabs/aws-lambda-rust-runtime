@@ -45,7 +45,11 @@ pub use event::clientvpn;
 #[cfg(feature = "cloudformation")]
 pub use event::cloudformation;
 
-/// CloudWatch Events payload
+/// AWS Lambda event definitions for CloudWatch alarms.
+#[cfg(feature = "cloudwatch_alarms")]
+pub use event::cloudwatch_alarms;
+
+/// AWS Lambda event definitions for CloudWatch events.
 #[cfg(feature = "cloudwatch_events")]
 pub use event::cloudwatch_events;
 

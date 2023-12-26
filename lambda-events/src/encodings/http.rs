@@ -246,7 +246,6 @@ impl HttpBody for Body {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serde_json;
     use std::collections::HashMap;
 
     #[test]

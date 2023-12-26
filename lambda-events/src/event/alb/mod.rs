@@ -69,8 +69,6 @@ pub struct AlbTargetGroupResponse {
 mod test {
     use super::*;
 
-    use serde_json;
-
     #[test]
     #[cfg(feature = "alb")]
     fn example_alb_lambda_target_request_headers_only() {

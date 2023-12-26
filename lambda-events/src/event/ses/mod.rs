@@ -122,8 +122,6 @@ pub struct SimpleEmailDisposition {
 mod test {
     use super::*;
 
-    use serde_json;
-
     #[test]
     #[cfg(feature = "ses")]
     fn example_ses_lambda_event() {

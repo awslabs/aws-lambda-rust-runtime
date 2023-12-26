@@ -252,8 +252,6 @@ mod test {
     use super::*;
     use chrono::TimeZone;
 
-    use serde_json;
-
     #[test]
     #[cfg(feature = "dynamodb")]
     fn example_dynamodb_event() {

@@ -66,8 +66,6 @@ pub struct TimeWindowEventResponseProperties {
 mod test {
     use super::*;
 
-    use serde_json;
-
     #[test]
     fn test_window_deserializer() {
         let v = serde_json::json!({

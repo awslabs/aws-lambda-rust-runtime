@@ -54,8 +54,6 @@ pub struct ActiveMqDestination {
 mod test {
     use super::*;
 
-    use serde_json;
-
     #[test]
     #[cfg(feature = "activemq")]
     fn example_activemq_event() {

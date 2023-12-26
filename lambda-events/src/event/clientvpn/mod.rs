@@ -49,8 +49,6 @@ pub struct ClientVpnConnectionHandlerResponse {
 mod test {
     use super::*;
 
-    use serde_json;
-
     #[test]
     #[cfg(feature = "clientvpn")]
     fn example_clientvpn_connectionhandler_request() {

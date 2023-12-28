@@ -69,7 +69,8 @@ where
     R: DeserializeOwned,
     R: Serialize,
 {
-    pub value: String,
+    #[serde(default)]
+    pub value: CloudWatchAlarmStateValue,
     pub reason: String,
     #[serde(default, bound = "")]
     pub reason_data: Option<R>,
@@ -129,7 +130,7 @@ pub enum CloudWatchAlarmStateValue {
     #[default]
     Ok,
     Alarm,
-    InsuficientData,
+    InsufficientData,
 }
 
 #[derive(Clone, Debug, PartialEq)]

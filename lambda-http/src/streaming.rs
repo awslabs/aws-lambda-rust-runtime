@@ -2,14 +2,10 @@ use crate::http::header::SET_COOKIE;
 use crate::tower::ServiceBuilder;
 use crate::Request;
 use crate::{request::LambdaRequest, RequestExt};
-pub use aws_lambda_events::encodings::Body as LambdaEventBody;
 use bytes::Bytes;
 pub use http::{self, Response};
 use http_body::Body;
-pub use lambda_runtime::{
-    self, service_fn, tower, tower::ServiceExt, Error, FunctionResponse, LambdaEvent, MetadataPrelude, Service,
-    StreamResponse,
-};
+pub use lambda_runtime::{self, tower::ServiceExt, Error, LambdaEvent, MetadataPrelude, Service, StreamResponse};
 use std::fmt::{Debug, Display};
 use std::pin::Pin;
 use std::task::{Context, Poll};

@@ -213,6 +213,65 @@ pub struct CognitoEventUserPoolsPreTokenGenResponse {
     pub claims_override_details: Option<ClaimsOverrideDetails>,
 }
 
+/// `CognitoEventUserPoolsPreTokenGenV2` is sent by AWS Cognito User Pools when a user attempts to retrieve
+/// credentials, allowing a Lambda to perform insert, suppress or override claims.  This is the Version 2 Payload
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CognitoEventUserPoolsPreTokenGenV2 {
+    #[serde(rename = "CognitoEventUserPoolsHeader")]
+    #[serde(flatten)]
+    pub cognito_event_user_pools_header: CognitoEventUserPoolsHeader,
+    pub request: CognitoEventUserPoolsPreTokenGenRequestV2,
+    pub response: CognitoEventUserPoolsPreTokenGenResponseV2,
+}
+
+/// `CognitoEventUserPoolsPreTokenGenRequestV2` contains request portion of PreTokenGenV2 event
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CognitoEventUserPoolsPreTokenGenRequestV2 {
+    #[serde(deserialize_with = "deserialize_lambda_map")]
+    #[serde(default)]
+    pub user_attributes: HashMap<String, String>,
+    pub group_configuration: GroupConfiguration,
+    #[serde(deserialize_with = "deserialize_lambda_map")]
+    #[serde(default)]
+    pub client_metadata: HashMap<String, String>,
+    pub scopes: Vec<String>,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CognitoEventUserPoolsPreTokenGenResponseV2 {
+    pub claims_and_scope_override_details: Option<ClaimsAndScopeOverrideDetailsV2>,
+}
+
+/// `ClaimsAndScopeOverrideDetailsV2` allows lambda to add, suppress or override claims in the token
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ClaimsAndScopeOverrideDetailsV2 {
+    pub group_override_details: GroupConfiguration,
+    pub id_token_generation: Option<CognitoIdTokenGenerationV2>,
+    pub access_token_generation: Option<CognitoAccessTokenGenerationV2>,
+}
+
+/// `CognitoIdTokenGenerationV2` allows lambda to customize the ID Token before generation
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CognitoIdTokenGenerationV2 {
+    pub claims_to_add_or_override: HashMap<String, String>,
+    pub claims_to_suppress: Vec<String>,
+}
+
+/// `CognitoAccessTokenGenerationV2` allows lambda to customize the Access Token before generation
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CognitoAccessTokenGenerationV2 {
+    pub claims_to_add_or_override: HashMap<String, String>,
+    pub claims_to_suppress: Vec<String>,
+    pub scopes_to_add: Vec<String>,
+    pub scopes_to_suppress: Vec<String>,
+}
+
 /// `CognitoEventUserPoolsPostAuthenticationRequest` contains the request portion of a PostAuthentication event
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -610,11 +669,31 @@ mod test {
 
     #[test]
     #[cfg(feature = "cognito")]
+    fn example_cognito_event_userpools_pretokengen_v2_incoming() {
+        let data = include_bytes!("../../fixtures/example-cognito-event-userpools-pretokengen-v2-incoming.json");
+        let parsed: CognitoEventUserPoolsPreTokenGenV2 = serde_json::from_slice(data).unwrap();
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: CognitoEventUserPoolsPreTokenGenV2 = serde_json::from_slice(output.as_bytes()).unwrap();
+        assert_eq!(parsed, reparsed);
+    }
+
+    #[test]
+    #[cfg(feature = "cognito")]
     fn example_cognito_event_userpools_pretokengen() {
         let data = include_bytes!("../../fixtures/example-cognito-event-userpools-pretokengen.json");
         let parsed: CognitoEventUserPoolsPreTokenGen = serde_json::from_slice(data).unwrap();
         let output: String = serde_json::to_string(&parsed).unwrap();
         let reparsed: CognitoEventUserPoolsPreTokenGen = serde_json::from_slice(output.as_bytes()).unwrap();
+        assert_eq!(parsed, reparsed);
+    }
+
+    #[test]
+    #[cfg(feature = "cognito")]
+    fn example_cognito_event_userpools_v2_pretokengen() {
+        let data = include_bytes!("../../fixtures/example-cognito-event-userpools-pretokengen-v2.json");
+        let parsed: CognitoEventUserPoolsPreTokenGenV2 = serde_json::from_slice(data).unwrap();
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: CognitoEventUserPoolsPreTokenGenV2 = serde_json::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 

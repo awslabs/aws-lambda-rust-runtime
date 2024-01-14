@@ -51,6 +51,8 @@ pub enum LambdaRequest {
     Alb(AlbTargetGroupRequest),
     #[cfg(feature = "apigw_websockets")]
     WebSocket(ApiGatewayWebsocketProxyRequest),
+    #[cfg(feature = "pass_through")]
+    PassThrough(String),
 }
 
 impl LambdaRequest {
@@ -67,6 +69,8 @@ impl LambdaRequest {
             LambdaRequest::Alb { .. } => RequestOrigin::Alb,
             #[cfg(feature = "apigw_websockets")]
             LambdaRequest::WebSocket { .. } => RequestOrigin::WebSocket,
+            #[cfg(feature = "pass_through")]
+            LambdaRequest::PassThrough { .. } => RequestOrigin::PassThrough,
             #[cfg(not(any(
                 feature = "apigw_rest",
                 feature = "apigw_http",
@@ -97,6 +101,9 @@ pub enum RequestOrigin {
     /// API Gateway WebSocket
     #[cfg(feature = "apigw_websockets")]
     WebSocket,
+    /// PassThrough request origin
+    #[cfg(feature = "pass_through")]
+    PassThrough,
 }
 
 #[cfg(feature = "apigw_http")]
@@ -338,6 +345,28 @@ fn into_websocket_request(ag: ApiGatewayWebsocketProxyRequest) -> http::Request<
     req
 }
 
+#[cfg(feature = "pass_through")]
+fn into_pass_through_request(data: String) -> http::Request<Body> {
+    let mut builder = http::Request::builder();
+
+    let mut headers = builder.headers_mut().unwrap();
+    headers.insert("Content-Type", "application/json".parse().unwrap());
+
+    update_xray_trace_id_header(&mut headers);
+
+    let raw_path = "/events";
+
+    let req = builder
+        .method(http::Method::POST)
+        .uri(raw_path)
+        .extension(RawHttpPath(raw_path.to_string()))
+        .extension(RequestContext::PassThrough)
+        .body(Body::from(data))
+        .expect("failed to build request");
+
+    req
+}
+
 #[cfg(any(feature = "apigw_rest", feature = "apigw_http", feature = "apigw_websockets"))]
 fn apigw_path_with_stage(stage: &Option<String>, path: &str) -> String {
     if env::var("AWS_LAMBDA_HTTP_IGNORE_STAGE_IN_PATH").is_ok() {
@@ -375,6 +404,9 @@ pub enum RequestContext {
     /// WebSocket request context
     #[cfg(feature = "apigw_websockets")]
     WebSocket(ApiGatewayWebsocketProxyRequestContext),
+    /// Custom request context
+    #[cfg(feature = "pass_through")]
+    PassThrough,
 }
 
 /// Converts LambdaRequest types into `http::Request<Body>` types
@@ -389,6 +421,8 @@ impl From<LambdaRequest> for http::Request<Body> {
             LambdaRequest::Alb(alb) => into_alb_request(alb),
             #[cfg(feature = "apigw_websockets")]
             LambdaRequest::WebSocket(ag) => into_websocket_request(ag),
+            #[cfg(feature = "pass_through")]
+            LambdaRequest::PassThrough(data) => into_pass_through_request(data),
         }
     }
 }

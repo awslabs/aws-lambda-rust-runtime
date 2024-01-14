@@ -46,6 +46,8 @@ pub enum LambdaResponse {
     ApiGatewayV2(ApiGatewayV2httpResponse),
     #[cfg(feature = "alb")]
     Alb(AlbTargetGroupResponse),
+    #[cfg(feature = "pass_through")]
+    PassThrough(serde_json::Value),
 }
 
 /// Transformation from http type to internal type
@@ -114,6 +116,17 @@ impl LambdaResponse {
                 headers: headers.clone(),
                 multi_value_headers: headers,
             }),
+            #[cfg(feature = "pass_through")]
+            RequestOrigin::PassThrough => {
+                let resp = match body {
+                    // text body must be a valid json string
+                    Some(Body::Text(body)) => {LambdaResponse::PassThrough(serde_json::from_str(&body).unwrap_or_default())},
+                    // binary body and other cases return Value::Null
+                    _ => LambdaResponse::PassThrough(serde_json::Value::Null),
+                };
+
+                resp
+            }
             #[cfg(not(any(
                 feature = "apigw_rest",
                 feature = "apigw_http",

@@ -1,0 +1,35 @@
+{
+    "version": "0",
+    "id": "d3dfc86d-384d-24c8-0345-9f7986db0b80",
+    "detail-type": "CloudWatch Alarm State Change",
+    "source": "aws.cloudwatch",
+    "account": "123456789012",
+    "time": "2022-07-22T15:57:45Z",
+    "region": "us-east-1",
+    "resources": [
+        "arn:aws:cloudwatch:us-east-1:123456789012:alarm:ServiceAggregatedAlarm"
+    ],
+    "alarmData": {
+        "alarmName": "ServiceAggregatedAlarm",
+        "state": {
+            "actionsSuppressedBy": "WaitPeriod",
+            "actionsSuppressedReason": "Actions suppressed by WaitPeriod",
+            "value": "ALARM",
+            "reason": "arn:aws:cloudwatch:us-east-1:123456789012:alarm:SuppressionDemo.EventBridge.FirstChild transitioned to ALARM at Friday 22 July, 2022 15:57:45 UTC",
+            "reasonData": "{\"triggeringAlarms\":[{\"arn\":\"arn:aws:cloudwatch:us-east-1:123456789012:alarm:ServerCpuTooHigh\",\"state\":{\"value\":\"ALARM\",\"timestamp\":\"2022-07-22T15:57:45.394+0000\"}}]}",
+            "timestamp": "2022-07-22T15:57:45.394+0000"
+        },
+        "previousState": {
+            "value": "OK",
+            "reason": "arn:aws:cloudwatch:us-east-1:123456789012:alarm:SuppressionDemo.EventBridge.Main was created and its alarm rule evaluates to OK",
+            "reasonData": "{\"triggeringAlarms\":[{\"arn\":\"arn:aws:cloudwatch:us-east-1:123456789012:alarm:TotalNetworkTrafficTooHigh\",\"state\":{\"value\":\"OK\",\"timestamp\":\"2022-07-14T16:28:57.770+0000\"}},{\"arn\":\"arn:aws:cloudwatch:us-east-1:123456789012:alarm:ServerCpuTooHigh\",\"state\":{\"value\":\"OK\",\"timestamp\":\"2022-07-14T16:28:54.191+0000\"}}]}",
+            "timestamp": "2022-07-22T15:56:14.552+0000"
+        },
+        "configuration": {
+            "alarmRule": "ALARM(ServerCpuTooHigh) OR ALARM(TotalNetworkTrafficTooHigh)",
+            "actionsSuppressor": "ServiceMaintenanceAlarm",
+            "actionsSuppressorWaitPeriod": 120,
+            "actionsSuppressorExtensionPeriod": 180
+        }
+    }
+}

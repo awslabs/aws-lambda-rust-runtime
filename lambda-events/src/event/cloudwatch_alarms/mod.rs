@@ -301,4 +301,19 @@ mod test {
         let reparsed: CloudWatchCompositeAlarm = serde_json::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
+
+    #[test]
+    #[cfg(feature = "cloudwatch_alarms")]
+    fn example_cloudwatch_alarm_composite_with_suppressor_alarm() {
+        let data = include_bytes!("../../fixtures/example-cloudwatch-alarm-composite-with-suppressor-alarm.json");
+        let parsed: CloudWatchCompositeAlarm = serde_json::from_slice(data).unwrap();
+        let state = parsed.alarm_data.state.clone().unwrap();
+        assert_eq!("WaitPeriod", state.actions_suppressed_by.unwrap());
+        assert_eq!("Actions suppressed by WaitPeriod", state.actions_suppressed_reason.unwrap());
+
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: CloudWatchCompositeAlarm = serde_json::from_slice(output.as_bytes()).unwrap();
+        assert_eq!(parsed, reparsed);
+    }
+
 }

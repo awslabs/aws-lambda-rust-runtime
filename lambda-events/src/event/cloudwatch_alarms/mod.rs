@@ -75,6 +75,8 @@ where
     #[serde(default, bound = "")]
     pub reason_data: Option<R>,
     pub timestamp: DateTime<Utc>,
+    pub actions_suppressed_by: Option<String>,
+    pub actions_suppressed_reason: Option<String>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]

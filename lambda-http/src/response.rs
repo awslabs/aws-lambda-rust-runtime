@@ -118,14 +118,12 @@ impl LambdaResponse {
             }),
             #[cfg(feature = "pass_through")]
             RequestOrigin::PassThrough => {
-                let resp = match body {
+                match body {
                     // text body must be a valid json string
                     Some(Body::Text(body)) => {LambdaResponse::PassThrough(serde_json::from_str(&body).unwrap_or_default())},
                     // binary body and other cases return Value::Null
                     _ => LambdaResponse::PassThrough(serde_json::Value::Null),
-                };
-
-                resp
+                }
             }
             #[cfg(not(any(
                 feature = "apigw_rest",

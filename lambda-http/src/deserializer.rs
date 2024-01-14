@@ -40,7 +40,7 @@ impl<'de> Deserialize<'de> for LambdaRequest {
             return Ok(LambdaRequest::WebSocket(res));
         }
         #[cfg(feature = "pass_through")]
-        if PASS_THROUGH_ENABLED == true {
+        if PASS_THROUGH_ENABLED {
             return Ok(LambdaRequest::PassThrough(data.to_string()));
         }
 

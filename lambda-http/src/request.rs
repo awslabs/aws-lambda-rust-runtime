@@ -349,22 +349,20 @@ fn into_websocket_request(ag: ApiGatewayWebsocketProxyRequest) -> http::Request<
 fn into_pass_through_request(data: String) -> http::Request<Body> {
     let mut builder = http::Request::builder();
 
-    let mut headers = builder.headers_mut().unwrap();
+    let headers = builder.headers_mut().unwrap();
     headers.insert("Content-Type", "application/json".parse().unwrap());
 
-    update_xray_trace_id_header(&mut headers);
+    update_xray_trace_id_header(headers);
 
     let raw_path = "/events";
 
-    let req = builder
+    builder
         .method(http::Method::POST)
         .uri(raw_path)
         .extension(RawHttpPath(raw_path.to_string()))
         .extension(RequestContext::PassThrough)
         .body(Body::from(data))
-        .expect("failed to build request");
-
-    req
+        .expect("failed to build request")
 }
 
 #[cfg(any(feature = "apigw_rest", feature = "apigw_http", feature = "apigw_websockets"))]

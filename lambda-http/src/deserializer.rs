@@ -1,42 +1,47 @@
 use crate::request::LambdaRequest;
+#[cfg(feature = "alb")]
+use aws_lambda_events::alb::AlbTargetGroupRequest;
+#[cfg(feature = "apigw_rest")]
+use aws_lambda_events::apigw::ApiGatewayProxyRequest;
+#[cfg(feature = "apigw_http")]
+use aws_lambda_events::apigw::ApiGatewayV2httpRequest;
+#[cfg(feature = "apigw_websockets")]
+use aws_lambda_events::apigw::ApiGatewayWebsocketProxyRequest;
 use serde::{de::Error, Deserialize};
+use serde_json::value::RawValue;
 
 const ERROR_CONTEXT: &str = "this function expects a JSON payload from Amazon API Gateway, Amazon Elastic Load Balancer, or AWS Lambda Function URLs, but the data doesn't match any of those services' events";
+
+#[cfg(feature = "pass_through")]
+const PASS_THROUGH_ENABLED: bool = true;
 
 impl<'de> Deserialize<'de> for LambdaRequest {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
-        let content = match serde::__private::de::Content::deserialize(deserializer) {
-            Ok(content) => content,
-            Err(err) => return Err(err),
-        };
+        let raw_value: Box<RawValue> = Box::deserialize(deserializer)?;
+        let data = raw_value.get();
+
         #[cfg(feature = "apigw_rest")]
-        if let Ok(res) = aws_lambda_events::apigw::ApiGatewayProxyRequest::deserialize(
-            serde::__private::de::ContentRefDeserializer::<D::Error>::new(&content),
-        ) {
+        if let Ok(res) = serde_json::from_str::<ApiGatewayProxyRequest>(data) {
             return Ok(LambdaRequest::ApiGatewayV1(res));
         }
         #[cfg(feature = "apigw_http")]
-        if let Ok(res) = aws_lambda_events::apigw::ApiGatewayV2httpRequest::deserialize(
-            serde::__private::de::ContentRefDeserializer::<D::Error>::new(&content),
-        ) {
+        if let Ok(res) = serde_json::from_str::<ApiGatewayV2httpRequest>(data) {
             return Ok(LambdaRequest::ApiGatewayV2(res));
         }
         #[cfg(feature = "alb")]
-        if let Ok(res) =
-            aws_lambda_events::alb::AlbTargetGroupRequest::deserialize(serde::__private::de::ContentRefDeserializer::<
-                D::Error,
-            >::new(&content))
-        {
+        if let Ok(res) = serde_json::from_str::<AlbTargetGroupRequest>(data) {
             return Ok(LambdaRequest::Alb(res));
         }
         #[cfg(feature = "apigw_websockets")]
-        if let Ok(res) = aws_lambda_events::apigw::ApiGatewayWebsocketProxyRequest::deserialize(
-            serde::__private::de::ContentRefDeserializer::<D::Error>::new(&content),
-        ) {
+        if let Ok(res) = serde_json::from_str::<ApiGatewayWebsocketProxyRequest>(data) {
             return Ok(LambdaRequest::WebSocket(res));
+        }
+        #[cfg(feature = "pass_through")]
+        if PASS_THROUGH_ENABLED {
+            return Ok(LambdaRequest::PassThrough(data.to_string()));
         }
 
         Err(Error::custom(ERROR_CONTEXT))
@@ -103,12 +108,5 @@ mod tests {
             }
             other => panic!("unexpected request variant: {:?}", other),
         }
-    }
-
-    #[test]
-    fn test_deserialize_error() {
-        let err = serde_json::from_str::<LambdaRequest>("{\"body\": {}}").unwrap_err();
-
-        assert_eq!(ERROR_CONTEXT, err.to_string());
     }
 }

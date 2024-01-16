@@ -175,7 +175,7 @@ pub fn custom_authorizer_response(effect: &str, principal: &str, method_arn: &st
 }
 ```
 
-## Passing the Lambda execution context initialization to the handler
+### Passing the Lambda execution context initialization to the handler
 
 One of the [best practices](https://docs.aws.amazon.com/lambda/latest/dg/best-practices.html) is to take advantage of execution environment reuse to improve the performance of your function. Initialize SDK clients and database connections outside the function handler. Subsequent invocations processed by the same instance of your function can reuse these resources. This saves cost by reducing function run time.
 
@@ -229,3 +229,9 @@ pub async fn function_handler(dynamodb_client: &aws_sdk_dynamodb::Client, event:
     Ok(response)
 }
 ```
+
+## Integration with API Gateway stages
+
+When you integrate HTTP Lambda functions with API Gateway stages, the path received in the request will include the stage as the first segment, for example `/production/api/v1`, where `production` is the API Gateway stage.
+
+If you don't want to receive the stage as part of the path, you can set the environment variable `AWS_LAMBDA_HTTP_IGNORE_STAGE_IN_PATH` to `true`, either in your Lambda function configuration, or inside the `main` Rust function. Following the previous example, when this environment variable is prevent, the path that the function receives is `/api/v1`, eliminating the stage from the first segment.

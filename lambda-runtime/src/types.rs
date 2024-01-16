@@ -94,6 +94,20 @@ pub struct Context {
     pub env_config: RefConfig,
 }
 
+impl Default for Context {
+    fn default() -> Context {
+        Context {
+            request_id: "".to_owned(),
+            deadline: 0,
+            invoked_function_arn: "".to_owned(),
+            xray_trace_id: None,
+            client_context: None,
+            identity: None,
+            env_config: std::sync::Arc::new(crate::Config::default()),
+        }
+    }
+}
+
 impl Context {
     /// Create a new [Context] struct based on the fuction configuration
     /// and the incoming request data.

@@ -43,18 +43,24 @@ pub struct EcrScanEventDetailType {
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EcrScanEventFindingSeverityCounts {
+    #[serde(default)]
     #[serde(rename = "CRITICAL")]
-    pub critical: i64,
+    pub critical: Option<i64>,
+    #[serde(default)]
     #[serde(rename = "HIGH")]
-    pub high: i64,
+    pub high: Option<i64>,
+    #[serde(default)]
     #[serde(rename = "MEDIUM")]
-    pub medium: i64,
+    pub medium: Option<i64>,
+    #[serde(default)]
     #[serde(rename = "LOW")]
-    pub low: i64,
+    pub low: Option<i64>,
+    #[serde(default)]
     #[serde(rename = "INFORMATIONAL")]
-    pub informational: i64,
+    pub informational: Option<i64>,
+    #[serde(default)]
     #[serde(rename = "UNDEFINED")]
-    pub undefined: i64,
+    pub undefined: Option<i64>,
 }
 
 #[cfg(test)]
@@ -65,6 +71,16 @@ mod test {
     #[cfg(feature = "ecr_scan")]
     fn example_ecr_image_scan_event() {
         let data = include_bytes!("../../fixtures/example-ecr-image-scan-event.json");
+        let parsed: EcrScanEvent = serde_json::from_slice(data).unwrap();
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: EcrScanEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        assert_eq!(parsed, reparsed);
+    }
+
+    #[test]
+    #[cfg(feature = "ecr_scan")]
+    fn example_ecr_image_scan_event_with_missing_severities() {
+        let data = include_bytes!("../../fixtures/example-ecr-image-scan-event-with-missing-severities.json");
         let parsed: EcrScanEvent = serde_json::from_slice(data).unwrap();
         let output: String = serde_json::to_string(&parsed).unwrap();
         let reparsed: EcrScanEvent = serde_json::from_slice(output.as_bytes()).unwrap();

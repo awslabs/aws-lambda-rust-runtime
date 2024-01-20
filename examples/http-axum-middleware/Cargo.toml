@@ -1,0 +1,18 @@
+[package]
+name = "http-axum-middleware"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = "0.7"
+lambda_http = { path = "../../lambda-http", default-features = false, features = [
+  "apigw_rest",
+] }
+lambda_runtime = { path = "../../lambda-runtime" }
+serde_json = "1.0"
+tokio = { version = "1", features = ["macros"] }
+tracing = { version = "0.1", features = ["log"] }
+tracing-subscriber = { version = "0.3", default-features = false, features = [
+  "fmt",
+] }
+

@@ -17,7 +17,7 @@ We are able to handle requests from:
 
 Thanks to the `Request` type we can seamlessly handle proxy integrations without the worry to specify the specific service type.
 
-There is also an extension for `lambda_http::Request` structs that provide access to [API gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format) and [ALB](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html) features.
+There is also an extension for `lambda_http::Request` structs that provides access to [API gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format) and [ALB](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html) features.
 
 For example some handy extensions:
 
@@ -40,7 +40,7 @@ Here you will find a few examples to handle basic scenarios:
 
 ### Reading a JSON from a body and deserialize into a structure
 
-The code below creates a simple API Gateway proxy (HTTP, REST) that accept in input a JSON payload.
+The code below creates a simple API Gateway proxy (HTTP, REST) that accepts in input a JSON payload.
 
 ```rust
 use lambda_http::{run, http::{StatusCode, Response}, service_fn, Error, IntoResponse, Request, RequestPayloadExt};
@@ -234,4 +234,4 @@ pub async fn function_handler(dynamodb_client: &aws_sdk_dynamodb::Client, event:
 
 When you integrate HTTP Lambda functions with API Gateway stages, the path received in the request will include the stage as the first segment, for example `/production/api/v1`, where `production` is the API Gateway stage.
 
-If you don't want to receive the stage as part of the path, you can set the environment variable `AWS_LAMBDA_HTTP_IGNORE_STAGE_IN_PATH` to `true`, either in your Lambda function configuration, or inside the `main` Rust function. Following the previous example, when this environment variable is prevent, the path that the function receives is `/api/v1`, eliminating the stage from the first segment.
+If you don't want to receive the stage as part of the path, you can set the environment variable `AWS_LAMBDA_HTTP_IGNORE_STAGE_IN_PATH` to `true`, either in your Lambda function configuration, or inside the `main` Rust function. Following the previous example, when this environment variable is present, the path that the function receives is `/api/v1`, eliminating the stage from the first segment.

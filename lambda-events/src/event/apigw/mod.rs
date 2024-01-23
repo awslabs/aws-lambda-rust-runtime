@@ -13,6 +13,7 @@ use std::collections::HashMap;
 /// `ApiGatewayProxyRequest` contains data coming from the API Gateway proxy
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 pub struct ApiGatewayProxyRequest<T1 = Value>
 where
     T1: DeserializeOwned,
@@ -119,6 +120,7 @@ where
 /// `ApiGatewayV2httpRequest` contains data coming from the new HTTP API Gateway
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 pub struct ApiGatewayV2httpRequest {
     #[serde(default, rename = "type")]
     pub kind: Option<String>,
@@ -333,6 +335,7 @@ pub struct ApiGatewayRequestIdentity {
 /// `ApiGatewayWebsocketProxyRequest` contains data coming from the API Gateway proxy
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 pub struct ApiGatewayWebsocketProxyRequest<T1 = Value, T2 = Value>
 where
     T1: DeserializeOwned,

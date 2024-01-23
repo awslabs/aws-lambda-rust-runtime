@@ -13,10 +13,9 @@ use std::collections::HashMap;
 /// `ApiGatewayProxyRequest` contains data coming from the API Gateway proxy
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-#[serde(deny_unknown_fields)]
 pub struct ApiGatewayProxyRequest<T1 = Value>
 where
-    T1: DeserializeOwned,
+    T1: DeserializeOwned + Default,
     T1: Serialize,
 {
     /// The resource path defined in API Gateway
@@ -44,7 +43,6 @@ where
     #[serde(deserialize_with = "deserialize_lambda_map")]
     #[serde(default)]
     pub stage_variables: HashMap<String, String>,
-    #[serde(default)]
     #[serde(bound = "")]
     pub request_context: ApiGatewayProxyRequestContext<T1>,
     #[serde(default)]
@@ -120,7 +118,6 @@ where
 /// `ApiGatewayV2httpRequest` contains data coming from the new HTTP API Gateway
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-#[serde(deny_unknown_fields)]
 pub struct ApiGatewayV2httpRequest {
     #[serde(default, rename = "type")]
     pub kind: Option<String>,
@@ -335,12 +332,11 @@ pub struct ApiGatewayRequestIdentity {
 /// `ApiGatewayWebsocketProxyRequest` contains data coming from the API Gateway proxy
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-#[serde(deny_unknown_fields)]
 pub struct ApiGatewayWebsocketProxyRequest<T1 = Value, T2 = Value>
 where
-    T1: DeserializeOwned,
+    T1: DeserializeOwned + Default,
     T1: Serialize,
-    T2: DeserializeOwned,
+    T2: DeserializeOwned + Default,
     T2: Serialize,
 {
     /// The resource path defined in API Gateway
@@ -370,7 +366,7 @@ where
     #[serde(deserialize_with = "deserialize_lambda_map")]
     #[serde(default)]
     pub stage_variables: HashMap<String, String>,
-    #[serde(bound = "", default)]
+    #[serde(bound = "")]
     pub request_context: ApiGatewayWebsocketProxyRequestContext<T1, T2>,
     #[serde(default)]
     pub body: Option<String>,

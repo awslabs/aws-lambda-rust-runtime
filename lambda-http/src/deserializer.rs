@@ -56,7 +56,7 @@ mod tests {
     fn test_deserialize_apigw_rest() {
         let data = include_bytes!("../../lambda-events/src/fixtures/example-apigw-request.json");
 
-        let req: LambdaRequest = serde_json::from_slice(data).expect("failed to deserialze apigw rest data");
+        let req: LambdaRequest = serde_json::from_slice(data).expect("failed to deserialize apigw rest data");
         match req {
             LambdaRequest::ApiGatewayV1(req) => {
                 assert_eq!("12345678912", req.request_context.account_id.unwrap());
@@ -69,7 +69,7 @@ mod tests {
     fn test_deserialize_apigw_http() {
         let data = include_bytes!("../../lambda-events/src/fixtures/example-apigw-v2-request-iam.json");
 
-        let req: LambdaRequest = serde_json::from_slice(data).expect("failed to deserialze apigw http data");
+        let req: LambdaRequest = serde_json::from_slice(data).expect("failed to deserialize apigw http data");
         match req {
             LambdaRequest::ApiGatewayV2(req) => {
                 assert_eq!("123456789012", req.request_context.account_id.unwrap());
@@ -84,7 +84,7 @@ mod tests {
             "../../lambda-events/src/fixtures/example-alb-lambda-target-request-multivalue-headers.json"
         );
 
-        let req: LambdaRequest = serde_json::from_slice(data).expect("failed to deserialze alb rest data");
+        let req: LambdaRequest = serde_json::from_slice(data).expect("failed to deserialize alb rest data");
         match req {
             LambdaRequest::Alb(req) => {
                 assert_eq!(
@@ -101,10 +101,39 @@ mod tests {
         let data =
             include_bytes!("../../lambda-events/src/fixtures/example-apigw-websocket-request-without-method.json");
 
-        let req: LambdaRequest = serde_json::from_slice(data).expect("failed to deserialze apigw websocket data");
+        let req: LambdaRequest = serde_json::from_slice(data).expect("failed to deserialize apigw websocket data");
         match req {
             LambdaRequest::WebSocket(req) => {
                 assert_eq!("CONNECT", req.request_context.event_type.unwrap());
+            }
+            other => panic!("unexpected request variant: {:?}", other),
+        }
+    }
+
+    #[test]
+    #[cfg(feature = "pass_through")]
+    fn test_deserialize_bedrock_agent() {
+        let data = include_bytes!("../../lambda-events/src/fixtures/example-bedrock-agent-runtime-event.json");
+
+        let req: LambdaRequest =
+            serde_json::from_slice(data).expect("failed to deserialize bedrock agent request data");
+        match req {
+            LambdaRequest::PassThrough(req) => {
+                assert_eq!(String::from_utf8_lossy(data), req);
+            }
+            other => panic!("unexpected request variant: {:?}", other),
+        }
+    }
+
+    #[test]
+    #[cfg(feature = "pass_through")]
+    fn test_deserialize_sqs() {
+        let data = include_bytes!("../../lambda-events/src/fixtures/example-sqs-event.json");
+
+        let req: LambdaRequest = serde_json::from_slice(data).expect("failed to deserialize sqs event data");
+        match req {
+            LambdaRequest::PassThrough(req) => {
+                assert_eq!(String::from_utf8_lossy(data), req);
             }
             other => panic!("unexpected request variant: {:?}", other),
         }

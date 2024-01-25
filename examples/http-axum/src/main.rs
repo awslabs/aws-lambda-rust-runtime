@@ -6,7 +6,8 @@
 //! implementation to the Lambda runtime to run as a Lambda function.  By using Axum instead
 //! of a basic `tower::Service` you get web framework niceties like routing, request component
 //! extraction, validation, etc.
-
+use std::env::set_var;
+use axum::http::StatusCode;
 use lambda_http::{
     run,
     Error,
@@ -35,8 +36,22 @@ async fn post_foo_name(Path(name): Path<String>) -> Json<Value> {
     Json(json!({ "msg": format!("I am POST /foo/:name, name={name}") }))
 }
 
+/// Example on how to return status codes and data from a Axum function
+async fn health_check() -> (StatusCode, &str) {
+    let healthy = false;
+    match health {
+        true => {(StatusCode::OK, "Healthy!")},
+        false => {(StatusCode::INTERNAL_SERVER_ERROR, "Not healthy!")}
+    }
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Error> {
+    // AWS Runtime can ignore Stage Name passed from json event
+    // Remove if you want the first section of the url to be the stage name of the API Gateway
+    // i.e with: `GET /test-stage/todo/id/123` without: `GET /todo/id/123`
+    set_var("AWS_LAMBDA_HTTP_IGNORE_STAGE_IN_PATH", "true");
+    
     // required to enable CloudWatch error logging by the runtime
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::INFO)
@@ -49,7 +64,8 @@ async fn main() -> Result<(), Error> {
     let app = Router::new()
         .route("/", get(root))
         .route("/foo", get(get_foo).post(post_foo))
-        .route("/foo/:name", post(post_foo_name));
+        .route("/foo/:name", post(post_foo_name))
+        .route("/health/", get(health_check));
 
     run(app).await
 }

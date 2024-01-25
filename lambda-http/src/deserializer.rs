@@ -19,13 +19,13 @@ const ERROR_CONTEXT: &str = "this function expects a JSON payload from Amazon AP
 //
 enum RequestType {
     #[cfg(feature = "apigw_rest")]
-    ApiGatewayProxyRequest,
+    ApiGatewayProxy,
     #[cfg(feature = "apigw_http")]
-    ApiGatewayV2httpRequest,
+    ApiGatewayV2http,
     #[cfg(feature = "alb")]
-    AlbTargetGroupRequest,
+    AlbTargetGroup,
     #[cfg(feature = "apigw_websockets")]
-    ApiGatewayWebsocketProxyRequest
+    ApiGatewayWebsocketProxy
 }
 
 impl RequestType {
@@ -41,13 +41,13 @@ impl RequestType {
     //
     fn from_value(value: &Value) -> Option<Self> {
         #[cfg(feature = "apigw_websockets")]
-        if value.pointer("/requestContext/connectedAt").is_some() { return Some(Self::ApiGatewayWebsocketProxyRequest) }
+        if value.pointer("/requestContext/connectedAt").is_some() { return Some(Self::ApiGatewayWebsocketProxy) }
         #[cfg(feature = "apigw_rest")]
-        if value.pointer("/requestContext/httpMethod").is_some() { return Some(Self::ApiGatewayProxyRequest) }
+        if value.pointer("/requestContext/httpMethod").is_some() { return Some(Self::ApiGatewayProxy) }
         #[cfg(feature = "apigw_http")]
-        if value.pointer("/requestContext/http").is_some() { return Some(Self::ApiGatewayV2httpRequest) }
+        if value.pointer("/requestContext/http").is_some() { return Some(Self::ApiGatewayV2http) }
         #[cfg(feature = "alb")]
-        if value.pointer("/requestContext/elb").is_some() { return Some(Self::AlbTargetGroupRequest) }
+        if value.pointer("/requestContext/elb").is_some() { return Some(Self::AlbTargetGroup) }
         None
     }
 }
@@ -64,17 +64,17 @@ impl<'de> Deserialize<'de> for LambdaRequest {
         let data = Value::deserialize(deserializer)?;
         match RequestType::from_value(&data) {
             #[cfg(feature = "apigw_rest")]
-            Some(RequestType::ApiGatewayProxyRequest) => serde_json::from_value::<ApiGatewayProxyRequest>(data)
-                .map(|r| LambdaRequest::ApiGatewayV1(r)),
+            Some(RequestType::ApiGatewayProxy) => serde_json::from_value::<ApiGatewayProxyRequest>(data)
+                .map(LambdaRequest::ApiGatewayV1),
             #[cfg(feature = "apigw_http")]
-            Some(RequestType::ApiGatewayV2httpRequest) => serde_json::from_value::<ApiGatewayV2httpRequest>(data)
-                .map(|r| LambdaRequest::ApiGatewayV2(r)),
+            Some(RequestType::ApiGatewayV2http) => serde_json::from_value::<ApiGatewayV2httpRequest>(data)
+                .map(LambdaRequest::ApiGatewayV2),
             #[cfg(feature = "alb")]
-            Some(RequestType::AlbTargetGroupRequest) => serde_json::from_value::<AlbTargetGroupRequest>(data)
-                .map(|r| LambdaRequest::Alb(r)),
+            Some(RequestType::AlbTargetGroup) => serde_json::from_value::<AlbTargetGroupRequest>(data)
+                .map(LambdaRequest::Alb),
             #[cfg(feature = "apigw_websockets")]
-            Some(RequestType::ApiGatewayWebsocketProxyRequest) => serde_json::from_value::<ApiGatewayWebsocketProxyRequest>(data)
-                .map(|r| LambdaRequest::WebSocket(r)),
+            Some(RequestType::ApiGatewayWebsocketProxy) => serde_json::from_value::<ApiGatewayWebsocketProxyRequest>(data)
+                .map(LambdaRequest::WebSocket),
             None => {
                 #[cfg(feature = "pass_through")]
                 if PASS_THROUGH_ENABLED {

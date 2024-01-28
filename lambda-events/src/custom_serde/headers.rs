@@ -187,4 +187,28 @@ mod tests {
         let decoded: Test = serde_json::from_value(data).unwrap();
         assert!(decoded.headers.is_empty());
     }
+
+    #[test]
+    fn test_serialize_utf8_headers() {
+        #[derive(Deserialize, Serialize)]
+        struct Test {
+            #[serde(deserialize_with = "deserialize_headers", default)]
+            #[serde(serialize_with = "serialize_multi_value_headers")]
+            headers: HeaderMap,
+        }
+
+        let content_disposition =
+            "inline; filename=\"Schillers schönste Szenenanweisungen -Kabale und Liebe.mp4.avif\"";
+        let data = serde_json::json!({
+            "headers": {
+                "Content-Disposition": content_disposition
+            }
+        });
+        let decoded: Test = serde_json::from_value(data).unwrap();
+        assert_eq!(content_disposition, decoded.headers.get("Content-Disposition").unwrap());
+
+        let recoded = serde_json::to_value(decoded).unwrap();
+        let decoded: Test = serde_json::from_value(recoded).unwrap();
+        assert_eq!(content_disposition, decoded.headers.get("Content-Disposition").unwrap());
+    }
 }

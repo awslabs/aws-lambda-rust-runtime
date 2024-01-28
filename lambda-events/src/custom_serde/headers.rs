@@ -13,7 +13,7 @@ where
     for key in headers.keys() {
         let mut map_values = Vec::new();
         for value in headers.get_all(key) {
-            map_values.push(value.to_str().map_err(S::Error::custom)?)
+            map_values.push(String::from_utf8(value.as_bytes().to_vec()).map_err(S::Error::custom)?)
         }
         map.serialize_entry(key.as_str(), &map_values)?;
     }
@@ -27,8 +27,8 @@ where
 {
     let mut map = serializer.serialize_map(Some(headers.keys_len()))?;
     for key in headers.keys() {
-        let map_value = headers[key].to_str().map_err(S::Error::custom)?;
-        map.serialize_entry(key.as_str(), map_value)?;
+        let map_value = String::from_utf8(headers[key].as_bytes().to_vec()).map_err(S::Error::custom)?;
+        map.serialize_entry(key.as_str(), &map_value)?;
     }
     map.end()
 }

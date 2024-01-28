@@ -6,19 +6,16 @@
 //! implementation to the Lambda runtime to run as a Lambda function.  By using Axum instead
 //! of a basic `tower::Service` you get web framework niceties like routing, request component
 //! extraction, validation, etc.
-use std::env::set_var;
 use axum::http::StatusCode;
-use lambda_http::{
-    run,
-    Error,
-};
 use axum::{
     extract::Path,
     response::Json,
-    Router,
     routing::{get, post},
+    Router,
 };
-use serde_json::{Value, json};
+use lambda_http::{run, Error};
+use serde_json::{json, Value};
+use std::env::set_var;
 
 async fn root() -> Json<Value> {
     Json(json!({ "msg": "I am GET /" }))
@@ -36,12 +33,12 @@ async fn post_foo_name(Path(name): Path<String>) -> Json<Value> {
     Json(json!({ "msg": format!("I am POST /foo/:name, name={name}") }))
 }
 
-/// Example on how to return status codes and data from a Axum function
-async fn health_check() -> (StatusCode, &str) {
+/// Example on how to return status codes and data from an Axum function
+async fn health_check() -> (StatusCode, &'static str) {
     let healthy = false;
-    match health {
-        true => {(StatusCode::OK, "Healthy!")},
-        false => {(StatusCode::INTERNAL_SERVER_ERROR, "Not healthy!")}
+    match healthy {
+        true => (StatusCode::OK, "Healthy!"),
+        false => (StatusCode::INTERNAL_SERVER_ERROR, "Not healthy!"),
     }
 }
 
@@ -51,7 +48,7 @@ async fn main() -> Result<(), Error> {
     // Remove if you want the first section of the url to be the stage name of the API Gateway
     // i.e with: `GET /test-stage/todo/id/123` without: `GET /todo/id/123`
     set_var("AWS_LAMBDA_HTTP_IGNORE_STAGE_IN_PATH", "true");
-    
+
     // required to enable CloudWatch error logging by the runtime
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::INFO)

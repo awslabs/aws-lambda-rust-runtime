@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "triggerSource": "PreTokenGen",
+  "triggerSource": "TokenGeneration_HostedAuth",
   "region": "region",
   "userPoolId": "userPoolId",
   "userName": "userName",
@@ -15,7 +15,11 @@
     },
     "groupConfiguration": {
       "groupsToOverride": ["group-A", "group-B", "group-C"],
-      "iamRolesToOverride": ["arn:aws:iam::XXXXXXXXXXXX:role/sns_callerA", "arn:aws:iam::XXXXXXXXX:role/sns_callerB", "arn:aws:iam::XXXXXXXXXX:role/sns_callerC"],
+      "iamRolesToOverride": [
+        "arn:aws:iam::XXXXXXXXXXXX:role/sns_callerA",
+        "arn:aws:iam::XXXXXXXXX:role/sns_callerB",
+        "arn:aws:iam::XXXXXXXXXX:role/sns_callerC"
+      ],
       "preferredRole": "arn:aws:iam::XXXXXXXXXXX:role/sns_caller"
     },
     "clientMetadata": {
@@ -31,10 +35,13 @@
       "claimsToSuppress": ["email"],
       "groupOverrideDetails": {
         "groupsToOverride": ["group-A", "group-B", "group-C"],
-        "iamRolesToOverride": ["arn:aws:iam::XXXXXXXXXXXX:role/sns_callerA", "arn:aws:iam::XXXXXXXXX:role/sns_callerB", "arn:aws:iam::XXXXXXXXXX:role/sns_callerC"],
+        "iamRolesToOverride": [
+          "arn:aws:iam::XXXXXXXXXXXX:role/sns_callerA",
+          "arn:aws:iam::XXXXXXXXX:role/sns_callerB",
+          "arn:aws:iam::XXXXXXXXXX:role/sns_callerC"
+        ],
         "preferredRole": "arn:aws:iam::XXXXXXXXXXX:role/sns_caller"
       }
     }
   }
 }
-

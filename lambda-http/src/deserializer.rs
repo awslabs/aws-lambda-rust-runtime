@@ -95,7 +95,7 @@ mod tests {
     fn test_deserialize_sam_http() {
         let data = include_bytes!("../../lambda-events/src/fixtures/example-apigw-sam-http-request.json");
 
-        let req: LambdaRequest = serde_json::from_slice(data).expect("failed to deserialize SAM rest data");
+        let req: LambdaRequest = serde_json::from_slice(data).expect("failed to deserialize SAM http data");
         match req {
             LambdaRequest::ApiGatewayV2(req) => {
                 assert_eq!("123456789012", req.request_context.account_id.unwrap());

@@ -193,8 +193,11 @@ mod tests {
         #[derive(Deserialize, Serialize)]
         struct Test {
             #[serde(deserialize_with = "deserialize_headers", default)]
+            #[serde(serialize_with = "serialize_headers")]
+            pub headers: HeaderMap,
+            #[serde(deserialize_with = "deserialize_headers", default)]
             #[serde(serialize_with = "serialize_multi_value_headers")]
-            headers: HeaderMap,
+            pub multi_value_headers: HeaderMap,
         }
 
         let content_disposition =
@@ -202,13 +205,24 @@ mod tests {
         let data = serde_json::json!({
             "headers": {
                 "Content-Disposition": content_disposition
+            },
+            "multi_value_headers": {
+                "Content-Disposition": content_disposition
             }
         });
         let decoded: Test = serde_json::from_value(data).unwrap();
         assert_eq!(content_disposition, decoded.headers.get("Content-Disposition").unwrap());
+        assert_eq!(
+            content_disposition,
+            decoded.multi_value_headers.get("Content-Disposition").unwrap()
+        );
 
         let recoded = serde_json::to_value(decoded).unwrap();
         let decoded: Test = serde_json::from_value(recoded).unwrap();
         assert_eq!(content_disposition, decoded.headers.get("Content-Disposition").unwrap());
+        assert_eq!(
+            content_disposition,
+            decoded.multi_value_headers.get("Content-Disposition").unwrap()
+        );
     }
 }

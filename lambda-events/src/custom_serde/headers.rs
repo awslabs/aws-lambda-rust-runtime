@@ -13,7 +13,7 @@ where
     for key in headers.keys() {
         let mut map_values = Vec::new();
         for value in headers.get_all(key) {
-            map_values.push(value.to_str().map_err(S::Error::custom)?)
+            map_values.push(String::from_utf8(value.as_bytes().to_vec()).map_err(S::Error::custom)?)
         }
         map.serialize_entry(key.as_str(), &map_values)?;
     }
@@ -27,8 +27,8 @@ where
 {
     let mut map = serializer.serialize_map(Some(headers.keys_len()))?;
     for key in headers.keys() {
-        let map_value = headers[key].to_str().map_err(S::Error::custom)?;
-        map.serialize_entry(key.as_str(), map_value)?;
+        let map_value = String::from_utf8(headers[key].as_bytes().to_vec()).map_err(S::Error::custom)?;
+        map.serialize_entry(key.as_str(), &map_value)?;
     }
     map.end()
 }
@@ -186,5 +186,43 @@ mod tests {
 
         let decoded: Test = serde_json::from_value(data).unwrap();
         assert!(decoded.headers.is_empty());
+    }
+
+    #[test]
+    fn test_serialize_utf8_headers() {
+        #[derive(Deserialize, Serialize)]
+        struct Test {
+            #[serde(deserialize_with = "deserialize_headers", default)]
+            #[serde(serialize_with = "serialize_headers")]
+            pub headers: HeaderMap,
+            #[serde(deserialize_with = "deserialize_headers", default)]
+            #[serde(serialize_with = "serialize_multi_value_headers")]
+            pub multi_value_headers: HeaderMap,
+        }
+
+        let content_disposition =
+            "inline; filename=\"Schillers schönste Szenenanweisungen -Kabale und Liebe.mp4.avif\"";
+        let data = serde_json::json!({
+            "headers": {
+                "Content-Disposition": content_disposition
+            },
+            "multi_value_headers": {
+                "Content-Disposition": content_disposition
+            }
+        });
+        let decoded: Test = serde_json::from_value(data).unwrap();
+        assert_eq!(content_disposition, decoded.headers.get("Content-Disposition").unwrap());
+        assert_eq!(
+            content_disposition,
+            decoded.multi_value_headers.get("Content-Disposition").unwrap()
+        );
+
+        let recoded = serde_json::to_value(decoded).unwrap();
+        let decoded: Test = serde_json::from_value(recoded).unwrap();
+        assert_eq!(content_disposition, decoded.headers.get("Content-Disposition").unwrap());
+        assert_eq!(
+            content_disposition,
+            decoded.multi_value_headers.get("Content-Disposition").unwrap()
+        );
     }
 }

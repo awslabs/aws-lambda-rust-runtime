@@ -44,9 +44,20 @@ pub struct CognitoDatasetRecord {
 pub struct CognitoEventUserPoolsPreSignup {
     #[serde(rename = "CognitoEventUserPoolsHeader")]
     #[serde(flatten)]
-    pub cognito_event_user_pools_header: CognitoEventUserPoolsHeader,
+    pub cognito_event_user_pools_header: CognitoEventUserPoolsHeader<CognitoEventUserPoolsPreSignupTriggerSource>,
     pub request: CognitoEventUserPoolsPreSignupRequest,
     pub response: CognitoEventUserPoolsPreSignupResponse,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
+pub enum CognitoEventUserPoolsPreSignupTriggerSource {
+    #[serde(rename = "PreSignUp_SignUp")]
+    #[default]
+    SignUp,
+    #[serde(rename = "PreSignUp_AdminCreateUser")]
+    AdminCreateUser,
+    #[serde(rename = "PreSignUp_ExternalProvider")]
+    ExternalProvider,
 }
 
 /// `CognitoEventUserPoolsPreAuthentication` is sent by AWS Cognito User Pools when a user submits their information
@@ -56,9 +67,17 @@ pub struct CognitoEventUserPoolsPreSignup {
 pub struct CognitoEventUserPoolsPreAuthentication {
     #[serde(rename = "CognitoEventUserPoolsHeader")]
     #[serde(flatten)]
-    pub cognito_event_user_pools_header: CognitoEventUserPoolsHeader,
+    pub cognito_event_user_pools_header:
+        CognitoEventUserPoolsHeader<CognitoEventUserPoolsPreAuthenticationTriggerSource>,
     pub request: CognitoEventUserPoolsPreAuthenticationRequest,
     pub response: CognitoEventUserPoolsPreAuthenticationResponse,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
+pub enum CognitoEventUserPoolsPreAuthenticationTriggerSource {
+    #[serde(rename = "PreAuthentication_Authentication")]
+    #[default]
+    Authentication,
 }
 
 /// `CognitoEventUserPoolsPostConfirmation` is sent by AWS Cognito User Pools after a user is confirmed,
@@ -68,9 +87,19 @@ pub struct CognitoEventUserPoolsPreAuthentication {
 pub struct CognitoEventUserPoolsPostConfirmation {
     #[serde(rename = "CognitoEventUserPoolsHeader")]
     #[serde(flatten)]
-    pub cognito_event_user_pools_header: CognitoEventUserPoolsHeader,
+    pub cognito_event_user_pools_header:
+        CognitoEventUserPoolsHeader<CognitoEventUserPoolsPostConfirmationTriggerSource>,
     pub request: CognitoEventUserPoolsPostConfirmationRequest,
     pub response: CognitoEventUserPoolsPostConfirmationResponse,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
+pub enum CognitoEventUserPoolsPostConfirmationTriggerSource {
+    #[serde(rename = "PostConfirmation_ConfirmForgotPassword")]
+    ConfirmForgotPassword,
+    #[serde(rename = "PostConfirmation_ConfirmSignUp")]
+    #[default]
+    ConfirmSignUp,
 }
 
 /// `CognitoEventUserPoolsPreTokenGen` is sent by AWS Cognito User Pools when a user attempts to retrieve
@@ -80,9 +109,24 @@ pub struct CognitoEventUserPoolsPostConfirmation {
 pub struct CognitoEventUserPoolsPreTokenGen {
     #[serde(rename = "CognitoEventUserPoolsHeader")]
     #[serde(flatten)]
-    pub cognito_event_user_pools_header: CognitoEventUserPoolsHeader,
+    pub cognito_event_user_pools_header: CognitoEventUserPoolsHeader<CognitoEventUserPoolsPreTokenGenTriggerSource>,
     pub request: CognitoEventUserPoolsPreTokenGenRequest,
     pub response: CognitoEventUserPoolsPreTokenGenResponse,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
+pub enum CognitoEventUserPoolsPreTokenGenTriggerSource {
+    #[serde(rename = "TokenGeneration_HostedAuth")]
+    HostedAuth,
+    #[serde(rename = "TokenGeneration_Authentication")]
+    #[default]
+    Authentication,
+    #[serde(rename = "TokenGeneration_NewPasswordChallenge")]
+    NewPasswordChallenge,
+    #[serde(rename = "TokenGeneration_AuthenticateDevice")]
+    AuthenticateDevice,
+    #[serde(rename = "TokenGeneration_RefreshTokens")]
+    RefreshTokens,
 }
 
 /// `CognitoEventUserPoolsPostAuthentication` is sent by AWS Cognito User Pools after a user is authenticated,
@@ -92,9 +136,17 @@ pub struct CognitoEventUserPoolsPreTokenGen {
 pub struct CognitoEventUserPoolsPostAuthentication {
     #[serde(rename = "CognitoEventUserPoolsHeader")]
     #[serde(flatten)]
-    pub cognito_event_user_pools_header: CognitoEventUserPoolsHeader,
+    pub cognito_event_user_pools_header:
+        CognitoEventUserPoolsHeader<CognitoEventUserPoolsPostAuthenticationTriggerSource>,
     pub request: CognitoEventUserPoolsPostAuthenticationRequest,
     pub response: CognitoEventUserPoolsPostAuthenticationResponse,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
+pub enum CognitoEventUserPoolsPostAuthenticationTriggerSource {
+    #[serde(rename = "PostAuthentication_Authentication")]
+    #[default]
+    Authentication,
 }
 
 /// `CognitoEventUserPoolsMigrateUser` is sent by AWS Cognito User Pools when a user does not exist in the
@@ -104,11 +156,20 @@ pub struct CognitoEventUserPoolsPostAuthentication {
 pub struct CognitoEventUserPoolsMigrateUser {
     #[serde(rename = "CognitoEventUserPoolsHeader")]
     #[serde(flatten)]
-    pub cognito_event_user_pools_header: CognitoEventUserPoolsHeader,
+    pub cognito_event_user_pools_header: CognitoEventUserPoolsHeader<CognitoEventUserPoolsMigrateUserTriggerSource>,
     #[serde(rename = "request")]
     pub cognito_event_user_pools_migrate_user_request: CognitoEventUserPoolsMigrateUserRequest,
     #[serde(rename = "response")]
     pub cognito_event_user_pools_migrate_user_response: CognitoEventUserPoolsMigrateUserResponse,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
+pub enum CognitoEventUserPoolsMigrateUserTriggerSource {
+    #[serde(rename = "UserMigration_Authentication")]
+    #[default]
+    Authentication,
+    #[serde(rename = "UserMigration_ForgotPassword")]
+    ForgotPassword,
 }
 
 /// `CognitoEventUserPoolsCallerContext` contains information about the caller
@@ -125,11 +186,11 @@ pub struct CognitoEventUserPoolsCallerContext {
 /// `CognitoEventUserPoolsHeader` contains common data from events sent by AWS Cognito User Pools
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct CognitoEventUserPoolsHeader {
+pub struct CognitoEventUserPoolsHeader<T> {
     #[serde(default)]
     pub version: Option<String>,
     #[serde(default)]
-    pub trigger_source: Option<String>,
+    pub trigger_source: Option<T>,
     #[serde(default)]
     pub region: Option<String>,
     #[serde(default)]
@@ -220,7 +281,7 @@ pub struct CognitoEventUserPoolsPreTokenGenResponse {
 pub struct CognitoEventUserPoolsPreTokenGenV2 {
     #[serde(rename = "CognitoEventUserPoolsHeader")]
     #[serde(flatten)]
-    pub cognito_event_user_pools_header: CognitoEventUserPoolsHeader,
+    pub cognito_event_user_pools_header: CognitoEventUserPoolsHeader<CognitoEventUserPoolsPreTokenGenTriggerSource>,
     pub request: CognitoEventUserPoolsPreTokenGenRequestV2,
     pub response: CognitoEventUserPoolsPreTokenGenResponseV2,
 }
@@ -384,9 +445,17 @@ pub struct CognitoEventUserPoolsDefineAuthChallengeResponse {
 pub struct CognitoEventUserPoolsDefineAuthChallenge {
     #[serde(rename = "CognitoEventUserPoolsHeader")]
     #[serde(flatten)]
-    pub cognito_event_user_pools_header: CognitoEventUserPoolsHeader,
+    pub cognito_event_user_pools_header:
+        CognitoEventUserPoolsHeader<CognitoEventUserPoolsDefineAuthChallengeTriggerSource>,
     pub request: CognitoEventUserPoolsDefineAuthChallengeRequest,
     pub response: CognitoEventUserPoolsDefineAuthChallengeResponse,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
+pub enum CognitoEventUserPoolsDefineAuthChallengeTriggerSource {
+    #[serde(rename = "DefineAuthChallenge_Authentication")]
+    #[default]
+    Authentication,
 }
 
 /// `CognitoEventUserPoolsCreateAuthChallengeRequest` defines create auth challenge request parameters
@@ -426,9 +495,17 @@ pub struct CognitoEventUserPoolsCreateAuthChallengeResponse {
 pub struct CognitoEventUserPoolsCreateAuthChallenge {
     #[serde(rename = "CognitoEventUserPoolsHeader")]
     #[serde(flatten)]
-    pub cognito_event_user_pools_header: CognitoEventUserPoolsHeader,
+    pub cognito_event_user_pools_header:
+        CognitoEventUserPoolsHeader<CognitoEventUserPoolsCreateAuthChallengeTriggerSource>,
     pub request: CognitoEventUserPoolsCreateAuthChallengeRequest,
     pub response: CognitoEventUserPoolsCreateAuthChallengeResponse,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
+pub enum CognitoEventUserPoolsCreateAuthChallengeTriggerSource {
+    #[serde(rename = "CreateAuthChallenge_Authentication")]
+    #[default]
+    Authentication,
 }
 
 /// `CognitoEventUserPoolsVerifyAuthChallengeRequest` defines verify auth challenge request parameters
@@ -469,9 +546,17 @@ pub struct CognitoEventUserPoolsVerifyAuthChallengeResponse {
 pub struct CognitoEventUserPoolsVerifyAuthChallenge {
     #[serde(rename = "CognitoEventUserPoolsHeader")]
     #[serde(flatten)]
-    pub cognito_event_user_pools_header: CognitoEventUserPoolsHeader,
+    pub cognito_event_user_pools_header:
+        CognitoEventUserPoolsHeader<CognitoEventUserPoolsVerifyAuthChallengeTriggerSource>,
     pub request: CognitoEventUserPoolsVerifyAuthChallengeRequest,
     pub response: CognitoEventUserPoolsVerifyAuthChallengeResponse,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
+pub enum CognitoEventUserPoolsVerifyAuthChallengeTriggerSource {
+    #[serde(rename = "VerifyAuthChallengeResponse_Authentication")]
+    #[default]
+    Authentication,
 }
 
 /// `CognitoEventUserPoolsCustomMessage` is sent by AWS Cognito User Pools before a verification or MFA message is sent,
@@ -481,9 +566,28 @@ pub struct CognitoEventUserPoolsVerifyAuthChallenge {
 pub struct CognitoEventUserPoolsCustomMessage {
     #[serde(rename = "CognitoEventUserPoolsHeader")]
     #[serde(flatten)]
-    pub cognito_event_user_pools_header: CognitoEventUserPoolsHeader,
+    pub cognito_event_user_pools_header: CognitoEventUserPoolsHeader<CognitoEventUserPoolsCustomMessageTriggerSource>,
     pub request: CognitoEventUserPoolsCustomMessageRequest,
     pub response: CognitoEventUserPoolsCustomMessageResponse,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
+pub enum CognitoEventUserPoolsCustomMessageTriggerSource {
+    #[serde(rename = "CustomMessage_SignUp")]
+    #[default]
+    SignUp,
+    #[serde(rename = "CustomMessage_AdminCreateUser")]
+    AdminCreateUser,
+    #[serde(rename = "CustomMessage_ResendCode")]
+    ResendCode,
+    #[serde(rename = "CustomMessage_ForgotPassword")]
+    ForgotPassword,
+    #[serde(rename = "CustomMessage_UpdateUserAttribute")]
+    UpdateUserAttribute,
+    #[serde(rename = "CustomMessage_VerifyUserAttribute")]
+    VerifyUserAttribute,
+    #[serde(rename = "CustomMessage_Authentication")]
+    Authentication,
 }
 
 /// `CognitoEventUserPoolsCustomMessageRequest` contains the request portion of a CustomMessage event
@@ -734,5 +838,180 @@ mod test {
         let output: String = serde_json::to_string(&parsed).unwrap();
         let reparsed: CognitoEventUserPoolsVerifyAuthChallenge = serde_json::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
+    }
+}
+
+#[cfg(test)]
+#[cfg(feature = "cognito")]
+mod trigger_source_tests {
+    use super::*;
+
+    fn gen_header(trigger_source: &str) -> String {
+        format!(
+            r#"
+{{
+    "version": "1",
+    "triggerSource": "{trigger_source}",
+    "region": "region",
+    "userPoolId": "userPoolId",
+    "userName": "userName",
+    "callerContext": {{
+        "awsSdkVersion": "calling aws sdk with version",
+        "clientId": "apps client id"
+    }}
+}}"#
+        )
+    }
+
+    #[test]
+    fn pre_sign_up() {
+        let possible_triggers = [
+            "PreSignUp_AdminCreateUser",
+            "PreSignUp_AdminCreateUser",
+            "PreSignUp_ExternalProvider",
+        ];
+        possible_triggers.into_iter().for_each(|trigger| {
+            let header = gen_header(trigger);
+            let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsPreSignupTriggerSource> =
+                serde_json::from_str(&header).unwrap();
+            let output: String = serde_json::to_string(&parsed).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> = serde_json::from_slice(output.as_bytes()).unwrap();
+            assert_eq!(parsed, reparsed);
+        });
+    }
+
+    #[test]
+    fn pre_authentication() {
+        let possible_triggers = ["PreAuthentication_Authentication"];
+        possible_triggers.into_iter().for_each(|trigger| {
+            let header = gen_header(trigger);
+            let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsPreAuthenticationTriggerSource> =
+                serde_json::from_str(&header).unwrap();
+            let output: String = serde_json::to_string(&parsed).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> = serde_json::from_slice(output.as_bytes()).unwrap();
+            assert_eq!(parsed, reparsed);
+        });
+    }
+    #[test]
+    fn post_confirmation() {
+        let possible_triggers = [
+            "PostConfirmation_ConfirmForgotPassword",
+            "PostConfirmation_ConfirmSignUp",
+        ];
+
+        possible_triggers.into_iter().for_each(|trigger| {
+            let header = gen_header(trigger);
+            let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsPostConfirmationTriggerSource> =
+                serde_json::from_str(&header).unwrap();
+            let output: String = serde_json::to_string(&parsed).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> = serde_json::from_slice(output.as_bytes()).unwrap();
+            assert_eq!(parsed, reparsed);
+        });
+    }
+    #[test]
+    fn post_authentication() {
+        let possible_triggers = ["PostAuthentication_Authentication"];
+
+        possible_triggers.into_iter().for_each(|trigger| {
+            let header = gen_header(trigger);
+            let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsPostAuthenticationTriggerSource> =
+                serde_json::from_str(&header).unwrap();
+            let output: String = serde_json::to_string(&parsed).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> = serde_json::from_slice(output.as_bytes()).unwrap();
+            assert_eq!(parsed, reparsed);
+        });
+    }
+    #[test]
+    fn define_auth_challenge() {
+        let possible_triggers = ["DefineAuthChallenge_Authentication"];
+
+        possible_triggers.into_iter().for_each(|trigger| {
+            let header = gen_header(trigger);
+            let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsDefineAuthChallengeTriggerSource> =
+                serde_json::from_str(&header).unwrap();
+            let output: String = serde_json::to_string(&parsed).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> = serde_json::from_slice(output.as_bytes()).unwrap();
+            assert_eq!(parsed, reparsed);
+        });
+    }
+
+    #[test]
+    fn create_auth_challenge() {
+        let possible_triggers = ["CreateAuthChallenge_Authentication"];
+
+        possible_triggers.into_iter().for_each(|trigger| {
+            let header = gen_header(trigger);
+            let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsCreateAuthChallengeTriggerSource> =
+                serde_json::from_str(&header).unwrap();
+            let output: String = serde_json::to_string(&parsed).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> = serde_json::from_slice(output.as_bytes()).unwrap();
+            assert_eq!(parsed, reparsed);
+        });
+    }
+    #[test]
+    fn verify_auth_challenge() {
+        let possible_triggers = ["VerifyAuthChallengeResponse_Authentication"];
+
+        possible_triggers.into_iter().for_each(|trigger| {
+            let header = gen_header(trigger);
+            let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsVerifyAuthChallengeTriggerSource> =
+                serde_json::from_str(&header).unwrap();
+            let output: String = serde_json::to_string(&parsed).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> = serde_json::from_slice(output.as_bytes()).unwrap();
+            assert_eq!(parsed, reparsed);
+        });
+    }
+    #[test]
+    fn pre_token_generation() {
+        let possible_triggers = [
+            "TokenGeneration_HostedAuth",
+            "TokenGeneration_Authentication",
+            "TokenGeneration_NewPasswordChallenge",
+            "TokenGeneration_AuthenticateDevice",
+            "TokenGeneration_RefreshTokens",
+        ];
+
+        possible_triggers.into_iter().for_each(|trigger| {
+            let header = gen_header(trigger);
+            let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsPreTokenGenTriggerSource> =
+                serde_json::from_str(&header).unwrap();
+            let output: String = serde_json::to_string(&parsed).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> = serde_json::from_slice(output.as_bytes()).unwrap();
+            assert_eq!(parsed, reparsed);
+        });
+    }
+    #[test]
+    fn user_migration() {
+        let possible_triggers = ["UserMigration_Authentication", "UserMigration_ForgotPassword"];
+
+        possible_triggers.into_iter().for_each(|trigger| {
+            let header = gen_header(trigger);
+            let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsMigrateUserTriggerSource> =
+                serde_json::from_str(&header).unwrap();
+            let output: String = serde_json::to_string(&parsed).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> = serde_json::from_slice(output.as_bytes()).unwrap();
+            assert_eq!(parsed, reparsed);
+        });
+    }
+    #[test]
+    fn custom_message() {
+        let possible_triggers = [
+            "CustomMessage_SignUp",
+            "CustomMessage_AdminCreateUser",
+            "CustomMessage_ResendCode",
+            "CustomMessage_ForgotPassword",
+            "CustomMessage_UpdateUserAttribute",
+            "CustomMessage_VerifyUserAttribute",
+            "CustomMessage_Authentication",
+        ];
+
+        possible_triggers.into_iter().for_each(|trigger| {
+            let header = gen_header(trigger);
+            let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsCustomMessageTriggerSource> =
+                serde_json::from_str(&header).unwrap();
+            let output: String = serde_json::to_string(&parsed).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> = serde_json::from_slice(output.as_bytes()).unwrap();
+            assert_eq!(parsed, reparsed);
+        });
     }
 }

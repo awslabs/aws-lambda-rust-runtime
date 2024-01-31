@@ -570,6 +570,9 @@ mod tests {
             matches!(req_context, &RequestContext::ApiGatewayV2(_)),
             "expected ApiGatewayV2 context, got {req_context:?}"
         );
+
+        let (parts, _) = req.into_parts();
+        assert_eq!("https://id.execute-api.us-east-1.amazonaws.com/my/path?parameter1=value1&parameter1=value2&parameter2=value", parts.uri.to_string());
     }
 
     #[test]
@@ -699,12 +702,16 @@ mod tests {
             .is_empty());
 
         // test RequestExt#query_string_parameters_ref does the right thing
-        assert_eq!(
-            request
-                .query_string_parameters_ref()
-                .and_then(|params| params.all("multivalueName")),
-            Some(vec!["you", "me"])
-        );
+        let params = request.query_string_parameters();
+        assert_eq!(Some(vec!["you", "me"]), params.all("multiValueName"));
+        assert_eq!(Some(vec!["me"]), params.all("name"));
+
+        let query = request.uri().query().unwrap();
+        assert!(query.contains("name=me"));
+        assert!(query.contains("multiValueName=you&multiValueName=me"));
+        let (parts, _) = request.into_parts();
+        assert!(parts.uri.to_string().contains("name=me"));
+        assert!(parts.uri.to_string().contains("multiValueName=you&multiValueName=me"));
     }
 
     #[test]
@@ -724,12 +731,13 @@ mod tests {
             .is_empty());
 
         // test RequestExt#query_string_parameters_ref does the right thing
-        assert_eq!(
-            request
-                .query_string_parameters_ref()
-                .and_then(|params| params.all("myKey")),
-            Some(vec!["val1", "val2"])
-        );
+        let params = request.query_string_parameters();
+        assert_eq!(Some(vec!["val1", "val2"]), params.all("myKey"));
+        assert_eq!(Some(vec!["val3", "val4"]), params.all("myOtherKey"));
+
+        let query = request.uri().query().unwrap();
+        assert!(query.contains("myKey=val1&myKey=val2"));
+        assert!(query.contains("myOtherKey=val3&myOtherKey=val4"));
     }
 
     #[test]
@@ -844,5 +852,72 @@ mod tests {
         assert_eq!("/path", apigw_path_with_stage(&Some("$default".into()), "/path"));
         assert_eq!("/Prod/path", apigw_path_with_stage(&Some("Prod".into()), "/Prod/path"));
         assert_eq!("/Prod/path", apigw_path_with_stage(&Some("Prod".into()), "/path"));
+    }
+
+    #[tokio::test]
+    #[cfg(feature = "apigw_rest")]
+    async fn test_axum_query_extractor_apigw_rest() {
+        use axum_core::extract::FromRequestParts;
+        use axum_extra::extract::Query;
+        // from docs
+        // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
+        let input = include_str!("../tests/data/apigw_multi_value_proxy_request.json");
+        let request = from_str(input).expect("failed to parse request");
+        let (mut parts, _) = request.into_parts();
+
+        #[derive(Deserialize)]
+        #[serde(rename_all = "camelCase")]
+        struct Params {
+            name: Vec<String>,
+            multi_value_name: Vec<String>,
+        }
+        struct State;
+
+        let query = Query::<Params>::from_request_parts(&mut parts, &State).await.unwrap();
+        assert_eq!(vec!["me"], query.0.name);
+        assert_eq!(vec!["you", "me"], query.0.multi_value_name);
+    }
+
+    #[tokio::test]
+    #[cfg(feature = "apigw_http")]
+    async fn test_axum_query_extractor_apigw_http() {
+        use axum_core::extract::FromRequestParts;
+        use axum_extra::extract::Query;
+        let input = include_str!("../tests/data/apigw_v2_proxy_request.json");
+        let request = from_str(input).expect("failed to parse request");
+        let (mut parts, _) = request.into_parts();
+
+        #[derive(Deserialize)]
+        struct Params {
+            parameter1: Vec<String>,
+            parameter2: Vec<String>,
+        }
+        struct State;
+
+        let query = Query::<Params>::from_request_parts(&mut parts, &State).await.unwrap();
+        assert_eq!(vec!["value1", "value2"], query.0.parameter1);
+        assert_eq!(vec!["value"], query.0.parameter2);
+    }
+
+    #[tokio::test]
+    #[cfg(feature = "alb")]
+    async fn test_axum_query_extractor_alb() {
+        use axum_core::extract::FromRequestParts;
+        use axum_extra::extract::Query;
+        let input = include_str!("../tests/data/alb_multi_value_request.json");
+        let request = from_str(input).expect("failed to parse request");
+        let (mut parts, _) = request.into_parts();
+
+        #[derive(Deserialize)]
+        #[serde(rename_all = "camelCase")]
+        struct Params {
+            my_key: Vec<String>,
+            my_other_key: Vec<String>,
+        }
+        struct State;
+
+        let query = Query::<Params>::from_request_parts(&mut parts, &State).await.unwrap();
+        assert_eq!(vec!["val1", "val2"], query.0.my_key);
+        assert_eq!(vec!["val3", "val4"], query.0.my_other_key);
     }
 }

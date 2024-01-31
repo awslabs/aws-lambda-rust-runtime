@@ -23,74 +23,74 @@
     "X-Forwarded-Port": "443",
     "X-Forwarded-Proto": "https"
   },
-  "multiValueHeaders":{
-    "Accept":[
+  "multiValueHeaders": {
+    "Accept": [
       "*/*"
     ],
-    "Accept-Encoding":[
+    "Accept-Encoding": [
       "gzip, deflate"
     ],
-    "cache-control":[
+    "cache-control": [
       "no-cache"
     ],
-    "CloudFront-Forwarded-Proto":[
+    "CloudFront-Forwarded-Proto": [
       "https"
     ],
-    "CloudFront-Is-Desktop-Viewer":[
+    "CloudFront-Is-Desktop-Viewer": [
       "true"
     ],
-    "CloudFront-Is-Mobile-Viewer":[
+    "CloudFront-Is-Mobile-Viewer": [
       "false"
     ],
-    "CloudFront-Is-SmartTV-Viewer":[
+    "CloudFront-Is-SmartTV-Viewer": [
       "false"
     ],
-    "CloudFront-Is-Tablet-Viewer":[
+    "CloudFront-Is-Tablet-Viewer": [
       "false"
     ],
-    "CloudFront-Viewer-Country":[
+    "CloudFront-Viewer-Country": [
       "US"
     ],
-    "Content-Type":[
+    "Content-Type": [
       "application/json"
     ],
-    "headerName":[
+    "headerName": [
       "headerValue"
     ],
-    "Host":[
+    "Host": [
       "gy415nuibc.execute-api.us-east-1.amazonaws.com"
     ],
-    "Postman-Token":[
+    "Postman-Token": [
       "9f583ef0-ed83-4a38-aef3-eb9ce3f7a57f"
     ],
-    "User-Agent":[
+    "User-Agent": [
       "PostmanRuntime/2.4.5"
     ],
-    "Via":[
+    "Via": [
       "1.1 d98420743a69852491bbdea73f7680bd.cloudfront.net (CloudFront)"
     ],
-    "X-Amz-Cf-Id":[
+    "X-Amz-Cf-Id": [
       "pn-PWIJc6thYnZm5P0NMgOUglL1DYtl0gdeJky8tqsg8iS_sgsKD1A=="
     ],
-    "X-Forwarded-For":[
+    "X-Forwarded-For": [
       "54.240.196.186, 54.182.214.83"
     ],
-    "X-Forwarded-Port":[
+    "X-Forwarded-Port": [
       "443"
     ],
-    "X-Forwarded-Proto":[
+    "X-Forwarded-Proto": [
       "https"
     ]
   },
   "queryStringParameters": {
     "name": "me",
-    "multivalueName": "me"
+    "multiValueName": "me"
   },
-  "multiValueQueryStringParameters":{
-    "name":[
+  "multiValueQueryStringParameters": {
+    "name": [
       "me"
     ],
-    "multivalueName":[
+    "multiValueName": [
       "you",
       "me"
     ]

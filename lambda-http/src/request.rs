@@ -699,12 +699,13 @@ mod tests {
             .is_empty());
 
         // test RequestExt#query_string_parameters_ref does the right thing
-        assert_eq!(
-            request
-                .query_string_parameters_ref()
-                .and_then(|params| params.all("multivalueName")),
-            Some(vec!["you", "me"])
-        );
+        let params = request.query_string_parameters();
+        assert_eq!(Some(vec!["you", "me"]), params.all("multivalueName"));
+        assert_eq!(Some(vec!["me"]), params.all("name"));
+
+        let query = request.uri().query().unwrap();
+        assert!(query.contains("name=me"));
+        assert!(query.contains("multivalueName=you&multivalueName=me"));
     }
 
     #[test]
@@ -724,12 +725,13 @@ mod tests {
             .is_empty());
 
         // test RequestExt#query_string_parameters_ref does the right thing
-        assert_eq!(
-            request
-                .query_string_parameters_ref()
-                .and_then(|params| params.all("myKey")),
-            Some(vec!["val1", "val2"])
-        );
+        let params = request.query_string_parameters();
+        assert_eq!(Some(vec!["val1", "val2"]), params.all("myKey"));
+        assert_eq!(Some(vec!["val3", "val4"]), params.all("myOtherKey"));
+
+        let query = request.uri().query().unwrap();
+        assert!(query.contains("myKey=val1&myKey=val2"));
+        assert!(query.contains("myOtherKey=val3&myOtherKey=val4"));
     }
 
     #[test]

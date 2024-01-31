@@ -6,6 +6,7 @@
 //! implementation to the Lambda runtime to run as a Lambda function.  By using Axum instead
 //! of a basic `tower::Service` you get web framework niceties like routing, request component
 //! extraction, validation, etc.
+use axum::extract::Query;
 use axum::http::StatusCode;
 use axum::{
     extract::Path,
@@ -14,8 +15,15 @@ use axum::{
     Router,
 };
 use lambda_http::{run, Error};
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::env::set_var;
+
+#[derive(Deserialize, Serialize)]
+struct Params {
+    first: Option<String>,
+    second: Option<String>,
+}
 
 async fn root() -> Json<Value> {
     Json(json!({ "msg": "I am GET /" }))
@@ -33,22 +41,26 @@ async fn post_foo_name(Path(name): Path<String>) -> Json<Value> {
     Json(json!({ "msg": format!("I am POST /foo/:name, name={name}") }))
 }
 
+async fn get_parameters(Query(params): Query<Params>) -> Json<Value> {
+    Json(json!({ "request parameters": params }))
+}
+
 /// Example on how to return status codes and data from an Axum function
 async fn health_check() -> (StatusCode, String) {
     let health = true;
     match health {
         true => (StatusCode::OK, "Healthy!".to_string()),
-        false => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "Not healthy!".to_string(),
-        ),
+        false => (StatusCode::INTERNAL_SERVER_ERROR, "Not healthy!".to_string()),
     }
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    // AWS Runtime can ignore Stage Name passed from json event
-    // Remove if you want the first section of the url to be the stage name of the API Gateway
+    // If you use API Gateway stages, the Rust Runtime will include the stage name
+    // as part of the path that your application receives.
+    // Setting the following environment variable, you can remove the stage from the path.
+    // This variable only applies to API Gateway stages,
+    // you can remove it if you don't use them.
     // i.e with: `GET /test-stage/todo/id/123` without: `GET /todo/id/123`
     set_var("AWS_LAMBDA_HTTP_IGNORE_STAGE_IN_PATH", "true");
 
@@ -65,6 +77,7 @@ async fn main() -> Result<(), Error> {
         .route("/", get(root))
         .route("/foo", get(get_foo).post(post_foo))
         .route("/foo/:name", post(post_foo_name))
+        .route("/parameters", get(get_parameters))
         .route("/health/", get(health_check));
 
     run(app).await

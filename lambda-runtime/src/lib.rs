@@ -126,7 +126,7 @@ impl Runtime {
             // Group the handling in one future and instrument it with the span
             async {
                 let body = body.collect().await?.to_bytes();
-                trace!("response body - {}", std::str::from_utf8(&body)?);
+                trace!("request body - {}", std::str::from_utf8(&body)?);
 
                 #[cfg(debug_assertions)]
                 if parts.status.is_server_error() {

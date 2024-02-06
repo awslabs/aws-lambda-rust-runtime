@@ -10,7 +10,7 @@ for f in *; do
     if [ -d "$f" ]; then
         echo "==> Checking example: $f"
         cd $f
-        cargo check
+        cargo test
         cd ..
     fi
 done

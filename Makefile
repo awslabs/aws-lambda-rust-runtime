@@ -101,6 +101,7 @@ check-event-features:
 	cargo test --package aws_lambda_events --no-default-features --features rabbitmq
 	cargo test --package aws_lambda_events --no-default-features --features s3
 	cargo test --package aws_lambda_events --no-default-features --features s3_batch_job
+	cargo test --package aws_lambda_events --no-default-features --features secretsmanager
 	cargo test --package aws_lambda_events --no-default-features --features ses
 	cargo test --package aws_lambda_events --no-default-features --features sns
 	cargo test --package aws_lambda_events --no-default-features --features sqs

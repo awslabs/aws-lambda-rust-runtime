@@ -133,6 +133,10 @@ pub mod rabbitmq;
 #[cfg(feature = "s3")]
 pub mod s3;
 
+/// AWS Lambda event definitions for secretsmanager.
+#[cfg(feature = "secretsmanager")]
+pub mod secretsmanager;
+
 /// AWS Lambda event definitions for ses.
 #[cfg(feature = "ses")]
 pub mod ses;

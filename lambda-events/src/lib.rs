@@ -153,6 +153,10 @@ pub use event::s3;
 #[cfg(feature = "s3")]
 pub use event::s3::batch_job as s3_batch_job;
 
+/// AWS Lambda event definitions for secretsmanager.
+#[cfg(feature = "secretsmanager")]
+pub use event::secretsmanager;
+
 /// AWS Lambda event definitions for ses.
 #[cfg(feature = "ses")]
 pub use event::ses;

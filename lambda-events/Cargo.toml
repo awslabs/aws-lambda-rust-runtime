@@ -75,6 +75,7 @@ default = [
   "s3",
   "s3_batch_job",
   "ses",
+  "secretsmanager",
   "sns",
   "sqs",
   "streams",
@@ -119,6 +120,7 @@ lex = []
 rabbitmq = []
 s3 = ["bytes", "chrono", "http", "http-body", "http-serde"]
 s3_batch_job = ["s3"]
+secretsmanager = []
 ses = ["chrono"]
 sns = ["chrono", "serde_with"]
 sqs = ["serde_with"]

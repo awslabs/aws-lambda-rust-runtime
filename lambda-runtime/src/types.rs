@@ -109,7 +109,7 @@ impl Default for Context {
 }
 
 impl Context {
-    /// Create a new [Context] struct based on the fuction configuration
+    /// Create a new [Context] struct based on the function configuration
     /// and the incoming request data.
     pub fn new(request_id: &str, env_config: RefConfig, headers: &HeaderMap) -> Result<Self, Error> {
         let client_context: Option<ClientContext> = if let Some(value) = headers.get("lambda-runtime-client-context") {

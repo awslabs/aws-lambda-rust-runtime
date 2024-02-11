@@ -433,6 +433,10 @@ where
     pub route_key: Option<String>,
     #[serde(default)]
     pub status: Option<String>,
+    #[serde(default)]
+    pub disconnect_status_code: Option<i64>,
+    #[serde(default)]
+    pub disconnect_reason: Option<String>,
 }
 
 /// `ApiGatewayCustomAuthorizerRequestTypeRequestIdentity` contains identity information for the request caller including certificate information if using mTLS.
@@ -930,6 +934,16 @@ mod test {
     #[cfg(feature = "apigw")]
     fn example_apigw_websocket_request_without_method() {
         let data = include_bytes!("../../fixtures/example-apigw-websocket-request-without-method.json");
+        let parsed: ApiGatewayWebsocketProxyRequest = serde_json::from_slice(data).unwrap();
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: ApiGatewayWebsocketProxyRequest = serde_json::from_slice(output.as_bytes()).unwrap();
+        assert_eq!(parsed, reparsed);
+    }
+
+    #[test]
+    #[cfg(feature = "apigw")]
+    fn example_apigw_websocket_request_disconnect_route() {
+        let data = include_bytes!("../../fixtures/example-apigw-websocket-request-disconnect-route.json");
         let parsed: ApiGatewayWebsocketProxyRequest = serde_json::from_slice(data).unwrap();
         let output: String = serde_json::to_string(&parsed).unwrap();
         let reparsed: ApiGatewayWebsocketProxyRequest = serde_json::from_slice(output.as_bytes()).unwrap();

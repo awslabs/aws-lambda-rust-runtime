@@ -126,7 +126,10 @@ impl Runtime {
             // Group the handling in one future and instrument it with the span
             async {
                 let body = body.collect().await?.to_bytes();
-                trace!(body = std::str::from_utf8(&body)?, "raw JSON event received from Lambda");
+                trace!(
+                    body = std::str::from_utf8(&body)?,
+                    "raw JSON event received from Lambda"
+                );
 
                 #[cfg(debug_assertions)]
                 if parts.status.is_server_error() {

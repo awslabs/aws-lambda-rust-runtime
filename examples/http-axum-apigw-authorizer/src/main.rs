@@ -26,7 +26,7 @@ where
             .and_then(|a| a.fields.get("field_name"))
             .and_then(|f| f.as_str())
             .map(|v| Self(v.to_string()))
-            .ok_or_else(|| (StatusCode::BAD_REQUEST, "`field_name` authorizer field is missing"))
+            .ok_or((StatusCode::BAD_REQUEST, "`field_name` authorizer field is missing"))
     }
 }
 
@@ -41,7 +41,7 @@ where
         req.request_context_ref()
             .and_then(|r| r.authorizer())
             .map(|a| Self(a.fields.clone()))
-            .ok_or_else(|| (StatusCode::BAD_REQUEST, "authorizer is missing"))
+            .ok_or((StatusCode::BAD_REQUEST, "authorizer is missing"))
     }
 }
 
@@ -51,6 +51,18 @@ async fn extract_field(AuthorizerField(field): AuthorizerField) -> Json<Value> {
 
 async fn extract_all_fields(AuthorizerFields(fields): AuthorizerFields) -> Json<Value> {
     Json(json!({ "authorizer fields": fields }))
+}
+
+async fn authorizer_without_extractor(req: Request) -> Result<Json<Value>, (StatusCode, &'static str)> {
+    let auth = req
+        .request_context_ref()
+        .and_then(|r| r.authorizer())
+        .ok_or((StatusCode::BAD_REQUEST, "authorizer is missing"))?;
+
+    let field1 = auth.fields.get("field1").and_then(|v| v.as_str()).unwrap_or_default();
+    let field2 = auth.fields.get("field2").and_then(|v| v.as_str()).unwrap_or_default();
+
+    Ok(Json(json!({ "field1": field1, "field2": field2 })))
 }
 
 #[tokio::main]
@@ -74,7 +86,8 @@ async fn main() -> Result<(), Error> {
 
     let app = Router::new()
         .route("/extract-field", get(extract_field))
-        .route("/extract-all-fields", get(extract_all_fields));
+        .route("/extract-all-fields", get(extract_all_fields))
+        .route("/authorizer-without-extractor", get(authorizer_without_extractor));
 
     run(app).await
 }

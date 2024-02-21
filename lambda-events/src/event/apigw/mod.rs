@@ -191,11 +191,11 @@ pub struct ApiGatewayV2httpRequestContext {
     pub authentication: Option<ApiGatewayV2httpRequestContextAuthentication>,
 }
 
-/// `ApiGatewayV2httpRequestContextAuthorizerDescription` contains authorizer information for the request context.
+/// `ApiGatewayRequestAuthorizer` contains authorizer information for the request context.
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
-pub struct ApiGatewayV2httpRequestContextAuthorizerDescription {
+pub struct ApiGatewayRequestAuthorizer {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub jwt: Option<ApiGatewayV2httpRequestContextAuthorizerJwtDescription>,
+    pub jwt: Option<ApiGatewayRequestAuthorizerJwtDescription>,
     #[serde(
         bound = "",
         rename = "lambda",
@@ -205,13 +205,13 @@ pub struct ApiGatewayV2httpRequestContextAuthorizerDescription {
     )]
     pub fields: HashMap<String, Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub iam: Option<ApiGatewayV2httpRequestContextAuthorizerIamDescription>,
+    pub iam: Option<ApiGatewayRequestAuthorizerIamDescription>,
 }
 
-/// `ApiGatewayV2httpRequestContextAuthorizerJwtDescription` contains JWT authorizer information for the request context.
+/// `ApiGatewayRequestAuthorizerJwtDescription` contains JWT authorizer information for the request context.
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ApiGatewayV2httpRequestContextAuthorizerJwtDescription {
+pub struct ApiGatewayRequestAuthorizerJwtDescription {
     #[serde(deserialize_with = "deserialize_lambda_map")]
     #[serde(default)]
     pub claims: HashMap<String, String>,
@@ -219,10 +219,10 @@ pub struct ApiGatewayV2httpRequestContextAuthorizerJwtDescription {
     pub scopes: Option<Vec<String>>,
 }
 
-/// `ApiGatewayV2httpRequestContextAuthorizerIamDescription` contains IAM information for the request context.
+/// `ApiGatewayRequestAuthorizerIamDescription` contains IAM information for the request context.
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ApiGatewayV2httpRequestContextAuthorizerIamDescription {
+pub struct ApiGatewayRequestAuthorizerIamDescription {
     #[serde(default)]
     pub access_key: Option<String>,
     #[serde(default)]
@@ -230,7 +230,7 @@ pub struct ApiGatewayV2httpRequestContextAuthorizerIamDescription {
     #[serde(default)]
     pub caller_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub cognito_identity: Option<ApiGatewayV2httpRequestContextAuthorizerCognitoIdentity>,
+    pub cognito_identity: Option<ApiGatewayRequestAuthorizerCognitoIdentity>,
     #[serde(default)]
     pub principal_org_id: Option<String>,
     #[serde(default)]
@@ -239,10 +239,10 @@ pub struct ApiGatewayV2httpRequestContextAuthorizerIamDescription {
     pub user_id: Option<String>,
 }
 
-/// `ApiGatewayV2httpRequestContextAuthorizerCognitoIdentity` contains Cognito identity information for the request context.
+/// `ApiGatewayRequestAuthorizerCognitoIdentity` contains Cognito identity information for the request context.
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ApiGatewayV2httpRequestContextAuthorizerCognitoIdentity {
+pub struct ApiGatewayRequestAuthorizerCognitoIdentity {
     pub amr: Vec<String>,
     #[serde(default)]
     pub identity_id: Option<String>,
@@ -749,9 +749,14 @@ fn default_http_method() -> Method {
     Method::GET
 }
 
-/// `ApiGatewayRequestAuthorizer` is a type alias for `ApiGatewayV2httpRequestContextAuthorizerDescription`.
-/// This type is used by all events that receive request authorizer information.
-pub type ApiGatewayRequestAuthorizer = ApiGatewayV2httpRequestContextAuthorizerDescription;
+#[deprecated = "use `ApiGatewayRequestAuthorizer` instead"]
+pub type ApiGatewayV2httpRequestContextAuthorizerDescription = ApiGatewayRequestAuthorizer;
+#[deprecated = "use `ApiGatewayRequestAuthorizerJwtDescription` instead"]
+pub type ApiGatewayV2httpRequestContextAuthorizerJwtDescription = ApiGatewayRequestAuthorizerJwtDescription;
+#[deprecated = "use `ApiGatewayRequestAuthorizerIamDescription` instead"]
+pub type ApiGatewayV2httpRequestContextAuthorizerIamDescription = ApiGatewayRequestAuthorizerIamDescription;
+#[deprecated = "use `ApiGatewayRequestAuthorizerCognitoIdentity` instead"]
+pub type ApiGatewayV2httpRequestContextAuthorizerCognitoIdentity = ApiGatewayRequestAuthorizerCognitoIdentity;
 
 impl ApiGatewayRequestAuthorizer {
     fn is_empty(&self) -> bool {

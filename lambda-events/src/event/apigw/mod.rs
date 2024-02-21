@@ -5,19 +5,14 @@ use crate::custom_serde::{
 use crate::encodings::Body;
 use http::{HeaderMap, Method};
 use query_map::QueryMap;
-use serde::de::DeserializeOwned;
-use serde::{Deserialize, Serialize};
+use serde::{de::DeserializeOwned, ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::Value;
 use std::collections::HashMap;
 
 /// `ApiGatewayProxyRequest` contains data coming from the API Gateway proxy
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ApiGatewayProxyRequest<T1 = Value>
-where
-    T1: DeserializeOwned + Default,
-    T1: Serialize,
-{
+pub struct ApiGatewayProxyRequest {
     /// The resource path defined in API Gateway
     #[serde(default)]
     pub resource: Option<String>,
@@ -44,7 +39,7 @@ where
     #[serde(default)]
     pub stage_variables: HashMap<String, String>,
     #[serde(bound = "")]
-    pub request_context: ApiGatewayProxyRequestContext<T1>,
+    pub request_context: ApiGatewayProxyRequestContext,
     #[serde(default)]
     pub body: Option<String>,
     #[serde(default, deserialize_with = "deserialize_nullish_boolean")]
@@ -72,11 +67,7 @@ pub struct ApiGatewayProxyResponse {
 /// Lambda function. It also includes Cognito identity information for the caller.
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ApiGatewayProxyRequestContext<T1 = Value>
-where
-    T1: DeserializeOwned,
-    T1: Serialize,
-{
+pub struct ApiGatewayProxyRequestContext {
     #[serde(default)]
     pub account_id: Option<String>,
     #[serde(default)]
@@ -99,10 +90,13 @@ where
     pub resource_path: Option<String>,
     #[serde(default)]
     pub path: Option<String>,
-    #[serde(deserialize_with = "deserialize_lambda_map")]
-    #[serde(default)]
-    #[serde(bound = "")]
-    pub authorizer: HashMap<String, T1>,
+    #[serde(
+        default,
+        deserialize_with = "deserialize_authorizer_fields",
+        serialize_with = "serialize_authorizer_fields",
+        skip_serializing_if = "ApiGatewayRequestAuthorizer::is_empty"
+    )]
+    pub authorizer: ApiGatewayRequestAuthorizer,
     #[serde(with = "http_method")]
     pub http_method: Method,
     #[serde(default)]
@@ -168,11 +162,7 @@ pub struct ApiGatewayV2httpRequest {
 /// `ApiGatewayV2httpRequestContext` contains the information to identify the AWS account and resources invoking the Lambda function.
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ApiGatewayV2httpRequestContext<T1 = Value>
-where
-    T1: DeserializeOwned,
-    T1: Serialize,
-{
+pub struct ApiGatewayV2httpRequestContext {
     #[serde(default)]
     pub route_key: Option<String>,
     #[serde(default)]
@@ -181,9 +171,9 @@ where
     pub stage: Option<String>,
     #[serde(default)]
     pub request_id: Option<String>,
-    #[serde(bound = "", default)]
+    #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub authorizer: Option<ApiGatewayV2httpRequestContextAuthorizerDescription<T1>>,
+    pub authorizer: Option<ApiGatewayRequestAuthorizer>,
     /// The API Gateway HTTP API Id
     #[serde(default)]
     #[serde(rename = "apiId")]
@@ -201,29 +191,27 @@ where
     pub authentication: Option<ApiGatewayV2httpRequestContextAuthentication>,
 }
 
-/// `ApiGatewayV2httpRequestContextAuthorizerDescription` contains authorizer information for the request context.
+/// `ApiGatewayRequestAuthorizer` contains authorizer information for the request context.
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ApiGatewayV2httpRequestContextAuthorizerDescription<T1 = Value>
-where
-    T1: DeserializeOwned,
-    T1: Serialize,
-{
+pub struct ApiGatewayRequestAuthorizer {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub jwt: Option<ApiGatewayV2httpRequestContextAuthorizerJwtDescription>,
-    #[serde(deserialize_with = "deserialize_lambda_map")]
-    #[serde(default)]
-    #[serde(bound = "")]
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
-    pub lambda: HashMap<String, T1>,
+    pub jwt: Option<ApiGatewayRequestAuthorizerJwtDescription>,
+    #[serde(
+        bound = "",
+        rename = "lambda",
+        default,
+        skip_serializing_if = "HashMap::is_empty",
+        deserialize_with = "deserialize_lambda_map"
+    )]
+    pub fields: HashMap<String, Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub iam: Option<ApiGatewayV2httpRequestContextAuthorizerIamDescription>,
+    pub iam: Option<ApiGatewayRequestAuthorizerIamDescription>,
 }
 
-/// `ApiGatewayV2httpRequestContextAuthorizerJwtDescription` contains JWT authorizer information for the request context.
+/// `ApiGatewayRequestAuthorizerJwtDescription` contains JWT authorizer information for the request context.
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ApiGatewayV2httpRequestContextAuthorizerJwtDescription {
+pub struct ApiGatewayRequestAuthorizerJwtDescription {
     #[serde(deserialize_with = "deserialize_lambda_map")]
     #[serde(default)]
     pub claims: HashMap<String, String>,
@@ -231,10 +219,10 @@ pub struct ApiGatewayV2httpRequestContextAuthorizerJwtDescription {
     pub scopes: Option<Vec<String>>,
 }
 
-/// `ApiGatewayV2httpRequestContextAuthorizerIamDescription` contains IAM information for the request context.
+/// `ApiGatewayRequestAuthorizerIamDescription` contains IAM information for the request context.
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ApiGatewayV2httpRequestContextAuthorizerIamDescription {
+pub struct ApiGatewayRequestAuthorizerIamDescription {
     #[serde(default)]
     pub access_key: Option<String>,
     #[serde(default)]
@@ -242,7 +230,7 @@ pub struct ApiGatewayV2httpRequestContextAuthorizerIamDescription {
     #[serde(default)]
     pub caller_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub cognito_identity: Option<ApiGatewayV2httpRequestContextAuthorizerCognitoIdentity>,
+    pub cognito_identity: Option<ApiGatewayRequestAuthorizerCognitoIdentity>,
     #[serde(default)]
     pub principal_org_id: Option<String>,
     #[serde(default)]
@@ -251,10 +239,10 @@ pub struct ApiGatewayV2httpRequestContextAuthorizerIamDescription {
     pub user_id: Option<String>,
 }
 
-/// `ApiGatewayV2httpRequestContextAuthorizerCognitoIdentity` contains Cognito identity information for the request context.
+/// `ApiGatewayRequestAuthorizerCognitoIdentity` contains Cognito identity information for the request context.
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ApiGatewayV2httpRequestContextAuthorizerCognitoIdentity {
+pub struct ApiGatewayRequestAuthorizerCognitoIdentity {
     pub amr: Vec<String>,
     #[serde(default)]
     pub identity_id: Option<String>,
@@ -332,13 +320,7 @@ pub struct ApiGatewayRequestIdentity {
 /// `ApiGatewayWebsocketProxyRequest` contains data coming from the API Gateway proxy
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ApiGatewayWebsocketProxyRequest<T1 = Value, T2 = Value>
-where
-    T1: DeserializeOwned + Default,
-    T1: Serialize,
-    T2: DeserializeOwned + Default,
-    T2: Serialize,
-{
+pub struct ApiGatewayWebsocketProxyRequest {
     /// The resource path defined in API Gateway
     #[serde(default)]
     pub resource: Option<String>,
@@ -367,7 +349,7 @@ where
     #[serde(default)]
     pub stage_variables: HashMap<String, String>,
     #[serde(bound = "")]
-    pub request_context: ApiGatewayWebsocketProxyRequestContext<T1, T2>,
+    pub request_context: ApiGatewayWebsocketProxyRequestContext,
     #[serde(default)]
     pub body: Option<String>,
     #[serde(default, deserialize_with = "deserialize_nullish_boolean")]
@@ -379,13 +361,7 @@ where
 /// Cognito identity information for the caller.
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ApiGatewayWebsocketProxyRequestContext<T1 = Value, T2 = Value>
-where
-    T1: DeserializeOwned,
-    T1: Serialize,
-    T2: DeserializeOwned,
-    T2: Serialize,
-{
+pub struct ApiGatewayWebsocketProxyRequestContext {
     #[serde(default)]
     pub account_id: Option<String>,
     #[serde(default)]
@@ -398,8 +374,13 @@ where
     pub identity: ApiGatewayRequestIdentity,
     #[serde(default)]
     pub resource_path: Option<String>,
-    #[serde(bound = "")]
-    pub authorizer: Option<T1>,
+    #[serde(
+        default,
+        deserialize_with = "deserialize_authorizer_fields",
+        serialize_with = "serialize_authorizer_fields",
+        skip_serializing_if = "ApiGatewayRequestAuthorizer::is_empty"
+    )]
+    pub authorizer: ApiGatewayRequestAuthorizer,
     #[serde(deserialize_with = "http_method::deserialize_optional")]
     #[serde(serialize_with = "http_method::serialize_optional")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -425,7 +406,7 @@ where
     #[serde(default)]
     pub message_direction: Option<String>,
     #[serde(bound = "")]
-    pub message_id: Option<T2>,
+    pub message_id: Option<String>,
     #[serde(default)]
     pub request_time: Option<String>,
     pub request_time_epoch: i64,
@@ -768,6 +749,45 @@ fn default_http_method() -> Method {
     Method::GET
 }
 
+#[deprecated = "use `ApiGatewayRequestAuthorizer` instead"]
+pub type ApiGatewayV2httpRequestContextAuthorizerDescription = ApiGatewayRequestAuthorizer;
+#[deprecated = "use `ApiGatewayRequestAuthorizerJwtDescription` instead"]
+pub type ApiGatewayV2httpRequestContextAuthorizerJwtDescription = ApiGatewayRequestAuthorizerJwtDescription;
+#[deprecated = "use `ApiGatewayRequestAuthorizerIamDescription` instead"]
+pub type ApiGatewayV2httpRequestContextAuthorizerIamDescription = ApiGatewayRequestAuthorizerIamDescription;
+#[deprecated = "use `ApiGatewayRequestAuthorizerCognitoIdentity` instead"]
+pub type ApiGatewayV2httpRequestContextAuthorizerCognitoIdentity = ApiGatewayRequestAuthorizerCognitoIdentity;
+
+impl ApiGatewayRequestAuthorizer {
+    fn is_empty(&self) -> bool {
+        self.fields.is_empty()
+    }
+}
+
+fn deserialize_authorizer_fields<'de, D>(deserializer: D) -> Result<ApiGatewayRequestAuthorizer, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let fields: Option<HashMap<String, Value>> = Option::deserialize(deserializer)?;
+    let mut authorizer = ApiGatewayRequestAuthorizer::default();
+    if let Some(fields) = fields {
+        authorizer.fields = fields;
+    }
+
+    Ok(authorizer)
+}
+
+pub fn serialize_authorizer_fields<S: Serializer>(
+    authorizer: &ApiGatewayRequestAuthorizer,
+    ser: S,
+) -> Result<S::Ok, S::Error> {
+    let mut map = ser.serialize_map(Some(authorizer.fields.len()))?;
+    for (k, v) in &authorizer.fields {
+        map.serialize_entry(k, v)?;
+    }
+    map.end()
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -990,5 +1010,17 @@ mod test {
         let output: String = serde_json::to_string(&parsed).unwrap();
         let reparsed: ApiGatewayProxyRequest = serde_json::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
+    }
+
+    #[test]
+    #[cfg(feature = "apigw")]
+    fn example_apigw_request_authorizer_fields() {
+        let data = include_bytes!("../../fixtures/example-apigw-request.json");
+        let parsed: ApiGatewayProxyRequest = serde_json::from_slice(data).unwrap();
+
+        let fields = parsed.request_context.authorizer.fields;
+        assert_eq!(Some("admin"), fields.get("principalId").unwrap().as_str());
+        assert_eq!(Some(1), fields.get("clientId").unwrap().as_u64());
+        assert_eq!(Some("Exata"), fields.get("clientName").unwrap().as_str());
     }
 }

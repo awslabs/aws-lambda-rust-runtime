@@ -17,6 +17,8 @@ use crate::ext::extensions::{PathParameters, StageVariables};
 use crate::ext::extensions::{QueryStringParameters, RawHttpPath};
 #[cfg(feature = "alb")]
 use aws_lambda_events::alb::{AlbTargetGroupRequest, AlbTargetGroupRequestContext};
+#[cfg(any(feature = "apigw_rest", feature = "apigw_http", feature = "apigw_websockets"))]
+use aws_lambda_events::apigw::ApiGatewayRequestAuthorizer;
 #[cfg(feature = "apigw_rest")]
 use aws_lambda_events::apigw::{ApiGatewayProxyRequest, ApiGatewayProxyRequestContext};
 #[cfg(feature = "apigw_http")]
@@ -421,6 +423,22 @@ impl From<LambdaRequest> for http::Request<Body> {
             LambdaRequest::WebSocket(ag) => into_websocket_request(ag),
             #[cfg(feature = "pass_through")]
             LambdaRequest::PassThrough(data) => into_pass_through_request(data),
+        }
+    }
+}
+
+impl RequestContext {
+    /// Returns the Api Gateway Authorizer information for a request.
+    #[cfg(any(feature = "apigw_rest", feature = "apigw_http", feature = "apigw_websockets"))]
+    pub fn authorizer(&self) -> Option<&ApiGatewayRequestAuthorizer> {
+        match self {
+            #[cfg(feature = "apigw_rest")]
+            Self::ApiGatewayV1(ag) => Some(&ag.authorizer),
+            #[cfg(feature = "apigw_http")]
+            Self::ApiGatewayV2(ag) => ag.authorizer.as_ref(),
+            #[cfg(feature = "apigw_websockets")]
+            Self::WebSocket(ag) => Some(&ag.authorizer),
+            _ => None,
         }
     }
 }
@@ -919,5 +937,21 @@ mod tests {
         let query = Query::<Params>::from_request_parts(&mut parts, &State).await.unwrap();
         assert_eq!(vec!["val1", "val2"], query.0.my_key);
         assert_eq!(vec!["val3", "val4"], query.0.my_other_key);
+    }
+
+    #[test]
+    #[cfg(feature = "apigw_rest")]
+    fn deserializes_request_authorizer() {
+        let input = include_str!("../../lambda-events/src/fixtures/example-apigw-request.json");
+        let result = from_str(input);
+        assert!(
+            result.is_ok(),
+            "event was not parsed as expected {result:?} given {input}"
+        );
+        let req = result.expect("failed to parse request");
+
+        let req_context = req.request_context_ref().expect("Request is missing RequestContext");
+        let authorizer = req_context.authorizer().expect("authorizer is missing");
+        assert_eq!(Some("admin"), authorizer.fields.get("principalId").unwrap().as_str());
     }
 }

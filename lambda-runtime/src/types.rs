@@ -5,19 +5,75 @@ use http::{header::ToStrError, HeaderMap, HeaderValue, StatusCode};
 use lambda_runtime_api_client::body::Body;
 use serde::{Deserialize, Serialize};
 use std::{
+    borrow::Cow,
     collections::HashMap,
     env,
-    fmt::Debug,
+    fmt::{Debug, Display},
     time::{Duration, SystemTime},
 };
 use tokio_stream::Stream;
 use tracing::Span;
 
+/// Diagnostic information about an error.
+///
+/// `Diagnostic` is automatically derived for types that implement
+/// [`Display`][std::fmt::Display]; e.g., [`Error`][std::error::Error].
+///
+/// [`error_type`][`Diagnostic::error_type`] is derived from the type name of
+/// the original error with [`std::any::type_name`] as a fallback, which may
+/// not be reliable for conditional error handling.
+/// You can define your own error container that implements `Into<Diagnostic>`
+/// if you need to handle errors based on error types.
+///
+/// Example:
+/// ```
+/// use lambda_runtime::{Diagnostic, Error, LambdaEvent};
+/// use std::borrow::Cow;
+///
+/// #[derive(Debug)]
+/// struct ErrorResponse(Error);
+///
+/// impl<'a> Into<Diagnostic<'a>> for ErrorResponse {
+///     fn into(self) -> Diagnostic<'a> {
+///         Diagnostic {
+///             error_type: Cow::Borrowed("MyError"),
+///             error_message: Cow::Owned(self.0.to_string()),
+///         }
+///     }
+/// }
+///
+/// async fn function_handler(_event: LambdaEvent<()>) -> Result<(), ErrorResponse> {
+///    // ... do something
+///    Ok(())
+/// }
+/// ```
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct Diagnostic<'a> {
-    pub(crate) error_type: &'a str,
-    pub(crate) error_message: &'a str,
+pub struct Diagnostic<'a> {
+    /// Error type.
+    ///
+    /// `error_type` is derived from the type name of the original error with
+    /// [`std::any::type_name`] as a fallback.
+    /// Please implement your own `Into<Diagnostic>` if you need more reliable
+    /// error types.
+    pub error_type: Cow<'a, str>,
+    /// Error message.
+    ///
+    /// `error_message` is the output from the [`Display`][std::fmt::Display]
+    /// implementation of the original error as a fallback.
+    pub error_message: Cow<'a, str>,
+}
+
+impl<'a, T> From<T> for Diagnostic<'a>
+where
+    T: Display,
+{
+    fn from(value: T) -> Self {
+        Diagnostic {
+            error_type: Cow::Borrowed(std::any::type_name::<T>()),
+            error_message: Cow::Owned(format!("{value}")),
+        }
+    }
 }
 
 /// Client context sent by the AWS Mobile SDK.
@@ -315,8 +371,8 @@ mod test {
         });
 
         let actual = Diagnostic {
-            error_type: "InvalidEventDataError",
-            error_message: "Error parsing event data.",
+            error_type: Cow::Borrowed("InvalidEventDataError"),
+            error_message: Cow::Borrowed("Error parsing event data."),
         };
         let actual: Value = serde_json::to_value(actual).expect("failed to serialize diagnostic");
         assert_eq!(expected, actual);

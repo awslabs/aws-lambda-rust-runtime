@@ -194,13 +194,10 @@ pub(crate) struct EventErrorRequest<'a> {
 }
 
 impl<'a> EventErrorRequest<'a> {
-    pub(crate) fn new(request_id: &'a str, error_type: &'a str, error_message: &'a str) -> EventErrorRequest<'a> {
+    pub(crate) fn new(request_id: &'a str, diagnostic: impl Into<Diagnostic<'a>>) -> EventErrorRequest<'a> {
         EventErrorRequest {
             request_id,
-            diagnostic: Diagnostic {
-                error_type,
-                error_message,
-            },
+            diagnostic: diagnostic.into(),
         }
     }
 }
@@ -226,8 +223,8 @@ fn test_event_error_request() {
     let req = EventErrorRequest {
         request_id: "id",
         diagnostic: Diagnostic {
-            error_type: "InvalidEventDataError",
-            error_message: "Error parsing event data",
+            error_type: std::borrow::Cow::Borrowed("InvalidEventDataError"),
+            error_message: std::borrow::Cow::Borrowed("Error parsing event data"),
         },
     };
     let req = req.into_req().unwrap();

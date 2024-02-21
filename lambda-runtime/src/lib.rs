@@ -14,8 +14,9 @@ use hyper::{body::Incoming, http::Request};
 use lambda_runtime_api_client::{body::Body, BoxError, Client};
 use serde::{Deserialize, Serialize};
 use std::{
+    borrow::Cow,
     env,
-    fmt::{self, Debug, Display},
+    fmt::{self, Debug},
     future::Future,
     panic,
     sync::Arc,
@@ -33,7 +34,9 @@ pub mod streaming;
 mod types;
 
 use requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest};
-pub use types::{Context, FunctionResponse, IntoFunctionResponse, LambdaEvent, MetadataPrelude, StreamResponse};
+pub use types::{
+    Context, Diagnostic, FunctionResponse, IntoFunctionResponse, LambdaEvent, MetadataPrelude, StreamResponse,
+};
 
 use types::invoke_request_id;
 
@@ -96,7 +99,7 @@ impl Runtime {
     where
         F: Service<LambdaEvent<A>>,
         F::Future: Future<Output = Result<R, F::Error>>,
-        F::Error: fmt::Debug + fmt::Display,
+        F::Error: for<'a> Into<Diagnostic<'a>> + fmt::Debug,
         A: for<'de> Deserialize<'de>,
         R: IntoFunctionResponse<B, S>,
         B: Serialize,
@@ -173,7 +176,14 @@ impl Runtime {
                                 } else {
                                     "Lambda panicked".to_string()
                                 };
-                                EventErrorRequest::new(request_id, error_type, &msg).into_req()
+                                EventErrorRequest::new(
+                                    request_id,
+                                    Diagnostic {
+                                        error_type: Cow::Borrowed(error_type),
+                                        error_message: Cow::Owned(msg),
+                                    },
+                                )
+                                .into_req()
                             }
                         }
                     }
@@ -224,7 +234,7 @@ pub async fn run<A, F, R, B, S, D, E>(handler: F) -> Result<(), Error>
 where
     F: Service<LambdaEvent<A>>,
     F::Future: Future<Output = Result<R, F::Error>>,
-    F::Error: fmt::Debug + fmt::Display,
+    F::Error: for<'a> Into<Diagnostic<'a>> + fmt::Debug,
     A: for<'de> Deserialize<'de>,
     R: IntoFunctionResponse<B, S>,
     B: Serialize,
@@ -249,15 +259,12 @@ fn type_name_of_val<T>(_: T) -> &'static str {
     std::any::type_name::<T>()
 }
 
-fn build_event_error_request<T>(request_id: &str, err: T) -> Result<Request<Body>, Error>
+fn build_event_error_request<'a, T>(request_id: &'a str, err: T) -> Result<Request<Body>, Error>
 where
-    T: Display + Debug,
+    T: Into<Diagnostic<'a>> + Debug,
 {
     error!("{:?}", err); // logs the error in CloudWatch
-    let error_type = type_name_of_val(&err);
-    let msg = format!("{err}");
-
-    EventErrorRequest::new(request_id, error_type, &msg).into_req()
+    EventErrorRequest::new(request_id, err).into_req()
 }
 
 #[cfg(test)]
@@ -274,7 +281,7 @@ mod endpoint_tests {
     use httpmock::prelude::*;
 
     use lambda_runtime_api_client::Client;
-    use std::{env, sync::Arc};
+    use std::{borrow::Cow, env, sync::Arc};
     use tokio_stream::StreamExt;
 
     #[tokio::test]
@@ -341,8 +348,8 @@ mod endpoint_tests {
     #[tokio::test]
     async fn test_error_response() -> Result<(), Error> {
         let diagnostic = Diagnostic {
-            error_type: "InvalidEventDataError",
-            error_message: "Error parsing event data",
+            error_type: Cow::Borrowed("InvalidEventDataError"),
+            error_message: Cow::Borrowed("Error parsing event data"),
         };
         let body = serde_json::to_string(&diagnostic)?;
 

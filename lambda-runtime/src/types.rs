@@ -16,8 +16,37 @@ use tracing::Span;
 
 /// Diagnostic information about an error.
 ///
-/// `Diagnostic` is automatically derived for types that implement `Display`;
-/// e.g., [`std::error::Error`].
+/// `Diagnostic` is automatically derived for types that implement
+/// [`Display`][std::fmt::Display]; e.g., [`Error`][std::error::Error].
+///
+/// [`error_type`][`Diagnostic::error_type`] is derived from the type name of
+/// the original error with [`std::any::type_name`] as a fallback, which may
+/// not be reliable for conditional error handling.
+/// You can define your own error container that implements `Into<Diagnostic>`
+/// if you need to handle errors based on error types.
+///
+/// Example:
+/// ```
+/// use lambda_runtime::{Diagnostic, Error, LambdaEvent};
+/// use std::borrow::Cow;
+///
+/// #[derive(Debug)]
+/// struct ErrorResponse(Error);
+///
+/// impl<'a> Into<Diagnostic<'a>> for ErrorResponse {
+///     fn into(self) -> Diagnostic<'a> {
+///         Diagnostic {
+///             error_type: Cow::Borrowed("MyError"),
+///             error_message: Cow::Owned(self.0.to_string()),
+///         }
+///     }
+/// }
+///
+/// async fn function_handler(_event: LambdaEvent<()>) -> Result<(), ErrorResponse> {
+///    // ... do something
+///    Ok(())
+/// }
+/// ```
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Diagnostic<'a> {
@@ -30,8 +59,8 @@ pub struct Diagnostic<'a> {
     pub error_type: Cow<'a, str>,
     /// Error message.
     ///
-    /// `error_message` is the output from the `Display` implementation of the
-    /// original error as a fallback.
+    /// `error_message` is the output from the [`Display`][std::fmt::Display]
+    /// implementation of the original error as a fallback.
     pub error_message: Cow<'a, str>,
 }
 

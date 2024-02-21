@@ -535,7 +535,7 @@ where
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CognitoEventUserPoolsVerifyAuthChallengeResponse {
-    #[serde(default)]
+    #[serde(default, deserialize_with = "deserialize_nullish_boolean")]
     pub answer_correct: bool,
 }
 
@@ -816,6 +816,21 @@ mod test {
     fn example_cognito_event_userpools_verify_auth_challenge_optional_answer_correct() {
         let data = include_bytes!(
             "../../fixtures/example-cognito-event-userpools-verify-auth-challenge-optional-answer-correct.json"
+        );
+        let parsed: CognitoEventUserPoolsVerifyAuthChallenge = serde_json::from_slice(data).unwrap();
+
+        assert!(!parsed.response.answer_correct);
+
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: CognitoEventUserPoolsVerifyAuthChallenge = serde_json::from_slice(output.as_bytes()).unwrap();
+        assert_eq!(parsed, reparsed);
+    }
+
+    #[test]
+    #[cfg(feature = "cognito")]
+    fn example_cognito_event_userpools_verify_auth_challenge_null_answer_correct() {
+        let data = include_bytes!(
+            "../../fixtures/example-cognito-event-userpools-verify-auth-challenge-null-answer-correct.json"
         );
         let parsed: CognitoEventUserPoolsVerifyAuthChallenge = serde_json::from_slice(data).unwrap();
 

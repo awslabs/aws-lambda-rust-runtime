@@ -80,6 +80,7 @@ where
     feature = "cloudwatch_events",
     feature = "code_commit",
     feature = "cognito",
+    feature = "sns",
     test
 ))]
 pub(crate) fn deserialize_nullish_boolean<'de, D>(deserializer: D) -> Result<bool, D::Error>

@@ -3,7 +3,7 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::custom_serde::deserialize_lambda_map;
+use crate::custom_serde::{deserialize_lambda_map, deserialize_nullish_boolean};
 
 /// The `Event` notification event handled by Lambda
 ///
@@ -175,6 +175,78 @@ pub struct MessageAttribute {
     pub value: String,
 }
 
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct CloudWatchAlarmPayload {
+    pub alarm_name: String,
+    pub alarm_description: String,
+    #[serde(rename = "AWSAccountId")]
+    pub aws_account_id: String,
+    pub new_state_value: String,
+    pub new_state_reason: String,
+    pub state_change_time: String,
+    pub region: String,
+    pub alarm_arn: String,
+    pub old_state_value: String,
+    pub trigger: CloudWatchAlarmTrigger,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct CloudWatchAlarmTrigger {
+    pub period: i64,
+    pub evaluation_periods: i64,
+    pub comparison_operator: String,
+    pub threshold: f64,
+    pub treat_missing_data: String,
+    pub evaluate_low_sample_count_percentile: String,
+    #[serde(default)]
+    pub metrics: Vec<CloudWatchMetricDataQuery>,
+    pub metric_name: Option<String>,
+    pub namespace: Option<String>,
+    pub statistic_type: Option<String>,
+    pub statistic: Option<String>,
+    pub unit: Option<String>,
+    #[serde(default)]
+    pub dimensions: Vec<CloudWatchDimension>,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct CloudWatchMetricDataQuery {
+    pub id: String,
+    pub expression: Option<String>,
+    pub label: Option<String>,
+    pub metric_stat: Option<CloudWatchMetricStat>,
+    pub period: Option<i64>,
+    #[serde(default, deserialize_with = "deserialize_nullish_boolean")]
+    pub return_data: bool,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct CloudWatchMetricStat {
+    pub metric: CloudWatchMetric,
+    pub period: i64,
+    pub stat: String,
+    pub unit: Option<String>,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct CloudWatchMetric {
+    #[serde(default)]
+    pub dimensions: Vec<CloudWatchDimension>,
+    pub metric_name: Option<String>,
+    pub namespace: Option<String>,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+pub struct CloudWatchDimension {
+    pub name: String,
+    pub value: String,
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -209,6 +281,12 @@ mod test {
         let output: String = serde_json::to_string(&parsed).unwrap();
         let reparsed: SnsEvent = serde_json::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
+
+        let parsed: SnsEventObj<CloudWatchAlarmPayload> =
+            serde_json::from_slice(data).expect("failed to parse CloudWatch Alarm payload");
+
+        let record = parsed.records.first().unwrap();
+        assert_eq!("EXAMPLE", record.sns.message.alarm_name);
     }
 
     #[test]

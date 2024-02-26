@@ -372,6 +372,24 @@ You can read more about how [cargo lambda watch](https://www.cargo-lambda.info/c
 
 Lambdas can be run and debugged locally using a special [Lambda debug proxy](https://github.com/rimutaka/lambda-debug-proxy) (a non-AWS repo maintained by @rimutaka), which is a Lambda function that forwards incoming requests to one AWS SQS queue and reads responses from another queue. A local proxy running on your development computer reads the queue, calls your Lambda locally and sends back the response. This approach allows debugging of Lambda functions locally while being part of your AWS workflow. The Lambda handler code does not need to be modified between the local and AWS versions.
 
+## Tracing and Logging
+
+The Rust Runtime for Lambda integrates with the (Tracing)[https://tracing.rs] libraries to provide tracing and logging.
+
+By default, the runtime emits `tracing` events that you can collect via `tracing-subscriber`. It also enabled a feature called `tracing` that exposes a default subsriber with sensible options to send logging information to AWS CloudWatch. Follow the next example that shows how to enable the default subscriber:
+
+```rust
+use lambda_runtime::{run, service_fn, tracing, Error};
+
+#[tokio::main]
+async fn main() -> Result<(), Error> {
+    tracing::init_default_subscriber();
+    run(service_fn(|event| tracing::info!(?event))).await
+}
+```
+
+The subscriber uses `RUST_LOG` as the environment variable to determine the log level for your function. It also uses [Lambda's advance logging controls](https://aws.amazon.com/blogs/compute/introducing-advanced-logging-controls-for-aws-lambda-functions/) if they're configured for your function. By default, the log level to emit events is `INFO`.
+
 ## AWS event objects
 
 This project includes Lambda event struct definitions, [`aws_lambda_events`](https://crates.io/crates/aws_lambda_events). This crate can be leveraged to provide strongly-typed Lambda event structs. You can create your own custom event objects and their corresponding structs as well.

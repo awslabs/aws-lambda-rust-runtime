@@ -1,7 +1,7 @@
 use std::{io, thread};
 
 use futures_lite::future;
-use lambda_runtime::{service_fn, Error, LambdaEvent};
+use lambda_runtime::{service_fn, tracing, Error, LambdaEvent};
 use serde::{Deserialize, Serialize};
 use tokio::runtime::Builder;
 
@@ -25,13 +25,7 @@ struct Response {
 
 fn main() -> Result<(), io::Error> {
     // required to enable CloudWatch error logging by the runtime
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
-        // disable printing the name of the module in every log line.
-        .with_target(false)
-        // disabling time is handy because CloudWatch will add the ingestion time.
-        .without_time()
-        .init();
+    tracing::init_default_subscriber();
 
     // Create a channel used to send and receive outputs from our lambda handler. Realistically, this would be either an unbounded channel
     // or a bounded channel with a higher capacity as needed.

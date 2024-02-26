@@ -1,6 +1,6 @@
 use anyhow::anyhow;
 use aws_lambda_events::sqs::{SqsBatchResponse, SqsEventObj};
-use lambda_extension::{service_fn, Error, Extension, NextEvent};
+use lambda_extension::{service_fn, tracing, Error, Extension, NextEvent};
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender};
 use tokio::sync::Mutex;
@@ -81,6 +81,7 @@ impl EventHandler {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
+    tracing::init_default_subscriber();
     let (request_done_sender, request_done_receiver) = unbounded_channel::<()>();
 
     let flush_extension = Arc::new(FlushExtension::new(request_done_receiver));

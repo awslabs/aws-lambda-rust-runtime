@@ -3,9 +3,12 @@ use aws_lambda_events::{
     sqs::{BatchItemFailure, SqsBatchResponse, SqsMessageObj},
 };
 use futures::Future;
-use lambda_runtime::{run, service_fn, Error, LambdaEvent};
+use lambda_runtime::{
+    run, service_fn,
+    tracing::{self, Instrument},
+    Error, LambdaEvent,
+};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use tracing::Instrument;
 
 /// [To customize] Your object definition, sent to the SQS queue triggering this lambda.
 #[derive(Deserialize, Serialize)]
@@ -29,13 +32,7 @@ async fn data_handler(data: Data) -> Result<(), Error> {
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     // required to enable CloudWatch error logging by the runtime
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
-        // disable printing the name of the module in every log line.
-        .with_target(false)
-        // disabling time is handy because CloudWatch will add the ingestion time.
-        .without_time()
-        .init();
+    tracing::init_default_subscriber();
 
     run_sqs_partial_batch_failure(data_handler).await
 }

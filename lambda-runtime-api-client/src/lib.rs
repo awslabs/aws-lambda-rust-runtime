@@ -17,6 +17,9 @@ mod error;
 pub use error::*;
 pub mod body;
 
+#[cfg(feature = "tracing")]
+pub mod tracing;
+
 /// API client to interact with the AWS Lambda Runtime API.
 #[derive(Debug)]
 pub struct Client {

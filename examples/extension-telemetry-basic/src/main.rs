@@ -1,28 +1,27 @@
-use lambda_extension::{service_fn, Error, Extension, LambdaTelemetry, LambdaTelemetryRecord, SharedService};
-use tracing::info;
+use lambda_extension::{service_fn, tracing, Error, Extension, LambdaTelemetry, LambdaTelemetryRecord, SharedService};
 
 async fn handler(events: Vec<LambdaTelemetry>) -> Result<(), Error> {
     for event in events {
         match event.record {
-            LambdaTelemetryRecord::Function(record) => info!("[logs] [function] {}", record),
+            LambdaTelemetryRecord::Function(record) => tracing::info!("[logs] [function] {}", record),
             LambdaTelemetryRecord::PlatformInitStart {
                 initialization_type: _,
                 phase: _,
                 runtime_version: _,
                 runtime_version_arn: _,
-            } => info!("[platform] Initialization started"),
+            } => tracing::info!("[platform] Initialization started"),
             LambdaTelemetryRecord::PlatformInitRuntimeDone {
                 initialization_type: _,
                 phase: _,
                 status: _,
                 error_type: _,
                 spans: _,
-            } => info!("[platform] Initialization finished"),
+            } => tracing::info!("[platform] Initialization finished"),
             LambdaTelemetryRecord::PlatformStart {
                 request_id,
                 version: _,
                 tracing: _,
-            } => info!("[platform] Handling of request {} started", request_id),
+            } => tracing::info!("[platform] Handling of request {} started", request_id),
             LambdaTelemetryRecord::PlatformRuntimeDone {
                 request_id,
                 status: _,
@@ -30,7 +29,7 @@ async fn handler(events: Vec<LambdaTelemetry>) -> Result<(), Error> {
                 metrics: _,
                 spans: _,
                 tracing: _,
-            } => info!("[platform] Handling of request {} finished", request_id),
+            } => tracing::info!("[platform] Handling of request {} finished", request_id),
             _ => (),
         }
     }
@@ -41,13 +40,7 @@ async fn handler(events: Vec<LambdaTelemetry>) -> Result<(), Error> {
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     // required to enable CloudWatch error logging by the runtime
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
-        // disable printing the name of the module in every log line.
-        .with_target(false)
-        // disabling time is handy because CloudWatch will add the ingestion time.
-        .without_time()
-        .init();
+    tracing::init_default_subscriber();
 
     let telemetry_processor = SharedService::new(service_fn(handler));
 

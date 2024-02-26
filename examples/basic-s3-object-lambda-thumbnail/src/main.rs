@@ -2,7 +2,7 @@ use std::error;
 
 use aws_lambda_events::s3::object_lambda::{GetObjectContext, S3ObjectLambdaEvent};
 use aws_sdk_s3::Client as S3Client;
-use lambda_runtime::{run, service_fn, Error, LambdaEvent};
+use lambda_runtime::{run, service_fn, tracing, Error, LambdaEvent};
 use s3::{GetFile, SendFile};
 
 mod s3;
@@ -57,13 +57,7 @@ fn get_thumbnail(vec: Vec<u8>, size: u32) -> Vec<u8> {
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     // required to enable CloudWatch error logging by the runtime
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::TRACE)
-        // disable printing the name of the module in every log line.
-        .with_target(false)
-        // disabling time is handy because CloudWatch will add the ingestion time.
-        .without_time()
-        .init();
+    tracing::init_default_subscriber();
 
     let shared_config = aws_config::load_from_env().await;
     let client = S3Client::new(&shared_config);

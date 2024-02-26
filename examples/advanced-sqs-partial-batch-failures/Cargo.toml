@@ -12,5 +12,3 @@ aws_lambda_events = { path = "../../lambda-events" }
 lambda_runtime = { path = "../../lambda-runtime" }
 tokio = { version = "1", features = ["macros"] }
 futures = "0.3"
-tracing = { version = "0.1", features = ["log"] }
-tracing-subscriber = { version = "0.3", default-features = false, features = ["fmt"] }

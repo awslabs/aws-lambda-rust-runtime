@@ -65,8 +65,10 @@
 extern crate maplit;
 
 pub use http::{self, Response};
-use lambda_runtime::LambdaEvent;
-pub use lambda_runtime::{self, service_fn, tower, Context, Error, Service};
+/// Utilities to initialize and use `tracing` and `tracing-subscriber` in Lambda Functions.
+#[cfg(feature = "tracing")]
+pub use lambda_runtime::tracing;
+pub use lambda_runtime::{self, service_fn, tower, Context, Error, LambdaEvent, Service};
 use request::RequestFuture;
 use response::ResponseFuture;
 

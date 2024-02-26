@@ -14,8 +14,8 @@ keywords = ["AWS", "Lambda", "API"]
 readme = "../README.md"
 
 [features]
-default = ["simulated"]
-simulated = []
+default = ["tracing"]
+tracing = ["lambda_runtime_api_client/tracing"]
 
 [dependencies]
 async-stream = "0.3"

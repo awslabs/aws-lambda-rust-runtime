@@ -1,4 +1,4 @@
-use lambda_http::{service_fn, Body, Error, IntoResponse, Request, RequestExt, Response};
+use lambda_http::{service_fn, tracing, Body, Error, IntoResponse, Request, RequestExt, Response};
 
 struct SharedClient {
     name: &'static str,
@@ -13,13 +13,7 @@ impl SharedClient {
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     // required to enable CloudWatch error logging by the runtime
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
-        // disable printing the name of the module in every log line.
-        .with_target(false)
-        // disabling time is handy because CloudWatch will add the ingestion time.
-        .without_time()
-        .init();
+    tracing::init_default_subscriber();
 
     // Create the "client" and a reference to it, so that we can pass this into the handler closure below.
     let shared_client = SharedClient {

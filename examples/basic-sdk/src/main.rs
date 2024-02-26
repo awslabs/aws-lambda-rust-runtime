@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use aws_sdk_s3::{output::ListObjectsV2Output, Client as S3Client};
-use lambda_runtime::{service_fn, Error, LambdaEvent};
+use lambda_runtime::{service_fn, tracing, Error, LambdaEvent};
 use serde::{Deserialize, Serialize};
 
 /// The request defines what bucket to list
@@ -34,13 +34,7 @@ impl ListObjects for S3Client {
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     // required to enable CloudWatch error logging by the runtime
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
-        // disable printing the name of the module in every log line.
-        .with_target(false)
-        // disabling time is handy because CloudWatch will add the ingestion time.
-        .without_time()
-        .init();
+    tracing::init_default_subscriber();
 
     let shared_config = aws_config::load_from_env().await;
     let client = S3Client::new(&shared_config);

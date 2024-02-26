@@ -1,7 +1,7 @@
 // This example requires the following input to succeed:
 // { "command": "do something" }
 
-use lambda_runtime::{service_fn, Error, LambdaEvent};
+use lambda_runtime::{service_fn, tracing, Error, LambdaEvent};
 use serde::{Deserialize, Serialize};
 
 /// This is also a made-up example. Requests come into the runtime as unicode
@@ -25,13 +25,7 @@ struct Response {
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     // required to enable CloudWatch error logging by the runtime
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
-        // disable printing the name of the module in every log line.
-        .with_target(false)
-        // disabling time is handy because CloudWatch will add the ingestion time.
-        .without_time()
-        .init();
+    tracing::init_default_subscriber();
 
     let func = service_fn(my_handler);
     lambda_runtime::run(func).await?;

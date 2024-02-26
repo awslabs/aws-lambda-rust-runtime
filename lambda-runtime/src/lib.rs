@@ -7,6 +7,7 @@
 //! Create a type that conforms to the [`tower::Service`] trait. This type can
 //! then be passed to the the `lambda_runtime::run` function, which launches
 //! and runs the Lambda runtime.
+use ::tracing::{error, trace, Instrument};
 use bytes::Bytes;
 use futures::FutureExt;
 use http_body_util::BodyExt;
@@ -24,12 +25,16 @@ use std::{
 use tokio_stream::{Stream, StreamExt};
 pub use tower::{self, service_fn, Service};
 use tower::{util::ServiceFn, ServiceExt};
-use tracing::{error, trace, Instrument};
 
 mod deserializer;
 mod requests;
 /// Utilities for Lambda Streaming functions.
 pub mod streaming;
+
+/// Utilities to initialize and use `tracing` and `tracing-subscriber` in Lambda Functions.
+#[cfg(feature = "tracing")]
+pub use lambda_runtime_api_client::tracing;
+
 /// Types available to a Lambda function.
 mod types;
 

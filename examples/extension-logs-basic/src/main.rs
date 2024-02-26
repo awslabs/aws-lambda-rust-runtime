@@ -1,4 +1,4 @@
-use lambda_extension::{service_fn, Error, Extension, LambdaLog, LambdaLogRecord, SharedService};
+use lambda_extension::{service_fn, tracing, Error, Extension, LambdaLog, LambdaLogRecord, SharedService};
 use tracing::info;
 
 async fn handler(logs: Vec<LambdaLog>) -> Result<(), Error> {
@@ -16,13 +16,7 @@ async fn handler(logs: Vec<LambdaLog>) -> Result<(), Error> {
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     // required to enable CloudWatch error logging by the runtime
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
-        // disable printing the name of the module in every log line.
-        .with_target(false)
-        // disabling time is handy because CloudWatch will add the ingestion time.
-        .without_time()
-        .init();
+    tracing::init_default_subscriber();
 
     let logs_processor = SharedService::new(service_fn(handler));
 

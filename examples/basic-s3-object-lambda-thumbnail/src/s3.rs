@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 use aws_sdk_s3::{operation::write_get_object_response::WriteGetObjectResponseError, Client as S3Client};
 use aws_smithy_http::{byte_stream::ByteStream, result::SdkError};
+use lambda_runtime::tracing;
 use std::{error, io::Read};
 
 pub trait GetFile {

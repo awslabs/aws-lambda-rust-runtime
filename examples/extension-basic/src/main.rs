@@ -1,4 +1,4 @@
-use lambda_extension::{service_fn, Error, LambdaEvent, NextEvent};
+use lambda_extension::{service_fn, tracing, Error, LambdaEvent, NextEvent};
 
 async fn my_extension(event: LambdaEvent) -> Result<(), Error> {
     match event.next {
@@ -15,13 +15,7 @@ async fn my_extension(event: LambdaEvent) -> Result<(), Error> {
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     // required to enable CloudWatch error logging by the runtime
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
-        // disable printing the name of the module in every log line.
-        .with_target(false)
-        // disabling time is handy because CloudWatch will add the ingestion time.
-        .without_time()
-        .init();
+    tracing::init_default_subscriber();
 
     let func = service_fn(my_extension);
     lambda_extension::run(func).await

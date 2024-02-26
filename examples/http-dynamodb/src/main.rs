@@ -1,8 +1,7 @@
-use aws_sdk_dynamodb::{Client};
-use lambda_http::{run, service_fn, Body, Error, Request, Response};
+use aws_sdk_dynamodb::Client;
+use lambda_http::{run, service_fn, tracing, Body, Error, Request, Response};
 use serde::{Deserialize, Serialize};
 use serde_dynamo::to_attribute_value;
-use tracing::info;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Item {
@@ -22,7 +21,7 @@ async fn handle_request(db_client: &Client, event: Request) -> Result<Response<B
     let body = event.body();
     let s = std::str::from_utf8(body).expect("invalid utf-8 sequence");
     //Log into Cloudwatch
-    info!(payload = %s, "JSON Payload received");
+    tracing::info!(payload = %s, "JSON Payload received");
 
     //Serialze JSON into struct.
     //If JSON is incorrect, send back 400 with error.
@@ -56,13 +55,7 @@ async fn handle_request(db_client: &Client, event: Request) -> Result<Response<B
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     // required to enable CloudWatch error logging by the runtime
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
-        // disable printing the name of the module in every log line.
-        .with_target(false)
-        // disabling time is handy because CloudWatch will add the ingestion time.
-        .without_time()
-        .init();
+    tracing::init_default_subscriber();
 
     //Get config from environment.
     let config = aws_config::load_from_env().await;
@@ -93,7 +86,7 @@ pub async fn add_item(client: &Client, item: Item, table: &str) -> Result<(), Er
         .item("first_name", first_av)
         .item("last_name", last_av);
 
-    info!("adding item to DynamoDB");
+    tracing::info!("adding item to DynamoDB");
 
     let _resp = request.send().await?;
 

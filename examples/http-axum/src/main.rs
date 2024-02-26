@@ -14,7 +14,7 @@ use axum::{
     routing::{get, post},
     Router,
 };
-use lambda_http::{run, Error};
+use lambda_http::{run, tracing, Error};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::env::set_var;
@@ -65,13 +65,7 @@ async fn main() -> Result<(), Error> {
     set_var("AWS_LAMBDA_HTTP_IGNORE_STAGE_IN_PATH", "true");
 
     // required to enable CloudWatch error logging by the runtime
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
-        // disable printing the name of the module in every log line.
-        .with_target(false)
-        // disabling time is handy because CloudWatch will add the ingestion time.
-        .without_time()
-        .init();
+    tracing::init_default_subscriber();
 
     let app = Router::new()
         .route("/", get(root))

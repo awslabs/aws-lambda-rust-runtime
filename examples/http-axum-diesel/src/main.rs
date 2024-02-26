@@ -7,7 +7,7 @@ use axum::{
 use bb8::Pool;
 use diesel::prelude::*;
 use diesel_async::{pooled_connection::AsyncDieselConnectionManager, AsyncPgConnection, RunQueryDsl};
-use lambda_http::{http::StatusCode, run, Error};
+use lambda_http::{http::StatusCode, run, tracing, Error};
 use serde::{Deserialize, Serialize};
 
 table! {
@@ -93,13 +93,7 @@ fn internal_server_error<E: std::error::Error>(err: E) -> ServerError {
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     // required to enable CloudWatch error logging by the runtime
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
-        // disable printing the name of the module in every log line.
-        .with_target(false)
-        // disabling time is handy because CloudWatch will add the ingestion time.
-        .without_time()
-        .init();
+    tracing::init_default_subscriber();
 
     // Set up the database connection
     let db_url = std::env::var("DATABASE_URL").expect("missing DATABASE_URL environment variable");

@@ -1,4 +1,4 @@
-use lambda_extension::{Error, Extension, LambdaLog, LambdaLogRecord, Service, SharedService};
+use lambda_extension::{tracing, Error, Extension, LambdaLog, LambdaLogRecord, Service, SharedService};
 use std::{
     future::{ready, Future},
     pin::Pin,
@@ -8,7 +8,6 @@ use std::{
     },
     task::Poll,
 };
-use tracing::info;
 
 /// Custom log processor that increments a counter for each log record.
 ///
@@ -44,8 +43,8 @@ impl Service<Vec<LambdaLog>> for MyLogsProcessor {
         let counter = self.counter.fetch_add(1, SeqCst);
         for log in logs {
             match log.record {
-                LambdaLogRecord::Function(record) => info!("[logs] [function] {}: {}", counter, record),
-                LambdaLogRecord::Extension(record) => info!("[logs] [extension] {}: {}", counter, record),
+                LambdaLogRecord::Function(record) => tracing::info!("[logs] [function] {}: {}", counter, record),
+                LambdaLogRecord::Extension(record) => tracing::info!("[logs] [extension] {}: {}", counter, record),
                 _ => (),
             }
         }
@@ -57,13 +56,7 @@ impl Service<Vec<LambdaLog>> for MyLogsProcessor {
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     // required to enable CloudWatch error logging by the runtime
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
-        // disable printing the name of the module in every log line.
-        .with_target(false)
-        // disabling time is handy because CloudWatch will add the ingestion time.
-        .without_time()
-        .init();
+    tracing::init_default_subscriber();
 
     let logs_processor = SharedService::new(MyLogsProcessor::new());
 

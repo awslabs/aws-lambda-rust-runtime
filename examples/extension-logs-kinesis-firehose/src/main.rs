@@ -1,5 +1,5 @@
 use aws_sdk_firehose::{model::Record, types::Blob, Client};
-use lambda_extension::{Error, Extension, LambdaLog, LambdaLogRecord, Service, SharedService};
+use lambda_extension::{tracing, Error, Extension, LambdaLog, LambdaLogRecord, Service, SharedService};
 use std::{future::Future, pin::Pin, task::Poll};
 
 #[derive(Clone)]
@@ -54,13 +54,7 @@ impl Service<Vec<LambdaLog>> for FirehoseLogsProcessor {
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     // required to enable CloudWatch error logging by the runtime
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
-        // disable printing the name of the module in every log line.
-        .with_target(false)
-        // disabling time is handy because CloudWatch will add the ingestion time.
-        .without_time()
-        .init();
+    tracing::init_default_subscriber();
 
     let config = aws_config::load_from_env().await;
     let logs_processor = SharedService::new(FirehoseLogsProcessor::new(Client::new(&config)));

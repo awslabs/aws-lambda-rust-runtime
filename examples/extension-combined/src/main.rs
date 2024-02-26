@@ -1,7 +1,6 @@
 use lambda_extension::{
-    service_fn, Error, Extension, LambdaEvent, LambdaLog, LambdaLogRecord, NextEvent, SharedService,
+    service_fn, tracing, Error, Extension, LambdaEvent, LambdaLog, LambdaLogRecord, NextEvent, SharedService,
 };
-use tracing::info;
 
 async fn my_extension(event: LambdaEvent) -> Result<(), Error> {
     match event.next {
@@ -18,8 +17,8 @@ async fn my_extension(event: LambdaEvent) -> Result<(), Error> {
 async fn my_log_processor(logs: Vec<LambdaLog>) -> Result<(), Error> {
     for log in logs {
         match log.record {
-            LambdaLogRecord::Function(record) => info!("[logs] [function] {}", record),
-            LambdaLogRecord::Extension(record) => info!("[logs] [extension] {}", record),
+            LambdaLogRecord::Function(record) => tracing::info!("[logs] [function] {}", record),
+            LambdaLogRecord::Extension(record) => tracing::info!("[logs] [extension] {}", record),
             _ => (),
         }
     }
@@ -30,13 +29,7 @@ async fn my_log_processor(logs: Vec<LambdaLog>) -> Result<(), Error> {
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     // required to enable CloudWatch error logging by the runtime
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
-        // disable printing the name of the module in every log line.
-        .with_target(false)
-        // disabling time is handy because CloudWatch will add the ingestion time.
-        .without_time()
-        .init();
+    tracing::init_default_subscriber();
 
     let func = service_fn(my_extension);
     let logs_processor = SharedService::new(service_fn(my_log_processor));

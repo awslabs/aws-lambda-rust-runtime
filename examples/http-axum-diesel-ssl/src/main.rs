@@ -12,7 +12,7 @@ use axum::{
 use bb8::Pool;
 use diesel::prelude::*;
 use diesel_async::{pooled_connection::AsyncDieselConnectionManager, AsyncPgConnection, RunQueryDsl};
-use lambda_http::{http::StatusCode, run, Error};
+use lambda_http::{http::StatusCode, run, tracing, Error};
 use serde::{Deserialize, Serialize};
 
 table! {
@@ -98,22 +98,13 @@ fn internal_server_error<E: std::error::Error>(err: E) -> ServerError {
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     // required to enable CloudWatch error logging by the runtime
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
-        // disable printing the name of the module in every log line.
-        .with_target(false)
-        // disabling time is handy because CloudWatch will add the ingestion time.
-        .without_time()
-        .init();
+    tracing::init_default_subscriber();
 
     // Set up the database connection
     // Format for DATABASE_URL=postgres://your_username:your_password@your_host:5432/your_db?sslmode=require
     let db_url = std::env::var("DATABASE_URL").expect("Env var `DATABASE_URL` not set");
 
-    let mgr = AsyncDieselConnectionManager::<AsyncPgConnection>::new_with_setup(
-        db_url,
-        establish_connection,
-    );
+    let mgr = AsyncDieselConnectionManager::<AsyncPgConnection>::new_with_setup(db_url, establish_connection);
 
     let pool = Pool::builder()
         .max_size(10)
@@ -122,7 +113,7 @@ async fn main() -> Result<(), Error> {
         .idle_timeout(Some(Duration::from_secs(60 * 2)))
         .build(mgr)
         .await?;
-        
+
     // Set up the API routes
     let posts_api = Router::new()
         .route("/", get(list_posts).post(create_post))
@@ -133,7 +124,6 @@ async fn main() -> Result<(), Error> {
 
     run(app).await
 }
-
 
 fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<AsyncPgConnection>> {
     let fut = async {

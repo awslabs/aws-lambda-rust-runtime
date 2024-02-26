@@ -1,4 +1,4 @@
-use lambda_runtime::{service_fn, Error, LambdaEvent};
+use lambda_runtime::{service_fn, tracing, Error, LambdaEvent};
 use pizza_lib::Pizza;
 use serde_json::{json, Value};
 
@@ -15,12 +15,7 @@ impl SQSManager {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
-        .with_target(false)
-        .with_ansi(false)
-        .without_time()
-        .init();
+    tracing::init_default_subscriber();
 
     // read the queue url from the environment
     let queue_url = std::env::var("QUEUE_URL").expect("could not read QUEUE_URL");
@@ -31,9 +26,7 @@ async fn main() -> Result<(), Error> {
     let sqs_manager_ref = &sqs_manager;
 
     // no need to create a SQS Client for each incoming request, let's use a shared state
-    let handler_func_closure = |event: LambdaEvent<Value>| async move {
-        process_event(event, sqs_manager_ref).await
-    };
+    let handler_func_closure = |event: LambdaEvent<Value>| async move { process_event(event, sqs_manager_ref).await };
     lambda_runtime::run(service_fn(handler_func_closure)).await?;
     Ok(())
 }

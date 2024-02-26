@@ -1,15 +1,10 @@
 use aws_lambda_events::event::sqs::SqsEventObj;
-use lambda_runtime::{service_fn, Error, LambdaEvent};
+use lambda_runtime::{service_fn, tracing, Error, LambdaEvent};
 use pizza_lib::Pizza;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
-        .with_target(false)
-        .with_ansi(false)
-        .without_time()
-        .init();
+    tracing::init_default_subscriber();
     let func = service_fn(func);
     lambda_runtime::run(func).await?;
     Ok(())
@@ -18,7 +13,7 @@ async fn main() -> Result<(), Error> {
 async fn func(event: LambdaEvent<SqsEventObj<Pizza>>) -> Result<(), Error> {
     for record in event.payload.records.iter() {
         let pizza = &record.body;
-        println!("Pizza name: {} with toppings: {:?}", pizza.name, pizza.toppings);
+        tracing::info!(name = pizza.name, toppings = ?pizza.toppings, "pizza order received");
     }
     Ok(())
 }

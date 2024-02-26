@@ -7,17 +7,13 @@ edition = "2021"
 env = { "QUEUE_URL" = "https://changeMe" } 
 
 [dependencies]
-#tracing
-tracing = "0.1.40"
-tracing-subscriber = "0.3.17"
-
 #aws dependencies
 aws-config = "0.57.1"
 aws-sdk-config = "0.35.0"
 aws-sdk-sqs = "0.35.0"
 
 #lambda runtime
-lambda_runtime = "0.8.1"
+lambda_runtime = { path = "../../../lambda-runtime" }
 serde_json = "1.0.108"
 tokio = { version = "1", features = ["macros"] }
 

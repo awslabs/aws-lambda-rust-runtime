@@ -13,6 +13,10 @@ categories = ["web-programming::http-server"]
 keywords = ["AWS", "Lambda", "API"]
 readme = "README.md"
 
+[features]
+default = ["tracing"]
+tracing = ["dep:tracing-subscriber"]
+
 [dependencies]
 bytes = { workspace = true }
 futures-channel = { workspace = true }
@@ -30,3 +34,5 @@ hyper-util = { workspace = true, features = [
 tower = { workspace = true, features = ["util"] }
 tower-service = { workspace = true }
 tokio = { version = "1.0", features = ["io-util"] }
+tracing = { version = "0.1", features = ["log"] }
+tracing-subscriber = { version = "0.3", default-features = false, features = ["fmt", "json", "env-filter"], optional = true }

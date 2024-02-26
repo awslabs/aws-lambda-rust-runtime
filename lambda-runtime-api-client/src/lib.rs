@@ -17,6 +17,11 @@ mod error;
 pub use error::*;
 pub mod body;
 
+use tracing::trace;
+
+#[cfg(feature = "tracing")]
+pub mod tracing;
+
 /// API client to interact with the AWS Lambda Runtime API.
 #[derive(Debug)]
 pub struct Client {
@@ -40,8 +45,10 @@ impl Client {
     /// Send a given request to the Runtime API.
     /// Use the client's base URI to ensure the API endpoint is correct.
     pub async fn call(&self, req: Request<body::Body>) -> Result<Response<Incoming>, BoxError> {
-        let req = self.set_origin(req)?;
-        self.client.request(req).await.map_err(Into::into)
+        let request = self.set_origin(req)?;
+
+        trace!(?request, "sending request to Lambda Runtime API");
+        self.client.request(request).await.map_err(Into::into)
     }
 
     /// Create a new client with a given base URI and HTTP connector.
@@ -69,6 +76,8 @@ impl Client {
             .path_and_query(pq)
             .build()
             .map_err(Box::new)?;
+
+        trace!(?uri, "setting the Lambda Runtime API origin URI");
 
         parts.uri = uri;
         Ok(Request::from_parts(parts, body))

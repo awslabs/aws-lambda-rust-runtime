@@ -30,6 +30,11 @@ mod deserializer;
 mod requests;
 /// Utilities for Lambda Streaming functions.
 pub mod streaming;
+
+/// Utilities to initialize and use `tracing` and `tracing-subscriber` in Lambda Functions.
+#[cfg(feature = "tracing")]
+pub use lambda_runtime_api_client::tracing;
+
 /// Types available to a Lambda function.
 mod types;
 

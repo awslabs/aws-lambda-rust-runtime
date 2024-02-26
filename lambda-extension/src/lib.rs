@@ -23,6 +23,10 @@ pub use telemetry::*;
 /// Include several request builders to interact with the Extension API.
 pub mod requests;
 
+/// Utilities to initialize and use `tracing` and `tracing-subscriber` in Lambda Functions.
+#[cfg(feature = "tracing")]
+pub use lambda_runtime_api_client::tracing;
+
 /// Execute the given events processor
 pub async fn run<E>(events_processor: E) -> Result<(), Error>
 where

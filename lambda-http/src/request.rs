@@ -438,6 +438,7 @@ impl RequestContext {
             Self::ApiGatewayV2(ag) => ag.authorizer.as_ref(),
             #[cfg(feature = "apigw_websockets")]
             Self::WebSocket(ag) => Some(&ag.authorizer),
+            #[cfg(any(feature = "alb", feature = "pass_through"))]
             _ => None,
         }
     }

@@ -24,7 +24,7 @@ use std::{
 use tokio_stream::{Stream, StreamExt};
 pub use tower::{self, service_fn, Service};
 use tower::{util::ServiceFn, ServiceExt};
-use tracing::{error, trace, Instrument};
+use ::tracing::{error, trace, Instrument};
 
 mod deserializer;
 mod requests;

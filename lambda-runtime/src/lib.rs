@@ -7,6 +7,7 @@
 //! Create a type that conforms to the [`tower::Service`] trait. This type can
 //! then be passed to the the `lambda_runtime::run` function, which launches
 //! and runs the Lambda runtime.
+use ::tracing::{error, trace, Instrument};
 use bytes::Bytes;
 use futures::FutureExt;
 use http_body_util::BodyExt;
@@ -24,7 +25,6 @@ use std::{
 use tokio_stream::{Stream, StreamExt};
 pub use tower::{self, service_fn, Service};
 use tower::{util::ServiceFn, ServiceExt};
-use ::tracing::{error, trace, Instrument};
 
 mod deserializer;
 mod requests;

@@ -65,9 +65,30 @@ pub struct CodeDeployEventDetail {
     pub deployment_group: Option<String>,
 }
 
+#[derive(Debug, Clone, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(rename_all = "PascalCase")]
+pub struct CodeDeployLifecycleEvent {
+    pub deployment_id: String,
+    pub lifecycle_event_hook_execution_id: String,
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    #[cfg(feature = "codedeploy")]
+    fn example_codedeploy_lifecycle_event() {
+        let data = include_bytes!("../../fixtures/example-codedeploy-lifecycle-event.json");
+        let parsed: CodeDeployLifecycleEvent = serde_json::from_slice(data).unwrap();
+
+        assert_eq!(parsed.deployment_id, "d-deploymentId".to_string());
+        assert_eq!(parsed.lifecycle_event_hook_execution_id, "eyJlbmNyeXB0ZWREYXRhIjoiY3VHU2NjdkJXUTJQUENVd2dkYUNGRVg0dWlpME9UWVdHTVhZcDRXVW5LYUVKc21EaUFPMkNLNXMwMWFrNDlYVStlbXdRb29xS3NJTUNVQ3RYRGFZSXc1VTFwUllvMDhmMzdlbDZFeDVVdjZrNFc0eU5waGh6YTRvdkNWcmVveVR6OWdERlM2SmlIYW1TZz09IiwiaXZQYXJhbWV0ZXJTcGVjIjoiTm1ZNFR6RzZxQVhHamhhLyIsIm1hdGVyaWFsU2V0U2VyaWFsIjoxfQ==".to_string());
+
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: CodeDeployLifecycleEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        assert_eq!(parsed, reparsed);
+    }
 
     #[test]
     #[cfg(feature = "codedeploy")]

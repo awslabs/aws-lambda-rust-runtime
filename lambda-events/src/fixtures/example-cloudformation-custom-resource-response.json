@@ -1,0 +1,14 @@
+{
+  "Status": "FAILED",
+  "Reason": "This is a test failure.",
+  "PhysicalResourceId": "custom-resource-f4bd5382-3de3-4caf-b7ad-1be06b899647",
+  "StackId": "arn:aws:cloudformation:us-east-1:123456789012:stack/stack-name/16580499-7622-4a9c-b32f-4eba35da93da",
+  "RequestId": "49347ca5-c603-44e5-a34b-10cf1854a887",
+  "LogicalResourceId": "CustomResource",
+  "NoEcho": false,
+  "Data": {
+    "Key1": "a",
+    "Key2": "b",
+    "Key3": "c"
+  }
+}

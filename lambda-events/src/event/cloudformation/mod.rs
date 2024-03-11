@@ -1,5 +1,6 @@
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
+use std::collections::HashMap;
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(tag = "RequestType")]
@@ -75,6 +76,26 @@ where
     pub resource_properties: P2,
 }
 
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct CloudFormationCustomResourceResponse {
+    pub status: CloudFormationCustomResourceResponseStatus,
+    pub reason: Option<String>,
+    pub physical_resource_id: String,
+    pub stack_id: String,
+    pub request_id: String,
+    pub logical_resource_id: String,
+    pub no_echo: bool,
+    pub data: HashMap<String, String>,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum CloudFormationCustomResourceResponseStatus {
+    Success,
+    Failed,
+}
+
 #[cfg(test)]
 mod test {
     use std::collections::HashMap;
@@ -134,6 +155,15 @@ mod test {
 
         let output: String = serde_json::to_string(&parsed).unwrap();
         let reparsed: TestRequest = serde_json::from_slice(output.as_bytes()).unwrap();
+        assert_eq!(parsed, reparsed);
+    }
+
+    #[test]
+    fn example_cloudformation_custom_resource_response() {
+        let data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-response.json");
+        let parsed: CloudFormationCustomResourceResponse = serde_json::from_slice(data).unwrap();
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: CloudFormationCustomResourceResponse = serde_json::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

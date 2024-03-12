@@ -20,7 +20,7 @@ tracing = ["lambda_runtime_api_client/tracing"]
 [dependencies]
 async-stream = "0.3"
 bytes = { workspace = true }
-chrono = { version = "0.4", features = ["serde"] }
+chrono = { workspace = true, features = ["serde"] }
 http = { workspace = true }
 http-body-util = { workspace = true }
 hyper = { workspace = true, features = ["http1", "client", "server"] }

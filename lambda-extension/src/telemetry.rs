@@ -316,7 +316,7 @@ where
 #[cfg(test)]
 mod deserialization_tests {
     use super::*;
-    use chrono::{Duration, TimeZone};
+    use chrono::{TimeDelta, TimeZone};
 
     macro_rules! deserialize_tests {
         ($($name:ident: $value:expr,)*) => {
@@ -385,7 +385,7 @@ mod deserialization_tests {
                         start: Utc
                             .with_ymd_and_hms(2022, 10, 21, 14, 5, 3)
                             .unwrap()
-                            .checked_add_signed(Duration::milliseconds(165))
+                            .checked_add_signed(TimeDelta::try_milliseconds(165).unwrap())
                             .unwrap(),
                         duration_ms: 2598.0
                     },
@@ -394,7 +394,7 @@ mod deserialization_tests {
                         start: Utc
                             .with_ymd_and_hms(2022, 10, 21, 14, 5, 5)
                             .unwrap()
-                            .checked_add_signed(Duration::milliseconds(763))
+                            .checked_add_signed(TimeDelta::try_milliseconds(763).unwrap())
                             .unwrap(),
                         duration_ms: 0.0
                     },
@@ -473,7 +473,7 @@ mod deserialization_tests {
 
 #[cfg(test)]
 mod serialization_tests {
-    use chrono::{Duration, TimeZone};
+    use chrono::{TimeDelta, TimeZone};
 
     use super::*;
     macro_rules! serialize_tests {
@@ -557,7 +557,7 @@ mod serialization_tests {
                             start: Utc
                                 .with_ymd_and_hms(2022, 10, 21, 14, 5, 3)
                                 .unwrap()
-                                .checked_add_signed(Duration::milliseconds(165))
+                                .checked_add_signed(TimeDelta::try_milliseconds(165).unwrap())
                                 .unwrap(),
                             duration_ms: 2598.0
                         },
@@ -566,7 +566,7 @@ mod serialization_tests {
                             start: Utc
                                 .with_ymd_and_hms(2022, 10, 21, 14, 5, 5)
                                 .unwrap()
-                                .checked_add_signed(Duration::milliseconds(763))
+                                .checked_add_signed(TimeDelta::try_milliseconds(763).unwrap())
                                 .unwrap(),
                             duration_ms: 0.0
                         },

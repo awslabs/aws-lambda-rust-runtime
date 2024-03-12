@@ -233,7 +233,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use chrono::{Duration, TimeZone};
+    use chrono::{TimeDelta, TimeZone};
 
     #[test]
     fn deserialize_full() {
@@ -242,7 +242,7 @@ mod tests {
             time: Utc
                 .with_ymd_and_hms(2020, 8, 20, 12, 31, 32)
                 .unwrap()
-                .checked_add_signed(Duration::milliseconds(123))
+                .checked_add_signed(TimeDelta::try_milliseconds(123).unwrap())
                 .unwrap(),
             record: LambdaLogRecord::Function("hello world".to_string()),
         };

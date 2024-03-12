@@ -1,4 +1,4 @@
-use chrono::{DateTime, Duration, TimeZone, Utc};
+use chrono::{DateTime, TimeDelta, TimeZone, Utc};
 use serde::ser::Serializer;
 use serde::{
     de::{Deserializer, Error as DeError},
@@ -55,11 +55,11 @@ impl DerefMut for SecondTimestamp {
 pub struct SecondDuration(
     #[serde(deserialize_with = "deserialize_duration_seconds")]
     #[serde(serialize_with = "serialize_duration_seconds")]
-    pub Duration,
+    pub TimeDelta,
 );
 
 impl Deref for SecondDuration {
-    type Target = Duration;
+    type Target = TimeDelta;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -77,11 +77,11 @@ impl DerefMut for SecondDuration {
 pub struct MinuteDuration(
     #[serde(deserialize_with = "deserialize_duration_minutes")]
     #[serde(serialize_with = "serialize_duration_minutes")]
-    pub Duration,
+    pub TimeDelta,
 );
 
 impl Deref for MinuteDuration {
-    type Target = Duration;
+    type Target = TimeDelta;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -144,7 +144,7 @@ where
         .ok_or_else(|| D::Error::custom("invalid timestamp"))
 }
 
-fn serialize_duration_seconds<S>(duration: &Duration, serializer: S) -> Result<S::Ok, S::Error>
+fn serialize_duration_seconds<S>(duration: &TimeDelta, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
@@ -153,15 +153,16 @@ where
     serializer.serialize_i64(seconds)
 }
 
-fn deserialize_duration_seconds<'de, D>(deserializer: D) -> Result<Duration, D::Error>
+fn deserialize_duration_seconds<'de, D>(deserializer: D) -> Result<TimeDelta, D::Error>
 where
     D: Deserializer<'de>,
 {
     let seconds = f64::deserialize(deserializer)?;
-    Ok(Duration::seconds(seconds as i64))
+    TimeDelta::try_seconds(seconds as i64)
+        .ok_or_else(|| D::Error::custom(format!("invalid time delta seconds `{}`", seconds)))
 }
 
-fn serialize_duration_minutes<S>(duration: &Duration, serializer: S) -> Result<S::Ok, S::Error>
+fn serialize_duration_minutes<S>(duration: &TimeDelta, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
@@ -170,12 +171,13 @@ where
     serializer.serialize_i64(minutes)
 }
 
-fn deserialize_duration_minutes<'de, D>(deserializer: D) -> Result<Duration, D::Error>
+fn deserialize_duration_minutes<'de, D>(deserializer: D) -> Result<TimeDelta, D::Error>
 where
     D: Deserializer<'de>,
 {
     let minutes = f64::deserialize(deserializer)?;
-    Ok(Duration::minutes(minutes as i64))
+    TimeDelta::try_minutes(minutes as i64)
+        .ok_or_else(|| D::Error::custom(format!("invalid time delta minutes `{}`", minutes)))
 }
 
 fn normalize_timestamp<'de, D>(deserializer: D) -> Result<(u64, u64), D::Error>
@@ -291,10 +293,10 @@ mod test {
         #[derive(Deserialize)]
         struct Test {
             #[serde(deserialize_with = "deserialize_duration_seconds")]
-            v: Duration,
+            v: TimeDelta,
         }
 
-        let expected = Duration::seconds(36);
+        let expected = TimeDelta::try_seconds(36).unwrap();
 
         let data = serde_json::json!({
             "v": 36,
@@ -314,10 +316,10 @@ mod test {
         #[derive(Serialize)]
         struct Test {
             #[serde(serialize_with = "serialize_duration_seconds")]
-            v: Duration,
+            v: TimeDelta,
         }
         let instance = Test {
-            v: Duration::seconds(36),
+            v: TimeDelta::try_seconds(36).unwrap(),
         };
         let encoded = serde_json::to_string(&instance).unwrap();
         assert_eq!(encoded, String::from(r#"{"v":36}"#));
@@ -328,10 +330,10 @@ mod test {
         #[derive(Deserialize)]
         struct Test {
             #[serde(deserialize_with = "deserialize_duration_minutes")]
-            v: Duration,
+            v: TimeDelta,
         }
 
-        let expected = Duration::minutes(36);
+        let expected = TimeDelta::try_minutes(36).unwrap();
 
         let data = serde_json::json!({
             "v": 36,
@@ -351,10 +353,10 @@ mod test {
         #[derive(Serialize)]
         struct Test {
             #[serde(serialize_with = "serialize_duration_minutes")]
-            v: Duration,
+            v: TimeDelta,
         }
         let instance = Test {
-            v: Duration::minutes(36),
+            v: TimeDelta::try_minutes(36).unwrap(),
         };
         let encoded = serde_json::to_string(&instance).unwrap();
         assert_eq!(encoded, String::from(r#"{"v":36}"#));

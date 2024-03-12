@@ -18,7 +18,7 @@ edition = "2021"
 [dependencies]
 base64 = { workspace = true }
 bytes = { workspace = true, features = ["serde"], optional = true }
-chrono = { version = "0.4.31", default-features = false, features = [
+chrono = { workspace = true, default-features = false, features = [
   "clock",
   "serde",
   "std",

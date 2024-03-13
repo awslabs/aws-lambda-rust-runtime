@@ -1,15 +1,20 @@
 use chrono::{DateTime, Utc};
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 /// Parse EventBridge events.
 /// Deserialize the event detail into a structure that's `DeserializeOwned`.
 ///
 /// See https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-events-structure.html for structure details.
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
-#[serde(bound(deserialize = "T: DeserializeOwned"))]
+#[serde(bound(deserialize = "T1: DeserializeOwned"))]
 #[serde(rename_all = "kebab-case")]
-pub struct EventBridgeEvent<T: Serialize> {
+pub struct EventBridgeEvent<T1 = Value>
+where
+    T1: Serialize,
+    T1: DeserializeOwned,
+{
     #[serde(default)]
     pub version: Option<String>,
     #[serde(default)]
@@ -24,8 +29,8 @@ pub struct EventBridgeEvent<T: Serialize> {
     pub region: Option<String>,
     #[serde(default)]
     pub resources: Option<Vec<String>>,
-    #[serde(bound(deserialize = "T: DeserializeOwned"))]
-    pub detail: T,
+    #[serde(bound = "")]
+    pub detail: T1,
 }
 
 #[cfg(test)]

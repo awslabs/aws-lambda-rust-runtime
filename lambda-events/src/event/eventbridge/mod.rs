@@ -58,4 +58,17 @@ mod test {
         let reparsed: EventBridgeEvent<Ec2StateChange> = serde_json::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
+
+    #[test]
+    fn example_eventbridge_schedule_event() {
+        let data = include_bytes!("../../fixtures/example-eventbridge-schedule.json");
+        let parsed: EventBridgeEvent = serde_json::from_slice(data).unwrap();
+
+        assert_eq!("aws.events", parsed.source);
+        assert_eq!("Scheduled Event", parsed.detail_type);
+
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: EventBridgeEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        assert_eq!(parsed, reparsed);
+    }
 }

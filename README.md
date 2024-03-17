@@ -374,7 +374,7 @@ Lambdas can be run and debugged locally using a special [Lambda debug proxy](htt
 
 ## Tracing and Logging
 
-The Rust Runtime for Lambda integrates with the (Tracing)[https://tracing.rs] libraries to provide tracing and logging.
+The Rust Runtime for Lambda integrates with the [Tracing](https://tracing.rs) libraries to provide tracing and logging.
 
 By default, the runtime emits `tracing` events that you can collect via `tracing-subscriber`. It also enabled a feature called `tracing` that exposes a default subscriber with sensible options to send logging information to AWS CloudWatch. Follow the next example that shows how to enable the default subscriber:
 

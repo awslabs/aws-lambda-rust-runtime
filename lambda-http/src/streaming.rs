@@ -16,10 +16,10 @@ use tokio_stream::Stream;
 ///
 /// This takes care of transforming the LambdaEvent into a [`Request`] and
 /// accepts [`http::Response<http_body::Body>`] as response.
-pub async fn run_with_streaming_response<'a, S, B, E>(handler: S) -> Result<(), Error>
+pub async fn run_with_streaming_response<S, B, E>(handler: S) -> Result<(), Error>
 where
-    S: Service<Request, Response = Response<B>, Error = E>,
-    S::Future: Send + 'a,
+    S: Service<Request, Response = Response<B>, Error = E> + Send + 'static,
+    S::Future: Send + 'static,
     E: Debug + Display,
     B: Body + Unpin + Send + 'static,
     B::Data: Into<Bytes> + Send,

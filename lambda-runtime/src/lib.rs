@@ -7,27 +7,22 @@
 //! Create a type that conforms to the [`tower::Service`] trait. This type can
 //! then be passed to the the `lambda_runtime::run` function, which launches
 //! and runs the Lambda runtime.
-use ::tracing::{error, trace, Instrument};
-use bytes::Bytes;
-use futures::FutureExt;
-use http_body_util::BodyExt;
-use hyper::{body::Incoming, http::Request};
-use lambda_runtime_api_client::{body::Body, BoxError, Client};
 use serde::{Deserialize, Serialize};
 use std::{
-    borrow::Cow,
     env,
     fmt::{self, Debug},
     future::Future,
-    panic,
     sync::Arc,
 };
-use tokio_stream::{Stream, StreamExt};
+use tokio_stream::Stream;
+use tower::util::ServiceFn;
 pub use tower::{self, service_fn, Service};
-use tower::{util::ServiceFn, ServiceExt};
 
 mod deserializer;
+/// Tower middleware to be applied to runtime invocatinos.
+pub mod layers;
 mod requests;
+mod runtime;
 /// Utilities for Lambda Streaming functions.
 pub mod streaming;
 
@@ -38,12 +33,11 @@ pub use lambda_runtime_api_client::tracing;
 /// Types available to a Lambda function.
 mod types;
 
-use requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest};
+use requests::EventErrorRequest;
+pub use runtime::{LambdaInvocation, Runtime};
 pub use types::{
     Context, Diagnostic, FunctionResponse, IntoFunctionResponse, LambdaEvent, MetadataPrelude, StreamResponse,
 };
-
-use types::invoke_request_id;
 
 /// Error type that lambdas may result in
 pub type Error = lambda_runtime_api_client::BoxError;
@@ -90,134 +84,11 @@ where
     service_fn(move |req: LambdaEvent<A>| f(req.payload, req.context))
 }
 
-struct Runtime {
-    client: Client,
-    config: RefConfig,
-}
-
-impl Runtime {
-    async fn run<F, A, R, B, S, D, E>(
-        &self,
-        incoming: impl Stream<Item = Result<http::Response<Incoming>, Error>> + Send,
-        mut handler: F,
-    ) -> Result<(), BoxError>
-    where
-        F: Service<LambdaEvent<A>>,
-        F::Future: Future<Output = Result<R, F::Error>>,
-        F::Error: for<'a> Into<Diagnostic<'a>> + fmt::Debug,
-        A: for<'de> Deserialize<'de>,
-        R: IntoFunctionResponse<B, S>,
-        B: Serialize,
-        S: Stream<Item = Result<D, E>> + Unpin + Send + 'static,
-        D: Into<Bytes> + Send,
-        E: Into<Error> + Send + Debug,
-    {
-        let client = &self.client;
-        tokio::pin!(incoming);
-        while let Some(next_event_response) = incoming.next().await {
-            trace!("New event arrived (run loop)");
-            let event = next_event_response?;
-            let (parts, body) = event.into_parts();
-            let request_id = invoke_request_id(&parts.headers)?;
-
-            #[cfg(debug_assertions)]
-            if parts.status == http::StatusCode::NO_CONTENT {
-                // Ignore the event if the status code is 204.
-                // This is a way to keep the runtime alive when
-                // there are no events pending to be processed.
-                continue;
-            }
-
-            let ctx: Context = Context::new(request_id, self.config.clone(), &parts.headers)?;
-            let request_span = ctx.request_span();
-
-            // Group the handling in one future and instrument it with the span
-            async {
-                let body = body.collect().await?.to_bytes();
-                trace!(
-                    body = std::str::from_utf8(&body)?,
-                    "raw JSON event received from Lambda"
-                );
-
-                #[cfg(debug_assertions)]
-                if parts.status.is_server_error() {
-                    error!("Lambda Runtime server returned an unexpected error");
-                    return Err(parts.status.to_string().into());
-                }
-
-                let lambda_event = match deserializer::deserialize(&body, ctx) {
-                    Ok(lambda_event) => lambda_event,
-                    Err(err) => {
-                        let req = build_event_error_request(request_id, err)?;
-                        client.call(req).await.expect("Unable to send response to Runtime APIs");
-                        return Ok(());
-                    }
-                };
-
-                let req = match handler.ready().await {
-                    Ok(handler) => {
-                        // Catches panics outside of a `Future`
-                        let task = panic::catch_unwind(panic::AssertUnwindSafe(|| handler.call(lambda_event)));
-
-                        let task = match task {
-                            // Catches panics inside of the `Future`
-                            Ok(task) => panic::AssertUnwindSafe(task).catch_unwind().await,
-                            Err(err) => Err(err),
-                        };
-
-                        match task {
-                            Ok(response) => match response {
-                                Ok(response) => {
-                                    trace!("Ok response from handler (run loop)");
-                                    EventCompletionRequest::new(request_id, response).into_req()
-                                }
-                                Err(err) => build_event_error_request(request_id, err),
-                            },
-                            Err(err) => {
-                                error!("{:?}", err);
-                                let error_type = type_name_of_val(&err);
-                                let msg = if let Some(msg) = err.downcast_ref::<&str>() {
-                                    format!("Lambda panicked: {msg}")
-                                } else {
-                                    "Lambda panicked".to_string()
-                                };
-                                EventErrorRequest::new(
-                                    request_id,
-                                    Diagnostic {
-                                        error_type: Cow::Borrowed(error_type),
-                                        error_message: Cow::Owned(msg),
-                                    },
-                                )
-                                .into_req()
-                            }
-                        }
-                    }
-                    Err(err) => build_event_error_request(request_id, err),
-                }?;
-
-                client.call(req).await.expect("Unable to send response to Runtime APIs");
-                Ok::<(), Error>(())
-            }
-            .instrument(request_span)
-            .await?;
-        }
-        Ok(())
-    }
-}
-
-fn incoming(client: &Client) -> impl Stream<Item = Result<http::Response<Incoming>, Error>> + Send + '_ {
-    async_stream::stream! {
-        loop {
-            trace!("Waiting for next event (incoming loop)");
-            let req = NextEventRequest.into_req().expect("Unable to construct request");
-            let res = client.call(req).await;
-            yield res;
-        }
-    }
-}
-
 /// Starts the Lambda Rust runtime and begins polling for events on the [Lambda
 /// Runtime APIs](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html).
+///
+/// If you need more control over the runtime and add custom middleware, use the
+/// [Runtime] type directly.
 ///
 /// # Example
 /// ```no_run
@@ -237,272 +108,16 @@ fn incoming(client: &Client) -> impl Stream<Item = Result<http::Response<Incomin
 /// ```
 pub async fn run<A, F, R, B, S, D, E>(handler: F) -> Result<(), Error>
 where
-    F: Service<LambdaEvent<A>>,
-    F::Future: Future<Output = Result<R, F::Error>>,
+    F: Service<LambdaEvent<A>, Response = R> + Send + 'static,
+    F::Future: Future<Output = Result<R, F::Error>> + Send + 'static,
     F::Error: for<'a> Into<Diagnostic<'a>> + fmt::Debug,
-    A: for<'de> Deserialize<'de>,
-    R: IntoFunctionResponse<B, S>,
-    B: Serialize,
+    A: for<'de> Deserialize<'de> + Send + 'static,
+    R: IntoFunctionResponse<B, S> + Send + 'static,
+    B: Serialize + Send + 'static,
     S: Stream<Item = Result<D, E>> + Unpin + Send + 'static,
-    D: Into<Bytes> + Send,
-    E: Into<Error> + Send + Debug,
+    D: Into<bytes::Bytes> + Send + 'static,
+    E: Into<Error> + Send + Debug + 'static,
 {
-    trace!("Loading config from env");
-    let config = Config::from_env();
-    let client = Client::builder().build().expect("Unable to create a runtime client");
-    let runtime = Runtime {
-        client,
-        config: Arc::new(config),
-    };
-
-    let client = &runtime.client;
-    let incoming = incoming(client);
-    runtime.run(incoming, handler).await
-}
-
-fn type_name_of_val<T>(_: T) -> &'static str {
-    std::any::type_name::<T>()
-}
-
-fn build_event_error_request<'a, T>(request_id: &'a str, err: T) -> Result<Request<Body>, Error>
-where
-    T: Into<Diagnostic<'a>> + Debug,
-{
-    error!("{:?}", err); // logs the error in CloudWatch
-    EventErrorRequest::new(request_id, err).into_req()
-}
-
-#[cfg(test)]
-mod endpoint_tests {
-    use crate::{
-        incoming,
-        requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest},
-        types::Diagnostic,
-        Config, Error, Runtime,
-    };
-    use futures::future::BoxFuture;
-    use http::{HeaderValue, StatusCode};
-    use http_body_util::BodyExt;
-    use httpmock::prelude::*;
-
-    use lambda_runtime_api_client::Client;
-    use std::{borrow::Cow, env, sync::Arc};
-    use tokio_stream::StreamExt;
-
-    #[tokio::test]
-    async fn test_next_event() -> Result<(), Error> {
-        let server = MockServer::start();
-        let request_id = "156cb537-e2d4-11e8-9b34-d36013741fb9";
-        let deadline = "1542409706888";
-
-        let mock = server.mock(|when, then| {
-            when.method(GET).path("/2018-06-01/runtime/invocation/next");
-            then.status(200)
-                .header("content-type", "application/json")
-                .header("lambda-runtime-aws-request-id", request_id)
-                .header("lambda-runtime-deadline-ms", deadline)
-                .body("{}");
-        });
-
-        let base = server.base_url().parse().expect("Invalid mock server Uri");
-        let client = Client::builder().with_endpoint(base).build()?;
-
-        let req = NextEventRequest.into_req()?;
-        let rsp = client.call(req).await.expect("Unable to send request");
-
-        mock.assert_async().await;
-        assert_eq!(rsp.status(), StatusCode::OK);
-        assert_eq!(
-            rsp.headers()["lambda-runtime-aws-request-id"],
-            &HeaderValue::from_static(request_id)
-        );
-        assert_eq!(
-            rsp.headers()["lambda-runtime-deadline-ms"],
-            &HeaderValue::from_static(deadline)
-        );
-
-        let body = rsp.into_body().collect().await?.to_bytes();
-        assert_eq!("{}", std::str::from_utf8(&body)?);
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_ok_response() -> Result<(), Error> {
-        let server = MockServer::start();
-
-        let mock = server.mock(|when, then| {
-            when.method(POST)
-                .path("/2018-06-01/runtime/invocation/156cb537-e2d4-11e8-9b34-d36013741fb9/response")
-                .body("\"{}\"");
-            then.status(200).body("");
-        });
-
-        let base = server.base_url().parse().expect("Invalid mock server Uri");
-        let client = Client::builder().with_endpoint(base).build()?;
-
-        let req = EventCompletionRequest::new("156cb537-e2d4-11e8-9b34-d36013741fb9", "{}");
-        let req = req.into_req()?;
-
-        let rsp = client.call(req).await?;
-
-        mock.assert_async().await;
-        assert_eq!(rsp.status(), StatusCode::OK);
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_error_response() -> Result<(), Error> {
-        let diagnostic = Diagnostic {
-            error_type: Cow::Borrowed("InvalidEventDataError"),
-            error_message: Cow::Borrowed("Error parsing event data"),
-        };
-        let body = serde_json::to_string(&diagnostic)?;
-
-        let server = MockServer::start();
-        let mock = server.mock(|when, then| {
-            when.method(POST)
-                .path("/2018-06-01/runtime/invocation/156cb537-e2d4-11e8-9b34-d36013741fb9/error")
-                .header("lambda-runtime-function-error-type", "unhandled")
-                .body(body);
-            then.status(200).body("");
-        });
-
-        let base = server.base_url().parse().expect("Invalid mock server Uri");
-        let client = Client::builder().with_endpoint(base).build()?;
-
-        let req = EventErrorRequest {
-            request_id: "156cb537-e2d4-11e8-9b34-d36013741fb9",
-            diagnostic,
-        };
-        let req = req.into_req()?;
-        let rsp = client.call(req).await?;
-
-        mock.assert_async().await;
-        assert_eq!(rsp.status(), StatusCode::OK);
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn successful_end_to_end_run() -> Result<(), Error> {
-        let server = MockServer::start();
-        let request_id = "156cb537-e2d4-11e8-9b34-d36013741fb9";
-        let deadline = "1542409706888";
-
-        let next_request = server.mock(|when, then| {
-            when.method(GET).path("/2018-06-01/runtime/invocation/next");
-            then.status(200)
-                .header("content-type", "application/json")
-                .header("lambda-runtime-aws-request-id", request_id)
-                .header("lambda-runtime-deadline-ms", deadline)
-                .body("{}");
-        });
-        let next_response = server.mock(|when, then| {
-            when.method(POST)
-                .path(format!("/2018-06-01/runtime/invocation/{}/response", request_id))
-                .body("{}");
-            then.status(200).body("");
-        });
-
-        let base = server.base_url().parse().expect("Invalid mock server Uri");
-        let client = Client::builder().with_endpoint(base).build()?;
-
-        async fn func(event: crate::LambdaEvent<serde_json::Value>) -> Result<serde_json::Value, Error> {
-            let (event, _) = event.into_parts();
-            Ok(event)
-        }
-        let f = crate::service_fn(func);
-
-        // set env vars needed to init Config if they are not already set in the environment
-        if env::var("AWS_LAMBDA_RUNTIME_API").is_err() {
-            env::set_var("AWS_LAMBDA_RUNTIME_API", server.base_url());
-        }
-        if env::var("AWS_LAMBDA_FUNCTION_NAME").is_err() {
-            env::set_var("AWS_LAMBDA_FUNCTION_NAME", "test_fn");
-        }
-        if env::var("AWS_LAMBDA_FUNCTION_MEMORY_SIZE").is_err() {
-            env::set_var("AWS_LAMBDA_FUNCTION_MEMORY_SIZE", "128");
-        }
-        if env::var("AWS_LAMBDA_FUNCTION_VERSION").is_err() {
-            env::set_var("AWS_LAMBDA_FUNCTION_VERSION", "1");
-        }
-        if env::var("AWS_LAMBDA_LOG_STREAM_NAME").is_err() {
-            env::set_var("AWS_LAMBDA_LOG_STREAM_NAME", "test_stream");
-        }
-        if env::var("AWS_LAMBDA_LOG_GROUP_NAME").is_err() {
-            env::set_var("AWS_LAMBDA_LOG_GROUP_NAME", "test_log");
-        }
-        let config = Config::from_env();
-
-        let runtime = Runtime {
-            client,
-            config: Arc::new(config),
-        };
-        let client = &runtime.client;
-        let incoming = incoming(client).take(1);
-        runtime.run(incoming, f).await?;
-
-        next_request.assert_async().await;
-        next_response.assert_async().await;
-        Ok(())
-    }
-
-    async fn run_panicking_handler<F>(func: F) -> Result<(), Error>
-    where
-        F: FnMut(crate::LambdaEvent<serde_json::Value>) -> BoxFuture<'static, Result<serde_json::Value, Error>>,
-    {
-        let server = MockServer::start();
-        let request_id = "156cb537-e2d4-11e8-9b34-d36013741fb9";
-        let deadline = "1542409706888";
-
-        let next_request = server.mock(|when, then| {
-            when.method(GET).path("/2018-06-01/runtime/invocation/next");
-            then.status(200)
-                .header("content-type", "application/json")
-                .header("lambda-runtime-aws-request-id", request_id)
-                .header("lambda-runtime-deadline-ms", deadline)
-                .body("{}");
-        });
-
-        let next_response = server.mock(|when, then| {
-            when.method(POST)
-                .path(format!("/2018-06-01/runtime/invocation/{}/error", request_id))
-                .header("lambda-runtime-function-error-type", "unhandled");
-            then.status(200).body("");
-        });
-
-        let base = server.base_url().parse().expect("Invalid mock server Uri");
-        let client = Client::builder().with_endpoint(base).build()?;
-
-        let f = crate::service_fn(func);
-
-        let config = Arc::new(Config {
-            function_name: "test_fn".to_string(),
-            memory: 128,
-            version: "1".to_string(),
-            log_stream: "test_stream".to_string(),
-            log_group: "test_log".to_string(),
-        });
-
-        let runtime = Runtime { client, config };
-        let client = &runtime.client;
-        let incoming = incoming(client).take(1);
-        runtime.run(incoming, f).await?;
-
-        next_request.assert_async().await;
-        next_response.assert_async().await;
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn panic_in_async_run() -> Result<(), Error> {
-        run_panicking_handler(|_| Box::pin(async { panic!("This is intentionally here") })).await
-    }
-
-    #[tokio::test]
-    async fn panic_outside_async_run() -> Result<(), Error> {
-        run_panicking_handler(|_| {
-            panic!("This is intentionally here");
-        })
-        .await
-    }
+    let runtime = Runtime::new(handler).layer(layers::TracingLayer::new());
+    runtime.run().await
 }

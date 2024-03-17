@@ -37,6 +37,7 @@ hyper-util = { workspace = true, features = [
     "tokio",
 ] }
 lambda_runtime_api_client = { version = "0.10", path = "../lambda-runtime-api-client" }
+pin-project = "1"
 serde = { version = "1", features = ["derive", "rc"] }
 serde_json = "^1"
 serde_path_to_error = "0.1.11"
@@ -48,6 +49,7 @@ tokio = { version = "1.0", features = [
 ] }
 tokio-stream = "0.1.2"
 tower = { workspace = true, features = ["util"] }
+tower-layer = { workspace = true }
 tracing = { version = "0.1", features = ["log"] }
 
 [dev-dependencies]

@@ -7,12 +7,10 @@ use serde::{Deserialize, Serialize};
 use std::{
     borrow::Cow,
     collections::HashMap,
-    env,
     fmt::{Debug, Display},
     time::{Duration, SystemTime},
 };
 use tokio_stream::Stream;
-use tracing::Span;
 
 /// Diagnostic information about an error.
 ///
@@ -208,24 +206,6 @@ impl Context {
     /// The execution deadline for the current invocation.
     pub fn deadline(&self) -> SystemTime {
         SystemTime::UNIX_EPOCH + Duration::from_millis(self.deadline)
-    }
-
-    /// Create a new [`tracing::Span`] for an incoming invocation.
-    pub(crate) fn request_span(&self) -> Span {
-        match &self.xray_trace_id {
-            Some(trace_id) => {
-                env::set_var("_X_AMZN_TRACE_ID", trace_id);
-                tracing::info_span!(
-                    "Lambda runtime invoke",
-                    requestId = &self.request_id,
-                    xrayTraceId = trace_id
-                )
-            }
-            None => {
-                env::remove_var("_X_AMZN_TRACE_ID");
-                tracing::info_span!("Lambda runtime invoke", requestId = &self.request_id)
-            }
-        }
     }
 }
 

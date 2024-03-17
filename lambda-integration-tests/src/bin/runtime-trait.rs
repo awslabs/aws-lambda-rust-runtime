@@ -46,7 +46,7 @@ impl Clone for MyHandler {
 
 impl Service<LambdaEvent<Request>> for MyHandler {
     type Error = Error;
-    type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Error>>>>;
+    type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Error>> + Send>>;
     type Response = Response;
 
     fn poll_ready(&mut self, _cx: &mut core::task::Context<'_>) -> core::task::Poll<Result<(), Self::Error>> {

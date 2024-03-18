@@ -1,0 +1,11 @@
+[package]
+name = "opentelemetry-tracing"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+lambda_runtime = { path = "../../lambda-runtime" }
+pin-project = "1"
+opentelemetry-semantic-conventions = "0.14"
+tower = "0.4"
+tracing = "0.1"

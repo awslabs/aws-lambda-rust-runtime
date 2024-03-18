@@ -171,7 +171,7 @@ where
 {
     let safe_service = CatchPanicService::new(handler);
     let response_service = RuntimeApiResponseService::new(safe_service);
-    let client_service = RuntimeApiClientService::new(response_service, client.clone());
+    let client_service = RuntimeApiClientService::new(response_service, client);
     client_service.boxed()
 }
 

@@ -98,12 +98,9 @@ where
             );
             Ok(())
         };
-        match trace_fn() {
-            Err(err) => {
-                error!(error = ?err, "failed to parse raw JSON event received from Lambda");
-                return future::ready(Err(err)).boxed();
-            }
-            _ => {}
+        if let Err(err) = trace_fn() {
+            error!(error = ?err, "failed to parse raw JSON event received from Lambda");
+            return future::ready(Err(err)).boxed();
         };
 
         let request_id = req.context.request_id.clone();

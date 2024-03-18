@@ -7,12 +7,13 @@ use lambda_runtime_api_client::BoxError;
 use std::task;
 
 /// Tower middleware to create a tracing span for invocations of the Lambda function.
+#[derive(Default)]
 pub struct TracingLayer {}
 
 impl TracingLayer {
     /// Create a new tracing layer.
     pub fn new() -> Self {
-        Self {}
+        Self::default()
     }
 }
 

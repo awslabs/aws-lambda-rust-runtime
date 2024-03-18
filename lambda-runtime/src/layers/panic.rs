@@ -100,7 +100,7 @@ where
 
 impl<'a, F> CatchPanicFuture<'a, F> {
     fn build_panic_diagnostic(err: &Box<dyn Any + Send>) -> Diagnostic<'a> {
-        let error_type = std::any::type_name_of_val(&err);
+        let error_type = type_name_of_val(&err);
         let msg = if let Some(msg) = err.downcast_ref::<&str>() {
             format!("Lambda panicked: {msg}")
         } else {
@@ -111,4 +111,8 @@ impl<'a, F> CatchPanicFuture<'a, F> {
             error_message: Cow::Owned(msg),
         }
     }
+}
+
+fn type_name_of_val<T>(_: T) -> &'static str {
+    std::any::type_name::<T>()
 }

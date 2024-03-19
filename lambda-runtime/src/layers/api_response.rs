@@ -3,15 +3,18 @@ use crate::runtime::LambdaInvocation;
 use crate::types::Diagnostic;
 use crate::{deserializer, IntoFunctionResponse};
 use crate::{EventErrorRequest, LambdaEvent};
-use futures::{future::BoxFuture, FutureExt, Stream};
+use futures::ready;
+use futures::Stream;
 use lambda_runtime_api_client::{body::Body, BoxError};
+use pin_project::pin_project;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
-use std::future;
+use std::future::Future;
 use std::marker::PhantomData;
+use std::pin::Pin;
 use std::task;
 use tower::Service;
-use tracing::{debug, error, trace};
+use tracing::{error, trace};
 
 /// Tower service that turns the result or an error of a handler function into a Lambda Runtime API
 /// response.
@@ -65,7 +68,6 @@ impl<'a, S, EventPayload, Response, BufferedResponse, StreamingResponse, StreamI
     >
 where
     S: Service<LambdaEvent<EventPayload>, Response = Response, Error = Diagnostic<'a>>,
-    S::Future: Send + 'static,
     EventPayload: for<'de> Deserialize<'de>,
     Response: IntoFunctionResponse<BufferedResponse, StreamingResponse>,
     BufferedResponse: Serialize,
@@ -75,7 +77,8 @@ where
 {
     type Response = http::Request<Body>;
     type Error = BoxError;
-    type Future = BoxFuture<'static, Result<Self::Response, Self::Error>>;
+    type Future =
+        RuntimeApiResponseFuture<'a, S::Future, Response, BufferedResponse, StreamingResponse, StreamItem, StreamError>;
 
     fn poll_ready(&mut self, cx: &mut task::Context<'_>) -> task::Poll<Result<(), Self::Error>> {
         self.inner
@@ -87,7 +90,7 @@ where
         #[cfg(debug_assertions)]
         if req.parts.status.is_server_error() {
             error!("Lambda Runtime server returned an unexpected error");
-            return future::ready(Err(req.parts.status.to_string().into())).boxed();
+            return RuntimeApiResponseFuture::Ready(Some(Err(req.parts.status.to_string().into())));
         }
 
         // Utility closure to propagate potential error from conditionally executed trace
@@ -100,30 +103,24 @@ where
         };
         if let Err(err) = trace_fn() {
             error!(error = ?err, "failed to parse raw JSON event received from Lambda");
-            return future::ready(Err(err)).boxed();
+            return RuntimeApiResponseFuture::Ready(Some(Err(err)));
         };
 
         let request_id = req.context.request_id.clone();
         let lambda_event = match deserializer::deserialize::<EventPayload>(&req.body, req.context) {
             Ok(lambda_event) => lambda_event,
             Err(err) => match build_event_error_request(&request_id, err) {
-                Ok(request) => return future::ready(Ok(request)).boxed(),
+                Ok(request) => return RuntimeApiResponseFuture::Ready(Some(Ok(request))),
                 Err(err) => {
                     error!(error = ?err, "failed to build error response for Lambda Runtime API");
-                    return future::ready(Err(err)).boxed();
+                    return RuntimeApiResponseFuture::Ready(Some(Err(err)));
                 }
             },
         };
 
         // Once the handler input has been generated successfully, the
         let fut = self.inner.call(lambda_event);
-        async move {
-            match fut.await {
-                Ok(result) => EventCompletionRequest::new(&request_id, result).into_req(),
-                Err(err) => EventErrorRequest::new(&request_id, err).into_req(),
-            }
-        }
-        .boxed()
+        RuntimeApiResponseFuture::Future(fut, request_id, PhantomData)
     }
 }
 
@@ -131,6 +128,46 @@ fn build_event_error_request<'a, T>(request_id: &'a str, err: T) -> Result<http:
 where
     T: Into<Diagnostic<'a>> + Debug,
 {
-    debug!(error = ?err, "building error response for Lambda Runtime API");
+    error!(error = ?err, "building error response for Lambda Runtime API");
     EventErrorRequest::new(request_id, err).into_req()
+}
+
+#[pin_project(project = RuntimeApiResponseFutureProj)]
+pub enum RuntimeApiResponseFuture<'a, F, Response, BufferedResponse, StreamingResponse, StreamItem, StreamError> {
+    Future(
+        #[pin] F,
+        String,
+        PhantomData<(
+            &'a (),
+            Response,
+            BufferedResponse,
+            StreamingResponse,
+            StreamItem,
+            StreamError,
+        )>,
+    ),
+    Ready(Option<Result<http::Request<Body>, BoxError>>),
+}
+
+impl<'a, F, Response, BufferedResponse, StreamingResponse, StreamItem, StreamError> Future
+    for RuntimeApiResponseFuture<'a, F, Response, BufferedResponse, StreamingResponse, StreamItem, StreamError>
+where
+    F: Future<Output = Result<Response, Diagnostic<'a>>>,
+    Response: IntoFunctionResponse<BufferedResponse, StreamingResponse>,
+    BufferedResponse: Serialize,
+    StreamingResponse: Stream<Item = Result<StreamItem, StreamError>> + Unpin + Send + 'static,
+    StreamItem: Into<bytes::Bytes> + Send,
+    StreamError: Into<BoxError> + Send + Debug,
+{
+    type Output = Result<http::Request<Body>, BoxError>;
+
+    fn poll(mut self: Pin<&mut Self>, cx: &mut task::Context<'_>) -> task::Poll<Self::Output> {
+        task::Poll::Ready(match self.as_mut().project() {
+            RuntimeApiResponseFutureProj::Future(fut, request_id, _) => match ready!(fut.poll(cx)) {
+                Ok(ok) => EventCompletionRequest::new(&request_id, ok).into_req(),
+                Err(err) => EventErrorRequest::new(&request_id, err).into_req(),
+            },
+            RuntimeApiResponseFutureProj::Ready(ready) => ready.take().expect("future polled after completion"),
+        })
+    }
 }

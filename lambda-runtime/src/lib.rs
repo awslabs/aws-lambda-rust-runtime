@@ -108,15 +108,15 @@ where
 /// ```
 pub async fn run<A, F, R, B, S, D, E>(handler: F) -> Result<(), Error>
 where
-    F: Service<LambdaEvent<A>, Response = R> + Send + 'static,
-    F::Future: Future<Output = Result<R, F::Error>> + Send + 'static,
+    F: Service<LambdaEvent<A>, Response = R>,
+    F::Future: Future<Output = Result<R, F::Error>>,
     F::Error: for<'a> Into<Diagnostic<'a>> + fmt::Debug,
-    A: for<'de> Deserialize<'de> + Send + 'static,
-    R: IntoFunctionResponse<B, S> + Send + 'static,
-    B: Serialize + Send + 'static,
+    A: for<'de> Deserialize<'de>,
+    R: IntoFunctionResponse<B, S>,
+    B: Serialize,
     S: Stream<Item = Result<D, E>> + Unpin + Send + 'static,
-    D: Into<bytes::Bytes> + Send + 'static,
-    E: Into<Error> + Send + Debug + 'static,
+    D: Into<bytes::Bytes> + Send,
+    E: Into<Error> + Send + Debug,
 {
     let runtime = Runtime::new(handler).layer(layers::TracingLayer::new());
     runtime.run().await

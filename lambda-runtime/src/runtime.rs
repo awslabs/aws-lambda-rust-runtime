@@ -10,7 +10,6 @@ use std::fmt::Debug;
 use std::future::Future;
 use std::sync::Arc;
 use tokio_stream::{Stream, StreamExt};
-use tower::util::BoxService;
 use tower::Layer;
 use tower::{Service, ServiceExt};
 use tracing::trace;
@@ -58,26 +57,37 @@ pub struct Runtime<S> {
     client: Arc<ApiClient>,
 }
 
-impl Runtime<BoxService<LambdaInvocation, (), BoxError>> {
+impl<'a, F, EventPayload, Response, BufferedResponse, StreamingResponse, StreamItem, StreamError>
+    Runtime<
+        RuntimeApiClientService<
+            RuntimeApiResponseService<
+                CatchPanicService<'a, F>,
+                EventPayload,
+                Response,
+                BufferedResponse,
+                StreamingResponse,
+                StreamItem,
+                StreamError,
+            >,
+        >,
+    >
+where
+    F: Service<LambdaEvent<EventPayload>, Response = Response>,
+    F::Future: Future<Output = Result<Response, F::Error>>,
+    F::Error: Into<Diagnostic<'a>> + Debug,
+    EventPayload: for<'de> Deserialize<'de>,
+    Response: IntoFunctionResponse<BufferedResponse, StreamingResponse>,
+    BufferedResponse: Serialize,
+    StreamingResponse: Stream<Item = Result<StreamItem, StreamError>> + Unpin + Send + 'static,
+    StreamItem: Into<bytes::Bytes> + Send,
+    StreamError: Into<BoxError> + Send + Debug,
+{
     /// Create a new runtime that executes the provided handler for incoming requests.
     ///
     /// In order to start the runtime and poll for events on the [Lambda Runtime
     /// APIs](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html), you must call
     /// [Runtime::run].
-    pub fn new<F, EventPayload, Response, BufferedResponse, StreamingResponse, StreamItem, StreamError>(
-        handler: F,
-    ) -> Self
-    where
-        F: Service<LambdaEvent<EventPayload>, Response = Response> + Send + 'static,
-        F::Future: Future<Output = Result<Response, F::Error>> + Send + 'static,
-        F::Error: for<'a> Into<Diagnostic<'a>> + Debug,
-        EventPayload: for<'de> Deserialize<'de> + Send + 'static,
-        Response: IntoFunctionResponse<BufferedResponse, StreamingResponse> + Send + 'static,
-        BufferedResponse: Serialize + Send + 'static,
-        StreamingResponse: Stream<Item = Result<StreamItem, StreamError>> + Unpin + Send + 'static,
-        StreamItem: Into<bytes::Bytes> + Send + 'static,
-        StreamError: Into<BoxError> + Send + Debug + 'static,
-    {
+    pub fn new(handler: F) -> Self {
         trace!("Loading config from env");
         let config = Arc::new(Config::from_env());
         let client = Arc::new(ApiClient::builder().build().expect("Unable to create a runtime client"));
@@ -154,25 +164,35 @@ where
 
 /* ------------------------------------------- UTILS ------------------------------------------- */
 
-fn wrap_handler<F, EventPayload, Response, BufferedResponse, StreamingResponse, StreamItem, StreamError>(
+fn wrap_handler<'a, F, EventPayload, Response, BufferedResponse, StreamingResponse, StreamItem, StreamError>(
     handler: F,
     client: Arc<ApiClient>,
-) -> BoxService<LambdaInvocation, (), BoxError>
+) -> RuntimeApiClientService<
+    RuntimeApiResponseService<
+        CatchPanicService<'a, F>,
+        EventPayload,
+        Response,
+        BufferedResponse,
+        StreamingResponse,
+        StreamItem,
+        StreamError,
+    >,
+>
 where
-    F: Service<LambdaEvent<EventPayload>, Response = Response> + Send + 'static,
-    F::Future: Future<Output = Result<Response, F::Error>> + Send + 'static,
-    F::Error: for<'a> Into<Diagnostic<'a>> + Debug,
-    EventPayload: for<'de> Deserialize<'de> + Send + 'static,
-    Response: IntoFunctionResponse<BufferedResponse, StreamingResponse> + Send + 'static,
-    BufferedResponse: Serialize + Send + 'static,
+    F: Service<LambdaEvent<EventPayload>, Response = Response>,
+    F::Future: Future<Output = Result<Response, F::Error>>,
+    F::Error: Into<Diagnostic<'a>> + Debug,
+    EventPayload: for<'de> Deserialize<'de>,
+    Response: IntoFunctionResponse<BufferedResponse, StreamingResponse>,
+    BufferedResponse: Serialize,
     StreamingResponse: Stream<Item = Result<StreamItem, StreamError>> + Unpin + Send + 'static,
-    StreamItem: Into<bytes::Bytes> + Send + 'static,
-    StreamError: Into<BoxError> + Send + Debug + 'static,
+    StreamItem: Into<bytes::Bytes> + Send,
+    StreamError: Into<BoxError> + Send + Debug,
 {
     let safe_service = CatchPanicService::new(handler);
     let response_service = RuntimeApiResponseService::new(safe_service);
     let client_service = RuntimeApiClientService::new(response_service, client);
-    client_service.boxed()
+    client_service
 }
 
 fn incoming(

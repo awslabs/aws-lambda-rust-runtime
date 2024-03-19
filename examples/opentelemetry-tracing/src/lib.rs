@@ -101,7 +101,7 @@ where
             .project()
             .future
             .as_pin_mut()
-            .expect("`Ready` polled after completion")
+            .expect("future polled after completion")
             .poll(cx));
 
         // If we got the ready value, we first drop the future: this ensures that the

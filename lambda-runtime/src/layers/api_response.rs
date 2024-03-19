@@ -164,8 +164,8 @@ where
     fn poll(mut self: Pin<&mut Self>, cx: &mut task::Context<'_>) -> task::Poll<Self::Output> {
         task::Poll::Ready(match self.as_mut().project() {
             RuntimeApiResponseFutureProj::Future(fut, request_id, _) => match ready!(fut.poll(cx)) {
-                Ok(ok) => EventCompletionRequest::new(&request_id, ok).into_req(),
-                Err(err) => EventErrorRequest::new(&request_id, err).into_req(),
+                Ok(ok) => EventCompletionRequest::new(request_id, ok).into_req(),
+                Err(err) => EventErrorRequest::new(request_id, err).into_req(),
             },
             RuntimeApiResponseFutureProj::Ready(ready) => ready.take().expect("future polled after completion"),
         })

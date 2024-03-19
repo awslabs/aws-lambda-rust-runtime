@@ -143,7 +143,7 @@ where
 #[doc(hidden)]
 pub struct Adapter<'a, R, S> {
     service: S,
-    _phantom_data: PhantomData<(&'a (), R)>,
+    _phantom_data: PhantomData<&'a R>,
 }
 
 impl<'a, R, S, E> From<S> for Adapter<'a, R, S>
@@ -188,12 +188,12 @@ where
 ///
 /// This takes care of transforming the LambdaEvent into a [`Request`] and then
 /// converting the result into a [`LambdaResponse`].
-pub async fn run<R, S, E>(handler: S) -> Result<(), Error>
+pub async fn run<'a, R, S, E>(handler: S) -> Result<(), Error>
 where
-    S: Service<Request, Response = R, Error = E> + Send + 'static,
-    S::Future: Send + 'static,
-    R: IntoResponse + Send + 'static,
-    E: std::fmt::Debug + std::fmt::Display + 'static,
+    S: Service<Request, Response = R, Error = E>,
+    S::Future: Send + 'a,
+    R: IntoResponse,
+    E: std::fmt::Debug + std::fmt::Display,
 {
     lambda_runtime::run(Adapter::from(handler)).await
 }

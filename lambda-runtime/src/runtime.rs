@@ -164,6 +164,7 @@ where
 
 /* ------------------------------------------- UTILS ------------------------------------------- */
 
+#[allow(clippy::type_complexity)]
 fn wrap_handler<'a, F, EventPayload, Response, BufferedResponse, StreamingResponse, StreamItem, StreamError>(
     handler: F,
     client: Arc<ApiClient>,
@@ -191,8 +192,7 @@ where
 {
     let safe_service = CatchPanicService::new(handler);
     let response_service = RuntimeApiResponseService::new(safe_service);
-    let client_service = RuntimeApiClientService::new(response_service, client);
-    client_service
+    RuntimeApiClientService::new(response_service, client)
 }
 
 fn incoming(

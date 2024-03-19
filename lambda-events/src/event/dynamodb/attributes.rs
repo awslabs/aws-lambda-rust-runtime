@@ -83,7 +83,7 @@ mod test {
 
         let attr: AttributeValue = serde_json::from_value(value.clone()).unwrap();
         match attr {
-            AttributeValue::Bool(b) => assert_eq!(true, b),
+            AttributeValue::Bool(b) => assert!(b),
             other => panic!("unexpected value {:?}", other),
         }
 

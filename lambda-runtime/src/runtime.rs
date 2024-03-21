@@ -87,6 +87,10 @@ where
     /// In order to start the runtime and poll for events on the [Lambda Runtime
     /// APIs](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html), you must call
     /// [Runtime::run].
+    ///
+    /// Note that manually creating a [Runtime] does not add tracing to the executed handler
+    /// as is done by [super::run]. If you want to add the default tracing functionality, call
+    /// [Runtime::layer] with a [super::layers::TracingLayer].
     pub fn new(handler: F) -> Self {
         trace!("Loading config from env");
         let config = Arc::new(Config::from_env());
@@ -102,6 +106,26 @@ where
 impl<S> Runtime<S> {
     /// Add a new layer to this runtime. For an incoming request, this layer will be executed
     /// before any layer that has been added prior.
+    ///
+    /// # Example
+    /// ```no_run
+    /// use lambda_runtime::{layers, Error, LambdaEvent, Runtime};
+    /// use serde_json::Value;
+    /// use tower::service_fn;
+    ///
+    /// #[tokio::main]
+    /// async fn main() -> Result<(), Error> {
+    ///     let runtime = Runtime::new(service_fn(echo)).layer(
+    ///         layers::TracingLayer::new()
+    ///     );
+    ///     runtime.run().await?;
+    ///     Ok(())
+    /// }
+    ///
+    /// async fn echo(event: LambdaEvent<Value>) -> Result<Value, Error> {
+    ///     Ok(event.payload)
+    /// }
+    /// ```
     pub fn layer<L>(self, layer: L) -> Runtime<L::Service>
     where
         L: Layer<S>,

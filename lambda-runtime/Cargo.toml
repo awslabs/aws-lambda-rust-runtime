@@ -62,6 +62,4 @@ hyper-util = { workspace = true, features = [
     "server-auto",
     "tokio",
 ] }
-lalrpop = "=0.20.0" # Support for Rust 1.66
-lalrpop-util = "=0.20.0" # Support for Rust 1.66
 pin-project-lite = { workspace = true }

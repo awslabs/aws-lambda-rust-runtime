@@ -4,10 +4,11 @@
 
 //! This crate includes a base HTTP client to interact with
 //! the AWS Lambda Runtime API.
+use futures_util::{future::BoxFuture, FutureExt, TryFutureExt};
 use http::{uri::PathAndQuery, uri::Scheme, Request, Response, Uri};
 use hyper::body::Incoming;
 use hyper_util::client::legacy::connect::HttpConnector;
-use std::{convert::TryInto, fmt::Debug};
+use std::{convert::TryInto, fmt::Debug, future};
 
 const USER_AGENT_HEADER: &str = "User-Agent";
 const DEFAULT_USER_AGENT: &str = concat!("aws-lambda-rust/", env!("CARGO_PKG_VERSION"));
@@ -42,9 +43,15 @@ impl Client {
 impl Client {
     /// Send a given request to the Runtime API.
     /// Use the client's base URI to ensure the API endpoint is correct.
-    pub async fn call(&self, req: Request<body::Body>) -> Result<Response<Incoming>, BoxError> {
-        let req = self.set_origin(req)?;
-        self.client.request(req).await.map_err(Into::into)
+    pub fn call(&self, req: Request<body::Body>) -> BoxFuture<'static, Result<Response<Incoming>, BoxError>> {
+        // NOTE: This method returns a boxed future such that the future has a static lifetime.
+        //       Due to limitations around the Rust async implementation as of Mar 2024, this is
+        //       required to minimize constraints on the handler passed to [lambda_runtime::run].
+        let req = match self.set_origin(req) {
+            Ok(req) => req,
+            Err(err) => return future::ready(Err(err)).boxed(),
+        };
+        self.client.request(req).map_err(Into::into).boxed()
     }
 
     /// Create a new client with a given base URI and HTTP connector.

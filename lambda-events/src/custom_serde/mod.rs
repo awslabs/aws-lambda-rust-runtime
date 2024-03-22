@@ -177,18 +177,18 @@ mod test {
 
         let test = r#"{"v": null}"#;
         let decoded: Test = serde_json::from_str(test).unwrap();
-        assert_eq!(false, decoded.v);
+        assert!(!decoded.v);
 
         let test = r#"{}"#;
         let decoded: Test = serde_json::from_str(test).unwrap();
-        assert_eq!(false, decoded.v);
+        assert!(!decoded.v);
 
         let test = r#"{"v": true}"#;
         let decoded: Test = serde_json::from_str(test).unwrap();
-        assert_eq!(true, decoded.v);
+        assert!(decoded.v);
 
         let test = r#"{"v": false}"#;
         let decoded: Test = serde_json::from_str(test).unwrap();
-        assert_eq!(false, decoded.v);
+        assert!(!decoded.v);
     }
 }

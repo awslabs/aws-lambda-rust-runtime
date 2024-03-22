@@ -458,7 +458,7 @@ This will make your function compile much faster.
 
 ## Supported Rust Versions (MSRV)
 
-The AWS Lambda Rust Runtime requires a minimum of Rust 1.66, and is not guaranteed to build on compiler versions earlier than that.
+The AWS Lambda Rust Runtime requires a minimum of Rust 1.70, and is not guaranteed to build on compiler versions earlier than that.
 
 ## Security
 

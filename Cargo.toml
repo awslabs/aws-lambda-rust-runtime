@@ -6,7 +6,7 @@ members = [
     "lambda-runtime-api-client",
     "lambda-runtime",
     "lambda-extension",
-    "lambda-events"
+    "lambda-events",
 ]
 
 exclude = ["examples"]
@@ -26,4 +26,5 @@ hyper = "1.0"
 hyper-util = "0.1.1"
 pin-project-lite = "0.2"
 tower = "0.4"
+tower-layer = "0.3"
 tower-service = "0.3"

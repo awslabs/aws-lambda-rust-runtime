@@ -1,8 +1,11 @@
+//! These events are to be used with the CDK custom resource provider framework.
+//!
+//! Note that they are similar (but not the same) as the events in the `super` module.
+//!
+//! See https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.custom_resources-readme.html for details.
+
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
-use std::collections::HashMap;
-
-pub mod provider;
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(tag = "RequestType")]
@@ -25,16 +28,8 @@ pub struct CreateRequest<P2 = Value>
 where
     P2: DeserializeOwned + Serialize,
 {
-    #[serde(default)]
-    pub service_token: Option<String>,
-    pub request_id: String,
-    #[serde(rename = "ResponseURL")]
-    pub response_url: String,
-    pub stack_id: String,
-    pub resource_type: String,
-    pub logical_resource_id: String,
-    #[serde(bound = "")]
-    pub resource_properties: P2,
+    #[serde(flatten, bound = "")]
+    pub common: CommonRequestParams<P2>,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
@@ -44,19 +39,13 @@ where
     P1: DeserializeOwned + Serialize,
     P2: DeserializeOwned + Serialize,
 {
-    #[serde(default)]
-    pub service_token: Option<String>,
-    pub request_id: String,
-    #[serde(rename = "ResponseURL")]
-    pub response_url: String,
-    pub stack_id: String,
-    pub resource_type: String,
-    pub logical_resource_id: String,
     pub physical_resource_id: String,
-    #[serde(bound = "")]
-    pub resource_properties: P2,
+
     #[serde(bound = "")]
     pub old_resource_properties: P1,
+
+    #[serde(flatten, bound = "")]
+    pub common: CommonRequestParams<P2>,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
@@ -65,37 +54,36 @@ pub struct DeleteRequest<P2 = Value>
 where
     P2: DeserializeOwned + Serialize,
 {
-    #[serde(default)]
-    pub service_token: Option<String>,
-    pub request_id: String,
-    #[serde(rename = "ResponseURL")]
-    pub response_url: String,
-    pub stack_id: String,
-    pub resource_type: String,
-    pub logical_resource_id: String,
     pub physical_resource_id: String,
-    #[serde(bound = "")]
-    pub resource_properties: P2,
+
+    #[serde(flatten, bound = "")]
+    pub common: CommonRequestParams<P2>,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "PascalCase")]
-pub struct CloudFormationCustomResourceResponse {
-    pub status: CloudFormationCustomResourceResponseStatus,
-    pub reason: Option<String>,
-    pub physical_resource_id: String,
-    pub stack_id: String,
-    pub request_id: String,
+pub struct CommonRequestParams<P2 = Value>
+where
+    P2: DeserializeOwned + Serialize,
+{
     pub logical_resource_id: String,
-    pub no_echo: bool,
-    pub data: HashMap<String, String>,
+    #[serde(bound = "")]
+    pub resource_properties: P2,
+    pub resource_type: String,
+    pub request_id: String,
+    pub stack_id: String,
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum CloudFormationCustomResourceResponseStatus {
-    Success,
-    Failed,
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize, Default)]
+#[serde(rename_all = "PascalCase")]
+pub struct CloudFormationCustomResourceResponse<D = Value>
+where
+    D: DeserializeOwned + Serialize,
+{
+    pub physical_resource_id: Option<String>,
+    #[serde(bound = "")]
+    pub data: D,
+    pub no_echo: bool,
 }
 
 #[cfg(test)]
@@ -116,8 +104,8 @@ mod test {
     type TestRequest = CloudFormationCustomResourceRequest<TestProperties, TestProperties>;
 
     #[test]
-    fn example_cloudformation_custom_resource_create_request() {
-        let data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-create-request.json");
+    fn example_create_request() {
+        let data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-provider-create-request.json");
         let parsed: TestRequest = serde_json::from_slice(data).unwrap();
 
         match parsed {
@@ -131,8 +119,8 @@ mod test {
     }
 
     #[test]
-    fn example_cloudformation_custom_resource_update_request() {
-        let data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-update-request.json");
+    fn example_update_request() {
+        let data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-provider-update-request.json");
         let parsed: TestRequest = serde_json::from_slice(data).unwrap();
 
         match parsed {
@@ -146,8 +134,8 @@ mod test {
     }
 
     #[test]
-    fn example_cloudformation_custom_resource_delete_request() {
-        let data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-delete-request.json");
+    fn example_delete_request() {
+        let data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-provider-delete-request.json");
         let parsed: TestRequest = serde_json::from_slice(data).unwrap();
 
         match parsed {
@@ -161,8 +149,8 @@ mod test {
     }
 
     #[test]
-    fn example_cloudformation_custom_resource_response() {
-        let data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-response.json");
+    fn example_response() {
+        let data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-provider-response.json");
         let parsed: CloudFormationCustomResourceResponse = serde_json::from_slice(data).unwrap();
         let output: String = serde_json::to_string(&parsed).unwrap();
         let reparsed: CloudFormationCustomResourceResponse = serde_json::from_slice(output.as_bytes()).unwrap();

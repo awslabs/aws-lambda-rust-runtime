@@ -1,0 +1,12 @@
+{
+  "RequestType" : "Create",
+  "RequestId" : "82304eb2-bdda-469f-a33b-a3f1406d0a52",
+  "StackId" : "arn:aws:cloudformation:us-east-1:123456789012:stack/stack-name/16580499-7622-4a9c-b32f-4eba35da93da",
+  "ResourceType" : "Custom::MyCustomResourceType",
+  "LogicalResourceId" : "CustomResource",
+  "ResourceProperties" : {
+     "Key1" : "string",
+     "Key2" : [ "list" ],
+     "Key3" : { "Key4" : "map" }
+  }
+}

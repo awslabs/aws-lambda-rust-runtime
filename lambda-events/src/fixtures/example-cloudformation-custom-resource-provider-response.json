@@ -1,0 +1,9 @@
+{
+  "PhysicalResourceId": "custom-resource-f4bd5382-3de3-4caf-b7ad-1be06b899647",
+  "NoEcho": false,
+  "Data": {
+    "Key1": "a",
+    "Key2": "b",
+    "Key3": "c"
+  }
+}

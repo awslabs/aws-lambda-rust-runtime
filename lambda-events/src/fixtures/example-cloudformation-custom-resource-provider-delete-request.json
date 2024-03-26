@@ -1,0 +1,13 @@
+{
+  "RequestType" : "Delete",
+  "RequestId" : "ef70561d-d4ba-42a4-801b-33ad88dafc37",
+  "StackId" : "arn:aws:cloudformation:us-east-1:123456789012:stack/stack-name/16580499-7622-4a9c-b32f-4eba35da93da",
+  "ResourceType" : "Custom::MyCustomResourceType",
+  "LogicalResourceId" : "CustomResource",
+  "PhysicalResourceId" : "custom-resource-f4bd5382-3de3-4caf-b7ad-1be06b899647",
+  "ResourceProperties" : {
+     "Key1" : "string",
+     "Key2" : [ "list" ],
+     "Key3" : { "Key4" : "map" }
+  }
+}

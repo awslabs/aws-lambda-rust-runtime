@@ -1,4 +1,3 @@
-use std::env;
 use tower::{Layer, Service};
 use tracing::{instrument::Instrumented, Instrument};
 
@@ -53,7 +52,6 @@ where
 fn request_span(ctx: &Context) -> tracing::Span {
     match &ctx.xray_trace_id {
         Some(trace_id) => {
-            env::set_var("_X_AMZN_TRACE_ID", trace_id);
             tracing::info_span!(
                 "Lambda runtime invoke",
                 requestId = &ctx.request_id,
@@ -61,7 +59,6 @@ fn request_span(ctx: &Context) -> tracing::Span {
             )
         }
         None => {
-            env::remove_var("_X_AMZN_TRACE_ID");
             tracing::info_span!("Lambda runtime invoke", requestId = &ctx.request_id)
         }
     }

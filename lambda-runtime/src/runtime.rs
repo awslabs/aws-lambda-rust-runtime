@@ -6,6 +6,7 @@ use http_body_util::BodyExt;
 use lambda_runtime_api_client::BoxError;
 use lambda_runtime_api_client::Client as ApiClient;
 use serde::{Deserialize, Serialize};
+use std::env;
 use std::fmt::Debug;
 use std::future::Future;
 use std::sync::Arc;
@@ -176,6 +177,9 @@ where
             let context = Context::new(invoke_request_id(&parts.headers)?, config.clone(), &parts.headers)?;
             let invocation = LambdaInvocation { parts, body, context };
 
+            // Setup Amazon's default tracing data
+            amzn_trace_env(&invocation.context);
+
             // Wait for service to be ready
             let ready = service.ready().await?;
 
@@ -229,6 +233,13 @@ fn incoming(
             let res = client.call(req).await;
             yield res;
         }
+    }
+}
+
+fn amzn_trace_env(ctx: &Context) {
+    match &ctx.xray_trace_id {
+        Some(trace_id) => env::set_var("_X_AMZN_TRACE_ID", trace_id),
+        None => env::remove_var("_X_AMZN_TRACE_ID"),
     }
 }
 

@@ -69,7 +69,9 @@ impl LambdaResponse {
                 body,
                 is_base64_encoded,
                 status_code: status_code as i64,
-                headers: headers.clone(),
+                // explicitly empty, as API gateway does not properly merge headers and
+                // multi-value-headers, resulting in duplicate headers
+                headers: HeaderMap::new(),
                 multi_value_headers: headers,
             }),
             #[cfg(feature = "apigw_http")]
@@ -91,7 +93,9 @@ impl LambdaResponse {
                     is_base64_encoded,
                     status_code: status_code as i64,
                     cookies,
-                    headers: headers.clone(),
+                    // explicitly empty, as API gateway does not properly merge headers and
+                    // multi-value-headers, resulting in duplicate headers
+                    headers: HeaderMap::new(),
                     multi_value_headers: headers,
                 })
             }
@@ -100,7 +104,9 @@ impl LambdaResponse {
                 body,
                 status_code: status_code as i64,
                 is_base64_encoded,
-                headers: headers.clone(),
+                // explicitly empty, as API gateway does not properly merge headers and
+                // multi-value-headers, resulting in duplicate headers
+                headers: HeaderMap::new(),
                 multi_value_headers: headers,
                 status_description: Some(format!(
                     "{} {}",
@@ -113,7 +119,9 @@ impl LambdaResponse {
                 body,
                 is_base64_encoded,
                 status_code: status_code as i64,
-                headers: headers.clone(),
+                // explicitly empty, as API gateway does not properly merge headers and
+                // multi-value-headers, resulting in duplicate headers
+                headers: HeaderMap::new(),
                 multi_value_headers: headers,
             }),
             #[cfg(feature = "pass_through")]
@@ -465,7 +473,7 @@ mod tests {
         let json = serde_json::to_string(&response).expect("failed to serialize to json");
         assert_eq!(
             json,
-            r#"{"statusCode":200,"headers":{"content-encoding":"gzip"},"multiValueHeaders":{"content-encoding":["gzip"]},"body":"MDAwMDAw","isBase64Encoded":true,"cookies":[]}"#
+            r#"{"statusCode":200,"headers":{},"multiValueHeaders":{"content-encoding":["gzip"]},"body":"MDAwMDAw","isBase64Encoded":true,"cookies":[]}"#
         )
     }
 
@@ -483,7 +491,7 @@ mod tests {
         let json = serde_json::to_string(&response).expect("failed to serialize to json");
         assert_eq!(
             json,
-            r#"{"statusCode":200,"headers":{"content-type":"application/json"},"multiValueHeaders":{"content-type":["application/json"]},"body":"000000","isBase64Encoded":false,"cookies":[]}"#
+            r#"{"statusCode":200,"headers":{},"multiValueHeaders":{"content-type":["application/json"]},"body":"000000","isBase64Encoded":false,"cookies":[]}"#
         )
     }
 
@@ -501,7 +509,7 @@ mod tests {
         let json = serde_json::to_string(&response).expect("failed to serialize to json");
         assert_eq!(
             json,
-            r#"{"statusCode":200,"headers":{"content-type":"application/json; charset=utf-16"},"multiValueHeaders":{"content-type":["application/json; charset=utf-16"]},"body":"〰〰〰","isBase64Encoded":false,"cookies":[]}"#
+            r#"{"statusCode":200,"headers":{},"multiValueHeaders":{"content-type":["application/json; charset=utf-16"]},"body":"〰〰〰","isBase64Encoded":false,"cookies":[]}"#
         )
     }
 
@@ -519,7 +527,7 @@ mod tests {
         let json = serde_json::to_string(&response).expect("failed to serialize to json");
         assert_eq!(
             json,
-            r#"{"statusCode":200,"headers":{"content-type":"application/graphql-response+json; charset=utf-16"},"multiValueHeaders":{"content-type":["application/graphql-response+json; charset=utf-16"]},"body":"〰〰〰","isBase64Encoded":false,"cookies":[]}"#
+            r#"{"statusCode":200,"headers":{},"multiValueHeaders":{"content-type":["application/graphql-response+json; charset=utf-16"]},"body":"〰〰〰","isBase64Encoded":false,"cookies":[]}"#
         )
     }
 
@@ -553,7 +561,7 @@ mod tests {
         let json = serde_json::to_string(&res).expect("failed to serialize to json");
         assert_eq!(
             json,
-            r#"{"statusCode":200,"headers":{"multi":"a"},"multiValueHeaders":{"multi":["a","b"]},"isBase64Encoded":false}"#
+            r#"{"statusCode":200,"headers":{},"multiValueHeaders":{"multi":["a","b"]},"isBase64Encoded":false}"#
         )
     }
 

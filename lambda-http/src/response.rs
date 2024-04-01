@@ -95,7 +95,7 @@ impl LambdaResponse {
                     cookies,
                     // explicitly empty, as API gateway does not properly merge headers and
                     // multi-value-headers, resulting in duplicate headers
-                    headers: HeaderMap::new(), 
+                    headers: HeaderMap::new(),
                     multi_value_headers: headers,
                 })
             }

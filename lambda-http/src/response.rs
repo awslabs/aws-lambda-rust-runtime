@@ -69,6 +69,8 @@ impl LambdaResponse {
                 body,
                 is_base64_encoded,
                 status_code: status_code as i64,
+                // explicitly empty, as API gateway does not properly merge headers and
+                // multi-value-headers, resulting in duplicate headers
                 headers: HeaderMap::new(),
                 multi_value_headers: headers,
             }),
@@ -91,6 +93,8 @@ impl LambdaResponse {
                     is_base64_encoded,
                     status_code: status_code as i64,
                     cookies,
+                    // explicitly empty, as API gateway does not properly merge headers and
+                    // multi-value-headers, resulting in duplicate headers
                     headers: HeaderMap::new(), 
                     multi_value_headers: headers,
                 })
@@ -100,6 +104,8 @@ impl LambdaResponse {
                 body,
                 status_code: status_code as i64,
                 is_base64_encoded,
+                // explicitly empty, as API gateway does not properly merge headers and
+                // multi-value-headers, resulting in duplicate headers
                 headers: HeaderMap::new(),
                 multi_value_headers: headers,
                 status_description: Some(format!(
@@ -113,6 +119,8 @@ impl LambdaResponse {
                 body,
                 is_base64_encoded,
                 status_code: status_code as i64,
+                // explicitly empty, as API gateway does not properly merge headers and
+                // multi-value-headers, resulting in duplicate headers
                 headers: HeaderMap::new(),
                 multi_value_headers: headers,
             }),

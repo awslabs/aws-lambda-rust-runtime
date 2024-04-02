@@ -1,6 +1,6 @@
 use crate::custom_serde::{
-    deserialize_headers, deserialize_lambda_map, deserialize_nullish_boolean, http_method, serialize_headers,
-    serialize_multi_value_headers,
+    deserialize_headers, deserialize_lambda_map, deserialize_nullish_boolean, deserialize_string_or_slice, http_method,
+    serialize_headers, serialize_multi_value_headers,
 };
 use crate::encodings::Body;
 use http::{HeaderMap, Method};
@@ -737,11 +737,13 @@ pub struct ApiGatewayCustomAuthorizerPolicy {
 #[serde(rename_all = "camelCase")]
 pub struct IamPolicyStatement {
     #[serde(rename = "Action")]
+    #[serde(deserialize_with = "deserialize_string_or_slice")]
     pub action: Vec<String>,
     #[serde(default)]
     #[serde(rename = "Effect")]
     pub effect: Option<String>,
     #[serde(rename = "Resource")]
+    #[serde(deserialize_with = "deserialize_string_or_slice")]
     pub resource: Vec<String>,
 }
 
@@ -826,6 +828,26 @@ mod test {
     #[cfg(feature = "apigw")]
     fn example_apigw_custom_auth_response() {
         let data = include_bytes!("../../fixtures/example-apigw-custom-auth-response.json");
+        let parsed: ApiGatewayCustomAuthorizerResponse = serde_json::from_slice(data).unwrap();
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: ApiGatewayCustomAuthorizerResponse = serde_json::from_slice(output.as_bytes()).unwrap();
+        assert_eq!(parsed, reparsed);
+    }
+
+    #[test]
+    #[cfg(feature = "apigw")]
+    fn example_apigw_custom_auth_response_with_single_value_action() {
+        let data = include_bytes!("../../fixtures/example-apigw-custom-auth-response-with-single-value-action.json");
+        let parsed: ApiGatewayCustomAuthorizerResponse = serde_json::from_slice(data).unwrap();
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: ApiGatewayCustomAuthorizerResponse = serde_json::from_slice(output.as_bytes()).unwrap();
+        assert_eq!(parsed, reparsed);
+    }
+
+    #[test]
+    #[cfg(feature = "apigw")]
+    fn example_apigw_custom_auth_response_with_single_value_resource() {
+        let data = include_bytes!("../../fixtures/example-apigw-custom-auth-response-with-single-value-resource.json");
         let parsed: ApiGatewayCustomAuthorizerResponse = serde_json::from_slice(data).unwrap();
         let output: String = serde_json::to_string(&parsed).unwrap();
         let reparsed: ApiGatewayCustomAuthorizerResponse = serde_json::from_slice(output.as_bytes()).unwrap();

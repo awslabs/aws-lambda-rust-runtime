@@ -10,7 +10,14 @@
         "Effect": "Deny",
         "Resource": [
           "arn:aws:execute-api:{regionId}:{accountId}:{appId}/{stage}/{httpVerb}/[{resource}/[child-resources]]"
-        ]
+        ],
+        "Condition": {
+          "StringEquals": {
+            "aws:SourceIp": [
+              "xxx"
+            ]
+          }
+        }
       }
     ]
   },

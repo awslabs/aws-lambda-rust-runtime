@@ -1,8 +1,9 @@
 use crate::custom_serde::{
-    deserialize_headers, deserialize_lambda_map, deserialize_nullish_boolean, deserialize_string_or_slice, http_method,
-    serialize_headers, serialize_multi_value_headers,
+    deserialize_headers, deserialize_lambda_map, deserialize_nullish_boolean, http_method, serialize_headers,
+    serialize_multi_value_headers,
 };
 use crate::encodings::Body;
+use crate::iam::IamPolicyStatement;
 use http::{HeaderMap, Method};
 use query_map::QueryMap;
 use serde::{de::DeserializeOwned, ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer};
@@ -723,28 +724,11 @@ where
 
 /// `ApiGatewayCustomAuthorizerPolicy` represents an IAM policy
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "PascalCase")]
 pub struct ApiGatewayCustomAuthorizerPolicy {
     #[serde(default)]
-    #[serde(rename = "Version")]
     pub version: Option<String>,
-    #[serde(rename = "Statement")]
     pub statement: Vec<IamPolicyStatement>,
-}
-
-/// `IamPolicyStatement` represents one statement from IAM policy with action, effect and resource
-#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct IamPolicyStatement {
-    #[serde(rename = "Action")]
-    #[serde(deserialize_with = "deserialize_string_or_slice")]
-    pub action: Vec<String>,
-    #[serde(default)]
-    #[serde(rename = "Effect")]
-    pub effect: Option<String>,
-    #[serde(rename = "Resource")]
-    #[serde(deserialize_with = "deserialize_string_or_slice")]
-    pub resource: Vec<String>,
 }
 
 fn default_http_method() -> Method {
@@ -1044,5 +1028,23 @@ mod test {
         assert_eq!(Some("admin"), fields.get("principalId").unwrap().as_str());
         assert_eq!(Some(1), fields.get("clientId").unwrap().as_u64());
         assert_eq!(Some("Exata"), fields.get("clientName").unwrap().as_str());
+    }
+
+    #[test]
+    #[cfg(feature = "apigw")]
+    fn example_apigw_custom_auth_response_with_statement_condition() {
+        use crate::iam::IamPolicyEffect;
+
+        let data = include_bytes!("../../fixtures/example-apigw-custom-auth-response-with-condition.json");
+        let parsed: ApiGatewayCustomAuthorizerResponse = serde_json::from_slice(data).unwrap();
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: ApiGatewayCustomAuthorizerResponse = serde_json::from_slice(output.as_bytes()).unwrap();
+        assert_eq!(parsed, reparsed);
+
+        let statement = parsed.policy_document.statement.first().unwrap();
+        assert_eq!(IamPolicyEffect::Deny, statement.effect);
+
+        let condition = statement.condition.as_ref().unwrap();
+        assert_eq!(vec!["xxx"], condition["StringEquals"]["aws:SourceIp"]);
     }
 }

@@ -31,9 +31,6 @@ pub(crate) mod float_unix_epoch;
 #[cfg(any(feature = "alb", feature = "apigw"))]
 pub(crate) mod http_method;
 
-#[cfg(any(feature = "iam", test))]
-pub(crate) mod iam;
-
 pub(crate) fn deserialize_base64<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
 where
     D: Deserializer<'de>,
@@ -93,27 +90,6 @@ where
     // https://github.com/serde-rs/serde/issues/1098
     let opt = Option::deserialize(deserializer)?;
     Ok(opt.unwrap_or_default())
-}
-
-#[derive(serde::Deserialize)]
-#[serde(untagged)]
-pub(crate) enum StringOrSlice {
-    String(String),
-    Slice(Vec<String>),
-}
-
-/// Deserializes `Vec<String>`, from a JSON `string` or `[string]`.
-#[cfg(any(feature = "iam", test))]
-pub(crate) fn deserialize_string_or_slice<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    let string_or_slice = StringOrSlice::deserialize(deserializer)?;
-
-    match string_or_slice {
-        StringOrSlice::Slice(slice) => Ok(slice),
-        StringOrSlice::String(s) => Ok(vec![s]),
-    }
 }
 
 #[cfg(test)]

@@ -21,11 +21,12 @@ serde = "1"
 tokio = { version = "1", features = ["macros"] }
 aws-config = "0.55.3"
 aws-sdk-s3 = "0.28.0"
-thumbnailer = "0.4.0"
+thumbnailer = "0.5.1"
 mime = "0.3.16"
 async-trait = "0.1.66"
 ureq = "2.6.2"
 aws-smithy-http = "0.55.3"
+webp = "=0.2.1"
 
 [dev-dependencies]
 mockall = "0.11.3"

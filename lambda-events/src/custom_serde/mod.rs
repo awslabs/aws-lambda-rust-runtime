@@ -92,6 +92,27 @@ where
     Ok(opt.unwrap_or_default())
 }
 
+/// Deserializes `Vec<String>`, from a JSON `string` or `[string]`.
+#[cfg(any(feature = "apigw", test))]
+pub(crate) fn deserialize_string_or_slice<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    #[derive(serde::Deserialize)]
+    #[serde(untagged)]
+    enum StringOrSlice {
+        String(String),
+        Slice(Vec<String>),
+    }
+
+    let string_or_slice = StringOrSlice::deserialize(deserializer)?;
+
+    match string_or_slice {
+        StringOrSlice::Slice(slice) => Ok(slice),
+        StringOrSlice::String(s) => Ok(vec![s]),
+    }
+}
+
 #[cfg(test)]
 #[allow(deprecated)]
 mod test {

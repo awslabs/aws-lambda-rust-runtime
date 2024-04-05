@@ -85,7 +85,7 @@ default = [
 
 activemq = []
 alb = ["bytes", "http", "http-body", "http-serde", "query_map"]
-apigw = ["bytes", "http", "http-body", "http-serde", "query_map"]
+apigw = ["bytes", "http", "http-body", "http-serde", "iam", "query_map"]
 appsync = []
 autoscaling = ["chrono"]
 bedrock_agent_runtime = []

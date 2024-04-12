@@ -16,7 +16,7 @@ pub use tracing::*;
 pub use tracing_subscriber as subscriber;
 
 /// Initialize `tracing-subscriber` with default options.
-/// The subscriber uses `AWS_LAMBDA_LOG_FORMAT` as the environment variable to determine the log level for your function.
+/// The subscriber uses `AWS_LAMBDA_LOG_LEVEL` as the environment variable to determine the log level for your function.
 /// It also uses [Lambda's advance logging controls](https://aws.amazon.com/blogs/compute/introducing-advanced-logging-controls-for-aws-lambda-functions/)
 /// if they're configured for your function.
 /// By default, the log level to emit events is `INFO`.

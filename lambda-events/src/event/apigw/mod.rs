@@ -565,7 +565,8 @@ pub struct ApiGatewayV2CustomAuthorizerV2Request {
     /// nolint: stylecheck
     #[serde(default)]
     pub route_arn: Option<String>,
-    pub identity_source: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub identity_source: Option<Vec<String>>,
     #[serde(default)]
     pub route_key: Option<String>,
     #[serde(default)]

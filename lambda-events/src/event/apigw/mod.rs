@@ -565,7 +565,8 @@ pub struct ApiGatewayV2CustomAuthorizerV2Request {
     /// nolint: stylecheck
     #[serde(default)]
     pub route_arn: Option<String>,
-    pub identity_source: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub identity_source: Option<Vec<String>>,
     #[serde(default)]
     pub route_key: Option<String>,
     #[serde(default)]
@@ -1002,6 +1003,17 @@ mod test {
     #[cfg(feature = "apigw")]
     fn example_apigw_v2_custom_authorizer_v2_request_without_cookies() {
         let data = include_bytes!("../../fixtures/example-apigw-v2-custom-authorizer-v2-request-without-cookies.json");
+        let parsed: ApiGatewayV2CustomAuthorizerV2Request = serde_json::from_slice(data).unwrap();
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: ApiGatewayV2CustomAuthorizerV2Request = serde_json::from_slice(output.as_bytes()).unwrap();
+        assert_eq!(parsed, reparsed);
+    }
+
+    #[test]
+    #[cfg(feature = "apigw")]
+    fn example_apigw_v2_custom_authorizer_v2_request_without_identity_source() {
+        let data =
+            include_bytes!("../../fixtures/example-apigw-v2-custom-authorizer-v2-request-without-identity-source.json");
         let parsed: ApiGatewayV2CustomAuthorizerV2Request = serde_json::from_slice(data).unwrap();
         let output: String = serde_json::to_string(&parsed).unwrap();
         let reparsed: ApiGatewayV2CustomAuthorizerV2Request = serde_json::from_slice(output.as_bytes()).unwrap();

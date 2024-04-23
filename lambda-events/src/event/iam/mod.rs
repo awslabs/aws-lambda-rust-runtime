@@ -25,6 +25,7 @@ pub struct IamPolicyStatement {
     #[serde(deserialize_with = "deserialize_string_or_slice")]
     pub resource: Vec<String>,
     #[serde(default, deserialize_with = "deserialize_policy_condition")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub condition: Option<IamPolicyCondition>,
 }
 
@@ -168,5 +169,25 @@ mod tests {
         assert_eq!(1, condition.len());
 
         assert_eq!(vec!["janedoe/*"], condition["StringLike"]["s3:prefix"]);
+    }
+
+    #[test]
+    fn test_serialize_none_condition() {
+        let policy = IamPolicyStatement {
+            action: vec!["some:action".into()],
+            effect: IamPolicyEffect::Allow,
+            resource: vec!["some:resource".into()],
+            condition: None,
+        };
+        let policy_ser = serde_json::to_value(policy).unwrap();
+
+        assert_eq!(
+            policy_ser,
+            serde_json::json!({
+                "Action": ["some:action"],
+                "Effect": "Allow",
+                "Resource": ["some:resource"]
+            })
+        );
     }
 }

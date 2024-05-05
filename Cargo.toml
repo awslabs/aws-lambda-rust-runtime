@@ -12,7 +12,7 @@ members = [
 exclude = ["examples"]
 
 [workspace.dependencies]
-base64 = "0.21"
+base64 = "0.22"
 bytes = "1"
 chrono = "0.4.35"
 futures = "0.3"

@@ -2,7 +2,7 @@ use crate::types::ToStreamErrorTrailer;
 use crate::{types::Diagnostic, Error, FunctionResponse, IntoFunctionResponse};
 use bytes::Bytes;
 use http::header::CONTENT_TYPE;
-use http::{Method, Request, Response, Uri};
+use http::{Method, Request, Uri};
 use lambda_runtime_api_client::{body::Body, build_request};
 use serde::Serialize;
 use std::fmt::Debug;
@@ -12,10 +12,6 @@ use tokio_stream::{Stream, StreamExt};
 
 pub(crate) trait IntoRequest {
     fn into_req(self) -> Result<Request<Body>, Error>;
-}
-
-pub(crate) trait IntoResponse {
-    fn into_rsp(self) -> Result<Response<Body>, Error>;
 }
 
 // /runtime/invocation/next
@@ -44,30 +40,6 @@ pub struct NextEventResponse<'a> {
     pub trace_id: &'a str,
     // the actual body,
     pub body: Vec<u8>,
-}
-
-impl<'a> IntoResponse for NextEventResponse<'a> {
-    fn into_rsp(self) -> Result<Response<Body>, Error> {
-        // let body: BoxyBody< = BoxBody::new();
-        let rsp = Response::builder()
-            .header("lambda-runtime-aws-request-id", self.request_id)
-            .header("lambda-runtime-deadline-ms", self.deadline)
-            .header("lambda-runtime-invoked-function-arn", self.arn)
-            .header("lambda-runtime-trace-id", self.trace_id)
-            .body(Body::from(self.body))?;
-        Ok(rsp)
-    }
-}
-#[test]
-fn test_next_event_request() {
-    let req = NextEventRequest;
-    let req = req.into_req().unwrap();
-    assert_eq!(req.method(), Method::GET);
-    assert_eq!(req.uri(), &Uri::from_static("/2018-06-01/runtime/invocation/next"));
-    assert!(match req.headers().get("User-Agent") {
-        Some(header) => header.to_str().unwrap().starts_with("aws-lambda-rust/"),
-        None => false,
-    });
 }
 
 // /runtime/invocation/{AwsRequestId}/response
@@ -218,25 +190,6 @@ impl<'a> IntoRequest for EventErrorRequest<'a> {
     }
 }
 
-#[test]
-fn test_event_error_request() {
-    let req = EventErrorRequest {
-        request_id: "id",
-        diagnostic: Diagnostic {
-            error_type: std::borrow::Cow::Borrowed("InvalidEventDataError"),
-            error_message: std::borrow::Cow::Borrowed("Error parsing event data"),
-        },
-    };
-    let req = req.into_req().unwrap();
-    let expected = Uri::from_static("/2018-06-01/runtime/invocation/id/error");
-    assert_eq!(req.method(), Method::POST);
-    assert_eq!(req.uri(), &expected);
-    assert!(match req.headers().get("User-Agent") {
-        Some(header) => header.to_str().unwrap().starts_with("aws-lambda-rust/"),
-        None => false,
-    });
-}
-
 // /runtime/init/error
 struct InitErrorRequest;
 
@@ -254,15 +207,51 @@ impl IntoRequest for InitErrorRequest {
     }
 }
 
-#[test]
-fn test_init_error_request() {
-    let req = InitErrorRequest;
-    let req = req.into_req().unwrap();
-    let expected = Uri::from_static("/2018-06-01/runtime/init/error");
-    assert_eq!(req.method(), Method::POST);
-    assert_eq!(req.uri(), &expected);
-    assert!(match req.headers().get("User-Agent") {
-        Some(header) => header.to_str().unwrap().starts_with("aws-lambda-rust/"),
-        None => false,
-    });
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_next_event_request() {
+        let req = NextEventRequest;
+        let req = req.into_req().unwrap();
+        assert_eq!(req.method(), Method::GET);
+        assert_eq!(req.uri(), &Uri::from_static("/2018-06-01/runtime/invocation/next"));
+        assert!(match req.headers().get("User-Agent") {
+            Some(header) => header.to_str().unwrap().starts_with("aws-lambda-rust/"),
+            None => false,
+        });
+    }
+
+    #[test]
+    fn test_event_error_request() {
+        let req = EventErrorRequest {
+            request_id: "id",
+            diagnostic: Diagnostic {
+                error_type: std::borrow::Cow::Borrowed("InvalidEventDataError"),
+                error_message: std::borrow::Cow::Borrowed("Error parsing event data"),
+            },
+        };
+        let req = req.into_req().unwrap();
+        let expected = Uri::from_static("/2018-06-01/runtime/invocation/id/error");
+        assert_eq!(req.method(), Method::POST);
+        assert_eq!(req.uri(), &expected);
+        assert!(match req.headers().get("User-Agent") {
+            Some(header) => header.to_str().unwrap().starts_with("aws-lambda-rust/"),
+            None => false,
+        });
+    }
+
+    #[test]
+    fn test_init_error_request() {
+        let req = InitErrorRequest;
+        let req = req.into_req().unwrap();
+        let expected = Uri::from_static("/2018-06-01/runtime/init/error");
+        assert_eq!(req.method(), Method::POST);
+        assert_eq!(req.uri(), &expected);
+        assert!(match req.headers().get("User-Agent") {
+            Some(header) => header.to_str().unwrap().starts_with("aws-lambda-rust/"),
+            None => false,
+        });
+    }
 }

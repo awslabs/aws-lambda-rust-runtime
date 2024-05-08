@@ -15,14 +15,25 @@ pub use tracing::*;
 /// Re-export the `tracing-subscriber` crate to build your own subscribers.
 pub use tracing_subscriber as subscriber;
 
-/// Initialize `tracing-subscriber` with default options.
-/// The subscriber uses `AWS_LAMBDA_LOG_LEVEL` as the environment variable to determine the log level for your function.
-/// It also uses [Lambda's advance logging controls](https://aws.amazon.com/blogs/compute/introducing-advanced-logging-controls-for-aws-lambda-functions/)
+const DEFAULT_LOG_LEVEL: &str = "INFO";
+
+/// Initialize `tracing-subscriber` with default logging options.
+///
+/// This function uses environment variables set with [Lambda's advance logging controls](https://aws.amazon.com/blogs/compute/introducing-advanced-logging-controls-for-aws-lambda-functions/)
 /// if they're configured for your function.
-/// By default, the log level to emit events is `INFO`.
+///
+/// This subscriber sets the logging level based on environment variables:
+///     - if `AWS_LAMBDA_LOG_LEVEL` is set, it takes predecence over any other environment variables.
+///     - if `AWS_LAMBDA_LOG_LEVEL` is not set, check if `RUST_LOG` is set.
+///     - if none of those two variables are set, use `INFO` as the logging level.
+///
+/// The logging format can also be changed based on Lambda's advanced logging controls.
+/// If the `AWS_LAMBDA_LOG_FORMAT` environment variable is set to `JSON`, the log lines will be formatted as json objects,
+/// otherwise they will be formatted with the default tracing format.
 pub fn init_default_subscriber() {
     let log_format = env::var("AWS_LAMBDA_LOG_FORMAT").unwrap_or_default();
-    let log_level = Level::from_str(&env::var("AWS_LAMBDA_LOG_LEVEL").unwrap_or_default()).unwrap_or(Level::INFO);
+    let log_level_str = env::var("AWS_LAMBDA_LOG_LEVEL").or_else(|_| env::var("RUST_LOG"));
+    let log_level = Level::from_str(log_level_str.as_deref().unwrap_or(DEFAULT_LOG_LEVEL)).unwrap_or(Level::INFO);
 
     let collector = tracing_subscriber::fmt()
         .with_target(false)

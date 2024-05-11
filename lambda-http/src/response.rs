@@ -104,9 +104,11 @@ impl LambdaResponse {
                 body,
                 status_code: status_code as i64,
                 is_base64_encoded,
-                // explicitly empty, as API gateway does not properly merge headers and
-                // multi-value-headers, resulting in duplicate headers
-                headers: HeaderMap::new(),
+                // ALB responses are used for ALB integrations as well as
+                // Lambda Function URLs. The former uses the `multi_value_headers` field,
+                // while the later uses the `headers` field. We need to return
+                // both fields to ensure both integrations work correctly.
+                headers: headers.clone(),
                 multi_value_headers: headers,
                 status_description: Some(format!(
                     "{} {}",

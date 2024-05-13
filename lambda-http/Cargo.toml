@@ -1,6 +1,6 @@
 [package]
 name = "lambda_http"
-version = "0.11.2"
+version = "0.11.3"
 authors = [
     "David Calavera <dcalaver@amazon.com>",
     "Harold Sun <sunhua@amazon.com>",

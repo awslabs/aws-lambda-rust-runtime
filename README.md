@@ -337,7 +337,7 @@ fn test_my_lambda_handler() {
 [Cargo Lambda](https://www.cargo-lambda.info) provides a local server that emulates the AWS Lambda control plane. This server works on Windows, Linux, and MacOS. In the root of your Lambda project. You can run the following subcommand to compile your function(s) and start the server.
 
 ```bash
-cargo lambda watch -a 127.0.0.1 -p 9001
+cargo lambda watch
 ```
 
 Now you can use the `cargo lambda invoke` to send requests to your function. For example:
@@ -358,7 +358,7 @@ An simpler alternative is to cURL the following endpoint based on the address an
 
 ```bash
 curl -v -X POST \
-  'http://127.0.0.1:9001/lambda-url/<lambda-function-name>/' \
+  'http://127.0.0.1:9000/lambda-url/<lambda-function-name>/' \
   -H 'content-type: application/json' \
   -d '{ "command": "hi" }'
 ```

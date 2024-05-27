@@ -272,7 +272,7 @@ where
                 self.log_port_number,
             )?;
             let res = client.call(req).await?;
-            if res.status() != http::StatusCode::OK {
+            if !res.status().is_success() {
                 let err = format!("unable to initialize the logs api: {}", res.status());
                 return Err(ExtensionError::boxed(err));
             }
@@ -318,7 +318,7 @@ where
                 self.telemetry_port_number,
             )?;
             let res = client.call(req).await?;
-            if res.status() != http::StatusCode::OK {
+            if !res.status().is_success() {
                 let err = format!("unable to initialize the telemetry api: {}", res.status());
                 return Err(ExtensionError::boxed(err));
             }
@@ -491,7 +491,7 @@ async fn register<'a>(
 
     let req = requests::register_request(&name, events)?;
     let res = client.call(req).await?;
-    if res.status() != http::StatusCode::OK {
+    if !res.status().is_success() {
         let err = format!("unable to register the extension: {}", res.status());
         return Err(ExtensionError::boxed(err));
     }

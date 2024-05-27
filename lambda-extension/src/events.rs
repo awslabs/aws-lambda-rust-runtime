@@ -1,7 +1,7 @@
 use serde::Deserialize;
 
 /// Request tracing information
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Tracing {
     /// The type of tracing exposed to the extension
@@ -20,6 +20,7 @@ pub struct InvokeEvent {
     /// The function's Amazon Resource Name
     pub invoked_function_arn: String,
     /// The request tracing information
+    #[serde(default)]
     pub tracing: Tracing,
 }
 

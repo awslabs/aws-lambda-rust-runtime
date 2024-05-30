@@ -84,13 +84,18 @@ pub enum CognitoEventUserPoolsPreAuthenticationTriggerSource {
 /// allowing the Lambda to send custom messages or add custom logic.
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct CognitoEventUserPoolsPostConfirmation {
+pub struct CognitoEventUserPoolsPostConfirmation<T = CognitoEventUserPoolsPostConfirmationResponse>
+where
+    T: DeserializeOwned,
+    T: Serialize,
+{
     #[serde(rename = "CognitoEventUserPoolsHeader")]
     #[serde(flatten)]
     pub cognito_event_user_pools_header:
         CognitoEventUserPoolsHeader<CognitoEventUserPoolsPostConfirmationTriggerSource>,
     pub request: CognitoEventUserPoolsPostConfirmationRequest,
-    pub response: CognitoEventUserPoolsPostConfirmationResponse,
+    #[serde(bound = "")]
+    pub response: T,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
@@ -254,6 +259,7 @@ pub struct CognitoEventUserPoolsPostConfirmationRequest {
 /// `CognitoEventUserPoolsPostConfirmationResponse` contains the response portion of a PostConfirmation event
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct CognitoEventUserPoolsPostConfirmationResponse {}
+
 /// `CognitoEventUserPoolsPreTokenGenRequest` contains request portion of PreTokenGen event
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]

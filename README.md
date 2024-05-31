@@ -89,7 +89,7 @@ By default, Cargo Lambda builds your functions to run on x86_64 architectures. I
 
 __Amazon Linux 2023__
 
-We recommend you to use the Amazon Linux 2023  (such as `provided.al2023`) because it includes a newer version of GLIC, which many Rust programs depend on. To build your Lambda functions for Amazon Linux 2023 runtimes, run:
+We recommend you to use the Amazon Linux 2023  (such as `provided.al2023`) because it includes a newer version of GLIBC, which many Rust programs depend on. To build your Lambda functions for Amazon Linux 2023 runtimes, run:
 
 ```bash
 cargo lambda build --release --arm64

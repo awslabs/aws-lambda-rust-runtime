@@ -235,3 +235,25 @@ pub async fn function_handler(dynamodb_client: &aws_sdk_dynamodb::Client, event:
 When you integrate HTTP Lambda functions with API Gateway stages, the path received in the request will include the stage as the first segment, for example `/production/api/v1`, where `production` is the API Gateway stage.
 
 If you don't want to receive the stage as part of the path, you can set the environment variable `AWS_LAMBDA_HTTP_IGNORE_STAGE_IN_PATH` to `true`, either in your Lambda function configuration, or inside the `main` Rust function. Following the previous example, when this environment variable is present, the path that the function receives is `/api/v1`, eliminating the stage from the first segment.
+
+## Feature flags
+
+`lambda_http` is a wrapper for HTTP events coming from three different services, Amazon Load Balancer (ALB), Amazon Api Gateway (APIGW), and AWS Lambda Function URLs. Amazon Api Gateway can also send events from three different endpoints, REST APIs, HTTP APIs, and WebSockets. `lambda_http` transforms events from all these sources into native `http::Request` objects, so you can incorporate Rust HTTP semantics into your Lambda functions.
+
+By default, `lambda_http` compiles your function to support any of those services. This increases the compile time of your function because we have to generate code for all the sources. In reality, you'll usually put a Lambda function only behind one of those sources. You can choose which source to generate code for with feature flags.
+
+The available features flags for `lambda_http` are the following:
+
+- `alb`: for events coming from [Amazon Elastic Load Balancer](https://aws.amazon.com/elasticloadbalancing/).
+- `apigw_rest`: for events coming from [Amazon API Gateway Rest APIs](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-rest-api.html).
+- `apigw_http`: for events coming from [Amazon API Gateway HTTP APIs](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api.html) and [AWS Lambda Function URLs](https://docs.aws.amazon.com/lambda/latest/dg/lambda-urls.html).
+- `apigw_websockets`: for events coming from [Amazon API Gateway WebSockets](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api.html).
+
+If you only want to support one of these sources, you can disable the default features, and enable only the source that you care about in your package's `Cargo.toml` file. Substitute the dependency line for `lambda_http` for the snippet below, changing the feature that you want to enable:
+
+```toml
+[dependencies.lambda_http]
+version = "0.5.3"
+default-features = false
+features = ["apigw_rest"]
+```

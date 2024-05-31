@@ -87,25 +87,14 @@ By default, Cargo Lambda builds your functions to run on x86_64 architectures. I
 
 #### 1.2. Build your Lambda functions
 
-__Amazon Linux 2__
+__Amazon Linux 2023__
 
-We recommend you to use Amazon Linux 2 runtimes (such as `provided.al2`) as much as possible for building Lambda functions in Rust. To build your Lambda functions for Amazon Linux 2 runtimes, run:
+We recommend you to use the Amazon Linux 2023  (such as `provided.al2023`) because it includes a newer version of GLIC, which many Rust programs depend on. To build your Lambda functions for Amazon Linux 2023 runtimes, run:
 
 ```bash
 cargo lambda build --release --arm64
 ```
 
-__Amazon Linux 1__
-
-Amazon Linux 1 uses glibc version 2.17, while Rust binaries need glibc version 2.18 or later by default. However, with Cargo Lambda, you can specify a different version of glibc.
-
-If you are building for Amazon Linux 1, or you want to support both Amazon Linux 2 and 1, run:
-
-```bash
-cargo lambda build --release --target aarch64-unknown-linux-gnu.2.17
-```
-> **Note**
-> Replace "aarch64" with "x86_64" if you are building for x86_64
 ### 2. Deploying the binary to AWS Lambda
 
 For [a custom runtime](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-custom.html), AWS Lambda looks for an executable called `bootstrap` in the deployment package zip. Rename the generated executable to `bootstrap` and add it to a zip archive.
@@ -117,8 +106,7 @@ You can find the `bootstrap` binary for your function under the `target/lambda` 
 Once you've built your code with one of the options described earlier, use the `deploy` subcommand to upload your function to AWS:
 
 ```bash
-cargo lambda deploy \
-  --iam-role arn:aws:iam::XXXXXXXXXXXXX:role/your_lambda_execution_role
+cargo lambda deploy
 ```
 
 > **Warning**
@@ -128,9 +116,7 @@ This command will create a Lambda function with the same name of your rust packa
 of the function by adding the argument at the end of the command:
 
 ```bash
-cargo lambda deploy \
-  --iam-role arn:aws:iam::XXXXXXXXXXXXX:role/your_lambda_execution_role \
-  my-first-lambda-function
+cargo lambda deploy my-first-lambda-function
 ```
 
 > **Note**
@@ -162,7 +148,7 @@ You can find the resulting zip file in `target/lambda/YOUR_PACKAGE/bootstrap.zip
 $ aws lambda create-function --function-name rustTest \
   --handler bootstrap \
   --zip-file fileb://./target/lambda/basic/bootstrap.zip \
-  --runtime provided.al2023 \ # Change this to provided.al2 if you would like to use Amazon Linux 2 (or to provided.al for Amazon Linux 1).
+  --runtime provided.al2023 \ # Change this to provided.al2 if you would like to use Amazon Linux 2
   --role arn:aws:iam::XXXXXXXXXXXXX:role/your_lambda_execution_role \
   --environment Variables={RUST_BACKTRACE=1} \
   --tracing-config Mode=Active
@@ -229,74 +215,6 @@ $ aws lambda invoke
 $ cat output.json  # Prints: {"msg": "Command Say Hi! executed."}
 ```
 
-#### 2.4. Serverless Framework
-
-Alternatively, you can build a Rust-based Lambda function declaratively using the [Serverless framework Rust plugin](https://github.com/softprops/serverless-rust).
-
-A number of getting started Serverless application templates exist to get you up and running quickly:
-
-- a minimal [echo function](https://github.com/softprops/serverless-aws-rust) to demonstrate what the smallest Rust function setup looks like
-- a minimal [http function](https://github.com/softprops/serverless-aws-rust-http) to demonstrate how to interface with API Gateway using Rust's native [http](https://crates.io/crates/http) crate (note this will be a git dependency until 0.2 is published)
-- a combination [multi function service](https://github.com/softprops/serverless-aws-rust-multi) to demonstrate how to set up a services with multiple independent functions
-
-Assuming your host machine has a relatively recent version of node, you [won't need to install any host-wide serverless dependencies](https://blog.npmjs.org/post/162869356040/introducing-npx-an-npm-package-runner). To get started, run the following commands to create a new lambda Rust application
-and install project level dependencies.
-
-```bash
-$ npx serverless install \
-  --url https://github.com/softprops/serverless-aws-rust \
-  --name my-new-app \
-  && cd my-new-app \
-  && npm install --silent
-```
-
-Deploy it using the standard serverless workflow:
-
-```bash
-# build, package, and deploy service to aws lambda
-$ npx serverless deploy
-```
-
-Invoke it using serverless framework or a configured AWS integrated trigger source:
-
-```bash
-npx serverless invoke -f hello -d '{"foo":"bar"}'
-```
-
-#### 2.5. Docker
-
-Alternatively, you can build a Rust-based Lambda function in a [docker mirror of the AWS Lambda provided runtime with the Rust toolchain preinstalled](https://github.com/rust-serverless/lambda-rust).
-
-Running the following command will start an ephemeral docker container, which will build your Rust application and produce a zip file containing its binary auto-renamed to `bootstrap` to meet the AWS Lambda's expectations for binaries under `target/lambda_runtime/release/{your-binary-name}.zip`. Typically, this is just the name of your crate if you are using the cargo default binary (i.e. `main.rs`):
-
-```bash
-# build and package deploy-ready artifact
-$ docker run --rm \
-    -v ${PWD}:/code \
-    -v ${HOME}/.cargo/registry:/root/.cargo/registry \
-    -v ${HOME}/.cargo/git:/root/.cargo/git \
-    rustserverless/lambda-rust
-```
-
-With your application built and packaged, it's ready to ship to production. You can also invoke it locally to verify is behavior using the [lambci :provided docker container](https://hub.docker.com/r/lambci/lambda/), which is also a mirror of the AWS Lambda provided runtime with build dependencies omitted:
-
-```bash
-# start a docker container replicating the "provided" lambda runtime
-# awaiting an event to be provided via stdin
-$ unzip -o \
-    target/lambda/release/{your-binary-name}.zip \
-    -d /tmp/lambda && \
-  docker run \
-    -i -e DOCKER_LAMBDA_USE_STDIN=1 \
-    --rm \
-    -v /tmp/lambda:/var/task \
-    lambci/lambda:provided
-
-# provide an event payload via stdin (typically a json blob)
-
-# Ctrl-D to yield control back to your function
-```
-
 ## Local development and testing
 
 ### Testing your code with unit and integration tests
@@ -332,7 +250,7 @@ fn test_my_lambda_handler() {
 }
 ```
 
-### Cargo Lambda
+### Local dev server with Cargo Lambda
 
 [Cargo Lambda](https://www.cargo-lambda.info) provides a local server that emulates the AWS Lambda control plane. This server works on Windows, Linux, and MacOS. In the root of your Lambda project. You can run the following subcommand to compile your function(s) and start the server.
 
@@ -431,30 +349,6 @@ fn main() -> Result<(), Box<Error>> {
     Ok(())
 }
 ```
-
-## Feature flags in lambda_http
-
-`lambda_http` is a wrapper for HTTP events coming from three different services, Amazon Load Balancer (ALB), Amazon Api Gateway (APIGW), and AWS Lambda Function URLs. Amazon Api Gateway can also send events from three different endpoints, REST APIs, HTTP APIs, and WebSockets. `lambda_http` transforms events from all these sources into native `http::Request` objects, so you can incorporate Rust HTTP semantics into your Lambda functions.
-
-By default, `lambda_http` compiles your function to support any of those services. This increases the compile time of your function because we have to generate code for all the sources. In reality, you'll usually put a Lambda function only behind one of those sources. You can choose which source to generate code for with feature flags.
-
-The available features flags for `lambda_http` are the following:
-
-- `alb`: for events coming from [Amazon Elastic Load Balancer](https://aws.amazon.com/elasticloadbalancing/).
-- `apigw_rest`: for events coming from [Amazon API Gateway Rest APIs](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-rest-api.html).
-- `apigw_http`: for events coming from [Amazon API Gateway HTTP APIs](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api.html) and [AWS Lambda Function URLs](https://docs.aws.amazon.com/lambda/latest/dg/lambda-urls.html).
-- `apigw_websockets`: for events coming from [Amazon API Gateway WebSockets](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api.html).
-
-If you only want to support one of these sources, you can disable the default features, and enable only the source that you care about in your package's `Cargo.toml` file. Substitute the dependency line for `lambda_http` for the snippet below, changing the feature that you want to enable:
-
-```toml
-[dependencies.lambda_http]
-version = "0.5.3"
-default-features = false
-features = ["apigw_rest"]
-```
-
-This will make your function compile much faster.
 
 ## Supported Rust Versions (MSRV)
 

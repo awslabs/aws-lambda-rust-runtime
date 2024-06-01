@@ -9,6 +9,11 @@ const EXTENSION_ERROR_TYPE_HEADER: &str = "Lambda-Extension-Function-Error-Type"
 const CONTENT_TYPE_HEADER_NAME: &str = "Content-Type";
 const CONTENT_TYPE_HEADER_VALUE: &str = "application/json";
 
+// Comma separated list of features the extension supports.
+// `accountId` is currently the only supported feature.
+const EXTENSION_ACCEPT_FEATURE: &str = "Lambda-Extension-Accept-Feature";
+const EXTENSION_ACCEPT_FEATURE_VALUE: &str = "accountId";
+
 pub(crate) fn next_event_request(extension_id: &str) -> Result<Request<Body>, Error> {
     let req = build_request()
         .method(Method::GET)
@@ -25,6 +30,7 @@ pub(crate) fn register_request(extension_name: &str, events: &[&str]) -> Result<
         .method(Method::POST)
         .uri("/2020-01-01/extension/register")
         .header(EXTENSION_NAME_HEADER, extension_name)
+        .header(EXTENSION_ACCEPT_FEATURE, EXTENSION_ACCEPT_FEATURE_VALUE)
         .header(CONTENT_TYPE_HEADER_NAME, CONTENT_TYPE_HEADER_VALUE)
         .body(Body::from(serde_json::to_string(&events)?))?;
 

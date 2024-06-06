@@ -213,9 +213,11 @@ pub struct UserIdentity {
 #[serde(rename_all = "camelCase")]
 pub struct StreamRecord {
     /// The approximate date and time when the stream record was created, in UNIX
-    /// epoch time (http://www.epochconverter.com/) format.
+    /// epoch time (http://www.epochconverter.com/) format. Might not be present in
+    /// the record: https://github.com/awslabs/aws-lambda-rust-runtime/issues/889
     #[serde(rename = "ApproximateCreationDateTime")]
     #[serde(with = "float_unix_epoch")]
+    #[serde(default)]
     pub approximate_creation_date_time: DateTime<Utc>,
     /// The primary key attribute(s) for the DynamoDB item that was modified.
     #[serde(deserialize_with = "deserialize_lambda_dynamodb_item")]
@@ -274,5 +276,7 @@ mod test {
         let output: String = serde_json::to_string(&parsed).unwrap();
         let reparsed: EventRecord = serde_json::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
+        let date = Utc.timestamp_micros(0).unwrap(); // 1970-01-01T00:00:00Z
+        assert_eq!(date, reparsed.change.approximate_creation_date_time);
     }
 }

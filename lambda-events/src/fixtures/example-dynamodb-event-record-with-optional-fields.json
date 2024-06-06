@@ -6,7 +6,6 @@
   "recordFormat":"application/json",
   "tableName":"examples",
   "dynamodb":{
-    "ApproximateCreationDateTime":1649809356015,
     "Keys":{
       "id":{
         "S":"00000000-0000-0000-0000-000000000000"

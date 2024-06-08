@@ -58,9 +58,9 @@ where
                 let fut = AssertUnwindSafe(task).catch_unwind();
                 CatchPanicFuture::Future(fut, PhantomData)
             }
-            Err(err) => {
-                error!(error = ?err, "user handler panicked");
-                CatchPanicFuture::Error(err)
+            Err(error) => {
+                error!(?error, "user handler panicked");
+                CatchPanicFuture::Error(error)
             }
         }
     }
@@ -85,15 +85,19 @@ where
         match self.project() {
             CatchPanicFutureProj::Future(fut, _) => match fut.poll(cx) {
                 Poll::Ready(ready) => match ready {
-                    Ok(inner_result) => Poll::Ready(inner_result.map_err(|err| err.into())),
-                    Err(err) => {
-                        error!(error = ?err, "user handler panicked");
-                        Poll::Ready(Err(Self::build_panic_diagnostic(&err)))
+                    Ok(Ok(success)) => Poll::Ready(Ok(success)),
+                    Ok(Err(error)) => {
+                        error!("{error:?}");
+                        Poll::Ready(Err(error.into()))
+                    }
+                    Err(error) => {
+                        error!(?error, "user handler panicked");
+                        Poll::Ready(Err(Self::build_panic_diagnostic(&error)))
                     }
                 },
                 Poll::Pending => Poll::Pending,
             },
-            CatchPanicFutureProj::Error(err) => Poll::Ready(Err(Self::build_panic_diagnostic(err))),
+            CatchPanicFutureProj::Error(error) => Poll::Ready(Err(Self::build_panic_diagnostic(error))),
         }
     }
 }

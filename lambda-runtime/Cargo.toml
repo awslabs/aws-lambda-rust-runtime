@@ -1,6 +1,6 @@
 [package]
 name = "lambda_runtime"
-version = "0.11.2"
+version = "0.11.3"
 authors = [
     "David Calavera <dcalaver@amazon.com>",
     "Harold Sun <sunhua@amazon.com>",
@@ -26,10 +26,7 @@ http = { workspace = true }
 http-body = { workspace = true }
 http-body-util = { workspace = true }
 http-serde = { workspace = true }
-hyper = { workspace = true, features = [
-    "http1",
-    "client",
-] }
+hyper = { workspace = true, features = ["http1", "client"] }
 hyper-util = { workspace = true, features = [
     "client",
     "client-legacy",

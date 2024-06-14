@@ -20,8 +20,8 @@ pub use sender::Sender;
 pub(crate) struct DecodedLength(u64);
 
 impl DecodedLength {
-    pub(crate) const CLOSE_DELIMITED: DecodedLength = DecodedLength(::std::u64::MAX);
-    pub(crate) const CHUNKED: DecodedLength = DecodedLength(::std::u64::MAX - 1);
+    pub(crate) const CLOSE_DELIMITED: DecodedLength = DecodedLength(u64::MAX);
+    pub(crate) const CHUNKED: DecodedLength = DecodedLength(u64::MAX - 1);
     pub(crate) const ZERO: DecodedLength = DecodedLength(0);
 
     pub(crate) fn sub_if(&mut self, amt: u64) {

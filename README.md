@@ -85,7 +85,7 @@ There are other ways of building your function: manually with the AWS CLI, with 
 
 By default, Cargo Lambda builds your functions to run on x86_64 architectures. If you'd like to use a different architecture, use the options described below.
 
-#### 1.2. Build your Lambda functions
+#### 1.1. Build your Lambda functions
 
 __Amazon Linux 2023__
 
@@ -101,7 +101,7 @@ For [a custom runtime](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-cus
 
 You can find the `bootstrap` binary for your function under the `target/lambda` directory.
 
-#### 2.2. Deploying with Cargo Lambda
+#### 2.1. Deploying with Cargo Lambda
 
 Once you've built your code with one of the options described earlier, use the `deploy` subcommand to upload your function to AWS:
 

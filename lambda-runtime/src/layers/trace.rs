@@ -43,7 +43,11 @@ where
 
     fn call(&mut self, req: LambdaInvocation) -> Self::Future {
         let span = request_span(&req.context);
-        self.inner.call(req).instrument(span)
+        let future = {
+            let _guard = span.enter();
+            self.inner.call(req)
+        };
+        future.instrument(span)
     }
 }
 

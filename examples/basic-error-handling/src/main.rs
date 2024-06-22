@@ -1,7 +1,7 @@
 /// See https://github.com/awslabs/aws-lambda-rust-runtime for more info on Rust runtime for AWS Lambda
 use lambda_runtime::{service_fn, tracing, Error, LambdaEvent};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::json;
 use std::fs::File;
 
 /// A simple Lambda request structure with just one field
@@ -59,11 +59,11 @@ async fn main() -> Result<(), Error> {
 }
 
 /// The actual handler of the Lambda request.
-pub(crate) async fn func(event: LambdaEvent<Value>) -> Result<Value, Error> {
+pub(crate) async fn func(event: LambdaEvent<Request>) -> Result<Response, Error> {
     let (event, ctx) = event.into_parts();
 
     // check what action was requested
-    match serde_json::from_value::<Request>(event)?.event_type {
+    match event.event_type {
         EventType::SimpleError => {
             // generate a simple text message error using `simple_error` crate
             return Err(Box::new(simple_error::SimpleError::new("A simple error as requested!")));
@@ -94,7 +94,7 @@ pub(crate) async fn func(event: LambdaEvent<Value>) -> Result<Value, Error> {
                 msg: "OK".into(),
             };
 
-            return Ok(json!(resp));
+            return Ok(resp);
         }
     }
 }

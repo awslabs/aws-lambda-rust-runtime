@@ -18,8 +18,12 @@ use tokio_stream::Stream;
 use tower::util::ServiceFn;
 pub use tower::{self, service_fn, Service};
 
+/// Diagnostic utilities to convert Rust types into Lambda Error types.
+pub mod diagnostic;
+pub use diagnostic::Diagnostic;
+
 mod deserializer;
-/// Tower middleware to be applied to runtime invocatinos.
+/// Tower middleware to be applied to runtime invocations.
 pub mod layers;
 mod requests;
 mod runtime;
@@ -35,9 +39,7 @@ mod types;
 
 use requests::EventErrorRequest;
 pub use runtime::{LambdaInvocation, Runtime};
-pub use types::{
-    Context, Diagnostic, FunctionResponse, IntoFunctionResponse, LambdaEvent, MetadataPrelude, StreamResponse,
-};
+pub use types::{Context, FunctionResponse, IntoFunctionResponse, LambdaEvent, MetadataPrelude, StreamResponse};
 
 /// Error type that lambdas may result in
 pub type Error = lambda_runtime_api_client::BoxError;

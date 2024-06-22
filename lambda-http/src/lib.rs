@@ -68,6 +68,7 @@ pub use http::{self, Response};
 /// Utilities to initialize and use `tracing` and `tracing-subscriber` in Lambda Functions.
 #[cfg(feature = "tracing")]
 pub use lambda_runtime::tracing;
+use lambda_runtime::Diagnostic;
 pub use lambda_runtime::{self, service_fn, tower, Context, Error, LambdaEvent, Service};
 use request::RequestFuture;
 use response::ResponseFuture;
@@ -193,7 +194,7 @@ where
     S: Service<Request, Response = R, Error = E>,
     S::Future: Send + 'a,
     R: IntoResponse,
-    E: std::fmt::Debug + std::fmt::Display,
+    E: std::fmt::Debug + for<'b> Into<Diagnostic<'b>>,
 {
     lambda_runtime::run(Adapter::from(handler)).await
 }

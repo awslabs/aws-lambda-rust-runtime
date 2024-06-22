@@ -1,7 +1,7 @@
-use super::requests::{IntoRequest, NextEventRequest};
-use super::types::{invoke_request_id, Diagnostic, IntoFunctionResponse, LambdaEvent};
 use crate::layers::{CatchPanicService, RuntimeApiClientService, RuntimeApiResponseService};
-use crate::{Config, Context};
+use crate::requests::{IntoRequest, NextEventRequest};
+use crate::types::{invoke_request_id, IntoFunctionResponse, LambdaEvent};
+use crate::{Config, Context, Diagnostic};
 use http_body_util::BodyExt;
 use lambda_runtime_api_client::BoxError;
 use lambda_runtime_api_client::Client as ApiClient;
@@ -252,8 +252,7 @@ mod endpoint_tests {
     use super::{incoming, wrap_handler};
     use crate::{
         requests::{EventCompletionRequest, EventErrorRequest, IntoRequest, NextEventRequest},
-        types::Diagnostic,
-        Config, Error, Runtime,
+        Config, Diagnostic, Error, Runtime,
     };
     use futures::future::BoxFuture;
     use http::{HeaderValue, StatusCode};

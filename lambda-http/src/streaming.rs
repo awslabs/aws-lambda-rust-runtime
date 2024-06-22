@@ -5,8 +5,9 @@ use crate::{request::LambdaRequest, RequestExt};
 use bytes::Bytes;
 pub use http::{self, Response};
 use http_body::Body;
+use lambda_runtime::Diagnostic;
 pub use lambda_runtime::{self, tower::ServiceExt, Error, LambdaEvent, MetadataPrelude, Service, StreamResponse};
-use std::fmt::{Debug, Display};
+use std::fmt::Debug;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 use tokio_stream::Stream;
@@ -20,7 +21,7 @@ pub async fn run_with_streaming_response<'a, S, B, E>(handler: S) -> Result<(), 
 where
     S: Service<Request, Response = Response<B>, Error = E>,
     S::Future: Send + 'a,
-    E: Debug + Display,
+    E: Debug + for<'b> Into<Diagnostic<'b>>,
     B: Body + Unpin + Send + 'static,
     B::Data: Into<Bytes> + Send,
     B::Error: Into<Error> + Send + Debug,

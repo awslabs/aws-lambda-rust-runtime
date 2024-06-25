@@ -18,11 +18,7 @@ edition = "2021"
 [dependencies]
 base64 = { workspace = true }
 bytes = { workspace = true, features = ["serde"], optional = true }
-chrono = { workspace = true, default-features = false, features = [
-  "clock",
-  "serde",
-  "std",
-], optional = true }
+chrono = { workspace = true, optional = true }
 flate2 = { version = "1.0.24", optional = true }
 http = { workspace = true, optional = true }
 http-body = { workspace = true, optional = true }

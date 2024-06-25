@@ -1,8 +1,9 @@
-use crate::requests::{EventCompletionRequest, IntoRequest};
-use crate::runtime::LambdaInvocation;
-use crate::types::Diagnostic;
-use crate::{deserializer, IntoFunctionResponse};
-use crate::{EventErrorRequest, LambdaEvent};
+use crate::{
+    deserializer,
+    requests::{EventCompletionRequest, IntoRequest},
+    runtime::LambdaInvocation,
+    Diagnostic, EventErrorRequest, IntoFunctionResponse, LambdaEvent,
+};
 use futures::ready;
 use futures::Stream;
 use lambda_runtime_api_client::{body::Body, BoxError};

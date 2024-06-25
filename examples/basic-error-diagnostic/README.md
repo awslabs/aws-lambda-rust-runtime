@@ -1,6 +1,6 @@
 # AWS Lambda Function Error handling example
 
-This example shows how to return a custom error type for unexpected failures.
+This example shows how to implement the `Diagnostic` trait to return a specific `error_type` in the Lambda error response. If you don't use the `error_type` field, you don't need to implement `Diagnostic`, the type will be generated based on the error type name.
 
 ## Build & Deploy
 

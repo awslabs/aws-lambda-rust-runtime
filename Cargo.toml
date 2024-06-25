@@ -14,7 +14,11 @@ exclude = ["examples"]
 [workspace.dependencies]
 base64 = "0.22"
 bytes = "1"
-chrono = "0.4.35"
+chrono = { version = "0.4.35", default-features = false, features = [
+    "clock",
+    "serde",
+    "std",
+] }
 futures = "0.3"
 futures-channel = "0.3"
 futures-util = "0.3"

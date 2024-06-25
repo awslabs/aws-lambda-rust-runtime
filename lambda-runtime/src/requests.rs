@@ -1,5 +1,4 @@
-use crate::types::ToStreamErrorTrailer;
-use crate::{types::Diagnostic, Error, FunctionResponse, IntoFunctionResponse};
+use crate::{types::ToStreamErrorTrailer, Diagnostic, Error, FunctionResponse, IntoFunctionResponse};
 use bytes::Bytes;
 use http::header::CONTENT_TYPE;
 use http::{Method, Request, Uri};

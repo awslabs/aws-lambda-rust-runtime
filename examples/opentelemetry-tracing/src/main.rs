@@ -1,7 +1,6 @@
-use lambda_runtime::{LambdaEvent, Runtime};
+use lambda_runtime::{layers::OpenTelemetryLayer as OtelLayer, LambdaEvent, Runtime};
 use opentelemetry::trace::TracerProvider;
 use opentelemetry_sdk::{runtime, trace};
-use opentelemetry_tracing::OpenTelemetryLayer;
 use tower::{service_fn, BoxError};
 use tracing_subscriber::prelude::*;
 
@@ -25,7 +24,7 @@ async fn main() -> Result<(), BoxError> {
         .init();
 
     // Initialize the Lambda runtime and add OpenTelemetry tracing
-    let runtime = Runtime::new(service_fn(echo)).layer(OpenTelemetryLayer::new(|| {
+    let runtime = Runtime::new(service_fn(echo)).layer(OtelLayer::new(|| {
         // Make sure that the trace is exported before the Lambda runtime is frozen
         tracer_provider.force_flush();
     }));

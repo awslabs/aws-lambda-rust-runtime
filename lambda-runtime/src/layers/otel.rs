@@ -2,7 +2,7 @@ use std::future::Future;
 use std::pin::Pin;
 use std::task;
 
-use lambda_runtime::LambdaInvocation;
+use crate::LambdaInvocation;
 use opentelemetry_semantic_conventions::trace as traceconv;
 use pin_project::pin_project;
 use tower::{Layer, Service};
@@ -19,6 +19,7 @@ impl<F> OpenTelemetryLayer<F>
 where
     F: Fn() + Clone,
 {
+    /// Create a new [OpenTelemetryLayer] with the provided flush function.
     pub fn new(flush_fn: F) -> Self {
         Self { flush_fn }
     }
@@ -71,9 +72,14 @@ where
         // After the first execution, we can set 'coldstart' to false
         self.coldstart = false;
 
-        let fut = self.inner.call(req).instrument(span);
+        let future = {
+            // Enter the span before calling the inner service
+            // to ensure that it's assigned as parent of the inner spans.
+            let _guard = span.enter();
+            self.inner.call(req)
+        };
         OpenTelemetryFuture {
-            future: Some(fut),
+            future: Some(future.instrument(span)),
             flush_fn: self.flush_fn.clone(),
         }
     }

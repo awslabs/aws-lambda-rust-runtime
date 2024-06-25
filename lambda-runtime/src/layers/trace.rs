@@ -44,6 +44,8 @@ where
     fn call(&mut self, req: LambdaInvocation) -> Self::Future {
         let span = request_span(&req.context);
         let future = {
+            // Enter the span before calling the inner service
+            // to ensure that it's assigned as parent of the inner spans.
             let _guard = span.enter();
             self.inner.call(req)
         };

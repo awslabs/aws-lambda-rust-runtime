@@ -1,6 +1,6 @@
 [package]
 name = "lambda_http"
-version = "0.11.4"
+version = "0.12.0"
 authors = [
     "David Calavera <dcalaver@amazon.com>",
     "Harold Sun <sunhua@amazon.com>",
@@ -34,7 +34,7 @@ http = { workspace = true }
 http-body = { workspace = true }
 http-body-util = { workspace = true }
 hyper = { workspace = true }
-lambda_runtime = { version = "0.11.3", path = "../lambda-runtime" }
+lambda_runtime = { version = "0.12.0", path = "../lambda-runtime" }
 mime = "0.3"
 percent-encoding = "2.2"
 pin-project-lite = { workspace = true }

@@ -4,16 +4,11 @@ use crate::{
     runtime::LambdaInvocation,
     Diagnostic, EventErrorRequest, IntoFunctionResponse, LambdaEvent,
 };
-use futures::ready;
-use futures::Stream;
+use futures::{ready, Stream};
 use lambda_runtime_api_client::{body::Body, BoxError};
 use pin_project::pin_project;
 use serde::{Deserialize, Serialize};
-use std::fmt::Debug;
-use std::future::Future;
-use std::marker::PhantomData;
-use std::pin::Pin;
-use std::task;
+use std::{fmt::Debug, future::Future, marker::PhantomData, pin::Pin, task};
 use tower::Service;
 use tracing::{error, trace};
 

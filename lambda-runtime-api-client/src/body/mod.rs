@@ -6,8 +6,10 @@ use bytes::Bytes;
 use futures_util::stream::Stream;
 use http_body::{Body as _, Frame};
 use http_body_util::{BodyExt, Collected};
-use std::pin::Pin;
-use std::task::{Context, Poll};
+use std::{
+    pin::Pin,
+    task::{Context, Poll},
+};
 
 use self::channel::Sender;
 

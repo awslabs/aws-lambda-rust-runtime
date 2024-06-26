@@ -102,8 +102,7 @@ pub enum CloudFormationCustomResourceResponseStatus {
 mod test {
     use std::collections::HashMap;
 
-    use super::CloudFormationCustomResourceRequest::*;
-    use super::*;
+    use super::{CloudFormationCustomResourceRequest::*, *};
 
     #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
     #[serde(rename_all = "PascalCase")]

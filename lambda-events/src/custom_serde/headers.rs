@@ -1,7 +1,8 @@
-use http::header::HeaderName;
-use http::{HeaderMap, HeaderValue};
-use serde::de::{self, Deserializer, Error as DeError, MapAccess, Unexpected, Visitor};
-use serde::ser::{Error as SerError, SerializeMap, Serializer};
+use http::{header::HeaderName, HeaderMap, HeaderValue};
+use serde::{
+    de::{self, Deserializer, Error as DeError, MapAccess, Unexpected, Visitor},
+    ser::{Error as SerError, SerializeMap, Serializer},
+};
 use std::{borrow::Cow, fmt};
 
 /// Serialize a http::HeaderMap into a serde str => Vec<str> map

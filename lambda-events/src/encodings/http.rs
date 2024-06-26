@@ -1,8 +1,10 @@
 use base64::display::Base64Display;
 use bytes::Bytes;
 use http_body::{Body as HttpBody, SizeHint};
-use serde::de::{Deserialize, Deserializer, Error as DeError, Visitor};
-use serde::ser::{Error as SerError, Serialize, Serializer};
+use serde::{
+    de::{Deserialize, Deserializer, Error as DeError, Visitor},
+    ser::{Error as SerError, Serialize, Serializer},
+};
 use std::{borrow::Cow, mem::take, ops::Deref, pin::Pin, task::Poll};
 
 /// Representation of http request and response bodies as supported

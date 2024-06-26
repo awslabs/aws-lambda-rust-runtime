@@ -1,7 +1,7 @@
 use chrono::{DateTime, NaiveDateTime, Utc};
-use serde::ser::Serializer;
 use serde::{
     de::{Deserializer, Error as DeError, Visitor},
+    ser::Serializer,
     Deserialize,
 };
 use std::fmt;

@@ -1,8 +1,9 @@
-use crate::custom_serde::{codebuild_time, CodeBuildNumber};
-use crate::encodings::{MinuteDuration, SecondDuration};
+use crate::{
+    custom_serde::{codebuild_time, CodeBuildNumber},
+    encodings::{MinuteDuration, SecondDuration},
+};
 use chrono::{DateTime, Utc};
-use serde::de::DeserializeOwned;
-use serde::{Deserialize, Serialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
 
 pub type CodeBuildPhaseStatus = String;

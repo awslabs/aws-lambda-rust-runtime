@@ -9,16 +9,20 @@ use aws_lambda_events::apigw::ApiGatewayProxyResponse;
 use aws_lambda_events::apigw::ApiGatewayV2httpResponse;
 use aws_lambda_events::encodings::Body;
 use encoding_rs::Encoding;
-use http::header::CONTENT_ENCODING;
-use http::HeaderMap;
-use http::{header::CONTENT_TYPE, Response, StatusCode};
+use http::{
+    header::{CONTENT_ENCODING, CONTENT_TYPE},
+    HeaderMap, Response, StatusCode,
+};
 use http_body::Body as HttpBody;
 use http_body_util::BodyExt;
 use mime::{Mime, CHARSET};
 use serde::Serialize;
-use std::borrow::Cow;
-use std::future::ready;
-use std::{fmt, future::Future, pin::Pin};
+use std::{
+    borrow::Cow,
+    fmt,
+    future::{ready, Future},
+    pin::Pin,
+};
 
 const X_LAMBDA_HTTP_CONTENT_ENCODING: &str = "x-lambda-http-content-encoding";
 

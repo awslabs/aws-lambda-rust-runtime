@@ -1,7 +1,9 @@
-use crate::custom_serde::{
-    deserialize_headers, deserialize_nullish_boolean, http_method, serialize_headers, serialize_multi_value_headers,
+use crate::{
+    custom_serde::{
+        deserialize_headers, deserialize_nullish_boolean, http_method, serialize_headers, serialize_multi_value_headers,
+    },
+    encodings::Body,
 };
-use crate::encodings::Body;
 use http::{HeaderMap, Method};
 use query_map::QueryMap;
 use serde::{Deserialize, Serialize};

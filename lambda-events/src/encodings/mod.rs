@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::{ops::Deref, ops::DerefMut};
+use std::ops::{Deref, DerefMut};
 
 #[cfg(feature = "chrono")]
 mod time;

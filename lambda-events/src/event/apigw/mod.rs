@@ -1,9 +1,11 @@
-use crate::custom_serde::{
-    deserialize_headers, deserialize_lambda_map, deserialize_nullish_boolean, http_method, serialize_headers,
-    serialize_multi_value_headers,
+use crate::{
+    custom_serde::{
+        deserialize_headers, deserialize_lambda_map, deserialize_nullish_boolean, http_method, serialize_headers,
+        serialize_multi_value_headers,
+    },
+    encodings::Body,
+    iam::IamPolicyStatement,
 };
-use crate::encodings::Body;
-use crate::iam::IamPolicyStatement;
 use http::{HeaderMap, Method};
 use query_map::QueryMap;
 use serde::{de::DeserializeOwned, ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer};

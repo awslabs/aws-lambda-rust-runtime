@@ -1,19 +1,17 @@
 //! Body::channel utilities. Extracted from Hyper under MIT license.
 //! https://github.com/hyperium/hyper/blob/master/LICENSE
 
-use std::pin::Pin;
-use std::task::Context;
-use std::task::Poll;
+use std::{
+    pin::Pin,
+    task::{Context, Poll},
+};
 
 use crate::body::{sender, watch};
 use bytes::Bytes;
-use futures_channel::mpsc;
-use futures_channel::oneshot;
+use futures_channel::{mpsc, oneshot};
 use futures_util::{stream::FusedStream, Future, Stream};
 use http::HeaderMap;
-use http_body::Body;
-use http_body::Frame;
-use http_body::SizeHint;
+use http_body::{Body, Frame, SizeHint};
 pub use sender::Sender;
 
 #[derive(Clone, Copy, PartialEq, Eq)]

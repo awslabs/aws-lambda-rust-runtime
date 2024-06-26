@@ -1,18 +1,15 @@
-use crate::layers::{CatchPanicService, RuntimeApiClientService, RuntimeApiResponseService};
-use crate::requests::{IntoRequest, NextEventRequest};
-use crate::types::{invoke_request_id, IntoFunctionResponse, LambdaEvent};
-use crate::{Config, Context, Diagnostic};
+use crate::{
+    layers::{CatchPanicService, RuntimeApiClientService, RuntimeApiResponseService},
+    requests::{IntoRequest, NextEventRequest},
+    types::{invoke_request_id, IntoFunctionResponse, LambdaEvent},
+    Config, Context, Diagnostic,
+};
 use http_body_util::BodyExt;
-use lambda_runtime_api_client::BoxError;
-use lambda_runtime_api_client::Client as ApiClient;
+use lambda_runtime_api_client::{BoxError, Client as ApiClient};
 use serde::{Deserialize, Serialize};
-use std::env;
-use std::fmt::Debug;
-use std::future::Future;
-use std::sync::Arc;
+use std::{env, fmt::Debug, future::Future, sync::Arc};
 use tokio_stream::{Stream, StreamExt};
-use tower::Layer;
-use tower::{Service, ServiceExt};
+use tower::{Layer, Service, ServiceExt};
 use tracing::trace;
 
 /* ----------------------------------------- INVOCATION ---------------------------------------- */

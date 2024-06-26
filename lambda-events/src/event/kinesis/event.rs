@@ -1,5 +1,7 @@
-use crate::encodings::{Base64Data, SecondTimestamp};
-use crate::time_window::{TimeWindowEventResponseProperties, TimeWindowProperties};
+use crate::{
+    encodings::{Base64Data, SecondTimestamp},
+    time_window::{TimeWindowEventResponseProperties, TimeWindowProperties},
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]

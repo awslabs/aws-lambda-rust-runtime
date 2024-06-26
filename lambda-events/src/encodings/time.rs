@@ -1,7 +1,7 @@
 use chrono::{DateTime, TimeDelta, TimeZone, Utc};
-use serde::ser::Serializer;
 use serde::{
     de::{Deserializer, Error as DeError},
+    ser::Serializer,
     Deserialize, Serialize,
 };
 use std::ops::{Deref, DerefMut};

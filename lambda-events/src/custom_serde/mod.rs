@@ -1,6 +1,8 @@
 use base64::Engine;
-use serde::de::{Deserialize, Deserializer, Error as DeError};
-use serde::ser::Serializer;
+use serde::{
+    de::{Deserialize, Deserializer, Error as DeError},
+    ser::Serializer,
+};
 use std::collections::HashMap;
 
 #[cfg(feature = "codebuild")]

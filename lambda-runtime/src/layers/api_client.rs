@@ -3,10 +3,7 @@ use futures::{future::BoxFuture, ready, FutureExt, TryFutureExt};
 use hyper::body::Incoming;
 use lambda_runtime_api_client::{body::Body, BoxError, Client};
 use pin_project::pin_project;
-use std::future::Future;
-use std::pin::Pin;
-use std::sync::Arc;
-use std::task;
+use std::{future::Future, pin::Pin, sync::Arc, task};
 use tower::Service;
 use tracing::error;
 

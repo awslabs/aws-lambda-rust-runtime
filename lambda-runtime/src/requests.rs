@@ -1,12 +1,9 @@
 use crate::{types::ToStreamErrorTrailer, Diagnostic, Error, FunctionResponse, IntoFunctionResponse};
 use bytes::Bytes;
-use http::header::CONTENT_TYPE;
-use http::{Method, Request, Uri};
+use http::{header::CONTENT_TYPE, Method, Request, Uri};
 use lambda_runtime_api_client::{body::Body, build_request};
 use serde::Serialize;
-use std::fmt::Debug;
-use std::marker::PhantomData;
-use std::str::FromStr;
+use std::{fmt::Debug, marker::PhantomData, str::FromStr};
 use tokio_stream::{Stream, StreamExt};
 
 pub(crate) trait IntoRequest {

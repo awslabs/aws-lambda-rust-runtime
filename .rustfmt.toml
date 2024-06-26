@@ -1,6 +1,14 @@
 edition = "2021"
-# imports_granularity is unstable
-# # https://github.com/rust-lang/rustfmt/blob/master/Configurations.md#merge_imports
-# imports_granularity = "Crate"
+
 # https://github.com/rust-lang/rustfmt/blob/master/Configurations.md#max_width
 max_width = 120
+
+#https://github.com/rust-lang/rustfmt/blob/master/Configurations.md#reorder_imports
+reorder_imports = true
+
+#https://github.com/rust-lang/rustfmt/blob/master/Configurations.md#unstable_features
+unstable_features = true
+
+# imports_granularity is unstable
+# https://github.com/rust-lang/rustfmt/blob/master/Configurations.md#merge_imports
+imports_granularity = "Crate"

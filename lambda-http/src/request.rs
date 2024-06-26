@@ -26,15 +26,12 @@ use aws_lambda_events::apigw::{ApiGatewayV2httpRequest, ApiGatewayV2httpRequestC
 #[cfg(feature = "apigw_websockets")]
 use aws_lambda_events::apigw::{ApiGatewayWebsocketProxyRequest, ApiGatewayWebsocketProxyRequestContext};
 use aws_lambda_events::{encodings::Body, query_map::QueryMap};
-use http::header::HeaderName;
-use http::{HeaderMap, HeaderValue};
+use http::{header::HeaderName, HeaderMap, HeaderValue};
 
 use serde::{Deserialize, Serialize};
 use serde_json::error::Error as JsonError;
 
-use std::future::Future;
-use std::pin::Pin;
-use std::{env, io::Read};
+use std::{env, future::Future, io::Read, pin::Pin};
 use url::Url;
 
 /// Internal representation of an Lambda http event from

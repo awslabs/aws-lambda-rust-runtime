@@ -1,14 +1,9 @@
 use crate::{Diagnostic, LambdaEvent};
 use futures::{future::CatchUnwind, FutureExt};
 use pin_project::pin_project;
-use std::any::Any;
-use std::borrow::Cow;
-use std::fmt::Debug;
-use std::future::Future;
-use std::marker::PhantomData;
-use std::panic::AssertUnwindSafe;
-use std::pin::Pin;
-use std::task;
+use std::{
+    any::Any, borrow::Cow, fmt::Debug, future::Future, marker::PhantomData, panic::AssertUnwindSafe, pin::Pin, task,
+};
 use tower::Service;
 use tracing::error;
 

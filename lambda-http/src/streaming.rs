@@ -1,15 +1,14 @@
-use crate::http::header::SET_COOKIE;
-use crate::tower::ServiceBuilder;
-use crate::Request;
-use crate::{request::LambdaRequest, RequestExt};
+use crate::{http::header::SET_COOKIE, request::LambdaRequest, tower::ServiceBuilder, Request, RequestExt};
 use bytes::Bytes;
 pub use http::{self, Response};
 use http_body::Body;
 use lambda_runtime::Diagnostic;
 pub use lambda_runtime::{self, tower::ServiceExt, Error, LambdaEvent, MetadataPrelude, Service, StreamResponse};
-use std::fmt::Debug;
-use std::pin::Pin;
-use std::task::{Context, Poll};
+use std::{
+    fmt::Debug,
+    pin::Pin,
+    task::{Context, Poll},
+};
 use tokio_stream::Stream;
 
 /// Starts the Lambda Rust runtime and stream response back [Configure Lambda

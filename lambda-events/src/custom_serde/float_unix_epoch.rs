@@ -1,8 +1,7 @@
 use serde::{de, ser};
 use std::fmt;
 
-use chrono::offset::TimeZone;
-use chrono::{DateTime, LocalResult, Utc};
+use chrono::{offset::TimeZone, DateTime, LocalResult, Utc};
 
 enum SerdeError<V: fmt::Display, D: fmt::Display> {
     NonExistent { timestamp: V },

@@ -1,6 +1,8 @@
 use http::Method;
-use serde::de::{Deserialize, Deserializer, Error as DeError, Unexpected, Visitor};
-use serde::ser::Serializer;
+use serde::{
+    de::{Deserialize, Deserializer, Error as DeError, Unexpected, Visitor},
+    ser::Serializer,
+};
 use std::fmt;
 
 pub fn serialize<S: Serializer>(method: &Method, ser: S) -> Result<S::Ok, S::Error> {

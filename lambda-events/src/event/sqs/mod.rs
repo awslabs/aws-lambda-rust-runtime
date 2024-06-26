@@ -1,7 +1,5 @@
-use crate::custom_serde::deserialize_lambda_map;
-use crate::encodings::Base64Data;
-use serde::de::DeserializeOwned;
-use serde::{Deserialize, Serialize};
+use crate::{custom_serde::deserialize_lambda_map, encodings::Base64Data};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// The Event sent to Lambda from SQS. Contains 1 or more individual SQS Messages

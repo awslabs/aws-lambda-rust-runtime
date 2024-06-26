@@ -5,7 +5,10 @@
 //! This crate includes a base HTTP client to interact with
 //! the AWS Lambda Runtime API.
 use futures_util::{future::BoxFuture, FutureExt, TryFutureExt};
-use http::{uri::PathAndQuery, uri::Scheme, Request, Response, Uri};
+use http::{
+    uri::{PathAndQuery, Scheme},
+    Request, Response, Uri,
+};
 use hyper::body::Incoming;
 use hyper_util::client::legacy::connect::HttpConnector;
 use std::{convert::TryInto, fmt::Debug, future};

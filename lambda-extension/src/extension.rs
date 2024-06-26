@@ -1,14 +1,18 @@
 use http::Request;
 use http_body_util::BodyExt;
-use hyper::body::Incoming;
-use hyper::server::conn::http1;
-use hyper::service::service_fn;
+use hyper::{body::Incoming, server::conn::http1, service::service_fn};
 
 use hyper_util::rt::tokio::TokioIo;
 use lambda_runtime_api_client::Client;
 use serde::Deserialize;
 use std::{
-    convert::Infallible, fmt, future::ready, future::Future, net::SocketAddr, path::PathBuf, pin::Pin, sync::Arc,
+    convert::Infallible,
+    fmt,
+    future::{ready, Future},
+    net::SocketAddr,
+    path::PathBuf,
+    pin::Pin,
+    sync::Arc,
 };
 use tokio::{net::TcpListener, sync::Mutex};
 use tokio_stream::StreamExt;

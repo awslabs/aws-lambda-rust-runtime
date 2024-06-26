@@ -10,3 +10,8 @@ pub(crate) use api_client::RuntimeApiClientService;
 pub(crate) use api_response::RuntimeApiResponseService;
 pub(crate) use panic::CatchPanicService;
 pub use trace::TracingLayer;
+
+#[cfg(feature = "opentelemetry")]
+mod otel;
+#[cfg(feature = "opentelemetry")]
+pub use otel::OpenTelemetryLayer;

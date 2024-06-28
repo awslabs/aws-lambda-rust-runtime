@@ -10,6 +10,7 @@ use tracing::{instrument::Instrumented, Instrument};
 /// a function to flush OpenTelemetry after the end of the invocation.
 pub struct OpenTelemetryLayer<F> {
     flush_fn: F,
+    otel_attribute_trigger: Option<String>,
 }
 
 impl<F> OpenTelemetryLayer<F>
@@ -18,7 +19,20 @@ where
 {
     /// Create a new [OpenTelemetryLayer] with the provided flush function.
     pub fn new(flush_fn: F) -> Self {
-        Self { flush_fn }
+        Self {
+            flush_fn,
+            otel_attribute_trigger: None,
+        }
+    }
+
+    /// Configure the `faas.trigger` attribute of the OpenTelemetry span.
+    /// Defaults to `http` if not set.
+    /// See https://opentelemetry.io/docs/specs/semconv/attributes-registry/faas/ for the list of possible triggers.
+    pub fn with_trigger<T: Into<String>>(self, trigger: T) -> Self {
+        Self {
+            otel_attribute_trigger: Some(trigger.into()),
+            ..self
+        }
     }
 }
 
@@ -33,6 +47,10 @@ where
             inner,
             flush_fn: self.flush_fn.clone(),
             coldstart: true,
+            otel_attribute_trigger: self
+                .otel_attribute_trigger
+                .clone()
+                .unwrap_or_else(|| "http".to_string()),
         }
     }
 }
@@ -42,6 +60,7 @@ pub struct OpenTelemetryService<S, F> {
     inner: S,
     flush_fn: F,
     coldstart: bool,
+    otel_attribute_trigger: String,
 }
 
 impl<S, F> Service<LambdaInvocation> for OpenTelemetryService<S, F>
@@ -61,7 +80,7 @@ where
         let span = tracing::info_span!(
             "Lambda function invocation",
             "otel.name" = req.context.env_config.function_name,
-            { traceconv::FAAS_TRIGGER } = "http",
+            { traceconv::FAAS_TRIGGER } = &self.otel_attribute_trigger,
             { traceconv::FAAS_INVOCATION_ID } = req.context.request_id,
             { traceconv::FAAS_COLDSTART } = self.coldstart
         );

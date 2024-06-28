@@ -24,10 +24,15 @@ async fn main() -> Result<(), BoxError> {
         .init();
 
     // Initialize the Lambda runtime and add OpenTelemetry tracing
-    let runtime = Runtime::new(service_fn(echo)).layer(OtelLayer::new(|| {
-        // Make sure that the trace is exported before the Lambda runtime is frozen
-        tracer_provider.force_flush();
-    }));
+    let runtime = Runtime::new(service_fn(echo)).layer(
+        // Create a tracing span for each Lambda invocation
+        OtelLayer::new(|| {
+            // Make sure that the trace is exported before the Lambda runtime is frozen
+            tracer_provider.force_flush();
+        })
+        // Set the "faas.trigger" attribute of the span (defaults to "http" otherwise)
+        .with_trigger("datasource"),
+    );
     runtime.run().await?;
     Ok(())
 }

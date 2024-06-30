@@ -1,4 +1,4 @@
-use std::{future::Future, pin::Pin, task};
+use std::{fmt::Display, future::Future, pin::Pin, task};
 
 use crate::LambdaInvocation;
 use opentelemetry_semantic_conventions::trace as traceconv;
@@ -10,6 +10,7 @@ use tracing::{instrument::Instrumented, Instrument};
 /// a function to flush OpenTelemetry after the end of the invocation.
 pub struct OpenTelemetryLayer<F> {
     flush_fn: F,
+    otel_attribute_trigger: OpenTelemetryFaasTrigger,
 }
 
 impl<F> OpenTelemetryLayer<F>
@@ -18,7 +19,18 @@ where
 {
     /// Create a new [OpenTelemetryLayer] with the provided flush function.
     pub fn new(flush_fn: F) -> Self {
-        Self { flush_fn }
+        Self {
+            flush_fn,
+            otel_attribute_trigger: Default::default(),
+        }
+    }
+
+    /// Configure the `faas.trigger` attribute of the OpenTelemetry span.
+    pub fn with_trigger(self, trigger: OpenTelemetryFaasTrigger) -> Self {
+        Self {
+            otel_attribute_trigger: trigger,
+            ..self
+        }
     }
 }
 
@@ -33,6 +45,7 @@ where
             inner,
             flush_fn: self.flush_fn.clone(),
             coldstart: true,
+            otel_attribute_trigger: self.otel_attribute_trigger.to_string(),
         }
     }
 }
@@ -42,6 +55,7 @@ pub struct OpenTelemetryService<S, F> {
     inner: S,
     flush_fn: F,
     coldstart: bool,
+    otel_attribute_trigger: String,
 }
 
 impl<S, F> Service<LambdaInvocation> for OpenTelemetryService<S, F>
@@ -61,7 +75,7 @@ where
         let span = tracing::info_span!(
             "Lambda function invocation",
             "otel.name" = req.context.env_config.function_name,
-            { traceconv::FAAS_TRIGGER } = "http",
+            { traceconv::FAAS_TRIGGER } = &self.otel_attribute_trigger,
             { traceconv::FAAS_INVOCATION_ID } = req.context.request_id,
             { traceconv::FAAS_COLDSTART } = self.coldstart
         );
@@ -112,5 +126,35 @@ where
         Pin::set(&mut self.as_mut().project().future, None);
         (self.project().flush_fn)();
         task::Poll::Ready(ready)
+    }
+}
+
+/// Represent the possible values for the OpenTelemetry `faas.trigger` attribute.
+/// See https://opentelemetry.io/docs/specs/semconv/attributes-registry/faas/ for more details.
+#[derive(Default, Clone, Copy)]
+#[non_exhaustive]
+pub enum OpenTelemetryFaasTrigger {
+    /// A response to some data source operation such as a database or filesystem read/write
+    #[default]
+    Datasource,
+    /// To provide an answer to an inbound HTTP request
+    Http,
+    /// A function is set to be executed when messages are sent to a messaging system
+    PubSub,
+    /// A function is scheduled to be executed regularly
+    Timer,
+    /// If none of the others apply
+    Other,
+}
+
+impl Display for OpenTelemetryFaasTrigger {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            OpenTelemetryFaasTrigger::Datasource => write!(f, "datasource"),
+            OpenTelemetryFaasTrigger::Http => write!(f, "http"),
+            OpenTelemetryFaasTrigger::PubSub => write!(f, "pubsub"),
+            OpenTelemetryFaasTrigger::Timer => write!(f, "timer"),
+            OpenTelemetryFaasTrigger::Other => write!(f, "other"),
+        }
     }
 }

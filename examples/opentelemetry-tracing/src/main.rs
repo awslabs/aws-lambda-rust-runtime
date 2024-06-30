@@ -1,4 +1,7 @@
-use lambda_runtime::{layers::OpenTelemetryLayer as OtelLayer, LambdaEvent, Runtime};
+use lambda_runtime::{
+    layers::{OpenTelemetryFaasTrigger, OpenTelemetryLayer as OtelLayer},
+    LambdaEvent, Runtime,
+};
 use opentelemetry::trace::TracerProvider;
 use opentelemetry_sdk::{runtime, trace};
 use tower::{service_fn, BoxError};
@@ -30,8 +33,8 @@ async fn main() -> Result<(), BoxError> {
             // Make sure that the trace is exported before the Lambda runtime is frozen
             tracer_provider.force_flush();
         })
-        // Set the "faas.trigger" attribute of the span (defaults to "http" otherwise)
-        .with_trigger("datasource"),
+        // Set the "faas.trigger" attribute of the span to "pubsub"
+        .with_trigger(OpenTelemetryFaasTrigger::PubSub),
     );
     runtime.run().await?;
     Ok(())

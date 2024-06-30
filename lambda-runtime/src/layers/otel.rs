@@ -1,4 +1,4 @@
-use std::{future::Future, pin::Pin, task};
+use std::{fmt::Display, future::Future, pin::Pin, task};
 
 use crate::LambdaInvocation;
 use opentelemetry_semantic_conventions::trace as traceconv;
@@ -10,7 +10,7 @@ use tracing::{instrument::Instrumented, Instrument};
 /// a function to flush OpenTelemetry after the end of the invocation.
 pub struct OpenTelemetryLayer<F> {
     flush_fn: F,
-    otel_attribute_trigger: Option<String>,
+    otel_attribute_trigger: OpenTelemetryFaasTrigger,
 }
 
 impl<F> OpenTelemetryLayer<F>
@@ -21,16 +21,14 @@ where
     pub fn new(flush_fn: F) -> Self {
         Self {
             flush_fn,
-            otel_attribute_trigger: None,
+            otel_attribute_trigger: Default::default(),
         }
     }
 
     /// Configure the `faas.trigger` attribute of the OpenTelemetry span.
-    /// Defaults to `http` if not set.
-    /// See https://opentelemetry.io/docs/specs/semconv/attributes-registry/faas/ for the list of possible triggers.
-    pub fn with_trigger<T: Into<String>>(self, trigger: T) -> Self {
+    pub fn with_trigger(self, trigger: OpenTelemetryFaasTrigger) -> Self {
         Self {
-            otel_attribute_trigger: Some(trigger.into()),
+            otel_attribute_trigger: trigger,
             ..self
         }
     }
@@ -47,10 +45,7 @@ where
             inner,
             flush_fn: self.flush_fn.clone(),
             coldstart: true,
-            otel_attribute_trigger: self
-                .otel_attribute_trigger
-                .clone()
-                .unwrap_or_else(|| "http".to_string()),
+            otel_attribute_trigger: self.otel_attribute_trigger.to_string(),
         }
     }
 }
@@ -131,5 +126,35 @@ where
         Pin::set(&mut self.as_mut().project().future, None);
         (self.project().flush_fn)();
         task::Poll::Ready(ready)
+    }
+}
+
+/// Represent the possible values for the OpenTelemetry `faas.trigger` attribute.
+/// See https://opentelemetry.io/docs/specs/semconv/attributes-registry/faas/ for more details.
+#[derive(Default, Clone, Copy)]
+#[non_exhaustive]
+pub enum OpenTelemetryFaasTrigger {
+    /// A response to some data source operation such as a database or filesystem read/write
+    #[default]
+    Datasource,
+    /// To provide an answer to an inbound HTTP request
+    Http,
+    /// A function is set to be executed when messages are sent to a messaging system
+    PubSub,
+    /// A function is scheduled to be executed regularly
+    Timer,
+    /// If none of the others apply
+    Other,
+}
+
+impl Display for OpenTelemetryFaasTrigger {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            OpenTelemetryFaasTrigger::Datasource => write!(f, "datasource"),
+            OpenTelemetryFaasTrigger::Http => write!(f, "http"),
+            OpenTelemetryFaasTrigger::PubSub => write!(f, "pubsub"),
+            OpenTelemetryFaasTrigger::Timer => write!(f, "timer"),
+            OpenTelemetryFaasTrigger::Other => write!(f, "other"),
+        }
     }
 }

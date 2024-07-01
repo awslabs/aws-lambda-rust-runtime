@@ -7,6 +7,9 @@ use crate::{deserializer::DeserializeError, Error};
 ///
 /// `Diagnostic` is automatically derived for some common types,
 /// like boxed types that implement [`Error`][std::error::Error].
+/// If you use an error type which comes from a external crate like anyhow,
+/// you need convert it to common types like `Box<dyn std::error::Error>`.
+/// See the examples for more details.
 ///
 /// [`error_type`][`Diagnostic::error_type`] is derived from the type name of
 /// the original error with [`std::any::type_name`] as a fallback, which may

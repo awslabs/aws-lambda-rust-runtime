@@ -1,0 +1,10 @@
+[package]
+name = "basic-error-anyhow"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1"
+lambda_runtime = { path = "../../lambda-runtime" }
+serde = "1"
+tokio = { version = "1", features = ["macros"] }

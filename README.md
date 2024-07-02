@@ -73,7 +73,65 @@ async fn func(event: LambdaEvent<Value>) -> Result<Value, Error> {
 
 ## Building and deploying your Lambda functions
 
-If you already have Cargo Lambda installed in your machine, run the next command to build your function:
+### Overview
+
+AWS Lambda packages are _.zip_ archives containing an executable called `bootstrap` built for a Linux sandbox.
+The binary has to be compiled for the target architecture and the runtime of the Lambda container.
+
+- Runtimes: _Amazon Linux 2_ and _Amazon Linux 2023_
+- Architectures: _x86_64_ and _arm64_
+
+Recommended `cargo build` targets:
+- Amazon Linux 2 / x86_64: `x86_64-unknown-linux-musl`
+- Amazon Linux 2 / arm64: `aarch64-unknown-linux-musl`
+- Amazon Linux 2023 / x86_64: `x86_64-unknown-linux-gnu`, `x86_64-unknown-linux-musl`
+- Amazon Linux 2023 / arm64: `aarch64-unknown-linux-gnu`, `aarch64-unknown-linux-musl`
+
+The following script builds and deploys a Rust executable to an existing Lambda function.
+Replace the variable parts of the script with your values before running it from the project root.
+
+```bash
+target=x86_64-unknown-linux-gnu # the architecture of the lambda function on AWS
+region=us-east-1 # the region of the lambda function
+lambda=my-lambda # the name of the lambda function on AWS
+crate=basic-lambda # the name of the crate to build and deploy
+
+cargo build --release --target $target
+cp ./target/$target/release/$crate ./bootstrap && zip lambda.zip bootstrap && rm bootstrap
+aws lambda update-function-code --region $region --function-name $lambda --zip-file fileb://lambda.zip
+```
+
+AWS Lambda fails with `Runtime.InvalidEntrypoint` exception if the target does not match the selected platform, e.g. if deploying _x86_64_ to _arm64_ architecture.
+
+See [Building a Custom Runtime Guide](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-custom.html) for more detailed explanations of the build and initialization process.
+
+#### Cross-compilation
+
+Cross-compilation for the target architecture requires the target toolchain to be installed. You may need additional configuration depending on your setup.
+
+For example, to build for _arm64_ on _Ubuntu x86_64_ you need to install the target via _rustup_: 
+
+```bash
+rustup target add aarch64-unknown-linux-gnu
+rustup target add aarch64-unknown-linux-musl
+```
+
+and add linkers to _/.cargo/config.toml_ file: 
+
+```toml
+[target.aarch64-unknown-linux-gnu]
+linker = "aarch64-linux-gnu-gcc"
+
+[target.aarch64-unknown-linux-musl]
+linker = "aarch64-linux-gnu-gcc"
+```
+
+See [Cross-compilation](https://rust-lang.github.io/rustup/cross-compilation.html) and [Cargo target](https://doc.rust-lang.org/cargo/reference/config.html#target) documentation for more info.
+
+
+### Using `cargo lambda` command
+
+If you already have [Cargo Lambda](https://www.cargo-lambda.info) installed on your machine, run the next command to build your function:
 
 ```bash
 cargo lambda build --release
@@ -97,8 +155,7 @@ cargo lambda build --release --arm64
 
 ### 2. Deploying the binary to AWS Lambda
 
-For [a custom runtime](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-custom.html), AWS Lambda looks for an executable called `bootstrap` in the deployment package zip. Rename the generated executable to `bootstrap` and add it to a zip archive.
-
+Rename the generated executable to `bootstrap` and add it to a zip archive. 
 You can find the `bootstrap` binary for your function under the `target/lambda` directory.
 
 #### 2.1. Deploying with Cargo Lambda

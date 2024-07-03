@@ -98,7 +98,7 @@ where
             Ok(())
         };
         if let Err(err) = trace_fn() {
-            error!(error = ?err, "failed to parse raw JSON event received from Lambda");
+            error!(error = ?err, "Failed to parse raw JSON event received from Lambda. The handler will not be called. Log at TRACE level to see the payload.");
             return RuntimeApiResponseFuture::Ready(Some(Err(err)));
         };
 
@@ -124,7 +124,7 @@ fn build_event_error_request<'a, T>(request_id: &'a str, err: T) -> Result<http:
 where
     T: Into<Diagnostic<'a>> + Debug,
 {
-    error!(error = ?err, "building error response for Lambda Runtime API");
+    error!(error = ?err, "Request payload deserialization into LambdaEvent<T> failed. The handler will not be called. Log at TRACE level to see the payload.");
     EventErrorRequest::new(request_id, err).into_req()
 }
 

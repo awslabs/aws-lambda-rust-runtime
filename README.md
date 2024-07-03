@@ -306,7 +306,9 @@ async fn main() -> Result<(), Error> {
 }
 ```
 
-The subscriber uses `RUST_LOG` as the environment variable to determine the log level for your function. It also uses [Lambda's advance logging controls](https://aws.amazon.com/blogs/compute/introducing-advanced-logging-controls-for-aws-lambda-functions/) if they're configured for your function. By default, the log level to emit events is `INFO`.
+The subscriber uses `RUST_LOG` environment variable to determine the log level for your function. It also uses [Lambda's advanced logging controls](https://aws.amazon.com/blogs/compute/introducing-advanced-logging-controls-for-aws-lambda-functions/), if configured.
+
+By default, the log level to emit events is `INFO`. Log at `TRACE` level for more detail, including a dump of the raw payload.
 
 ## AWS event objects
 

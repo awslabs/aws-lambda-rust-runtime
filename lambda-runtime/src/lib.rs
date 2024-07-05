@@ -20,7 +20,7 @@ pub use tower::{self, service_fn, Service};
 
 /// Diagnostic utilities to convert Rust types into Lambda Error types.
 pub mod diagnostic;
-pub use diagnostic::Diagnostic;
+pub use diagnostic::{Diagnostic, IntoDiagnostic};
 
 mod deserializer;
 /// Tower middleware to be applied to runtime invocations.
@@ -112,7 +112,7 @@ pub async fn run<A, F, R, B, S, D, E>(handler: F) -> Result<(), Error>
 where
     F: Service<LambdaEvent<A>, Response = R>,
     F::Future: Future<Output = Result<R, F::Error>>,
-    F::Error: for<'a> Into<Diagnostic<'a>> + fmt::Debug,
+    F::Error: Into<Diagnostic> + fmt::Debug,
     A: for<'de> Deserialize<'de>,
     R: IntoFunctionResponse<B, S>,
     B: Serialize,

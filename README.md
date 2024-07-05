@@ -40,7 +40,7 @@ pip3 install cargo-lambda
 
 See other installation options in [the Cargo Lambda documentation](https://www.cargo-lambda.info/guide/installation.html).
 
-### Your first function
+## Your first function
 
 To create your first function, run Cargo Lambda with the [subcommand `new`](https://www.cargo-lambda.info/commands/new.html). This command will generate a Rust package with the initial source code for your function:
 
@@ -70,6 +70,61 @@ async fn func(event: LambdaEvent<Value>) -> Result<Value, Error> {
     Ok(json!({ "message": format!("Hello, {}!", first_name) }))
 }
 ```
+
+## Understanding Lambda errors
+
+when a function invocation fails, AWS Lambda expects you to return an object that can be serialized into JSON structure with the error information. This structure is represented in the following example:
+
+```json
+{
+  "error_type": "the type of error raised",
+  "error_message": "a string description of the error"
+}
+```
+
+The Rust Runtime for Lambda uses a struct called `Diagnostic` to represent function errors internally. The runtime implements the converstion of several general errors types, like `std::error::Error`, into `Diagnostic`. For these general implementations, the `error_type` is the name of the value type returned by your function. For example, if your function returns `lambda_runtime::Error`, the `error_type` will be something like `alloc::boxed::Box<dyn core::error::Error + core::marker::Send + core::marker::Sync>`, which is not very descriptive.
+
+### Implement your own Diagnostic
+
+To get more descriptive `error_type` fields, you can implement `Into<Diagnostic>` for your error type. That gives you full control on what the `error_type` is:
+
+```rust
+use lambda_runtime::{Diagnostic, Error, LambdaEvent};
+
+#[derive(Debug)]
+struct ErrorResponse(&'static str);
+
+impl Into<Diagnostic> for ErrorResponse {
+    fn into(self) -> Diagnostic {
+        Diagnostic {
+            error_type: "MyErrorType".into(),
+            error_message: self.0.to_string(),
+        }
+    }
+}
+
+async fn handler(_event: LambdaEvent<()>) -> Result<(), ErrorResponse> {
+  Err(ErrorResponse("this is an error response"))
+}
+```
+
+We recommend you to use the [thiserror crate](https://crates.io/crates/thiserror) to declare your errors. You can see an example on how to integrate `thiserror` with the Runtime's diagnostics in our [example repository](https://github.com/awslabs/aws-lambda-rust-runtime/tree/main/examples/basic-error-thiserror)
+
+### Anyhow, Eyre, and Miette
+
+Popular error crates like Anyhow, Eyre, and Miette provide their own error types that encapsulate other errors. There is no direct transformation of those errors into `Diagnostic`, but we provide feature flags for each one of those crates to help you integrate them with your Lambda functions.
+
+If you enable the features `anyhow`, `eyre`, or `miette` in the `lambda_runtime` dependency of your package. The error types provided by those crates can have blanket transformations into `Diagnostic` when the `lambda_runtime::IntoDiagnostic` trait is in scope. This trait exposes an `into_diagnostic` method that transforms those error types into a `Diagnostic`. This is an example that transforms an `anyhow::Error` into a `Diagnostic`:
+
+```rust
+use lambda_runtime::{Diagnostic, IntoDiagnostic, LambdaEvent};
+
+async fn handler(_event: LambdaEvent<Request>) -> Result<(), Diagnostic> {
+  Err(anyhow::anyhow!("this is an error").into_diagnostic())
+}
+```
+
+You can see more examples on how to use these error crates in our [example repository](https://github.com/awslabs/aws-lambda-rust-runtime/tree/main/examples/basic-error-error-crates-integration). 
 
 ## Building and deploying your Lambda functions
 

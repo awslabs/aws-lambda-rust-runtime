@@ -23,6 +23,9 @@ apigw_websockets = []
 alb = []
 pass_through = []
 tracing = ["lambda_runtime/tracing"]
+anyhow = ["lambda_runtime/anyhow"]
+eyre = ["lambda_runtime/eyre"]
+miette = ["lambda_runtime/miette"]
 
 [dependencies]
 base64 = { workspace = true }

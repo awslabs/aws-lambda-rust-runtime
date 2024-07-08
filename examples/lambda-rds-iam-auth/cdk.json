@@ -1,0 +1,21 @@
+{
+    "app": "pnpm exec ts-node --prefer-ts-exts app.ts",
+    "watch": {
+        "include": [
+            "**.js",
+            "**.rs",
+            "**.ts"
+        ],
+        "exclude": [
+            "README.md",
+            "cdk*.json",
+            "**/*.d.ts",
+            "**/*.js",
+            "tsconfig.json",
+            "package*.json",
+            "yarn.lock",
+            "node_modules",
+            "test"
+        ]
+    }
+}

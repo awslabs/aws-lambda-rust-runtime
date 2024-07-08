@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -26,23 +27,56 @@ pub struct AWSAPICall<I = Value, O = Value> {
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct UserIdentity {
+pub struct SessionIssuer {
     pub r#type: String,
+    pub user_name: Option<String>,
     pub principal_id: String,
     pub arn: String,
     pub account_id: String,
-    pub session_context: Option<SessionContext>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SessionContext {
-    pub attributes: Attributes,
+pub struct WebIdFederationData {
+    pub federated_provider: Option<String>,
+    pub attributes: Option<String>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Attributes {
     pub mfa_authenticated: String,
-    pub creation_date: String,
+    pub creation_date: DateTime<Utc>,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SessionContext {
+    pub session_issuer: Option<SessionIssuer>,
+    pub web_id_federation_data: Option<WebIdFederationData>,
+    pub attributes: Attributes,
+    pub source_identity: Option<String>,
+    pub ec2_role_delivery: Option<String>,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OnBehalfOf {
+    pub user_id: String,
+    pub identity_store_arn: String,
+}
+
+// https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-user-identity.html
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UserIdentity {
+    pub r#type: String,
+    pub account_id: Option<String>,
+    pub arn: Option<String>,
+    pub credential_id: Option<String>,
+    pub invoked_by: Option<String>,
+    pub principal_id: Option<String>,
+    pub session_context: Option<SessionContext>,
+    pub user_name: Option<String>,
+    pub on_behalf_of: Option<OnBehalfOf>,
 }

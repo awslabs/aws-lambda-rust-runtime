@@ -86,7 +86,7 @@ The Rust Runtime for Lambda uses a struct called `Diagnostic` to represent funct
 
 ### Implement your own Diagnostic
 
-To get more descriptive `error_type` fields, you can implement `Into<Diagnostic>` for your error type. That gives you full control on what the `error_type` is:
+To get more descriptive `error_type` fields, you can implement `From` for your error type. That gives you full control on what the `error_type` is:
 
 ```rust
 use lambda_runtime::{Diagnostic, Error, LambdaEvent};
@@ -94,11 +94,11 @@ use lambda_runtime::{Diagnostic, Error, LambdaEvent};
 #[derive(Debug)]
 struct ErrorResponse(&'static str);
 
-impl Into<Diagnostic> for ErrorResponse {
-    fn into(self) -> Diagnostic {
+impl From<ErrorResponse> for Diagnostic {
+    fn from(error: ErrorResponse) -> Diagnostic {
         Diagnostic {
             error_type: "MyErrorType".into(),
-            error_message: self.0.to_string(),
+            error_message: error.0.to_string(),
         }
     }
 }

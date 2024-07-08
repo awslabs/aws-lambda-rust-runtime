@@ -14,8 +14,9 @@ use crate::{deserializer::DeserializeError, Error};
 /// [`error_type`][`Diagnostic::error_type`] is derived from the type name of
 /// the original error with [`std::any::type_name`] as a fallback, which may
 /// not be reliable for conditional error handling.
-/// You can define your own error container that implements `Into<Diagnostic>`
-/// if you need to handle errors based on error types.
+///
+/// To get more descriptive [`error_type`][`Diagnostic::error_type`] fields, you can implement `From` for your error type.
+/// That gives you full control on what the `error_type` is.
 ///
 /// Example:
 /// ```
@@ -24,11 +25,11 @@ use crate::{deserializer::DeserializeError, Error};
 /// #[derive(Debug)]
 /// struct ErrorResponse(&'static str);
 ///
-/// impl Into<Diagnostic> for ErrorResponse {
-///     fn into(self) -> Diagnostic {
+/// impl From<ErrorResponse> for Diagnostic {
+///     fn from(error: ErrorResponse) -> Diagnostic {
 ///         Diagnostic {
 ///             error_type: "MyError".into(),
-///             error_message: self.0.to_string(),
+///             error_message: error.0.to_string(),
 ///         }
 ///     }
 /// }

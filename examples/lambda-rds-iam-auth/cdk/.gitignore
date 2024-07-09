@@ -1,3 +1,7 @@
+# CDK
+node_modules
+cdk.json
+
 # Logs
 logs
 *.log

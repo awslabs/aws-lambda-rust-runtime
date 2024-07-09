@@ -1,0 +1,32 @@
+{
+  "version": "36.0.0",
+  "files": {
+    "4b35ace3c0cf0808ee16cfea97afcfe15d7a254f29a489ac53d7d27887d18ca5": {
+      "source": {
+        "path": "/Users/kechn/aws-lambda-rust-runtime/examples/lambda-rds-iam-auth/lambda",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "current_account-current_region": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}",
+          "objectKey": "4b35ace3c0cf0808ee16cfea97afcfe15d7a254f29a489ac53d7d27887d18ca5.zip",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-${AWS::Region}"
+        }
+      }
+    },
+    "b35ac0629abe8d8b87886cd20a0e8cd2587b353eaebf2b2e2a55344cea30f1b5": {
+      "source": {
+        "path": "LambdaRDSStack.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "current_account-current_region": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}",
+          "objectKey": "b35ac0629abe8d8b87886cd20a0e8cd2587b353eaebf2b2e2a55344cea30f1b5.json",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-${AWS::Region}"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

@@ -1,3 +1,4 @@
+import { join } from 'path';
 import * as cdk from 'aws-cdk-lib';
 import * as rds from 'aws-cdk-lib/aws-rds';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
@@ -49,7 +50,7 @@ class LambdaRDSStack extends cdk.Stack {
         })
         // create a rust lambda function 
         const rustLambdaFunction = new RustFunction(this, "lambda", {
-            entry: 'lambda',
+            entry: join(__dirname, '..', 'lambda'),
             vpc: vpc,
             securityGroups: [lambdaSG],
             environment: {

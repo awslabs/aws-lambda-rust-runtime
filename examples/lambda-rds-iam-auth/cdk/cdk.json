@@ -1,5 +1,5 @@
 {
-    "app": "pnpm exec ts-node --prefer-ts-exts app.ts",
+    "app": "npx ts-node --prefer-ts-exts app.ts",
     "watch": {
         "include": [
             "**.js",

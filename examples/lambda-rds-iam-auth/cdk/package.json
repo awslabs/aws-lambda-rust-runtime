@@ -2,8 +2,12 @@
 	"dependencies": {
 		"@cdklabs/aws-lambda-rust": "0.0.4",
 		"aws-cdk-lib": "^2.147.0",
+		"path": "^0.12.7",
 		"prettier": "^3.3.2",
 		"rust.aws-cdk-lambda": "^1.2.1",
 		"ts-node": "^10.9.2"
+	},
+	"devDependencies": {
+		"@types/node": "^20.14.10"
 	}
 }

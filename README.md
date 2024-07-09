@@ -114,13 +114,13 @@ We recommend you to use the [thiserror crate](https://crates.io/crates/thiserror
 
 Popular error crates like Anyhow, Eyre, and Miette provide their own error types that encapsulate other errors. There is no direct transformation of those errors into `Diagnostic`, but we provide feature flags for each one of those crates to help you integrate them with your Lambda functions.
 
-If you enable the features `anyhow`, `eyre`, or `miette` in the `lambda_runtime` dependency of your package. The error types provided by those crates can have blanket transformations into `Diagnostic` when the `lambda_runtime::IntoDiagnostic` trait is in scope. This trait exposes an `into_diagnostic` method that transforms those error types into a `Diagnostic`. This is an example that transforms an `anyhow::Error` into a `Diagnostic`:
+If you enable the features `anyhow`, `eyre`, or `miette` in the `lambda_runtime` dependency of your package. The error types provided by those crates can have blanket transformations into `Diagnostic`. These features expose an `From<T> for Diagnostic` implementation that transforms those error types into a `Diagnostic`. This is an example that transforms an `anyhow::Error` into a `Diagnostic`:
 
 ```rust
-use lambda_runtime::{Diagnostic, IntoDiagnostic, LambdaEvent};
+use lambda_runtime::{Diagnostic, LambdaEvent};
 
 async fn handler(_event: LambdaEvent<Request>) -> Result<(), Diagnostic> {
-  Err(anyhow::anyhow!("this is an error").into_diagnostic())
+  Err(anyhow::anyhow!("this is an error").into())
 }
 ```
 

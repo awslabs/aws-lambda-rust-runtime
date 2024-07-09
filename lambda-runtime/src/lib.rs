@@ -20,7 +20,7 @@ pub use tower::{self, service_fn, Service};
 
 /// Diagnostic utilities to convert Rust types into Lambda Error types.
 pub mod diagnostic;
-pub use diagnostic::{Diagnostic, IntoDiagnostic};
+pub use diagnostic::Diagnostic;
 
 mod deserializer;
 /// Tower middleware to be applied to runtime invocations.

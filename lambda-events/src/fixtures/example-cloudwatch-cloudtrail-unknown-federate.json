@@ -1,0 +1,27 @@
+{
+  "eventVersion": "1.08",
+  "userIdentity": {
+    "type": "Unknown",
+    "principalId": "00000000-0000-0000-0000-000000000000",
+    "accountId": "123456789000",
+    "userName": "me@dev.com"
+  },
+  "eventTime": "2024-07-10T18:41:56Z",
+  "eventSource": "sso.amazonaws.com",
+  "eventName": "Federate",
+  "awsRegion": "eu-west-1",
+  "sourceIPAddress": "1.1.1.1",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+  "requestParameters": null,
+  "responseElements": null,
+  "requestID": "00000000-0000-0000-0000-000000000000",
+  "eventID": "00000000-0000-0000-0000-000000000000",
+  "readOnly": false,
+  "eventType": "AwsServiceEvent",
+  "managementEvent": true,
+  "recipientAccountId": "123456789000",
+  "serviceEventDetails": {
+    "relayId": "00000000-0000-0000-0000-000000000000_00000000-0000-0000-0000-000000000000"
+  },
+  "eventCategory": "Management"
+}

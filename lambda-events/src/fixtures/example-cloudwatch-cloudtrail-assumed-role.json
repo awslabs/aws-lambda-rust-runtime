@@ -1,0 +1,52 @@
+{
+  "eventVersion": "1.08",
+  "userIdentity": {
+    "type": "AssumedRole",
+    "principalId": "ZZZZZZZZZZZZZZZZZZZZZ:me@dev.com",
+    "arn": "arn:aws:sts::123456789000:assumed-role/AWSReservedSSO_AWSAdministratorAccess_abcdef1234567890/me@dev.com",
+    "accountId": "123456789000",
+    "accessKeyId": "ABCDEFGHI12345678890",
+    "sessionContext": {
+      "sessionIssuer": {
+        "type": "Role",
+        "principalId": "ZZZZZZZZZZZZZZZZZZZZZ",
+        "arn": "arn:aws:iam::123456789000:role/aws-reserved/sso.amazonaws.com/eu-west-1/AWSReservedSSO_AWSAdministratorAccess_abcdef1234567890",
+        "accountId": "123456789000",
+        "userName": "AWSReservedSSO_AWSAdministratorAccess_abcdef1234567890"
+      },
+      "webIdFederationData": {},
+      "attributes": {
+        "creationDate": "2024-07-10T16:03:25Z",
+        "mfaAuthenticated": "false"
+      }
+    },
+    "invokedBy": "servicecatalog.amazonaws.com"
+  },
+  "eventTime": "2024-07-10T16:48:26Z",
+  "eventSource": "controltower.amazonaws.com",
+  "eventName": "CreateManagedAccount",
+  "awsRegion": "eu-west-1",
+  "sourceIPAddress": "servicecatalog.amazonaws.com",
+  "userAgent": "servicecatalog.amazonaws.com",
+  "requestParameters": {
+    "accountEmail": "HIDDEN_DUE_TO_SECURITY_REASONS",
+    "accountName": "Account Name",
+    "parentOrganizationalUnitName": "Organizational Unit (ou-a1b2-abcdef12)",
+    "sSOUserEmail": "HIDDEN_DUE_TO_SECURITY_REASONS",
+    "sSOUserFirstName": "HIDDEN_DUE_TO_SECURITY_REASONS",
+    "sSOUserLastName": "HIDDEN_DUE_TO_SECURITY_REASONS",
+    "provisionedProductId": "pp-abcdefg123456",
+    "idempotencyToken": "abcdef12345-abcdef12345"
+  },
+  "responseElements": {
+    "createManagedAccountExecutionId": "123456789000-abcdef12345-abcdef12345"
+  },
+  "requestID": "00000000-0000-0000-0000-000000000000",
+  "eventID": "00000000-0000-0000-0000-000000000000",
+  "readOnly": false,
+  "eventType": "AwsApiCall",
+  "managementEvent": true,
+  "recipientAccountId": "123456789000",
+  "eventCategory": "Management",
+  "sessionCredentialFromConsole": "true"
+}

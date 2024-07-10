@@ -80,3 +80,36 @@ pub struct UserIdentity {
     pub user_name: Option<String>,
     pub on_behalf_of: Option<OnBehalfOf>,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::AWSAPICall;
+
+    #[test]
+    #[cfg(feature = "cloudwatch_events")]
+    fn example_cloudwatch_cloudtrail_unknown_assumed_role() {
+        let data = include_bytes!("../../fixtures/example-cloudwatch-cloudtrail-assumed-role.json");
+        let parsed: AWSAPICall = serde_json::from_slice(data).unwrap();
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: AWSAPICall = serde_json::from_slice(&output.as_bytes()).unwrap();
+        assert_eq!(parsed, reparsed);
+    }
+    #[test]
+    #[cfg(feature = "cloudwatch_events")]
+    fn example_cloudwatch_cloudtrail_unknown_federate() {
+        let data = include_bytes!("../../fixtures/example-cloudwatch-cloudtrail-unknown-federate.json");
+        let parsed: AWSAPICall = serde_json::from_slice(data).unwrap();
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: AWSAPICall = serde_json::from_slice(&output.as_bytes()).unwrap();
+        assert_eq!(parsed, reparsed);
+    }
+    #[test]
+    #[cfg(feature = "cloudwatch_events")]
+    fn example_cloudwatch_cloudtrail_assumed_role() {
+        let data = include_bytes!("../../fixtures/example-cloudwatch-cloudtrail-unknown-user-auth.json");
+        let parsed: AWSAPICall = serde_json::from_slice(data).unwrap();
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: AWSAPICall = serde_json::from_slice(&output.as_bytes()).unwrap();
+        assert_eq!(parsed, reparsed);
+    }
+}

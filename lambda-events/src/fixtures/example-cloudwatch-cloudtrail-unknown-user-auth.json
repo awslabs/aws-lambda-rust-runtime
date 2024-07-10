@@ -1,0 +1,33 @@
+{
+  "eventVersion": "1.08",
+  "userIdentity": {
+    "type": "Unknown",
+    "principalId": "123456789000",
+    "arn": "",
+    "accountId": "123456789000",
+    "accessKeyId": ""
+  },
+  "eventTime": "2024-07-10T16:05:11Z",
+  "eventSource": "signin.amazonaws.com",
+  "eventName": "UserAuthentication",
+  "awsRegion": "eu-west-1",
+  "sourceIPAddress": "1.1.1.1",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+  "requestParameters": null,
+  "responseElements": null,
+  "additionalEventData": {
+    "AuthWorkflowID": "00000000-0000-0000-0000-000000000000",
+    "LoginTo": "https://tenant.awsapps.com/start/",
+    "CredentialType": "EXTERNAL_IDP"
+  },
+  "requestID": "00000000-0000-0000-0000-000000000000",
+  "eventID": "00000000-0000-0000-0000-000000000000",
+  "readOnly": false,
+  "eventType": "AwsServiceEvent",
+  "managementEvent": true,
+  "recipientAccountId": "123456789000",
+  "serviceEventDetails": {
+    "UserAuthentication": "Success"
+  },
+  "eventCategory": "Management"
+}

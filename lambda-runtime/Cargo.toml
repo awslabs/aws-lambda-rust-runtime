@@ -15,11 +15,11 @@ readme = "../README.md"
 
 [features]
 default = ["tracing"]
-tracing = ["lambda_runtime_api_client/tracing"]
-opentelemetry = ["opentelemetry-semantic-conventions"]
-anyhow = ["dep:anyhow"]
-eyre = ["dep:eyre"]
-miette = ["dep:miette"]
+tracing = ["lambda_runtime_api_client/tracing"] # enables access to the Tracing utilities
+opentelemetry = ["opentelemetry-semantic-conventions"] # enables access to the OpenTelemetry layers and utilities
+anyhow = ["dep:anyhow"] # enables From<T> for Diagnostic for anyhow error types, see README.md for more info
+eyre = ["dep:eyre"] # enables From<T> for Diagnostic for eyre error types, see README.md for more info
+miette = ["dep:miette"] # enables From<T> for Diagnostic for miette error types, see README.md for more info
 
 [dependencies]
 anyhow = { version = "1.0.86", optional = true }

@@ -73,18 +73,6 @@ impl From<Error> for Diagnostic {
     }
 }
 
-impl<T> From<Box<T>> for Diagnostic
-where
-    T: std::error::Error,
-{
-    fn from(value: Box<T>) -> Self {
-        Diagnostic {
-            error_type: type_name_of_val(&value),
-            error_message: value.to_string(),
-        }
-    }
-}
-
 impl From<Box<dyn std::error::Error>> for Diagnostic {
     fn from(value: Box<dyn std::error::Error>) -> Self {
         Diagnostic {

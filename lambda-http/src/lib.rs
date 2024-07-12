@@ -194,7 +194,7 @@ where
     S: Service<Request, Response = R, Error = E>,
     S::Future: Send + 'a,
     R: IntoResponse,
-    E: std::fmt::Debug + for<'b> Into<Diagnostic<'b>>,
+    E: std::fmt::Debug + Into<Diagnostic>,
 {
     lambda_runtime::run(Adapter::from(handler)).await
 }

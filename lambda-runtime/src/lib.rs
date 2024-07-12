@@ -112,7 +112,7 @@ pub async fn run<A, F, R, B, S, D, E>(handler: F) -> Result<(), Error>
 where
     F: Service<LambdaEvent<A>, Response = R>,
     F::Future: Future<Output = Result<R, F::Error>>,
-    F::Error: for<'a> Into<Diagnostic<'a>> + fmt::Debug,
+    F::Error: Into<Diagnostic> + fmt::Debug,
     A: for<'de> Deserialize<'de>,
     R: IntoFunctionResponse<B, S>,
     B: Serialize,

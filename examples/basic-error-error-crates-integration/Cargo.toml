@@ -1,0 +1,12 @@
+[package]
+name = "basic-error-error-crates-integration"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1"
+eyre = "0.6.12"
+lambda_runtime = { path = "../../lambda-runtime", features = ["anyhow", "eyre", "miette"] }
+miette = "7.2.0"
+serde = "1"
+tokio = { version = "1", features = ["macros"] }

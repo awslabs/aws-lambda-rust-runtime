@@ -13,8 +13,8 @@ pub enum ExecutionError {
     Unexpected(String),
 }
 
-impl<'a> From<ExecutionError> for Diagnostic<'a> {
-    fn from(value: ExecutionError) -> Diagnostic<'a> {
+impl From<ExecutionError> for Diagnostic {
+    fn from(value: ExecutionError) -> Diagnostic {
         let (error_type, error_message) = match value {
             ExecutionError::DatabaseError(err) => ("Retryable", err.to_string()),
             ExecutionError::Unexpected(err) => ("NonRetryable", err.to_string()),

@@ -20,7 +20,7 @@ pub async fn run_with_streaming_response<'a, S, B, E>(handler: S) -> Result<(), 
 where
     S: Service<Request, Response = Response<B>, Error = E>,
     S::Future: Send + 'a,
-    E: Debug + for<'b> Into<Diagnostic<'b>>,
+    E: Debug + Into<Diagnostic>,
     B: Body + Unpin + Send + 'static,
     B::Data: Into<Bytes> + Send,
     B::Error: Into<Error> + Send + Debug,

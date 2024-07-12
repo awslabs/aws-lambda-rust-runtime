@@ -51,8 +51,7 @@ impl<S, EventPayload, Response, BufferedResponse, StreamingResponse, StreamItem,
     }
 }
 
-impl<'a, S, EventPayload, Response, BufferedResponse, StreamingResponse, StreamItem, StreamError>
-    Service<LambdaInvocation>
+impl<S, EventPayload, Response, BufferedResponse, StreamingResponse, StreamItem, StreamError> Service<LambdaInvocation>
     for RuntimeApiResponseService<
         S,
         EventPayload,
@@ -63,7 +62,7 @@ impl<'a, S, EventPayload, Response, BufferedResponse, StreamingResponse, StreamI
         StreamError,
     >
 where
-    S: Service<LambdaEvent<EventPayload>, Response = Response, Error = Diagnostic<'a>>,
+    S: Service<LambdaEvent<EventPayload>, Response = Response, Error = Diagnostic>,
     EventPayload: for<'de> Deserialize<'de>,
     Response: IntoFunctionResponse<BufferedResponse, StreamingResponse>,
     BufferedResponse: Serialize,
@@ -74,7 +73,7 @@ where
     type Response = http::Request<Body>;
     type Error = BoxError;
     type Future =
-        RuntimeApiResponseFuture<'a, S::Future, Response, BufferedResponse, StreamingResponse, StreamItem, StreamError>;
+        RuntimeApiResponseFuture<S::Future, Response, BufferedResponse, StreamingResponse, StreamItem, StreamError>;
 
     fn poll_ready(&mut self, cx: &mut task::Context<'_>) -> task::Poll<Result<(), Self::Error>> {
         self.inner
@@ -120,21 +119,21 @@ where
     }
 }
 
-fn build_event_error_request<'a, T>(request_id: &'a str, err: T) -> Result<http::Request<Body>, BoxError>
+fn build_event_error_request<T>(request_id: &str, err: T) -> Result<http::Request<Body>, BoxError>
 where
-    T: Into<Diagnostic<'a>> + Debug,
+    T: Into<Diagnostic> + Debug,
 {
     error!(error = ?err, "Request payload deserialization into LambdaEvent<T> failed. The handler will not be called. Log at TRACE level to see the payload.");
     EventErrorRequest::new(request_id, err).into_req()
 }
 
 #[pin_project(project = RuntimeApiResponseFutureProj)]
-pub enum RuntimeApiResponseFuture<'a, F, Response, BufferedResponse, StreamingResponse, StreamItem, StreamError> {
+pub enum RuntimeApiResponseFuture<F, Response, BufferedResponse, StreamingResponse, StreamItem, StreamError> {
     Future(
         #[pin] F,
         String,
         PhantomData<(
-            &'a (),
+            (),
             Response,
             BufferedResponse,
             StreamingResponse,
@@ -145,10 +144,10 @@ pub enum RuntimeApiResponseFuture<'a, F, Response, BufferedResponse, StreamingRe
     Ready(Option<Result<http::Request<Body>, BoxError>>),
 }
 
-impl<'a, F, Response, BufferedResponse, StreamingResponse, StreamItem, StreamError> Future
-    for RuntimeApiResponseFuture<'a, F, Response, BufferedResponse, StreamingResponse, StreamItem, StreamError>
+impl<F, Response, BufferedResponse, StreamingResponse, StreamItem, StreamError> Future
+    for RuntimeApiResponseFuture<F, Response, BufferedResponse, StreamingResponse, StreamItem, StreamError>
 where
-    F: Future<Output = Result<Response, Diagnostic<'a>>>,
+    F: Future<Output = Result<Response, Diagnostic>>,
     Response: IntoFunctionResponse<BufferedResponse, StreamingResponse>,
     BufferedResponse: Serialize,
     StreamingResponse: Stream<Item = Result<StreamItem, StreamError>> + Unpin + Send + 'static,

@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::{any::type_name, borrow::Cow};
+use std::any::type_name;
 
 use crate::{deserializer::DeserializeError, Error};
 
@@ -14,112 +14,142 @@ use crate::{deserializer::DeserializeError, Error};
 /// [`error_type`][`Diagnostic::error_type`] is derived from the type name of
 /// the original error with [`std::any::type_name`] as a fallback, which may
 /// not be reliable for conditional error handling.
-/// You can define your own error container that implements `Into<Diagnostic>`
-/// if you need to handle errors based on error types.
+///
+/// To get more descriptive [`error_type`][`Diagnostic::error_type`] fields, you can implement `From` for your error type.
+/// That gives you full control on what the `error_type` is.
 ///
 /// Example:
 /// ```
 /// use lambda_runtime::{Diagnostic, Error, LambdaEvent};
-/// use std::borrow::Cow;
 ///
 /// #[derive(Debug)]
-/// struct ErrorResponse(Error);
+/// struct ErrorResponse(&'static str);
 ///
-/// impl<'a> Into<Diagnostic<'a>> for ErrorResponse {
-///     fn into(self) -> Diagnostic<'a> {
+/// impl From<ErrorResponse> for Diagnostic {
+///     fn from(error: ErrorResponse) -> Diagnostic {
 ///         Diagnostic {
 ///             error_type: "MyError".into(),
-///             error_message: self.0.to_string().into(),
+///             error_message: error.0.to_string(),
 ///         }
 ///     }
 /// }
 ///
 /// async fn function_handler(_event: LambdaEvent<()>) -> Result<(), ErrorResponse> {
-///    // ... do something
-///    Ok(())
+///    Err(ErrorResponse("this is an error response"))
 /// }
 /// ```
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Diagnostic<'a> {
-    /// Error type.
+pub struct Diagnostic {
+    /// `error_type` is the type of exception or error returned by the function.
+    /// Use this field to categorize the different kinds of errors that your function
+    /// might experience.
     ///
-    /// `error_type` is derived from the type name of the original error with
-    /// [`std::any::type_name`] as a fallback.
-    /// Please implement your own `Into<Diagnostic>` if you need more reliable
-    /// error types.
-    pub error_type: Cow<'a, str>,
-    /// Error message.
-    ///
-    /// `error_message` is the output from the [`Display`][std::fmt::Display]
-    /// implementation of the original error as a fallback.
-    pub error_message: Cow<'a, str>,
+    /// In standard implementations, `error_type` is derived from the type name of the original error with
+    /// [`std::any::type_name`], however this is not descriptive enough for an error type.
+    /// Implement your own `Into<Diagnostic>` to return a more descriptive error type.
+    pub error_type: String,
+    /// `error_message` is a string expression of the error.
+    /// In standard implementations, it's the output from the [`Display`][std::fmt::Display]
+    /// implementation of the original error.
+    pub error_message: String,
 }
 
-impl<'a> From<DeserializeError> for Diagnostic<'a> {
+impl From<DeserializeError> for Diagnostic {
     fn from(value: DeserializeError) -> Self {
         Diagnostic {
-            error_type: type_name::<DeserializeError>().into(),
-            error_message: value.to_string().into(),
+            error_type: type_name_of_val(&value),
+            error_message: value.to_string(),
         }
     }
 }
 
-impl<'a> From<Error> for Diagnostic<'a> {
+impl From<Error> for Diagnostic {
     fn from(value: Error) -> Self {
         Diagnostic {
-            error_type: type_name::<Error>().into(),
-            error_message: value.to_string().into(),
+            error_type: type_name_of_val(&value),
+            error_message: value.to_string(),
         }
     }
 }
 
-impl<'a, T> From<Box<T>> for Diagnostic<'a>
-where
-    T: std::error::Error,
-{
-    fn from(value: Box<T>) -> Self {
-        Diagnostic {
-            error_type: type_name::<T>().into(),
-            error_message: value.to_string().into(),
-        }
-    }
-}
-
-impl<'a> From<Box<dyn std::error::Error>> for Diagnostic<'a> {
+impl From<Box<dyn std::error::Error>> for Diagnostic {
     fn from(value: Box<dyn std::error::Error>) -> Self {
         Diagnostic {
-            error_type: type_name::<Box<dyn std::error::Error>>().into(),
-            error_message: value.to_string().into(),
+            error_type: type_name_of_val(&value),
+            error_message: value.to_string(),
         }
     }
 }
 
-impl<'a> From<std::convert::Infallible> for Diagnostic<'a> {
+impl From<std::convert::Infallible> for Diagnostic {
     fn from(value: std::convert::Infallible) -> Self {
         Diagnostic {
-            error_type: type_name::<std::convert::Infallible>().into(),
-            error_message: value.to_string().into(),
+            error_type: type_name_of_val(&value),
+            error_message: value.to_string(),
         }
     }
 }
 
-impl<'a> From<String> for Diagnostic<'a> {
+impl From<String> for Diagnostic {
     fn from(value: String) -> Self {
         Diagnostic {
-            error_type: type_name::<String>().into(),
-            error_message: value.into(),
+            error_type: type_name_of_val(&value),
+            error_message: value.to_string(),
         }
     }
 }
 
-impl<'a> From<&'static str> for Diagnostic<'a> {
+impl From<&'static str> for Diagnostic {
     fn from(value: &'static str) -> Self {
         Diagnostic {
-            error_type: type_name::<&'static str>().into(),
-            error_message: value.into(),
+            error_type: type_name_of_val(&value),
+            error_message: value.to_string(),
         }
     }
+}
+
+impl From<std::io::Error> for Diagnostic {
+    fn from(value: std::io::Error) -> Self {
+        Diagnostic {
+            error_type: type_name_of_val(&value),
+            error_message: value.to_string(),
+        }
+    }
+}
+
+#[cfg(feature = "anyhow")]
+impl From<anyhow::Error> for Diagnostic {
+    fn from(value: anyhow::Error) -> Diagnostic {
+        Diagnostic {
+            error_type: type_name_of_val(&value),
+            error_message: value.to_string(),
+        }
+    }
+}
+
+#[cfg(feature = "eyre")]
+impl From<eyre::Report> for Diagnostic {
+    fn from(value: eyre::Report) -> Diagnostic {
+        Diagnostic {
+            error_type: type_name_of_val(&value),
+            error_message: value.to_string(),
+        }
+    }
+}
+
+#[cfg(feature = "miette")]
+impl From<miette::Report> for Diagnostic {
+    fn from(value: miette::Report) -> Diagnostic {
+        Diagnostic {
+            error_type: type_name_of_val(&value),
+            error_message: value.to_string(),
+        }
+    }
+}
+
+pub(crate) fn type_name_of_val<T>(_: T) -> String {
+    type_name::<T>().into()
 }
 
 #[cfg(test)]
@@ -140,5 +170,35 @@ mod test {
         };
         let actual: Value = serde_json::to_value(actual).expect("failed to serialize diagnostic");
         assert_eq!(expected, actual);
+    }
+
+    #[cfg(feature = "anyhow")]
+    #[test]
+    fn test_anyhow_integration() {
+        use anyhow::Error as AnyhowError;
+        let error: AnyhowError = anyhow::anyhow!("anyhow error");
+        let diagnostic: Diagnostic = error.into();
+        assert_eq!(diagnostic.error_type, "&anyhow::Error");
+        assert_eq!(diagnostic.error_message, "anyhow error");
+    }
+
+    #[cfg(feature = "eyre")]
+    #[test]
+    fn test_eyre_integration() {
+        use eyre::Report;
+        let error: Report = eyre::eyre!("eyre error");
+        let diagnostic: Diagnostic = error.into();
+        assert_eq!(diagnostic.error_type, "&eyre::Report");
+        assert_eq!(diagnostic.error_message, "eyre error");
+    }
+
+    #[cfg(feature = "miette")]
+    #[test]
+    fn test_miette_integration() {
+        use miette::Report;
+        let error: Report = miette::miette!("miette error");
+        let diagnostic: Diagnostic = error.into();
+        assert_eq!(diagnostic.error_type, "&miette::eyreish::Report");
+        assert_eq!(diagnostic.error_message, "miette error");
     }
 }

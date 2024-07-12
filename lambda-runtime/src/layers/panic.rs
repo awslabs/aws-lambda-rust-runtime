@@ -1,9 +1,7 @@
-use crate::{Diagnostic, LambdaEvent};
+use crate::{diagnostic::type_name_of_val, Diagnostic, LambdaEvent};
 use futures::{future::CatchUnwind, FutureExt};
 use pin_project::pin_project;
-use std::{
-    any::Any, borrow::Cow, fmt::Debug, future::Future, marker::PhantomData, panic::AssertUnwindSafe, pin::Pin, task,
-};
+use std::{any::Any, fmt::Debug, future::Future, marker::PhantomData, panic::AssertUnwindSafe, pin::Pin, task};
 use tower::Service;
 use tracing::error;
 
@@ -33,9 +31,9 @@ impl<'a, S, Payload> Service<LambdaEvent<Payload>> for CatchPanicService<'a, S>
 where
     S: Service<LambdaEvent<Payload>>,
     S::Future: 'a,
-    S::Error: Into<Diagnostic<'a>> + Debug,
+    S::Error: Into<Diagnostic> + Debug,
 {
-    type Error = Diagnostic<'a>;
+    type Error = Diagnostic;
     type Response = S::Response;
     type Future = CatchPanicFuture<'a, S::Future>;
 
@@ -71,9 +69,9 @@ pub enum CatchPanicFuture<'a, F> {
 impl<'a, F, T, E> Future for CatchPanicFuture<'a, F>
 where
     F: Future<Output = Result<T, E>>,
-    E: Into<Diagnostic<'a>> + Debug,
+    E: Into<Diagnostic> + Debug,
 {
-    type Output = Result<T, Diagnostic<'a>>;
+    type Output = Result<T, Diagnostic>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut task::Context<'_>) -> task::Poll<Self::Output> {
         use task::Poll;
@@ -98,20 +96,15 @@ where
 }
 
 impl<'a, F> CatchPanicFuture<'a, F> {
-    fn build_panic_diagnostic(err: &Box<dyn Any + Send>) -> Diagnostic<'a> {
-        let error_type = type_name_of_val(&err);
-        let msg = if let Some(msg) = err.downcast_ref::<&str>() {
+    fn build_panic_diagnostic(err: &Box<dyn Any + Send>) -> Diagnostic {
+        let error_message = if let Some(msg) = err.downcast_ref::<&str>() {
             format!("Lambda panicked: {msg}")
         } else {
             "Lambda panicked".to_string()
         };
         Diagnostic {
-            error_type: Cow::Borrowed(error_type),
-            error_message: Cow::Owned(msg),
+            error_type: type_name_of_val(err),
+            error_message,
         }
     }
-}
-
-fn type_name_of_val<T>(_: T) -> &'static str {
-    std::any::type_name::<T>()
 }

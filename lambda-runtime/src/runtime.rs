@@ -72,7 +72,7 @@ impl<'a, F, EventPayload, Response, BufferedResponse, StreamingResponse, StreamI
 where
     F: Service<LambdaEvent<EventPayload>, Response = Response>,
     F::Future: Future<Output = Result<Response, F::Error>>,
-    F::Error: Into<Diagnostic<'a>> + Debug,
+    F::Error: Into<Diagnostic> + Debug,
     EventPayload: for<'de> Deserialize<'de>,
     Response: IntoFunctionResponse<BufferedResponse, StreamingResponse>,
     BufferedResponse: Serialize,
@@ -207,7 +207,7 @@ fn wrap_handler<'a, F, EventPayload, Response, BufferedResponse, StreamingRespon
 where
     F: Service<LambdaEvent<EventPayload>, Response = Response>,
     F::Future: Future<Output = Result<Response, F::Error>>,
-    F::Error: Into<Diagnostic<'a>> + Debug,
+    F::Error: Into<Diagnostic> + Debug,
     EventPayload: for<'de> Deserialize<'de>,
     Response: IntoFunctionResponse<BufferedResponse, StreamingResponse>,
     BufferedResponse: Serialize,
@@ -257,7 +257,7 @@ mod endpoint_tests {
     use httpmock::prelude::*;
 
     use lambda_runtime_api_client::Client;
-    use std::{borrow::Cow, env, sync::Arc};
+    use std::{env, sync::Arc};
     use tokio_stream::StreamExt;
 
     #[tokio::test]
@@ -324,8 +324,8 @@ mod endpoint_tests {
     #[tokio::test]
     async fn test_error_response() -> Result<(), Error> {
         let diagnostic = Diagnostic {
-            error_type: Cow::Borrowed("InvalidEventDataError"),
-            error_message: Cow::Borrowed("Error parsing event data"),
+            error_type: "InvalidEventDataError".into(),
+            error_message: "Error parsing event data".into(),
         };
         let body = serde_json::to_string(&diagnostic)?;
 

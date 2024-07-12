@@ -158,11 +158,11 @@ fn test_event_completion_request() {
 // /runtime/invocation/{AwsRequestId}/error
 pub(crate) struct EventErrorRequest<'a> {
     pub(crate) request_id: &'a str,
-    pub(crate) diagnostic: Diagnostic<'a>,
+    pub(crate) diagnostic: Diagnostic,
 }
 
 impl<'a> EventErrorRequest<'a> {
-    pub(crate) fn new(request_id: &'a str, diagnostic: impl Into<Diagnostic<'a>>) -> EventErrorRequest<'a> {
+    pub(crate) fn new(request_id: &'a str, diagnostic: impl Into<Diagnostic>) -> EventErrorRequest<'a> {
         EventErrorRequest {
             request_id,
             diagnostic: diagnostic.into(),
@@ -224,8 +224,8 @@ mod tests {
         let req = EventErrorRequest {
             request_id: "id",
             diagnostic: Diagnostic {
-                error_type: std::borrow::Cow::Borrowed("InvalidEventDataError"),
-                error_message: std::borrow::Cow::Borrowed("Error parsing event data"),
+                error_type: "InvalidEventDataError".into(),
+                error_message: "Error parsing event data".into(),
             },
         };
         let req = req.into_req().unwrap();

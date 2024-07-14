@@ -23,7 +23,7 @@ const DEFAULT_LOG_LEVEL: &str = "INFO";
 /// if they're configured for your function.
 ///
 /// This subscriber sets the logging level based on environment variables:
-///     - if `AWS_LAMBDA_LOG_LEVEL` is set, it takes predecence over any other environment variables.
+///     - if `AWS_LAMBDA_LOG_LEVEL` is set, it takes precedence over any other environment variables.
 ///     - if `AWS_LAMBDA_LOG_LEVEL` is not set, check if `RUST_LOG` is set.
 ///     - if none of those two variables are set, use `INFO` as the logging level.
 ///
@@ -44,7 +44,7 @@ pub fn init_default_subscriber() {
                 .from_env_lossy(),
         );
 
-    if log_format.eq_ignore_ascii_case("json") {
+    if log_format.to_lowercase().contains("json") {
         collector.json().init()
     } else {
         collector.init()

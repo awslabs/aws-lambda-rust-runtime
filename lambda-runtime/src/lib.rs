@@ -120,6 +120,11 @@ where
     D: Into<bytes::Bytes> + Send,
     E: Into<Error> + Send + Debug,
 {
-    let runtime = Runtime::new(handler).layer(layers::TracingLayer::new());
-    runtime.run().await
+    if layers::TracingLayer::is_enabled() {
+        let runtime = Runtime::new(handler).layer(layers::TracingLayer::new());
+        runtime.run().await
+    } else {
+        let runtime = Runtime::new(handler);
+        runtime.run().await
+    }
 }

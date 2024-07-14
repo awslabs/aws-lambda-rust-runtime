@@ -14,6 +14,14 @@ impl TracingLayer {
     pub fn new() -> Self {
         Self::default()
     }
+
+    /// Returns true if the tracing span provided by this service should be included in the log output.
+    /// The span is enabled by default, 
+    /// but can be disabled by adding `no-span` to the `AWS_LAMBDA_LOG_FORMAT` environment variable.
+    /// E.g. AWS_LAMBDA_LOG_FORMAT=no-span or =json,no-span.
+    pub fn is_enabled() -> bool {
+        !matches! (std::env::var("AWS_LAMBDA_LOG_FORMAT") , Ok(v) if v.to_lowercase().contains("no-span"))
+    }
 }
 
 impl<S> Layer<S> for TracingLayer {

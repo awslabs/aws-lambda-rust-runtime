@@ -91,7 +91,7 @@ mod tests {
         let data = include_bytes!("../../fixtures/example-cloudwatch-cloudtrail-assumed-role.json");
         let parsed: AWSAPICall = serde_json::from_slice(data).unwrap();
         let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: AWSAPICall = serde_json::from_slice(&output.as_bytes()).unwrap();
+        let reparsed: AWSAPICall = serde_json::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
     #[test]
@@ -100,7 +100,7 @@ mod tests {
         let data = include_bytes!("../../fixtures/example-cloudwatch-cloudtrail-unknown-federate.json");
         let parsed: AWSAPICall = serde_json::from_slice(data).unwrap();
         let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: AWSAPICall = serde_json::from_slice(&output.as_bytes()).unwrap();
+        let reparsed: AWSAPICall = serde_json::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
     #[test]
@@ -109,7 +109,7 @@ mod tests {
         let data = include_bytes!("../../fixtures/example-cloudwatch-cloudtrail-unknown-user-auth.json");
         let parsed: AWSAPICall = serde_json::from_slice(data).unwrap();
         let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: AWSAPICall = serde_json::from_slice(&output.as_bytes()).unwrap();
+        let reparsed: AWSAPICall = serde_json::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

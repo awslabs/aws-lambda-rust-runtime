@@ -1,0 +1,31 @@
+[package]
+name = "aws_lambda_rust_integration_tests"
+version = "0.1.0"
+authors = ["Maxime David"]
+edition = "2021"
+description = "AWS Lambda Runtime integration tests"
+license = "Apache-2.0"
+repository = "https://github.com/awslabs/aws-lambda-rust-runtime"
+categories = ["web-programming::http-server"]
+keywords = ["AWS", "Lambda", "API"]
+readme = "../README.md"
+
+[dependencies]
+lambda_runtime = { path = "../lambda-runtime" }
+aws_lambda_events = { path = "../lambda-events" }
+serde_json = "1.0.121"
+tokio = { version = "1", features = ["full"] }
+tracing-subscriber = { version = "0.3", default-features = false, features = ["json"] }
+serde = { version = "1.0.204", features = ["derive"] }
+
+[dev-dependencies]
+reqwest = { version = "0.12.5", features = ["blocking"] }
+openssl = { version = "0.10", features = ["vendored"] }
+
+[[bin]]
+name = "helloworld"
+path = "src/helloworld.rs"
+
+[[bin]]
+name = "authorizer"
+path = "src/authorizer.rs"

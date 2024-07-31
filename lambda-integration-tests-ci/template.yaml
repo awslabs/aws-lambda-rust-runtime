@@ -1,0 +1,58 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: maxday-test
+
+Parameters:
+  SecretToken:
+    Type: String
+
+Globals:
+  Function:
+    Timeout: 3
+
+Resources:
+  API:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: integ-test
+      Auth:
+        DefaultAuthorizer: MyLambdaAuthorizer
+        Authorizers:
+          MyLambdaAuthorizer:
+            FunctionArn: !GetAtt AuthorizerFunction.Arn
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: rust-cargolambda
+      BuildProperties:
+        Binary: helloworld
+    Properties:
+      CodeUri: ./
+      Handler: bootstrap
+      Runtime: provided.al2023
+      Events:
+        HelloWorld:
+          Type: Api
+          Properties:
+            RestApiId: !Ref API
+            Path: /hello
+            Method: get
+
+  AuthorizerFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: rust-cargolambda
+      BuildProperties:
+        Binary: authorizer
+    Properties:
+      CodeUri: ./
+      Handler: bootstrap
+      Runtime: provided.al2023
+      Environment:
+        Variables:
+          SECRET_TOKEN: !Ref SecretToken
+
+Outputs:
+  HelloApiEndpoint:
+    Description: "API Gateway endpoint URL for HelloWorld"
+    Value: !Sub "https://${API}.execute-api.${AWS::Region}.amazonaws.com/integ-test/hello/"

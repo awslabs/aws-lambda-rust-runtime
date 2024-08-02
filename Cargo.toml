@@ -3,7 +3,6 @@ resolver = "2"
 members = [
     "lambda-http",
     "lambda-integration-tests",
-    "lambda-integration-tests-ci",
     "lambda-runtime-api-client",
     "lambda-runtime",
     "lambda-extension",

@@ -34,15 +34,15 @@ jobs:
             role-session-name: ${{ secrets.ROLE_SESSION_NAME }}
             aws-region: ${{ secrets.AWS_REGION }}
         - name: build  stack
-          run: cd lambda-integration-tests-ci && sam build --beta-features
+          run: cd lambda-integration-tests && sam build --beta-features
         - name: validate stack
-          run: cd lambda-integration-tests-ci && sam validate --lint
+          run: cd lambda-integration-tests && sam validate --lint
         - name: deploy stack
           id: deploy_stack
           env:
             AWS_REGION: ${{ secrets.AWS_REGION }}
           run: |
-            cd lambda-integration-tests-ci
+            cd lambda-integration-tests
             stackName="aws-lambda-rust-integ-test-$GITHUB_RUN_ID"
             echo "STACK_NAME=$stackName" >> "$GITHUB_OUTPUT"
             echo "Stack name = $stackName"
@@ -53,7 +53,7 @@ jobs:
           env:
             SECRET_TOKEN: ${{ secrets.SECRET_TOKEN }}
             TEST_ENDPOINT: ${{ steps.deploy_stack.outputs.TEST_ENDPOINT }}
-          run: cd lambda-integration-tests-ci && cargo test
+          run: cd lambda-integration-tests && cargo test
         - name: cleanup
           if: always()
           env:

@@ -4,10 +4,9 @@ use aws_lambda_events::{
     apigw::{ApiGatewayCustomAuthorizerPolicy, ApiGatewayCustomAuthorizerResponse},
     event::iam::IamPolicyStatement,
 };
-use lambda_runtime::{service_fn, Error, LambdaEvent};
+use lambda_runtime::{service_fn, tracing, Error, LambdaEvent};
 use serde::Deserialize;
 use serde_json::json;
-use tracing_subscriber::EnvFilter;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -18,14 +17,7 @@ struct APIGatewayCustomAuthorizerRequest {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    tracing_subscriber::fmt()
-        .json()
-        .with_env_filter(EnvFilter::from_default_env())
-        .with_target(false)
-        .with_current_span(false)
-        .with_span_list(false)
-        .without_time()
-        .init();
+    tracing::init_default_subscriber();
     let func = service_fn(func);
     lambda_runtime::run(func).await?;
     Ok(())

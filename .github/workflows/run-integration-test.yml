@@ -46,7 +46,7 @@ jobs:
             stackName="aws-lambda-rust-integ-test-$GITHUB_RUN_ID"
             echo "STACK_NAME=$stackName" >> "$GITHUB_OUTPUT"
             echo "Stack name = $stackName"
-            sam deploy --stack-name "${stackName}" --parameter-overrides "ParameterKey=SecretToken,ParameterValue=${{ secrets.SECRET_TOKEN }}" --no-confirm-changeset  --no-progressbar  > disable_output
+            sam deploy --stack-name "${stackName}" --parameter-overrides "ParameterKey=SecretToken,ParameterValue=${{ secrets.SECRET_TOKEN }}" "ParameterKey=LambdaRole,ParameterValue=${{ secrets.AWS_LAMBDA_ROLE }}" --no-confirm-changeset  --no-progressbar  > disable_output
             TEST_ENDPOINT=$(sam list stack-outputs --stack-name "${stackName}" --output json | jq -r '.[] | .OutputValue')
             echo "TEST_ENDPOINT=$TEST_ENDPOINT" >> "$GITHUB_OUTPUT"
         - name: run test

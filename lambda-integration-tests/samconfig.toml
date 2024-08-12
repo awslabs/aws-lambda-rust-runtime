@@ -11,11 +11,7 @@ lint = true
 [default.deploy.parameters]
 capabilities = "CAPABILITY_IAM"
 confirm_changeset = true
-resolve_s3 = true
-s3_prefix = "aws-lambda-rust-integration-test"
-
-[default.package.parameters]
-resolve_s3 = true
+s3_bucket = "aws-lambda-rust-runtime-integration-testing"
 
 [default.sync.parameters]
 watch = true

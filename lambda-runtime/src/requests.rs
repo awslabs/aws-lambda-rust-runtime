@@ -186,23 +186,6 @@ impl<'a> IntoRequest for EventErrorRequest<'a> {
     }
 }
 
-// /runtime/init/error
-struct InitErrorRequest;
-
-impl IntoRequest for InitErrorRequest {
-    fn into_req(self) -> Result<Request<Body>, Error> {
-        let uri = "/2018-06-01/runtime/init/error".to_string();
-        let uri = Uri::from_str(&uri)?;
-
-        let req = build_request()
-            .method(Method::POST)
-            .uri(uri)
-            .header("lambda-runtime-function-error-type", "unhandled")
-            .body(Body::empty())?;
-        Ok(req)
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -230,19 +213,6 @@ mod tests {
         };
         let req = req.into_req().unwrap();
         let expected = Uri::from_static("/2018-06-01/runtime/invocation/id/error");
-        assert_eq!(req.method(), Method::POST);
-        assert_eq!(req.uri(), &expected);
-        assert!(match req.headers().get("User-Agent") {
-            Some(header) => header.to_str().unwrap().starts_with("aws-lambda-rust/"),
-            None => false,
-        });
-    }
-
-    #[test]
-    fn test_init_error_request() {
-        let req = InitErrorRequest;
-        let req = req.into_req().unwrap();
-        let expected = Uri::from_static("/2018-06-01/runtime/init/error");
         assert_eq!(req.method(), Method::POST);
         assert_eq!(req.uri(), &expected);
         assert!(match req.headers().get("User-Agent") {

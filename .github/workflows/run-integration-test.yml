@@ -1,0 +1,62 @@
+name: Run integration tests
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  run-integration-tests:
+    runs-on: ubuntu-latest
+    steps:
+        - name: install Cargo Lambda
+          uses: jaxxstorm/action-install-gh-release@v1.9.0
+          with:
+            repo: cargo-lambda/cargo-lambda
+            platform: linux
+            arch: x86_64
+        - name: install Zig toolchain
+          uses: korandoru/setup-zig@v1
+          with:
+            zig-version: 0.10.0
+        - name: install SAM
+          uses: aws-actions/setup-sam@v2
+          with:
+            use-installer: true
+        - uses: actions/checkout@v3
+        - name: configure aws credentials
+          uses: aws-actions/configure-aws-credentials@v4.0.2
+          with:
+            role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+            role-session-name: ${{ secrets.ROLE_SESSION_NAME }}
+            aws-region: ${{ secrets.AWS_REGION }}
+        - name: build  stack
+          run: cd lambda-integration-tests && sam build --beta-features
+        - name: validate stack
+          run: cd lambda-integration-tests && sam validate --lint
+        - name: deploy stack
+          id: deploy_stack
+          env:
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+          run: |
+            cd lambda-integration-tests
+            stackName="aws-lambda-rust-integ-test-$GITHUB_RUN_ID"
+            echo "STACK_NAME=$stackName" >> "$GITHUB_OUTPUT"
+            echo "Stack name = $stackName"
+            sam deploy --stack-name "${stackName}" --parameter-overrides "ParameterKey=SecretToken,ParameterValue=${{ secrets.SECRET_TOKEN }}" "ParameterKey=LambdaRole,ParameterValue=${{ secrets.AWS_LAMBDA_ROLE }}" --no-confirm-changeset  --no-progressbar  > disable_output
+            TEST_ENDPOINT=$(sam list stack-outputs --stack-name "${stackName}" --output json | jq -r '.[] | .OutputValue')
+            echo "TEST_ENDPOINT=$TEST_ENDPOINT" >> "$GITHUB_OUTPUT"
+        - name: run test
+          env:
+            SECRET_TOKEN: ${{ secrets.SECRET_TOKEN }}
+            TEST_ENDPOINT: ${{ steps.deploy_stack.outputs.TEST_ENDPOINT }}
+          run: cd lambda-integration-tests && cargo test
+        - name: cleanup
+          if: always()
+          env:
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+            STACK_NAME: ${{ steps.deploy_stack.outputs.STACK_NAME }}
+          run: sam delete --stack-name "${STACK_NAME}" --no-prompts

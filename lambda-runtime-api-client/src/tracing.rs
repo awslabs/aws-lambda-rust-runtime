@@ -33,14 +33,15 @@ const DEFAULT_LOG_LEVEL: &str = "INFO";
 pub fn init_default_subscriber() {
     let log_format = env::var("AWS_LAMBDA_LOG_FORMAT").unwrap_or_default();
     let log_level_str = env::var("AWS_LAMBDA_LOG_LEVEL").or_else(|_| env::var("RUST_LOG"));
-    let log_level = Level::from_str(log_level_str.as_deref().unwrap_or(DEFAULT_LOG_LEVEL)).unwrap_or(Level::INFO);
+    let log_level =
+        LevelFilter::from_str(log_level_str.as_deref().unwrap_or(DEFAULT_LOG_LEVEL)).unwrap_or(LevelFilter::INFO);
 
     let collector = tracing_subscriber::fmt()
         .with_target(false)
         .without_time()
         .with_env_filter(
             EnvFilter::builder()
-                .with_default_directive(LevelFilter::from_level(log_level).into())
+                .with_default_directive(log_level.into())
                 .from_env_lossy(),
         );
 

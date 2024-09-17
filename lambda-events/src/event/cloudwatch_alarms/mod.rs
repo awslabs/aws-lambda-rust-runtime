@@ -36,7 +36,8 @@ where
 }
 
 /// `CloudWatchMetricAlarm` is the structure of an event triggered by CloudWatch metric alarms.
-pub type CloudWatchMetricAlarm<R = CloudWatchAlarmStateReasonData> = CloudWatchAlarm<CloudWatchMetricAlarmConfiguration, R>;
+pub type CloudWatchMetricAlarm<R = CloudWatchAlarmStateReasonData> =
+    CloudWatchAlarm<CloudWatchMetricAlarmConfiguration, R>;
 
 /// `CloudWatchCompositeAlarm` is the structure of an event triggered by CloudWatch composite alarms.
 pub type CloudWatchCompositeAlarm<R = CloudWatchAlarmStateReasonData> =

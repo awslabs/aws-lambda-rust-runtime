@@ -36,12 +36,11 @@ where
 }
 
 /// `CloudWatchMetricAlarm` is the structure of an event triggered by CloudWatch metric alarms.
-#[allow(unused)]
-type CloudWatchMetricAlarm<R = CloudWatchAlarmStateReasonData> = CloudWatchAlarm<CloudWatchMetricAlarmConfiguration, R>;
+pub type CloudWatchMetricAlarm<R = CloudWatchAlarmStateReasonData> =
+    CloudWatchAlarm<CloudWatchMetricAlarmConfiguration, R>;
 
 /// `CloudWatchCompositeAlarm` is the structure of an event triggered by CloudWatch composite alarms.
-#[allow(unused)]
-type CloudWatchCompositeAlarm<R = CloudWatchAlarmStateReasonData> =
+pub type CloudWatchCompositeAlarm<R = CloudWatchAlarmStateReasonData> =
     CloudWatchAlarm<CloudWatchCompositeAlarmConfiguration, R>;
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]

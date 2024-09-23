@@ -13,3 +13,6 @@ output.json
 .aws-sam
 build
 .vscode
+
+node_modules
+cdk.out

@@ -35,5 +35,5 @@ tokio = { version = "1.0", features = [
     "rt-multi-thread",
 ] }
 tokio-stream = "0.1.2"
-tower = { version = "0.4", features = ["make", "util"] }
+tower = { workspace = true, features = ["make", "util"] }
 tracing = { version = "0.1", features = ["log"] }

@@ -129,8 +129,10 @@ fn into_api_gateway_v2_request(ag: ApiGatewayV2httpRequest) -> http::Request<Bod
 
     let mut uri = build_request_uri(&path, &ag.headers, host, None);
     if let Some(query) = ag.raw_query_string {
-        uri.push('?');
-        uri.push_str(&query);
+        if !query.is_empty() {
+            uri.push('?');
+            uri.push_str(&query);
+        }
     }
 
     let builder = http::Request::builder()

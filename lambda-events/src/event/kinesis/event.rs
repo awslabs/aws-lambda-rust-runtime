@@ -90,11 +90,11 @@ mod test {
     #[cfg(feature = "kinesis")]
     fn example_kinesis_event() {
         let data = include_bytes!("../../fixtures/example-kinesis-event.json");
-        let parsed: KinesisEvent = serde_json::from_slice(data).unwrap();
+        let parsed: KinesisEvent = aws_lambda_json_impl::from_slice(data).unwrap();
         assert_eq!(KinesisEncryptionType::None, parsed.records[0].kinesis.encryption_type);
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: KinesisEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: KinesisEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -102,11 +102,11 @@ mod test {
     #[cfg(feature = "kinesis")]
     fn example_kinesis_event_encrypted() {
         let data = include_bytes!("../../fixtures/example-kinesis-event-encrypted.json");
-        let parsed: KinesisEvent = serde_json::from_slice(data).unwrap();
+        let parsed: KinesisEvent = aws_lambda_json_impl::from_slice(data).unwrap();
         assert_eq!(KinesisEncryptionType::Kms, parsed.records[0].kinesis.encryption_type);
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: KinesisEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: KinesisEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

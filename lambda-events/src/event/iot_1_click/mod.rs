@@ -64,9 +64,9 @@ mod test {
     #[cfg(feature = "iot_1_click")]
     fn example_iot_1_click_event() {
         let data = include_bytes!("../../fixtures/example-iot_1_click-event.json");
-        let parsed: IoTOneClickEvent = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: IoTOneClickEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: IoTOneClickEvent = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: IoTOneClickEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

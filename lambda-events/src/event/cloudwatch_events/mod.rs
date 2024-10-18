@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use serde_json::Value;
+use aws_lambda_json_impl::Value;
 
 pub mod cloudtrail;
 pub mod codedeploy;

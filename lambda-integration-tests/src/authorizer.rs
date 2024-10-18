@@ -6,7 +6,7 @@ use aws_lambda_events::{
 };
 use lambda_runtime::{service_fn, tracing, Error, LambdaEvent};
 use serde::Deserialize;
-use serde_json::json;
+use aws_lambda_json_impl::json;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]

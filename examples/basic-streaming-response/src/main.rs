@@ -3,7 +3,7 @@ use lambda_runtime::{
     streaming::{channel, Body, Response},
     tracing, Error, LambdaEvent,
 };
-use serde_json::Value;
+use aws_lambda_json_impl::Value;
 use std::{thread, time::Duration};
 
 async fn func(_event: LambdaEvent<Value>) -> Result<Response<Body>, Error> {

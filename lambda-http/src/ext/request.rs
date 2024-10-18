@@ -15,7 +15,7 @@ use crate::Body;
 #[derive(Debug)]
 pub enum PayloadError {
     /// Returned when `application/json` bodies fail to deserialize a payload
-    Json(serde_json::Error),
+    Json(aws_lambda_json_impl::JsonError),
     /// Returned when `application/x-www-form-urlencoded` bodies fail to deserialize a payload
     WwwFormUrlEncoded(SerdeError),
 }
@@ -24,7 +24,7 @@ pub enum PayloadError {
 #[derive(Debug)]
 pub enum JsonPayloadError {
     /// Problem deserializing a JSON payload.
-    Parsing(serde_json::Error),
+    Parsing(aws_lambda_json_impl::JsonError),
 }
 
 /// Indicates a problem processing an x-www-form-urlencoded payload.
@@ -251,7 +251,7 @@ impl RequestPayloadExt for http::Request<Body> {
         if self.body().is_empty() {
             return Ok(None);
         }
-        serde_json::from_slice::<D>(self.body().as_ref())
+        aws_lambda_json_impl::from_slice::<D>(self.body().as_ref())
             .map(Some)
             .map_err(JsonPayloadError::Parsing)
     }

@@ -44,9 +44,9 @@ mod test {
     #[cfg(feature = "config")]
     fn example_config_event() {
         let data = include_bytes!("../../fixtures/example-config-event.json");
-        let parsed: ConfigEvent = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: ConfigEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: ConfigEvent = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: ConfigEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

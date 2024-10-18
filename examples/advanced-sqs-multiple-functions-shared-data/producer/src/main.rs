@@ -1,6 +1,6 @@
 use lambda_runtime::{service_fn, tracing, Error, LambdaEvent};
 use pizza_lib::Pizza;
-use serde_json::{json, Value};
+use aws_lambda_json_impl::{json, Value};
 
 struct SQSManager {
     client: aws_sdk_sqs::Client,

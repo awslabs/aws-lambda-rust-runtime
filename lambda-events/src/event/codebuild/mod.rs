@@ -4,7 +4,7 @@ use crate::{
 };
 use chrono::{DateTime, Utc};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use serde_json::Value;
+use aws_lambda_json_impl::Value;
 
 pub type CodeBuildPhaseStatus = String;
 
@@ -218,9 +218,9 @@ mod test {
     #[cfg(feature = "codebuild")]
     fn example_codebuild_phase_change() {
         let data = include_bytes!("../../fixtures/example-codebuild-phase-change.json");
-        let parsed: CodeBuildEvent = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CodeBuildEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: CodeBuildEvent = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: CodeBuildEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -228,9 +228,9 @@ mod test {
     #[cfg(feature = "codebuild")]
     fn example_codebuild_state_change() {
         let data = include_bytes!("../../fixtures/example-codebuild-state-change.json");
-        let parsed: CodeBuildEvent = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CodeBuildEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: CodeBuildEvent = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: CodeBuildEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

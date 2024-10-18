@@ -75,9 +75,9 @@ mod test {
     #[cfg(feature = "alb")]
     fn example_alb_lambda_target_request_headers_only() {
         let data = include_bytes!("../../fixtures/example-alb-lambda-target-request-headers-only.json");
-        let parsed: AlbTargetGroupRequest = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: AlbTargetGroupRequest = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: AlbTargetGroupRequest = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: AlbTargetGroupRequest = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -85,9 +85,9 @@ mod test {
     #[cfg(feature = "alb")]
     fn example_alb_lambda_target_request_multivalue_headers() {
         let data = include_bytes!("../../fixtures/example-alb-lambda-target-request-multivalue-headers.json");
-        let parsed: AlbTargetGroupRequest = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: AlbTargetGroupRequest = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: AlbTargetGroupRequest = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: AlbTargetGroupRequest = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -95,9 +95,9 @@ mod test {
     #[cfg(feature = "alb")]
     fn example_alb_lambda_target_response() {
         let data = include_bytes!("../../fixtures/example-alb-lambda-target-response.json");
-        let parsed: AlbTargetGroupResponse = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: AlbTargetGroupResponse = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: AlbTargetGroupResponse = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: AlbTargetGroupResponse = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

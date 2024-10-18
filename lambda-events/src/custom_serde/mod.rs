@@ -107,10 +107,10 @@ mod test {
             #[serde(deserialize_with = "deserialize_base64")]
             v: Vec<u8>,
         }
-        let data = serde_json::json!({
+        let data = aws_lambda_json_impl::json!({
             "v": "SGVsbG8gV29ybGQ=",
         });
-        let decoded: Test = serde_json::from_value(data).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_value(data).unwrap();
         assert_eq!(String::from_utf8(decoded.v).unwrap(), "Hello World".to_string());
     }
 
@@ -124,7 +124,7 @@ mod test {
         let instance = Test {
             v: "Hello World".as_bytes().to_vec(),
         };
-        let encoded = serde_json::to_string(&instance).unwrap();
+        let encoded = aws_lambda_json_impl::to_string(&instance).unwrap();
         assert_eq!(encoded, r#"{"v":"SGVsbG8gV29ybGQ="}"#.to_string());
     }
 
@@ -135,16 +135,16 @@ mod test {
             #[serde(deserialize_with = "deserialize_lambda_map")]
             v: HashMap<String, String>,
         }
-        let input = serde_json::json!({
+        let input = aws_lambda_json_impl::json!({
           "v": {},
         });
-        let decoded: Test = serde_json::from_value(input).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_value(input).unwrap();
         assert_eq!(HashMap::new(), decoded.v);
 
-        let input = serde_json::json!({
+        let input = aws_lambda_json_impl::json!({
           "v": null,
         });
-        let decoded: Test = serde_json::from_value(input).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_value(input).unwrap();
         assert_eq!(HashMap::new(), decoded.v);
     }
 
@@ -156,16 +156,16 @@ mod test {
             #[serde(deserialize_with = "deserialize_lambda_dynamodb_item")]
             v: serde_dynamo::Item,
         }
-        let input = serde_json::json!({
+        let input = aws_lambda_json_impl::json!({
           "v": {},
         });
-        let decoded: Test = serde_json::from_value(input).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_value(input).unwrap();
         assert_eq!(serde_dynamo::Item::from(HashMap::new()), decoded.v);
 
-        let input = serde_json::json!({
+        let input = aws_lambda_json_impl::json!({
           "v": null,
         });
-        let decoded: Test = serde_json::from_value(input).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_value(input).unwrap();
         assert_eq!(serde_dynamo::Item::from(HashMap::new()), decoded.v);
     }
 
@@ -178,19 +178,19 @@ mod test {
         }
 
         let test = r#"{"v": null}"#;
-        let decoded: Test = serde_json::from_str(test).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_str(test).unwrap();
         assert!(!decoded.v);
 
         let test = r#"{}"#;
-        let decoded: Test = serde_json::from_str(test).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_str(test).unwrap();
         assert!(!decoded.v);
 
         let test = r#"{"v": true}"#;
-        let decoded: Test = serde_json::from_str(test).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_str(test).unwrap();
         assert!(decoded.v);
 
         let test = r#"{"v": false}"#;
-        let decoded: Test = serde_json::from_str(test).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_str(test).unwrap();
         assert!(!decoded.v);
     }
 }

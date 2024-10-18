@@ -8,7 +8,7 @@ use aws_lambda_events::apigw::ApiGatewayV2httpRequest;
 #[cfg(feature = "apigw_websockets")]
 use aws_lambda_events::apigw::ApiGatewayWebsocketProxyRequest;
 use serde::{de::Error, Deserialize};
-use serde_json::value::RawValue;
+use aws_lambda_json_impl::RawValue;
 
 const ERROR_CONTEXT: &str = "this function expects a JSON payload from Amazon API Gateway, Amazon Elastic Load Balancer, or AWS Lambda Function URLs, but the data doesn't match any of those services' events";
 
@@ -24,19 +24,19 @@ impl<'de> Deserialize<'de> for LambdaRequest {
         let data = raw_value.get();
 
         #[cfg(feature = "apigw_rest")]
-        if let Ok(res) = serde_json::from_str::<ApiGatewayProxyRequest>(data) {
+        if let Ok(res) = aws_lambda_json_impl::from_str::<ApiGatewayProxyRequest>(data) {
             return Ok(LambdaRequest::ApiGatewayV1(res));
         }
         #[cfg(feature = "apigw_http")]
-        if let Ok(res) = serde_json::from_str::<ApiGatewayV2httpRequest>(data) {
+        if let Ok(res) = aws_lambda_json_impl::from_str::<ApiGatewayV2httpRequest>(data) {
             return Ok(LambdaRequest::ApiGatewayV2(res));
         }
         #[cfg(feature = "alb")]
-        if let Ok(res) = serde_json::from_str::<AlbTargetGroupRequest>(data) {
+        if let Ok(res) = aws_lambda_json_impl::from_str::<AlbTargetGroupRequest>(data) {
             return Ok(LambdaRequest::Alb(res));
         }
         #[cfg(feature = "apigw_websockets")]
-        if let Ok(res) = serde_json::from_str::<ApiGatewayWebsocketProxyRequest>(data) {
+        if let Ok(res) = aws_lambda_json_impl::from_str::<ApiGatewayWebsocketProxyRequest>(data) {
             return Ok(LambdaRequest::WebSocket(res));
         }
         #[cfg(feature = "pass_through")]
@@ -56,7 +56,7 @@ mod tests {
     fn test_deserialize_apigw_rest() {
         let data = include_bytes!("../../lambda-events/src/fixtures/example-apigw-request.json");
 
-        let req: LambdaRequest = serde_json::from_slice(data).expect("failed to deserialize apigw rest data");
+        let req: LambdaRequest = aws_lambda_json_impl::from_slice(data).expect("failed to deserialize apigw rest data");
         match req {
             LambdaRequest::ApiGatewayV1(req) => {
                 assert_eq!("12345678912", req.request_context.account_id.unwrap());
@@ -69,7 +69,7 @@ mod tests {
     fn test_deserialize_apigw_http() {
         let data = include_bytes!("../../lambda-events/src/fixtures/example-apigw-v2-request-iam.json");
 
-        let req: LambdaRequest = serde_json::from_slice(data).expect("failed to deserialize apigw http data");
+        let req: LambdaRequest = aws_lambda_json_impl::from_slice(data).expect("failed to deserialize apigw http data");
         match req {
             LambdaRequest::ApiGatewayV2(req) => {
                 assert_eq!("123456789012", req.request_context.account_id.unwrap());
@@ -82,7 +82,7 @@ mod tests {
     fn test_deserialize_sam_rest() {
         let data = include_bytes!("../../lambda-events/src/fixtures/example-apigw-sam-rest-request.json");
 
-        let req: LambdaRequest = serde_json::from_slice(data).expect("failed to deserialize SAM rest data");
+        let req: LambdaRequest = aws_lambda_json_impl::from_slice(data).expect("failed to deserialize SAM rest data");
         match req {
             LambdaRequest::ApiGatewayV1(req) => {
                 assert_eq!("123456789012", req.request_context.account_id.unwrap());
@@ -95,7 +95,7 @@ mod tests {
     fn test_deserialize_sam_http() {
         let data = include_bytes!("../../lambda-events/src/fixtures/example-apigw-sam-http-request.json");
 
-        let req: LambdaRequest = serde_json::from_slice(data).expect("failed to deserialize SAM http data");
+        let req: LambdaRequest = aws_lambda_json_impl::from_slice(data).expect("failed to deserialize SAM http data");
         match req {
             LambdaRequest::ApiGatewayV2(req) => {
                 assert_eq!("123456789012", req.request_context.account_id.unwrap());
@@ -110,7 +110,7 @@ mod tests {
             "../../lambda-events/src/fixtures/example-alb-lambda-target-request-multivalue-headers.json"
         );
 
-        let req: LambdaRequest = serde_json::from_slice(data).expect("failed to deserialize alb rest data");
+        let req: LambdaRequest = aws_lambda_json_impl::from_slice(data).expect("failed to deserialize alb rest data");
         match req {
             LambdaRequest::Alb(req) => {
                 assert_eq!(
@@ -127,7 +127,7 @@ mod tests {
         let data =
             include_bytes!("../../lambda-events/src/fixtures/example-apigw-websocket-request-without-method.json");
 
-        let req: LambdaRequest = serde_json::from_slice(data).expect("failed to deserialize apigw websocket data");
+        let req: LambdaRequest = aws_lambda_json_impl::from_slice(data).expect("failed to deserialize apigw websocket data");
         match req {
             LambdaRequest::WebSocket(req) => {
                 assert_eq!("CONNECT", req.request_context.event_type.unwrap());
@@ -142,7 +142,7 @@ mod tests {
         let data = include_bytes!("../../lambda-events/src/fixtures/example-bedrock-agent-runtime-event.json");
 
         let req: LambdaRequest =
-            serde_json::from_slice(data).expect("failed to deserialize bedrock agent request data");
+            aws_lambda_json_impl::from_slice(data).expect("failed to deserialize bedrock agent request data");
         match req {
             LambdaRequest::PassThrough(req) => {
                 assert_eq!(String::from_utf8_lossy(data), req);
@@ -156,7 +156,7 @@ mod tests {
     fn test_deserialize_sqs() {
         let data = include_bytes!("../../lambda-events/src/fixtures/example-sqs-event.json");
 
-        let req: LambdaRequest = serde_json::from_slice(data).expect("failed to deserialize sqs event data");
+        let req: LambdaRequest = aws_lambda_json_impl::from_slice(data).expect("failed to deserialize sqs event data");
         match req {
             LambdaRequest::PassThrough(req) => {
                 assert_eq!(String::from_utf8_lossy(data), req);

@@ -5,7 +5,7 @@
 //! See https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.custom_resources-readme.html for details.
 
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use serde_json::Value;
+use aws_lambda_json_impl::Value;
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(tag = "RequestType")]
@@ -105,54 +105,54 @@ mod test {
     #[test]
     fn example_create_request() {
         let data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-provider-create-request.json");
-        let parsed: TestRequest = serde_json::from_slice(data).unwrap();
+        let parsed: TestRequest = aws_lambda_json_impl::from_slice(data).unwrap();
 
         match parsed {
             Create(_) => (),
             _ => panic!("expected Create request"),
         }
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: TestRequest = serde_json::from_slice(output.as_bytes()).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: TestRequest = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     fn example_update_request() {
         let data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-provider-update-request.json");
-        let parsed: TestRequest = serde_json::from_slice(data).unwrap();
+        let parsed: TestRequest = aws_lambda_json_impl::from_slice(data).unwrap();
 
         match parsed {
             Update(_) => (),
             _ => panic!("expected Update request"),
         }
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: TestRequest = serde_json::from_slice(output.as_bytes()).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: TestRequest = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     fn example_delete_request() {
         let data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-provider-delete-request.json");
-        let parsed: TestRequest = serde_json::from_slice(data).unwrap();
+        let parsed: TestRequest = aws_lambda_json_impl::from_slice(data).unwrap();
 
         match parsed {
             Delete(_) => (),
             _ => panic!("expected Delete request"),
         }
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: TestRequest = serde_json::from_slice(output.as_bytes()).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: TestRequest = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     fn example_response() {
         let data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-provider-response.json");
-        let parsed: CloudFormationCustomResourceResponse = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CloudFormationCustomResourceResponse = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: CloudFormationCustomResourceResponse = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: CloudFormationCustomResourceResponse = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

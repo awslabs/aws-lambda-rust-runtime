@@ -1,5 +1,5 @@
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use serde_json::Value;
+use aws_lambda_json_impl::Value;
 use std::collections::HashMap;
 
 use crate::custom_serde::{deserialize_lambda_map, deserialize_nullish_boolean};
@@ -636,9 +636,9 @@ mod test {
     #[cfg(feature = "cognito")]
     fn example_cognito_event() {
         let data = include_bytes!("../../fixtures/example-cognito-event.json");
-        let parsed: CognitoEvent = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CognitoEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: CognitoEvent = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: CognitoEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -646,9 +646,9 @@ mod test {
     #[cfg(feature = "cognito")]
     fn example_cognito_event_userpools_create_auth_challenge() {
         let data = include_bytes!("../../fixtures/example-cognito-event-userpools-create-auth-challenge.json");
-        let parsed: CognitoEventUserPoolsCreateAuthChallenge = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CognitoEventUserPoolsCreateAuthChallenge = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: CognitoEventUserPoolsCreateAuthChallenge = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: CognitoEventUserPoolsCreateAuthChallenge = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -657,12 +657,12 @@ mod test {
     fn example_cognito_event_userpools_create_auth_challenge_user_not_found() {
         let data =
             include_bytes!("../../fixtures/example-cognito-event-userpools-create-auth-challenge-user-not-found.json");
-        let parsed: CognitoEventUserPoolsCreateAuthChallenge = serde_json::from_slice(data).unwrap();
+        let parsed: CognitoEventUserPoolsCreateAuthChallenge = aws_lambda_json_impl::from_slice(data).unwrap();
 
         assert!(parsed.request.user_not_found);
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CognitoEventUserPoolsCreateAuthChallenge = serde_json::from_slice(output.as_bytes()).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: CognitoEventUserPoolsCreateAuthChallenge = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -670,9 +670,9 @@ mod test {
     #[cfg(feature = "cognito")]
     fn example_cognito_event_userpools_custommessage() {
         let data = include_bytes!("../../fixtures/example-cognito-event-userpools-custommessage.json");
-        let parsed: CognitoEventUserPoolsCustomMessage = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CognitoEventUserPoolsCustomMessage = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: CognitoEventUserPoolsCustomMessage = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: CognitoEventUserPoolsCustomMessage = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -680,9 +680,9 @@ mod test {
     #[cfg(feature = "cognito")]
     fn example_cognito_event_userpools_define_auth_challenge() {
         let data = include_bytes!("../../fixtures/example-cognito-event-userpools-define-auth-challenge.json");
-        let parsed: CognitoEventUserPoolsDefineAuthChallenge = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CognitoEventUserPoolsDefineAuthChallenge = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: CognitoEventUserPoolsDefineAuthChallenge = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: CognitoEventUserPoolsDefineAuthChallenge = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -692,13 +692,13 @@ mod test {
         let data = include_bytes!(
             "../../fixtures/example-cognito-event-userpools-define-auth-challenge-optional-response-fields.json"
         );
-        let parsed: CognitoEventUserPoolsDefineAuthChallenge = serde_json::from_slice(data).unwrap();
+        let parsed: CognitoEventUserPoolsDefineAuthChallenge = aws_lambda_json_impl::from_slice(data).unwrap();
 
         assert!(!parsed.response.fail_authentication);
         assert!(!parsed.response.issue_tokens);
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CognitoEventUserPoolsDefineAuthChallenge = serde_json::from_slice(output.as_bytes()).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: CognitoEventUserPoolsDefineAuthChallenge = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -707,12 +707,12 @@ mod test {
     fn example_cognito_event_userpools_define_auth_challenge_user_not_found() {
         let data =
             include_bytes!("../../fixtures/example-cognito-event-userpools-define-auth-challenge-user-not-found.json");
-        let parsed: CognitoEventUserPoolsDefineAuthChallenge = serde_json::from_slice(data).unwrap();
+        let parsed: CognitoEventUserPoolsDefineAuthChallenge = aws_lambda_json_impl::from_slice(data).unwrap();
 
         assert!(parsed.request.user_not_found);
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CognitoEventUserPoolsDefineAuthChallenge = serde_json::from_slice(output.as_bytes()).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: CognitoEventUserPoolsDefineAuthChallenge = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -720,9 +720,9 @@ mod test {
     #[cfg(feature = "cognito")]
     fn example_cognito_event_userpools_migrateuser() {
         let data = include_bytes!("../../fixtures/example-cognito-event-userpools-migrateuser.json");
-        let parsed: CognitoEventUserPoolsMigrateUser = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CognitoEventUserPoolsMigrateUser = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: CognitoEventUserPoolsMigrateUser = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: CognitoEventUserPoolsMigrateUser = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -730,9 +730,9 @@ mod test {
     #[cfg(feature = "cognito")]
     fn example_cognito_event_userpools_postauthentication() {
         let data = include_bytes!("../../fixtures/example-cognito-event-userpools-postauthentication.json");
-        let parsed: CognitoEventUserPoolsPostAuthentication = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CognitoEventUserPoolsPostAuthentication = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: CognitoEventUserPoolsPostAuthentication = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: CognitoEventUserPoolsPostAuthentication = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -740,9 +740,9 @@ mod test {
     #[cfg(feature = "cognito")]
     fn example_cognito_event_userpools_postconfirmation() {
         let data = include_bytes!("../../fixtures/example-cognito-event-userpools-postconfirmation.json");
-        let parsed: CognitoEventUserPoolsPostConfirmation = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CognitoEventUserPoolsPostConfirmation = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: CognitoEventUserPoolsPostConfirmation = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: CognitoEventUserPoolsPostConfirmation = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -750,9 +750,9 @@ mod test {
     #[cfg(feature = "cognito")]
     fn example_cognito_event_userpools_preauthentication() {
         let data = include_bytes!("../../fixtures/example-cognito-event-userpools-preauthentication.json");
-        let parsed: CognitoEventUserPoolsPreAuthentication = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CognitoEventUserPoolsPreAuthentication = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: CognitoEventUserPoolsPreAuthentication = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: CognitoEventUserPoolsPreAuthentication = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -760,9 +760,9 @@ mod test {
     #[cfg(feature = "cognito")]
     fn example_cognito_event_userpools_presignup() {
         let data = include_bytes!("../../fixtures/example-cognito-event-userpools-presignup.json");
-        let parsed: CognitoEventUserPoolsPreSignup = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CognitoEventUserPoolsPreSignup = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: CognitoEventUserPoolsPreSignup = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: CognitoEventUserPoolsPreSignup = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -770,9 +770,9 @@ mod test {
     #[cfg(feature = "cognito")]
     fn example_cognito_event_userpools_pretokengen_incoming() {
         let data = include_bytes!("../../fixtures/example-cognito-event-userpools-pretokengen-incoming.json");
-        let parsed: CognitoEventUserPoolsPreTokenGen = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CognitoEventUserPoolsPreTokenGen = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: CognitoEventUserPoolsPreTokenGen = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: CognitoEventUserPoolsPreTokenGen = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -780,9 +780,9 @@ mod test {
     #[cfg(feature = "cognito")]
     fn example_cognito_event_userpools_pretokengen_v2_incoming() {
         let data = include_bytes!("../../fixtures/example-cognito-event-userpools-pretokengen-v2-incoming.json");
-        let parsed: CognitoEventUserPoolsPreTokenGenV2 = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CognitoEventUserPoolsPreTokenGenV2 = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: CognitoEventUserPoolsPreTokenGenV2 = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: CognitoEventUserPoolsPreTokenGenV2 = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -790,9 +790,9 @@ mod test {
     #[cfg(feature = "cognito")]
     fn example_cognito_event_userpools_pretokengen() {
         let data = include_bytes!("../../fixtures/example-cognito-event-userpools-pretokengen.json");
-        let parsed: CognitoEventUserPoolsPreTokenGen = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CognitoEventUserPoolsPreTokenGen = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: CognitoEventUserPoolsPreTokenGen = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: CognitoEventUserPoolsPreTokenGen = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -800,9 +800,9 @@ mod test {
     #[cfg(feature = "cognito")]
     fn example_cognito_event_userpools_v2_pretokengen() {
         let data = include_bytes!("../../fixtures/example-cognito-event-userpools-pretokengen-v2.json");
-        let parsed: CognitoEventUserPoolsPreTokenGenV2 = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CognitoEventUserPoolsPreTokenGenV2 = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: CognitoEventUserPoolsPreTokenGenV2 = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: CognitoEventUserPoolsPreTokenGenV2 = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -810,9 +810,9 @@ mod test {
     #[cfg(feature = "cognito")]
     fn example_cognito_event_userpools_verify_auth_challenge() {
         let data = include_bytes!("../../fixtures/example-cognito-event-userpools-verify-auth-challenge.json");
-        let parsed: CognitoEventUserPoolsVerifyAuthChallenge = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CognitoEventUserPoolsVerifyAuthChallenge = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: CognitoEventUserPoolsVerifyAuthChallenge = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: CognitoEventUserPoolsVerifyAuthChallenge = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -822,12 +822,12 @@ mod test {
         let data = include_bytes!(
             "../../fixtures/example-cognito-event-userpools-verify-auth-challenge-optional-answer-correct.json"
         );
-        let parsed: CognitoEventUserPoolsVerifyAuthChallenge = serde_json::from_slice(data).unwrap();
+        let parsed: CognitoEventUserPoolsVerifyAuthChallenge = aws_lambda_json_impl::from_slice(data).unwrap();
 
         assert!(!parsed.response.answer_correct);
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CognitoEventUserPoolsVerifyAuthChallenge = serde_json::from_slice(output.as_bytes()).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: CognitoEventUserPoolsVerifyAuthChallenge = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -837,12 +837,12 @@ mod test {
         let data = include_bytes!(
             "../../fixtures/example-cognito-event-userpools-verify-auth-challenge-null-answer-correct.json"
         );
-        let parsed: CognitoEventUserPoolsVerifyAuthChallenge = serde_json::from_slice(data).unwrap();
+        let parsed: CognitoEventUserPoolsVerifyAuthChallenge = aws_lambda_json_impl::from_slice(data).unwrap();
 
         assert!(!parsed.response.answer_correct);
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CognitoEventUserPoolsVerifyAuthChallenge = serde_json::from_slice(output.as_bytes()).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: CognitoEventUserPoolsVerifyAuthChallenge = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -851,12 +851,12 @@ mod test {
     fn example_cognito_event_userpools_verify_auth_challenge_user_not_found() {
         let data =
             include_bytes!("../../fixtures/example-cognito-event-userpools-verify-auth-challenge-user-not-found.json");
-        let parsed: CognitoEventUserPoolsVerifyAuthChallenge = serde_json::from_slice(data).unwrap();
+        let parsed: CognitoEventUserPoolsVerifyAuthChallenge = aws_lambda_json_impl::from_slice(data).unwrap();
 
         assert!(parsed.request.user_not_found);
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CognitoEventUserPoolsVerifyAuthChallenge = serde_json::from_slice(output.as_bytes()).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: CognitoEventUserPoolsVerifyAuthChallenge = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }
@@ -893,9 +893,9 @@ mod trigger_source_tests {
         possible_triggers.into_iter().for_each(|trigger| {
             let header = gen_header(trigger);
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsPreSignupTriggerSource> =
-                serde_json::from_str(&header).unwrap();
-            let output: String = serde_json::to_string(&parsed).unwrap();
-            let reparsed: CognitoEventUserPoolsHeader<_> = serde_json::from_slice(output.as_bytes()).unwrap();
+                aws_lambda_json_impl::from_str(&header).unwrap();
+            let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
             assert_eq!(parsed, reparsed);
         });
     }
@@ -906,9 +906,9 @@ mod trigger_source_tests {
         possible_triggers.into_iter().for_each(|trigger| {
             let header = gen_header(trigger);
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsPreAuthenticationTriggerSource> =
-                serde_json::from_str(&header).unwrap();
-            let output: String = serde_json::to_string(&parsed).unwrap();
-            let reparsed: CognitoEventUserPoolsHeader<_> = serde_json::from_slice(output.as_bytes()).unwrap();
+                aws_lambda_json_impl::from_str(&header).unwrap();
+            let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
             assert_eq!(parsed, reparsed);
         });
     }
@@ -922,9 +922,9 @@ mod trigger_source_tests {
         possible_triggers.into_iter().for_each(|trigger| {
             let header = gen_header(trigger);
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsPostConfirmationTriggerSource> =
-                serde_json::from_str(&header).unwrap();
-            let output: String = serde_json::to_string(&parsed).unwrap();
-            let reparsed: CognitoEventUserPoolsHeader<_> = serde_json::from_slice(output.as_bytes()).unwrap();
+                aws_lambda_json_impl::from_str(&header).unwrap();
+            let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
             assert_eq!(parsed, reparsed);
         });
     }
@@ -935,9 +935,9 @@ mod trigger_source_tests {
         possible_triggers.into_iter().for_each(|trigger| {
             let header = gen_header(trigger);
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsPostAuthenticationTriggerSource> =
-                serde_json::from_str(&header).unwrap();
-            let output: String = serde_json::to_string(&parsed).unwrap();
-            let reparsed: CognitoEventUserPoolsHeader<_> = serde_json::from_slice(output.as_bytes()).unwrap();
+                aws_lambda_json_impl::from_str(&header).unwrap();
+            let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
             assert_eq!(parsed, reparsed);
         });
     }
@@ -948,9 +948,9 @@ mod trigger_source_tests {
         possible_triggers.into_iter().for_each(|trigger| {
             let header = gen_header(trigger);
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsDefineAuthChallengeTriggerSource> =
-                serde_json::from_str(&header).unwrap();
-            let output: String = serde_json::to_string(&parsed).unwrap();
-            let reparsed: CognitoEventUserPoolsHeader<_> = serde_json::from_slice(output.as_bytes()).unwrap();
+                aws_lambda_json_impl::from_str(&header).unwrap();
+            let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
             assert_eq!(parsed, reparsed);
         });
     }
@@ -962,9 +962,9 @@ mod trigger_source_tests {
         possible_triggers.into_iter().for_each(|trigger| {
             let header = gen_header(trigger);
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsCreateAuthChallengeTriggerSource> =
-                serde_json::from_str(&header).unwrap();
-            let output: String = serde_json::to_string(&parsed).unwrap();
-            let reparsed: CognitoEventUserPoolsHeader<_> = serde_json::from_slice(output.as_bytes()).unwrap();
+                aws_lambda_json_impl::from_str(&header).unwrap();
+            let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
             assert_eq!(parsed, reparsed);
         });
     }
@@ -975,9 +975,9 @@ mod trigger_source_tests {
         possible_triggers.into_iter().for_each(|trigger| {
             let header = gen_header(trigger);
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsVerifyAuthChallengeTriggerSource> =
-                serde_json::from_str(&header).unwrap();
-            let output: String = serde_json::to_string(&parsed).unwrap();
-            let reparsed: CognitoEventUserPoolsHeader<_> = serde_json::from_slice(output.as_bytes()).unwrap();
+                aws_lambda_json_impl::from_str(&header).unwrap();
+            let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
             assert_eq!(parsed, reparsed);
         });
     }
@@ -994,9 +994,9 @@ mod trigger_source_tests {
         possible_triggers.into_iter().for_each(|trigger| {
             let header = gen_header(trigger);
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsPreTokenGenTriggerSource> =
-                serde_json::from_str(&header).unwrap();
-            let output: String = serde_json::to_string(&parsed).unwrap();
-            let reparsed: CognitoEventUserPoolsHeader<_> = serde_json::from_slice(output.as_bytes()).unwrap();
+                aws_lambda_json_impl::from_str(&header).unwrap();
+            let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
             assert_eq!(parsed, reparsed);
         });
     }
@@ -1007,9 +1007,9 @@ mod trigger_source_tests {
         possible_triggers.into_iter().for_each(|trigger| {
             let header = gen_header(trigger);
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsMigrateUserTriggerSource> =
-                serde_json::from_str(&header).unwrap();
-            let output: String = serde_json::to_string(&parsed).unwrap();
-            let reparsed: CognitoEventUserPoolsHeader<_> = serde_json::from_slice(output.as_bytes()).unwrap();
+                aws_lambda_json_impl::from_str(&header).unwrap();
+            let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
             assert_eq!(parsed, reparsed);
         });
     }
@@ -1028,9 +1028,9 @@ mod trigger_source_tests {
         possible_triggers.into_iter().for_each(|trigger| {
             let header = gen_header(trigger);
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsCustomMessageTriggerSource> =
-                serde_json::from_str(&header).unwrap();
-            let output: String = serde_json::to_string(&parsed).unwrap();
-            let reparsed: CognitoEventUserPoolsHeader<_> = serde_json::from_slice(output.as_bytes()).unwrap();
+                aws_lambda_json_impl::from_str(&header).unwrap();
+            let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
             assert_eq!(parsed, reparsed);
         });
     }

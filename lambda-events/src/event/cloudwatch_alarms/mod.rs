@@ -6,7 +6,7 @@ use serde::{
     ser::Error as SerError,
     Deserialize, Serialize,
 };
-use serde_json::Value;
+use aws_lambda_json_impl::Value;
 
 /// `CloudWatchAlarm` is the generic outer structure of an event triggered by a CloudWatch Alarm.
 /// You probably want to use `CloudWatchMetricAlarm` or `CloudWatchCompositeAlarm` if you know which kind of alarm your function is receiving.
@@ -220,9 +220,9 @@ impl Serialize for CloudWatchAlarmStateReasonData {
         S: serde::Serializer,
     {
         let r = match self {
-            Self::Metric(m) => serde_json::to_string(m),
-            Self::Composite(m) => serde_json::to_string(m),
-            Self::Generic(m) => serde_json::to_string(m),
+            Self::Metric(m) => aws_lambda_json_impl::to_string(m),
+            Self::Composite(m) => aws_lambda_json_impl::to_string(m),
+            Self::Generic(m) => aws_lambda_json_impl::to_string(m),
         };
         let s = r.map_err(|e| SerError::custom(format!("failed to serialize struct as string {}", e)))?;
 
@@ -243,10 +243,10 @@ impl<'de> Visitor<'de> for ReasonDataVisitor {
     where
         E: serde::de::Error,
     {
-        if let Ok(metric) = serde_json::from_str::<CloudWatchAlarmStateReasonDataMetric>(v) {
+        if let Ok(metric) = aws_lambda_json_impl::from_str::<CloudWatchAlarmStateReasonDataMetric>(v) {
             return Ok(CloudWatchAlarmStateReasonData::Metric(metric));
         }
-        if let Ok(aggregate) = serde_json::from_str::<ClodWatchAlarmStateReasonDataComposite>(v) {
+        if let Ok(aggregate) = aws_lambda_json_impl::from_str::<ClodWatchAlarmStateReasonDataComposite>(v) {
             return Ok(CloudWatchAlarmStateReasonData::Composite(aggregate));
         }
         Ok(CloudWatchAlarmStateReasonData::Generic(Value::String(v.to_owned())))
@@ -261,7 +261,7 @@ mod test {
     #[cfg(feature = "cloudwatch_alarms")]
     fn example_cloudwatch_alarm_metric() {
         let data = include_bytes!("../../fixtures/example-cloudwatch-alarm-metric.json");
-        let parsed: CloudWatchMetricAlarm = serde_json::from_slice(data).unwrap();
+        let parsed: CloudWatchMetricAlarm = aws_lambda_json_impl::from_slice(data).unwrap();
         let state = parsed.alarm_data.previous_state.clone().unwrap();
         let data = state.reason_data.unwrap();
         match &data {
@@ -272,8 +272,8 @@ mod test {
             _ => panic!("unexpected reason data {data:?}"),
         }
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CloudWatchMetricAlarm = serde_json::from_slice(output.as_bytes()).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: CloudWatchMetricAlarm = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -281,7 +281,7 @@ mod test {
     #[cfg(feature = "cloudwatch_alarms")]
     fn example_cloudwatch_alarm_composite() {
         let data = include_bytes!("../../fixtures/example-cloudwatch-alarm-composite.json");
-        let parsed: CloudWatchCompositeAlarm = serde_json::from_slice(data).unwrap();
+        let parsed: CloudWatchCompositeAlarm = aws_lambda_json_impl::from_slice(data).unwrap();
 
         let state = parsed.alarm_data.state.clone().unwrap();
         let data = state.reason_data.unwrap();
@@ -296,8 +296,8 @@ mod test {
             _ => panic!("unexpected reason data {data:?}"),
         }
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CloudWatchCompositeAlarm = serde_json::from_slice(output.as_bytes()).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: CloudWatchCompositeAlarm = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -305,7 +305,7 @@ mod test {
     #[cfg(feature = "cloudwatch_alarms")]
     fn example_cloudwatch_alarm_composite_with_suppressor_alarm() {
         let data = include_bytes!("../../fixtures/example-cloudwatch-alarm-composite-with-suppressor-alarm.json");
-        let parsed: CloudWatchCompositeAlarm = serde_json::from_slice(data).unwrap();
+        let parsed: CloudWatchCompositeAlarm = aws_lambda_json_impl::from_slice(data).unwrap();
         let state = parsed.alarm_data.state.clone().unwrap();
         assert_eq!("WaitPeriod", state.actions_suppressed_by.unwrap());
         assert_eq!(
@@ -313,8 +313,8 @@ mod test {
             state.actions_suppressed_reason.unwrap()
         );
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CloudWatchCompositeAlarm = serde_json::from_slice(output.as_bytes()).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: CloudWatchCompositeAlarm = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

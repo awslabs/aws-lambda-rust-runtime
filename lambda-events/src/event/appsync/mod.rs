@@ -1,5 +1,5 @@
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use serde_json::Value;
+use aws_lambda_json_impl::Value;
 use std::collections::HashMap;
 
 use crate::custom_serde::deserialize_lambda_map;
@@ -125,9 +125,9 @@ mod test {
     #[cfg(feature = "appsync")]
     fn example_appsync_identity_cognito() {
         let data = include_bytes!("../../fixtures/example-appsync-identity-cognito.json");
-        let parsed: AppSyncCognitoIdentity = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: AppSyncCognitoIdentity = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: AppSyncCognitoIdentity = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: AppSyncCognitoIdentity = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -135,9 +135,9 @@ mod test {
     #[cfg(feature = "appsync")]
     fn example_appsync_identity_iam() {
         let data = include_bytes!("../../fixtures/example-appsync-identity-iam.json");
-        let parsed: AppSyncIamIdentity = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: AppSyncIamIdentity = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: AppSyncIamIdentity = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: AppSyncIamIdentity = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -145,9 +145,9 @@ mod test {
     #[cfg(feature = "appsync")]
     fn example_appsync_lambda_auth_request() {
         let data = include_bytes!("../../fixtures/example-appsync-lambda-auth-request.json");
-        let parsed: AppSyncLambdaAuthorizerRequest = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: AppSyncLambdaAuthorizerRequest = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: AppSyncLambdaAuthorizerRequest = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: AppSyncLambdaAuthorizerRequest = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -155,9 +155,9 @@ mod test {
     #[cfg(feature = "appsync")]
     fn example_appsync_lambda_auth_response() {
         let data = include_bytes!("../../fixtures/example-appsync-lambda-auth-response.json");
-        let parsed: AppSyncLambdaAuthorizerResponse = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: AppSyncLambdaAuthorizerResponse = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: AppSyncLambdaAuthorizerResponse = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: AppSyncLambdaAuthorizerResponse = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

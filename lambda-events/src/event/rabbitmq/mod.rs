@@ -1,5 +1,5 @@
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use serde_json::Value;
+use aws_lambda_json_impl::Value;
 use std::collections::HashMap;
 
 use crate::custom_serde::deserialize_lambda_map;
@@ -66,9 +66,9 @@ mod test {
     #[cfg(feature = "rabbitmq")]
     fn example_rabbitmq_event() {
         let data = include_bytes!("../../fixtures/example-rabbitmq-event.json");
-        let parsed: RabbitMqEvent = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: RabbitMqEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: RabbitMqEvent = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: RabbitMqEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

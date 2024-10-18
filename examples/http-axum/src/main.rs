@@ -16,7 +16,7 @@ use axum::{
 };
 use lambda_http::{run, tracing, Error};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use aws_lambda_json_impl::{json, Value};
 use std::env::set_var;
 
 #[derive(Deserialize, Serialize)]

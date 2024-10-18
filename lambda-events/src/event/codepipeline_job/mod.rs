@@ -121,9 +121,9 @@ mod test {
     #[cfg(feature = "codepipeline_job")]
     fn example_codepipeline_job_event() {
         let data = include_bytes!("../../fixtures/example-codepipeline_job-event.json");
-        let parsed: CodePipelineJobEvent = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CodePipelineJobEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: CodePipelineJobEvent = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: CodePipelineJobEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

@@ -186,9 +186,9 @@ mod test {
     #[cfg(feature = "sqs")]
     fn example_sqs_event() {
         let data = include_bytes!("../../fixtures/example-sqs-event.json");
-        let parsed: SqsEvent = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: SqsEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: SqsEvent = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: SqsEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -202,13 +202,13 @@ mod test {
         }
 
         let data = include_bytes!("../../fixtures/example-sqs-event-obj.json");
-        let parsed: SqsEventObj<CustStruct> = serde_json::from_slice(data).unwrap();
+        let parsed: SqsEventObj<CustStruct> = aws_lambda_json_impl::from_slice(data).unwrap();
 
         assert_eq!(parsed.records[0].body.a, "Test");
         assert_eq!(parsed.records[0].body.b, 123);
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: SqsEventObj<CustStruct> = serde_json::from_slice(output.as_bytes()).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: SqsEventObj<CustStruct> = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -218,9 +218,9 @@ mod test {
         // Example sqs batch response fetched 2022-05-13, from:
         // https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-batchfailurereporting
         let data = include_bytes!("../../fixtures/example-sqs-batch-response.json");
-        let parsed: SqsBatchResponse = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: SqsBatchResponse = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: SqsBatchResponse = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: SqsBatchResponse = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -236,13 +236,13 @@ mod test {
         }
 
         let data = include_bytes!("../../fixtures/example-sqs-api-event-obj.json");
-        let parsed: SqsApiEventObj<CustStruct> = serde_json::from_slice(data).unwrap();
+        let parsed: SqsApiEventObj<CustStruct> = aws_lambda_json_impl::from_slice(data).unwrap();
 
         assert_eq!(parsed.messages[0].body.city, "provincetown");
         assert_eq!(parsed.messages[0].body.country, "usa");
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: SqsApiEventObj<CustStruct> = serde_json::from_slice(output.as_bytes()).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: SqsApiEventObj<CustStruct> = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

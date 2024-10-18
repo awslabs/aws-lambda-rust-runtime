@@ -12,7 +12,7 @@
 use axum::{response::Json, routing::post, Router};
 use lambda_http::request::RequestContext::ApiGatewayV1;
 use lambda_http::{run, tracing, Error};
-use serde_json::{json, Value};
+use aws_lambda_json_impl::{json, Value};
 
 // Sample middleware that logs the request id
 async fn mw_sample(req: axum::extract::Request, next: axum::middleware::Next) -> impl axum::response::IntoResponse {

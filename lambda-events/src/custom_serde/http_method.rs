@@ -67,13 +67,13 @@ mod tests {
             #[serde(with = "crate::custom_serde::http_method")]
             pub method: http::Method,
         }
-        let data = serde_json::json!({
+        let data = aws_lambda_json_impl::json!({
             "method": "DELETE"
         });
-        let decoded: Test = serde_json::from_value(data.clone()).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_value(data.clone()).unwrap();
         assert_eq!(http::Method::DELETE, decoded.method);
 
-        let recoded = serde_json::to_value(decoded).unwrap();
+        let recoded = aws_lambda_json_impl::to_value(decoded).unwrap();
         assert_eq!(data, recoded);
     }
 
@@ -86,21 +86,21 @@ mod tests {
             #[serde(default)]
             pub method: Option<http::Method>,
         }
-        let data = serde_json::json!({
+        let data = aws_lambda_json_impl::json!({
             "method": "DELETE"
         });
-        let decoded: Test = serde_json::from_value(data.clone()).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_value(data.clone()).unwrap();
         assert_eq!(Some(http::Method::DELETE), decoded.method);
 
-        let recoded = serde_json::to_value(decoded).unwrap();
+        let recoded = aws_lambda_json_impl::to_value(decoded).unwrap();
         assert_eq!(data, recoded);
 
-        let data = serde_json::json!({ "method": null });
-        let decoded: Test = serde_json::from_value(data).unwrap();
+        let data = aws_lambda_json_impl::json!({ "method": null });
+        let decoded: Test = aws_lambda_json_impl::from_value(data).unwrap();
         assert_eq!(None, decoded.method);
 
-        let data = serde_json::json!({});
-        let decoded: Test = serde_json::from_value(data).unwrap();
+        let data = aws_lambda_json_impl::json!({});
+        let decoded: Test = aws_lambda_json_impl::from_value(data).unwrap();
         assert_eq!(None, decoded.method);
     }
 }

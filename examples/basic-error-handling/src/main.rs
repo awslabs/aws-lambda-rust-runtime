@@ -1,7 +1,7 @@
 /// See https://github.com/awslabs/aws-lambda-rust-runtime for more info on Rust runtime for AWS Lambda
 use lambda_runtime::{service_fn, tracing, Error, LambdaEvent};
 use serde::{Deserialize, Serialize};
-use serde_json::json;
+use aws_lambda_json_impl::json;
 use std::fs::File;
 
 /// A simple Lambda request structure with just one field

@@ -98,9 +98,9 @@ mod test {
     #[cfg(feature = "connect")]
     fn example_connect_event() {
         let data = include_bytes!("../../fixtures/example-connect-event.json");
-        let parsed: ConnectEvent = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: ConnectEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: ConnectEvent = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: ConnectEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -108,9 +108,9 @@ mod test {
     #[cfg(feature = "connect")]
     fn example_connect_event_without_queue() {
         let data = include_bytes!("../../fixtures/example-connect-event-without-queue.json");
-        let parsed: ConnectEvent = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: ConnectEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: ConnectEvent = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: ConnectEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

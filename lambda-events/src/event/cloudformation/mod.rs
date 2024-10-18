@@ -1,5 +1,5 @@
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use serde_json::Value;
+use aws_lambda_json_impl::Value;
 use std::collections::HashMap;
 
 pub mod provider;
@@ -117,54 +117,54 @@ mod test {
     #[test]
     fn example_cloudformation_custom_resource_create_request() {
         let data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-create-request.json");
-        let parsed: TestRequest = serde_json::from_slice(data).unwrap();
+        let parsed: TestRequest = aws_lambda_json_impl::from_slice(data).unwrap();
 
         match parsed {
             Create(_) => (),
             _ => panic!("expected Create request"),
         }
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: TestRequest = serde_json::from_slice(output.as_bytes()).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: TestRequest = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     fn example_cloudformation_custom_resource_update_request() {
         let data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-update-request.json");
-        let parsed: TestRequest = serde_json::from_slice(data).unwrap();
+        let parsed: TestRequest = aws_lambda_json_impl::from_slice(data).unwrap();
 
         match parsed {
             Update(_) => (),
             _ => panic!("expected Update request"),
         }
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: TestRequest = serde_json::from_slice(output.as_bytes()).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: TestRequest = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     fn example_cloudformation_custom_resource_delete_request() {
         let data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-delete-request.json");
-        let parsed: TestRequest = serde_json::from_slice(data).unwrap();
+        let parsed: TestRequest = aws_lambda_json_impl::from_slice(data).unwrap();
 
         match parsed {
             Delete(_) => (),
             _ => panic!("expected Delete request"),
         }
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: TestRequest = serde_json::from_slice(output.as_bytes()).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: TestRequest = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     fn example_cloudformation_custom_resource_response() {
         let data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-response.json");
-        let parsed: CloudFormationCustomResourceResponse = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CloudFormationCustomResourceResponse = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: CloudFormationCustomResourceResponse = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: CloudFormationCustomResourceResponse = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

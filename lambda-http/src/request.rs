@@ -29,7 +29,7 @@ use aws_lambda_events::{encodings::Body, query_map::QueryMap};
 use http::{header::HeaderName, HeaderMap, HeaderValue};
 
 use serde::{Deserialize, Serialize};
-use serde_json::error::Error as JsonError;
+use aws_lambda_json_impl::JsonError;
 
 use std::{env, future::Future, io::Read, pin::Pin};
 use url::Url;
@@ -463,7 +463,7 @@ pub fn from_reader<R>(rdr: R) -> Result<crate::Request, JsonError>
 where
     R: Read,
 {
-    serde_json::from_reader(rdr).map(LambdaRequest::into)
+    aws_lambda_json_impl::from_reader(rdr).map(LambdaRequest::into)
 }
 
 /// Deserializes a `Request` from a string of JSON text.
@@ -483,7 +483,7 @@ where
 /// }
 /// ```
 pub fn from_str(s: &str) -> Result<crate::Request, JsonError> {
-    serde_json::from_str(s).map(LambdaRequest::into)
+    aws_lambda_json_impl::from_str(s).map(LambdaRequest::into)
 }
 
 fn x_forwarded_proto() -> HeaderName {

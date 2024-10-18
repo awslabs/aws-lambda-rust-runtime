@@ -80,9 +80,9 @@ mod test {
     #[cfg(feature = "firehose")]
     fn example_firehose_event() {
         let data = include_bytes!("../../fixtures/example-firehose-event.json");
-        let parsed: KinesisFirehoseEvent = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: KinesisFirehoseEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: KinesisFirehoseEvent = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: KinesisFirehoseEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

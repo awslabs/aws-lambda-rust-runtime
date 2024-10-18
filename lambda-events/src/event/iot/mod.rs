@@ -78,9 +78,9 @@ mod test {
     #[cfg(feature = "iot")]
     fn example_iot_custom_auth_request() {
         let data = include_bytes!("../../fixtures/example-iot-custom-auth-request.json");
-        let parsed: IoTCoreCustomAuthorizerRequest = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: IoTCoreCustomAuthorizerRequest = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: IoTCoreCustomAuthorizerRequest = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: IoTCoreCustomAuthorizerRequest = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -88,9 +88,9 @@ mod test {
     #[cfg(feature = "iot")]
     fn example_iot_custom_auth_response() {
         let data = include_bytes!("../../fixtures/example-iot-custom-auth-response.json");
-        let parsed: IoTCoreCustomAuthorizerResponse = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: IoTCoreCustomAuthorizerResponse = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: IoTCoreCustomAuthorizerResponse = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: IoTCoreCustomAuthorizerResponse = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

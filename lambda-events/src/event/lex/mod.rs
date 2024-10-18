@@ -112,9 +112,9 @@ mod test {
     #[cfg(feature = "lex")]
     fn example_lex_event() {
         let data = include_bytes!("../../fixtures/example-lex-event.json");
-        let parsed: LexEvent = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: LexEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: LexEvent = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: LexEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -122,9 +122,9 @@ mod test {
     #[cfg(feature = "lex")]
     fn example_lex_response() {
         let data = include_bytes!("../../fixtures/example-lex-response.json");
-        let parsed: LexEvent = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: LexEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: LexEvent = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: LexEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

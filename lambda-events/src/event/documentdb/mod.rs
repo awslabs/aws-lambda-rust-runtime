@@ -43,9 +43,9 @@ mod test {
     pub type Event = DocumentDbEvent;
 
     fn test_example(data: &[u8]) {
-        let parsed: Event = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: Event = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: Event = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: Event = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
 
         assert_eq!(parsed, reparsed);
     }

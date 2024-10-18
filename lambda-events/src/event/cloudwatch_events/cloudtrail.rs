@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use aws_lambda_json_impl::Value;
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -89,27 +89,27 @@ mod tests {
     #[cfg(feature = "cloudwatch_events")]
     fn example_cloudwatch_cloudtrail_unknown_assumed_role() {
         let data = include_bytes!("../../fixtures/example-cloudwatch-cloudtrail-assumed-role.json");
-        let parsed: AWSAPICall = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: AWSAPICall = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: AWSAPICall = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: AWSAPICall = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
     #[test]
     #[cfg(feature = "cloudwatch_events")]
     fn example_cloudwatch_cloudtrail_unknown_federate() {
         let data = include_bytes!("../../fixtures/example-cloudwatch-cloudtrail-unknown-federate.json");
-        let parsed: AWSAPICall = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: AWSAPICall = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: AWSAPICall = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: AWSAPICall = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
     #[test]
     #[cfg(feature = "cloudwatch_events")]
     fn example_cloudwatch_cloudtrail_assumed_role() {
         let data = include_bytes!("../../fixtures/example-cloudwatch-cloudtrail-unknown-user-auth.json");
-        let parsed: AWSAPICall = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: AWSAPICall = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: AWSAPICall = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: AWSAPICall = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

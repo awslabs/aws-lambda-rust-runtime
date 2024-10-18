@@ -254,9 +254,9 @@ mod test {
     #[cfg(feature = "sns")]
     fn my_example_sns_event() {
         let data = include_bytes!("../../fixtures/example-sns-event.json");
-        let parsed: SnsEvent = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: SnsEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: SnsEvent = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: SnsEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -264,9 +264,9 @@ mod test {
     #[cfg(feature = "sns")]
     fn my_example_sns_event_pascal_case() {
         let data = include_bytes!("../../fixtures/example-sns-event-pascal-case.json");
-        let parsed: SnsEvent = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: SnsEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let parsed: SnsEvent = aws_lambda_json_impl::from_slice(data).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: SnsEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -274,15 +274,15 @@ mod test {
     #[cfg(feature = "sns")]
     fn my_example_sns_event_cloudwatch_single_metric() {
         let data = include_bytes!("../../fixtures/example-cloudwatch-alarm-sns-payload-single-metric.json");
-        let parsed: SnsEvent = serde_json::from_slice(data).unwrap();
+        let parsed: SnsEvent = aws_lambda_json_impl::from_slice(data).unwrap();
         assert_eq!(1, parsed.records.len());
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: SnsEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: SnsEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
 
         let parsed: SnsEventObj<CloudWatchAlarmPayload> =
-            serde_json::from_slice(data).expect("failed to parse CloudWatch Alarm payload");
+            aws_lambda_json_impl::from_slice(data).expect("failed to parse CloudWatch Alarm payload");
 
         let record = parsed.records.first().unwrap();
         assert_eq!("EXAMPLE", record.sns.message.alarm_name);
@@ -292,11 +292,11 @@ mod test {
     #[cfg(feature = "sns")]
     fn my_example_sns_event_cloudwatch_multiple_metrics() {
         let data = include_bytes!("../../fixtures/example-cloudwatch-alarm-sns-payload-multiple-metrics.json");
-        let parsed: SnsEvent = serde_json::from_slice(data).unwrap();
+        let parsed: SnsEvent = aws_lambda_json_impl::from_slice(data).unwrap();
         assert_eq!(2, parsed.records.len());
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: SnsEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: SnsEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -311,14 +311,14 @@ mod test {
             bar: i32,
         }
 
-        let parsed: SnsEventObj<CustStruct> = serde_json::from_slice(data).unwrap();
+        let parsed: SnsEventObj<CustStruct> = aws_lambda_json_impl::from_slice(data).unwrap();
         println!("{:?}", parsed);
 
         assert_eq!(parsed.records[0].sns.message.foo, "Hello world!");
         assert_eq!(parsed.records[0].sns.message.bar, 123);
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: SnsEventObj<CustStruct> = serde_json::from_slice(output.as_bytes()).unwrap();
+        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let reparsed: SnsEventObj<CustStruct> = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

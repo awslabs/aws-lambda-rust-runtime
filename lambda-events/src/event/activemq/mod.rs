@@ -58,9 +58,10 @@ mod test {
     #[cfg(feature = "activemq")]
     fn example_activemq_event() {
         let data = include_bytes!("../../fixtures/example-activemq-event.json");
-        let parsed: ActiveMqEvent = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: ActiveMqEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = data.to_vec(); 
+        let parsed: ActiveMqEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: ActiveMqEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

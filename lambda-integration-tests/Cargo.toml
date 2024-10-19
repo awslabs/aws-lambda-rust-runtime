@@ -13,7 +13,7 @@ readme = "../README.md"
 [dependencies]
 lambda_runtime = { path = "../lambda-runtime" }
 aws_lambda_events = { path = "../lambda-events" }
-aws_lambda_json_impl = { version = "0", features = ["serde"], path = "../json-impl" }
+aws_lambda_json_impl = { features = ["simd"], path = "../json-impl" }
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1.0.204", features = ["derive"] }
 

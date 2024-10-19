@@ -97,6 +97,8 @@ where
 #[cfg(test)]
 #[allow(deprecated)]
 mod test {
+    use std::str::FromStr;
+
     use super::*;
     use serde::{Deserialize, Serialize};
 
@@ -177,20 +179,20 @@ mod test {
             v: bool,
         }
 
-        let test = r#"{"v": null}"#;
-        let decoded: Test = aws_lambda_json_impl::from_str(test).unwrap();
+        let mut test = String::from_str(r#"{"v": null}"#).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_str(test.as_mut()).unwrap();
         assert!(!decoded.v);
 
-        let test = r#"{}"#;
-        let decoded: Test = aws_lambda_json_impl::from_str(test).unwrap();
+        let mut test = String::from_str(r#"{}"#).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_str(test.as_mut()).unwrap();
         assert!(!decoded.v);
 
-        let test = r#"{"v": true}"#;
-        let decoded: Test = aws_lambda_json_impl::from_str(test).unwrap();
+        let mut test = String::from_str(r#"{"v": true}"#).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_str(test.as_mut()).unwrap();
         assert!(decoded.v);
 
-        let test = r#"{"v": false}"#;
-        let decoded: Test = aws_lambda_json_impl::from_str(test).unwrap();
+        let mut test = String::from_str(r#"{"v": false}"#).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_str(test.as_mut()).unwrap();
         assert!(!decoded.v);
     }
 }

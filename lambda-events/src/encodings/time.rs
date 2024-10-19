@@ -234,7 +234,8 @@ mod test {
         let decoded: Test = aws_lambda_json_impl::from_value(data).unwrap();
         assert_eq!(expected, decoded.v,);
         // Test parsing ints.
-        let decoded: Test = aws_lambda_json_impl::from_slice(r#"{"v":1507217624302}"#.as_bytes()).unwrap();
+        let mut test = r#"{"v":1507217624302}"#.as_bytes().to_vec();
+        let decoded: Test = aws_lambda_json_impl::from_slice(test.as_mut_slice()).unwrap();
         assert_eq!(expected, decoded.v,);
         // Test parsing floats.
         let data = aws_lambda_json_impl::json!({

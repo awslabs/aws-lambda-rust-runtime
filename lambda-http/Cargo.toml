@@ -43,7 +43,7 @@ mime = "0.3"
 percent-encoding = "2.2"
 pin-project-lite = { workspace = true }
 serde = { version = "1.0", features = ["derive"] }
-aws_lambda_json_impl = { version = "0", features = ["serde"], path = "../json-impl" }
+aws_lambda_json_impl = { features = ["simd"], path = "../json-impl" }
 serde_urlencoded = "0.7"
 tokio-stream = "0.1.2"
 url = "2.2"

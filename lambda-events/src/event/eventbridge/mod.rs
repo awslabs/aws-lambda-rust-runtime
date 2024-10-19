@@ -47,27 +47,27 @@ mod test {
         }
 
         // Example from https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/monitoring-instance-state-changes.html
-        let data = include_bytes!("../../fixtures/example-eventbridge-event-obj.json");
-        let parsed: EventBridgeEvent<Ec2StateChange> = aws_lambda_json_impl::from_slice(data).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-eventbridge-event-obj.json").to_vec();
+        let parsed: EventBridgeEvent<Ec2StateChange> = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
 
         assert_eq!("i-abcd1111", parsed.detail.instance_id);
         assert_eq!("pending", parsed.detail.state);
 
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: EventBridgeEvent<Ec2StateChange> = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: EventBridgeEvent<Ec2StateChange> = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     fn example_eventbridge_schedule_event() {
-        let data = include_bytes!("../../fixtures/example-eventbridge-schedule.json");
-        let parsed: EventBridgeEvent = aws_lambda_json_impl::from_slice(data).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-eventbridge-schedule.json").to_vec();
+        let parsed: EventBridgeEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
 
         assert_eq!("aws.events", parsed.source);
         assert_eq!("Scheduled Event", parsed.detail_type);
 
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: EventBridgeEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: EventBridgeEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

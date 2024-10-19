@@ -52,10 +52,10 @@ mod test {
     #[test]
     #[cfg(feature = "clientvpn")]
     fn example_clientvpn_connectionhandler_request() {
-        let data = include_bytes!("../../fixtures/example-clientvpn-connectionhandler-request.json");
-        let parsed: ClientVpnConnectionHandlerRequest = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: ClientVpnConnectionHandlerRequest = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-clientvpn-connectionhandler-request.json").to_vec();
+        let parsed: ClientVpnConnectionHandlerRequest = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: ClientVpnConnectionHandlerRequest = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

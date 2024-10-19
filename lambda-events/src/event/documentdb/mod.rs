@@ -43,9 +43,10 @@ mod test {
     pub type Event = DocumentDbEvent;
 
     fn test_example(data: &[u8]) {
-        let parsed: Event = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: Event = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = data.to_vec();
+        let parsed: Event = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: Event = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
 
         assert_eq!(parsed, reparsed);
     }

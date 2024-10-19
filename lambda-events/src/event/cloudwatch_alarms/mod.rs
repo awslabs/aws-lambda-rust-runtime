@@ -260,8 +260,8 @@ mod test {
     #[test]
     #[cfg(feature = "cloudwatch_alarms")]
     fn example_cloudwatch_alarm_metric() {
-        let data = include_bytes!("../../fixtures/example-cloudwatch-alarm-metric.json");
-        let parsed: CloudWatchMetricAlarm = aws_lambda_json_impl::from_slice(data).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-cloudwatch-alarm-metric.json").to_vec();
+        let parsed: CloudWatchMetricAlarm = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let state = parsed.alarm_data.previous_state.clone().unwrap();
         let data = state.reason_data.unwrap();
         match &data {
@@ -272,16 +272,16 @@ mod test {
             _ => panic!("unexpected reason data {data:?}"),
         }
 
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: CloudWatchMetricAlarm = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: CloudWatchMetricAlarm = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "cloudwatch_alarms")]
     fn example_cloudwatch_alarm_composite() {
-        let data = include_bytes!("../../fixtures/example-cloudwatch-alarm-composite.json");
-        let parsed: CloudWatchCompositeAlarm = aws_lambda_json_impl::from_slice(data).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-cloudwatch-alarm-composite.json").to_vec();
+        let parsed: CloudWatchCompositeAlarm = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
 
         let state = parsed.alarm_data.state.clone().unwrap();
         let data = state.reason_data.unwrap();
@@ -296,16 +296,16 @@ mod test {
             _ => panic!("unexpected reason data {data:?}"),
         }
 
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: CloudWatchCompositeAlarm = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: CloudWatchCompositeAlarm = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "cloudwatch_alarms")]
     fn example_cloudwatch_alarm_composite_with_suppressor_alarm() {
-        let data = include_bytes!("../../fixtures/example-cloudwatch-alarm-composite-with-suppressor-alarm.json");
-        let parsed: CloudWatchCompositeAlarm = aws_lambda_json_impl::from_slice(data).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-cloudwatch-alarm-composite-with-suppressor-alarm.json").to_vec();
+        let parsed: CloudWatchCompositeAlarm = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let state = parsed.alarm_data.state.clone().unwrap();
         assert_eq!("WaitPeriod", state.actions_suppressed_by.unwrap());
         assert_eq!(
@@ -313,8 +313,8 @@ mod test {
             state.actions_suppressed_reason.unwrap()
         );
 
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: CloudWatchCompositeAlarm = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: CloudWatchCompositeAlarm = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

@@ -50,60 +50,60 @@ mod test {
     #[test]
     #[cfg(feature = "autoscaling")]
     fn example_autoscaling_event_launch_successful() {
-        let data = include_bytes!("../../fixtures/example-autoscaling-event-launch-successful.json");
-        let parsed: AutoScalingEvent = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: AutoScalingEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-autoscaling-event-launch-successful.json").to_vec();
+        let parsed: AutoScalingEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: AutoScalingEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "autoscaling")]
     fn example_autoscaling_event_launch_unsuccessful() {
-        let data = include_bytes!("../../fixtures/example-autoscaling-event-launch-unsuccessful.json");
-        let parsed: AutoScalingEvent = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: AutoScalingEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-autoscaling-event-launch-unsuccessful.json").to_vec();
+        let parsed: AutoScalingEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: AutoScalingEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "autoscaling")]
     fn example_autoscaling_event_lifecycle_action() {
-        let data = include_bytes!("../../fixtures/example-autoscaling-event-lifecycle-action.json");
-        let parsed: AutoScalingEvent = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: AutoScalingEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-autoscaling-event-lifecycle-action.json").to_vec();
+        let parsed: AutoScalingEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: AutoScalingEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "autoscaling")]
     fn example_autoscaling_event_terminate_action() {
-        let data = include_bytes!("../../fixtures/example-autoscaling-event-terminate-action.json");
-        let parsed: AutoScalingEvent = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: AutoScalingEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-autoscaling-event-terminate-action.json").to_vec();
+        let parsed: AutoScalingEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: AutoScalingEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "autoscaling")]
     fn example_autoscaling_event_terminate_successful() {
-        let data = include_bytes!("../../fixtures/example-autoscaling-event-terminate-successful.json");
-        let parsed: AutoScalingEvent = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: AutoScalingEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-autoscaling-event-terminate-successful.json").to_vec();
+        let parsed: AutoScalingEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: AutoScalingEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "autoscaling")]
     fn example_autoscaling_event_terminate_unsuccessful() {
-        let data = include_bytes!("../../fixtures/example-autoscaling-event-terminate-unsuccessful.json");
-        let parsed: AutoScalingEvent = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: AutoScalingEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-autoscaling-event-terminate-unsuccessful.json").to_vec();
+        let parsed: AutoScalingEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: AutoScalingEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

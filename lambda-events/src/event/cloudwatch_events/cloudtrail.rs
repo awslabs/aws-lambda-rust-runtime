@@ -88,28 +88,28 @@ mod tests {
     #[test]
     #[cfg(feature = "cloudwatch_events")]
     fn example_cloudwatch_cloudtrail_unknown_assumed_role() {
-        let data = include_bytes!("../../fixtures/example-cloudwatch-cloudtrail-assumed-role.json");
-        let parsed: AWSAPICall = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: AWSAPICall = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-cloudwatch-cloudtrail-assumed-role.json").to_vec();
+        let parsed: AWSAPICall = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: AWSAPICall = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
     #[test]
     #[cfg(feature = "cloudwatch_events")]
     fn example_cloudwatch_cloudtrail_unknown_federate() {
-        let data = include_bytes!("../../fixtures/example-cloudwatch-cloudtrail-unknown-federate.json");
-        let parsed: AWSAPICall = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: AWSAPICall = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-cloudwatch-cloudtrail-unknown-federate.json").to_vec();
+        let parsed: AWSAPICall = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: AWSAPICall = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
     #[test]
     #[cfg(feature = "cloudwatch_events")]
     fn example_cloudwatch_cloudtrail_assumed_role() {
-        let data = include_bytes!("../../fixtures/example-cloudwatch-cloudtrail-unknown-user-auth.json");
-        let parsed: AWSAPICall = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: AWSAPICall = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-cloudwatch-cloudtrail-unknown-user-auth.json").to_vec();
+        let parsed: AWSAPICall = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: AWSAPICall = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

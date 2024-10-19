@@ -43,10 +43,10 @@ mod test {
     #[test]
     #[cfg(feature = "config")]
     fn example_config_event() {
-        let data = include_bytes!("../../fixtures/example-config-event.json");
-        let parsed: ConfigEvent = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: ConfigEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-config-event.json").to_vec();
+        let parsed: ConfigEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: ConfigEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

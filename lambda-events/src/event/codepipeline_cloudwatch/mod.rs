@@ -84,30 +84,30 @@ mod test {
     #[test]
     #[cfg(feature = "codepipeline_cloudwatch")]
     fn example_codepipeline_action_execution_stage_change_event() {
-        let data = include_bytes!("../../fixtures/example-codepipeline-action-execution-stage-change-event.json");
-        let parsed: CodePipelineCloudWatchEvent = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: CodePipelineCloudWatchEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-codepipeline-action-execution-stage-change-event.json").to_vec();
+        let parsed: CodePipelineCloudWatchEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: CodePipelineCloudWatchEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "codepipeline_cloudwatch")]
     fn example_codepipeline_execution_stage_change_event() {
-        let data = include_bytes!("../../fixtures/example-codepipeline-execution-stage-change-event.json");
-        let parsed: CodePipelineCloudWatchEvent = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: CodePipelineCloudWatchEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-codepipeline-execution-stage-change-event.json").to_vec();
+        let parsed: CodePipelineCloudWatchEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: CodePipelineCloudWatchEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "codepipeline_cloudwatch")]
     fn example_codepipeline_execution_state_change_event() {
-        let data = include_bytes!("../../fixtures/example-codepipeline-execution-state-change-event.json");
-        let parsed: CodePipelineCloudWatchEvent = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: CodePipelineCloudWatchEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-codepipeline-execution-state-change-event.json").to_vec();
+        let parsed: CodePipelineCloudWatchEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: CodePipelineCloudWatchEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

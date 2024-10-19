@@ -259,10 +259,10 @@ mod test {
     #[test]
     #[cfg(feature = "dynamodb")]
     fn example_dynamodb_event() {
-        let data = include_bytes!("../../fixtures/example-dynamodb-event.json");
-        let mut parsed: Event = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: Event = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-dynamodb-event.json").to_vec();
+        let mut parsed: Event = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: Event = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
 
         let event = parsed.records.pop().unwrap();
@@ -273,10 +273,10 @@ mod test {
     #[test]
     #[cfg(feature = "dynamodb")]
     fn example_dynamodb_event_with_optional_fields() {
-        let data = include_bytes!("../../fixtures/example-dynamodb-event-record-with-optional-fields.json");
-        let parsed: EventRecord = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: EventRecord = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-dynamodb-event-record-with-optional-fields.json").to_vec();
+        let parsed: EventRecord = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: EventRecord = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
         let date = Utc.timestamp_micros(0).unwrap(); // 1970-01-01T00:00:00Z
         assert_eq!(date, reparsed.change.approximate_creation_date_time);

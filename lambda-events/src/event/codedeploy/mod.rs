@@ -79,34 +79,34 @@ mod test {
     #[test]
     #[cfg(feature = "codedeploy")]
     fn example_codedeploy_lifecycle_event() {
-        let data = include_bytes!("../../fixtures/example-codedeploy-lifecycle-event.json");
-        let parsed: CodeDeployLifecycleEvent = aws_lambda_json_impl::from_slice(data).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-codedeploy-lifecycle-event.json").to_vec();
+        let parsed: CodeDeployLifecycleEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
 
         assert_eq!(parsed.deployment_id, "d-deploymentId".to_string());
         assert_eq!(parsed.lifecycle_event_hook_execution_id, "eyJlbmNyeXB0ZWREYXRhIjoiY3VHU2NjdkJXUTJQUENVd2dkYUNGRVg0dWlpME9UWVdHTVhZcDRXVW5LYUVKc21EaUFPMkNLNXMwMWFrNDlYVStlbXdRb29xS3NJTUNVQ3RYRGFZSXc1VTFwUllvMDhmMzdlbDZFeDVVdjZrNFc0eU5waGh6YTRvdkNWcmVveVR6OWdERlM2SmlIYW1TZz09IiwiaXZQYXJhbWV0ZXJTcGVjIjoiTm1ZNFR6RzZxQVhHamhhLyIsIm1hdGVyaWFsU2V0U2VyaWFsIjoxfQ==".to_string());
 
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: CodeDeployLifecycleEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: CodeDeployLifecycleEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "codedeploy")]
     fn example_codedeploy_deployment_event() {
-        let data = include_bytes!("../../fixtures/example-codedeploy-deployment-event.json");
-        let parsed: CodeDeployEvent = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: CodeDeployEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-codedeploy-deployment-event.json").to_vec();
+        let parsed: CodeDeployEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: CodeDeployEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "codedeploy")]
     fn example_codedeploy_instance_event() {
-        let data = include_bytes!("../../fixtures/example-codedeploy-instance-event.json");
-        let parsed: CodeDeployEvent = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: CodeDeployEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-codedeploy-instance-event.json").to_vec();
+        let parsed: CodeDeployEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: CodeDeployEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

@@ -217,20 +217,20 @@ mod test {
     #[test]
     #[cfg(feature = "codebuild")]
     fn example_codebuild_phase_change() {
-        let data = include_bytes!("../../fixtures/example-codebuild-phase-change.json");
-        let parsed: CodeBuildEvent = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: CodeBuildEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-codebuild-phase-change.json").to_vec();
+        let parsed: CodeBuildEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: CodeBuildEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "codebuild")]
     fn example_codebuild_state_change() {
-        let data = include_bytes!("../../fixtures/example-codebuild-state-change.json");
-        let parsed: CodeBuildEvent = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: CodeBuildEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-codebuild-state-change.json").to_vec();
+        let parsed: CodeBuildEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: CodeBuildEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

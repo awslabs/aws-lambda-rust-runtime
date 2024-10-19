@@ -70,20 +70,20 @@ mod test {
     #[test]
     #[cfg(feature = "ecr_scan")]
     fn example_ecr_image_scan_event() {
-        let data = include_bytes!("../../fixtures/example-ecr-image-scan-event.json");
-        let parsed: EcrScanEvent = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: EcrScanEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-ecr-image-scan-event.json").to_vec();
+        let parsed: EcrScanEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: EcrScanEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "ecr_scan")]
     fn example_ecr_image_scan_event_with_missing_severities() {
-        let data = include_bytes!("../../fixtures/example-ecr-image-scan-event-with-missing-severities.json");
-        let parsed: EcrScanEvent = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: EcrScanEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-ecr-image-scan-event-with-missing-severities.json").to_vec();
+        let parsed: EcrScanEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: EcrScanEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

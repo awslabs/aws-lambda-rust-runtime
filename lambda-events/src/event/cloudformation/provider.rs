@@ -104,55 +104,55 @@ mod test {
 
     #[test]
     fn example_create_request() {
-        let data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-provider-create-request.json");
-        let parsed: TestRequest = aws_lambda_json_impl::from_slice(data).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-provider-create-request.json").to_vec();
+        let parsed: TestRequest = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
 
         match parsed {
             Create(_) => (),
             _ => panic!("expected Create request"),
         }
 
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: TestRequest = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: TestRequest = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     fn example_update_request() {
-        let data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-provider-update-request.json");
-        let parsed: TestRequest = aws_lambda_json_impl::from_slice(data).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-provider-update-request.json").to_vec();
+        let parsed: TestRequest = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
 
         match parsed {
             Update(_) => (),
             _ => panic!("expected Update request"),
         }
 
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: TestRequest = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: TestRequest = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     fn example_delete_request() {
-        let data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-provider-delete-request.json");
-        let parsed: TestRequest = aws_lambda_json_impl::from_slice(data).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-provider-delete-request.json").to_vec();
+        let parsed: TestRequest = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
 
         match parsed {
             Delete(_) => (),
             _ => panic!("expected Delete request"),
         }
 
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: TestRequest = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: TestRequest = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     fn example_response() {
-        let data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-provider-response.json");
-        let parsed: CloudFormationCustomResourceResponse = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: CloudFormationCustomResourceResponse = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-provider-response.json").to_vec();
+        let parsed: CloudFormationCustomResourceResponse = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: CloudFormationCustomResourceResponse = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

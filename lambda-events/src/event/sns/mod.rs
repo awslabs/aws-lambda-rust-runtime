@@ -253,36 +253,36 @@ mod test {
     #[test]
     #[cfg(feature = "sns")]
     fn my_example_sns_event() {
-        let data = include_bytes!("../../fixtures/example-sns-event.json");
-        let parsed: SnsEvent = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: SnsEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-sns-event.json").to_vec();
+        let parsed: SnsEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: SnsEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "sns")]
     fn my_example_sns_event_pascal_case() {
-        let data = include_bytes!("../../fixtures/example-sns-event-pascal-case.json");
-        let parsed: SnsEvent = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: SnsEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-sns-event-pascal-case.json").to_vec();
+        let parsed: SnsEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: SnsEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "sns")]
     fn my_example_sns_event_cloudwatch_single_metric() {
-        let data = include_bytes!("../../fixtures/example-cloudwatch-alarm-sns-payload-single-metric.json");
-        let parsed: SnsEvent = aws_lambda_json_impl::from_slice(data).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-cloudwatch-alarm-sns-payload-single-metric.json").to_vec();
+        let parsed: SnsEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         assert_eq!(1, parsed.records.len());
 
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: SnsEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: SnsEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
 
         let parsed: SnsEventObj<CloudWatchAlarmPayload> =
-            aws_lambda_json_impl::from_slice(data).expect("failed to parse CloudWatch Alarm payload");
+            aws_lambda_json_impl::from_slice(data.as_mut_slice()).expect("failed to parse CloudWatch Alarm payload");
 
         let record = parsed.records.first().unwrap();
         assert_eq!("EXAMPLE", record.sns.message.alarm_name);
@@ -291,19 +291,19 @@ mod test {
     #[test]
     #[cfg(feature = "sns")]
     fn my_example_sns_event_cloudwatch_multiple_metrics() {
-        let data = include_bytes!("../../fixtures/example-cloudwatch-alarm-sns-payload-multiple-metrics.json");
-        let parsed: SnsEvent = aws_lambda_json_impl::from_slice(data).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-cloudwatch-alarm-sns-payload-multiple-metrics.json").to_vec();
+        let parsed: SnsEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         assert_eq!(2, parsed.records.len());
 
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: SnsEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: SnsEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "sns")]
     fn my_example_sns_obj_event() {
-        let data = include_bytes!("../../fixtures/example-sns-event-obj.json");
+        let mut data = include_bytes!("../../fixtures/example-sns-event-obj.json").to_vec();
 
         #[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
         struct CustStruct {
@@ -311,14 +311,14 @@ mod test {
             bar: i32,
         }
 
-        let parsed: SnsEventObj<CustStruct> = aws_lambda_json_impl::from_slice(data).unwrap();
+        let parsed: SnsEventObj<CustStruct> = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         println!("{:?}", parsed);
 
         assert_eq!(parsed.records[0].sns.message.foo, "Hello world!");
         assert_eq!(parsed.records[0].sns.message.bar, 123);
 
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: SnsEventObj<CustStruct> = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: SnsEventObj<CustStruct> = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

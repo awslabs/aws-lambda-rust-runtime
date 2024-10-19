@@ -125,30 +125,30 @@ mod test {
     #[test]
     #[cfg(feature = "ses")]
     fn example_ses_lambda_event() {
-        let data = include_bytes!("../../fixtures/example-ses-lambda-event.json");
-        let parsed: SimpleEmailEvent = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: SimpleEmailEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-ses-lambda-event.json").to_vec();
+        let parsed: SimpleEmailEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: SimpleEmailEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "ses")]
     fn example_ses_s3_event() {
-        let data = include_bytes!("../../fixtures/example-ses-s3-event.json");
-        let parsed: SimpleEmailEvent = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: SimpleEmailEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-ses-s3-event.json").to_vec();
+        let parsed: SimpleEmailEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: SimpleEmailEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "ses")]
     fn example_ses_sns_event() {
-        let data = include_bytes!("../../fixtures/example-ses-sns-event.json");
-        let parsed: SimpleEmailEvent = aws_lambda_json_impl::from_slice(data).unwrap();
-        let output: String = aws_lambda_json_impl::to_string(&parsed).unwrap();
-        let reparsed: SimpleEmailEvent = aws_lambda_json_impl::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-ses-sns-event.json").to_vec();
+        let parsed: SimpleEmailEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: SimpleEmailEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

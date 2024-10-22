@@ -7,8 +7,8 @@ use aws_lambda_events::apigw::ApiGatewayProxyRequest;
 use aws_lambda_events::apigw::ApiGatewayV2httpRequest;
 #[cfg(feature = "apigw_websockets")]
 use aws_lambda_events::apigw::ApiGatewayWebsocketProxyRequest;
-use aws_lambda_json_impl::RawValue;
 use serde::{de::Error, Deserialize};
+use aws_lambda_json_impl::RawValue;
 
 const ERROR_CONTEXT: &str = "this function expects a JSON payload from Amazon API Gateway, Amazon Elastic Load Balancer, or AWS Lambda Function URLs, but the data doesn't match any of those services' events";
 
@@ -54,7 +54,7 @@ mod tests {
 
     #[test]
     fn test_deserialize_apigw_rest() {
-        let data = include_bytes!("../../lambda-events/src/fixtures/example-apigw-request.json").to_owned();
+        let data = include_bytes!("../../lambda-events/src/fixtures/example-apigw-request.json");
 
         let req: LambdaRequest = aws_lambda_json_impl::from_slice(data).expect("failed to deserialize apigw rest data");
         match req {
@@ -127,8 +127,7 @@ mod tests {
         let data =
             include_bytes!("../../lambda-events/src/fixtures/example-apigw-websocket-request-without-method.json");
 
-        let req: LambdaRequest =
-            aws_lambda_json_impl::from_slice(data).expect("failed to deserialize apigw websocket data");
+        let req: LambdaRequest = aws_lambda_json_impl::from_slice(data).expect("failed to deserialize apigw websocket data");
         match req {
             LambdaRequest::WebSocket(req) => {
                 assert_eq!("CONNECT", req.request_context.event_type.unwrap());

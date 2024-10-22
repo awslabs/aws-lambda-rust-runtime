@@ -15,7 +15,6 @@ edition = "2021"
 
 [features]
 default = [ ]
-serde = [ "serde_json" ]
 simd = [ "simd-json" ]
 
 [dependencies]

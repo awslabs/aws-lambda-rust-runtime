@@ -1,5 +1,5 @@
 // Using serde_json as the JSON handler
-#[cfg(feature = "serde")]
+#[cfg(not(feature = "simd"))]
 pub use serde::*;
 // Using simd_json as the JSON handler
 #[cfg(feature = "simd")]
@@ -7,10 +7,11 @@ pub use simd::*;
 
 // Implementations
 
-#[cfg(feature = "serde")]
+#[cfg(not(feature = "simd"))]
 mod serde {
 	use serde_json::{from_str as serde_json_from_str, from_slice as serde_json_from_slice};
 	pub use serde_json::{
+		self,
 		from_reader, 
 		from_slice, 
 		from_str,
@@ -42,6 +43,7 @@ mod simd {
 	use serde::Deserialize;
 	use simd_json::serde::from_str as unsafe_from_str; //THIS is mutable and is unsafe!
 	pub use simd_json::{
+		self,
 		serde::{
 			from_reader, 
 			from_slice,                  //THIS is mutable!                    

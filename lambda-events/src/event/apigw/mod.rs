@@ -1040,6 +1040,10 @@ mod test {
     #[test]
     #[cfg(feature = "apigw")]
     fn example_apigw_request_authorizer_fields() {
+
+        #[cfg(feature = "simd_json")]
+        use aws_lambda_json_impl::simd_json::base::ValueAsScalar;
+
         let mut data = include_bytes!("../../fixtures/example-apigw-request.json").to_vec();
         let parsed: ApiGatewayProxyRequest = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
 

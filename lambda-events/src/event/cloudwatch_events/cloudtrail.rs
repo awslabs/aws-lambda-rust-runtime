@@ -1,6 +1,6 @@
+use aws_lambda_json_impl::Value;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use aws_lambda_json_impl::Value;
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -83,6 +83,10 @@ pub struct UserIdentity {
 
 #[cfg(test)]
 mod tests {
+    // To save on boiler plate, JSON data is parsed from a mut byte slice rather than an &str. The slice isn't actually mutated
+    // when using serde-json, but it IS when using simd-json - so we also take care not to reuse the slice
+    // once it has been deserialized.
+
     use super::AWSAPICall;
 
     #[test]

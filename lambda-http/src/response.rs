@@ -373,12 +373,12 @@ pub type BodyFuture = Pin<Box<dyn Future<Output = Body> + Send>>;
 #[cfg(test)]
 mod tests {
     use super::{Body, IntoResponse, LambdaResponse, RequestOrigin, X_LAMBDA_HTTP_CONTENT_ENCODING};
+    use aws_lambda_json_impl::json;
     use http::{
         header::{CONTENT_ENCODING, CONTENT_TYPE},
         Response, StatusCode,
     };
     use lambda_runtime_api_client::body::Body as HyperBody;
-    use aws_lambda_json_impl::json;
 
     const SVG_LOGO: &str = include_str!("../tests/data/svg_logo.svg");
 

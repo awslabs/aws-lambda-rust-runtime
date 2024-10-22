@@ -6,10 +6,10 @@ use crate::{
     encodings::Body,
     iam::IamPolicyStatement,
 };
+use aws_lambda_json_impl::Value;
 use http::{HeaderMap, Method};
 use query_map::QueryMap;
 use serde::{de::DeserializeOwned, ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer};
-use aws_lambda_json_impl::Value;
 use std::collections::HashMap;
 
 /// `ApiGatewayProxyRequest` contains data coming from the API Gateway proxy
@@ -779,25 +779,33 @@ pub fn serialize_authorizer_fields<S: Serializer>(
 
 #[cfg(test)]
 mod test {
+    // To save on boiler plate, JSON data is parsed from a mut byte slice rather than an &str. The slice isn't actually mutated
+    // when using serde-json, but it IS when using simd-json - so we also take care not to reuse the slice
+    // once it has been deserialized.
     use super::*;
 
     #[test]
     #[cfg(feature = "apigw")]
     fn example_apigw_custom_auth_request_type_request() {
         let mut data = include_bytes!("../../fixtures/example-apigw-custom-auth-request-type-request.json").to_vec();
-        let parsed: ApiGatewayCustomAuthorizerRequestTypeRequest = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let parsed: ApiGatewayCustomAuthorizerRequestTypeRequest =
+            aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: ApiGatewayCustomAuthorizerRequestTypeRequest = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: ApiGatewayCustomAuthorizerRequestTypeRequest =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "apigw")]
     fn example_apigw_custom_auth_request_type_request_websocket() {
-        let mut data = include_bytes!("../../fixtures/example-apigw-v2-custom-authorizer-websocket-request.json").to_vec();
-        let parsed: ApiGatewayCustomAuthorizerRequestTypeRequest = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut data =
+            include_bytes!("../../fixtures/example-apigw-v2-custom-authorizer-websocket-request.json").to_vec();
+        let parsed: ApiGatewayCustomAuthorizerRequestTypeRequest =
+            aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: ApiGatewayCustomAuthorizerRequestTypeRequest = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: ApiGatewayCustomAuthorizerRequestTypeRequest =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -807,7 +815,8 @@ mod test {
         let mut data = include_bytes!("../../fixtures/example-apigw-custom-auth-request.json").to_vec();
         let parsed: ApiGatewayCustomAuthorizerRequest = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: ApiGatewayCustomAuthorizerRequest = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: ApiGatewayCustomAuthorizerRequest =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -817,27 +826,33 @@ mod test {
         let mut data = include_bytes!("../../fixtures/example-apigw-custom-auth-response.json").to_vec();
         let parsed: ApiGatewayCustomAuthorizerResponse = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: ApiGatewayCustomAuthorizerResponse = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: ApiGatewayCustomAuthorizerResponse =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "apigw")]
     fn example_apigw_custom_auth_response_with_single_value_action() {
-        let mut data = include_bytes!("../../fixtures/example-apigw-custom-auth-response-with-single-value-action.json").to_vec();
+        let mut data =
+            include_bytes!("../../fixtures/example-apigw-custom-auth-response-with-single-value-action.json").to_vec();
         let parsed: ApiGatewayCustomAuthorizerResponse = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: ApiGatewayCustomAuthorizerResponse = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: ApiGatewayCustomAuthorizerResponse =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "apigw")]
     fn example_apigw_custom_auth_response_with_single_value_resource() {
-        let mut data = include_bytes!("../../fixtures/example-apigw-custom-auth-response-with-single-value-resource.json").to_vec();
+        let mut data =
+            include_bytes!("../../fixtures/example-apigw-custom-auth-response-with-single-value-resource.json")
+                .to_vec();
         let parsed: ApiGatewayCustomAuthorizerResponse = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: ApiGatewayCustomAuthorizerResponse = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: ApiGatewayCustomAuthorizerResponse =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -876,7 +891,6 @@ mod test {
         let mut output = output.into_bytes();
         let reparsed: ApiGatewayProxyRequest = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
-
     }
 
     #[test]
@@ -924,7 +938,7 @@ mod test {
     fn example_apigw_v2_request_multi_value_parameters() {
         let mut data = include_bytes!("../../fixtures/example-apigw-v2-request-multi-value-parameters.json").to_vec();
         let parsed: ApiGatewayV2httpRequest = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
-        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap();
+        let output = aws_lambda_json_impl::to_string(&parsed).unwrap();
 
         assert!(output.contains(r#""header2":"value1,value2""#));
         assert!(output.contains(r#""queryStringParameters":{"Parameter1":"value1,value2"}"#));
@@ -932,7 +946,6 @@ mod test {
         let mut output = output.into_bytes();
         let reparsed: ApiGatewayV2httpRequest = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
-
     }
 
     #[test]
@@ -951,7 +964,8 @@ mod test {
         let mut data = include_bytes!("../../fixtures/example-apigw-websocket-request.json").to_vec();
         let parsed: ApiGatewayWebsocketProxyRequest = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: ApiGatewayWebsocketProxyRequest = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: ApiGatewayWebsocketProxyRequest =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -971,7 +985,8 @@ mod test {
         let mut data = include_bytes!("../../fixtures/example-apigw-websocket-request-without-method.json").to_vec();
         let parsed: ApiGatewayWebsocketProxyRequest = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: ApiGatewayWebsocketProxyRequest = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: ApiGatewayWebsocketProxyRequest =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -981,7 +996,8 @@ mod test {
         let mut data = include_bytes!("../../fixtures/example-apigw-websocket-request-disconnect-route.json").to_vec();
         let parsed: ApiGatewayWebsocketProxyRequest = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: ApiGatewayWebsocketProxyRequest = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: ApiGatewayWebsocketProxyRequest =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -1001,29 +1017,39 @@ mod test {
     #[cfg(feature = "apigw")]
     fn example_apigw_v2_custom_authorizer_v2_request() {
         let mut data = include_bytes!("../../fixtures/example-apigw-v2-custom-authorizer-v2-request.json").to_vec();
-        let parsed: ApiGatewayV2CustomAuthorizerV2Request = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let parsed: ApiGatewayV2CustomAuthorizerV2Request =
+            aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: ApiGatewayV2CustomAuthorizerV2Request = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: ApiGatewayV2CustomAuthorizerV2Request =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "apigw")]
     fn example_apigw_v2_custom_authorizer_v2_request_without_cookies() {
-        let mut data = include_bytes!("../../fixtures/example-apigw-v2-custom-authorizer-v2-request-without-cookies.json").to_vec();
-        let parsed: ApiGatewayV2CustomAuthorizerV2Request = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut data =
+            include_bytes!("../../fixtures/example-apigw-v2-custom-authorizer-v2-request-without-cookies.json")
+                .to_vec();
+        let parsed: ApiGatewayV2CustomAuthorizerV2Request =
+            aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: ApiGatewayV2CustomAuthorizerV2Request = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: ApiGatewayV2CustomAuthorizerV2Request =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "apigw")]
     fn example_apigw_v2_custom_authorizer_v2_request_without_identity_source() {
-        let mut data = include_bytes!("../../fixtures/example-apigw-v2-custom-authorizer-v2-request-without-identity-source.json").to_vec();
-        let parsed: ApiGatewayV2CustomAuthorizerV2Request = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut data =
+            include_bytes!("../../fixtures/example-apigw-v2-custom-authorizer-v2-request-without-identity-source.json")
+                .to_vec();
+        let parsed: ApiGatewayV2CustomAuthorizerV2Request =
+            aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: ApiGatewayV2CustomAuthorizerV2Request = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: ApiGatewayV2CustomAuthorizerV2Request =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -1040,7 +1066,6 @@ mod test {
     #[test]
     #[cfg(feature = "apigw")]
     fn example_apigw_request_authorizer_fields() {
-
         #[cfg(feature = "simd_json")]
         use aws_lambda_json_impl::simd_json::base::ValueAsScalar;
 
@@ -1062,7 +1087,8 @@ mod test {
         let mut data = include_bytes!("../../fixtures/example-apigw-custom-auth-response-with-condition.json").to_vec();
         let parsed: ApiGatewayCustomAuthorizerResponse = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: ApiGatewayCustomAuthorizerResponse = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: ApiGatewayCustomAuthorizerResponse =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
 
         let statement = parsed.policy_document.statement.first().unwrap();

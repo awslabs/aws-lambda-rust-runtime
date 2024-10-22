@@ -4,8 +4,8 @@
 //!
 //! See https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.custom_resources-readme.html for details.
 
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use aws_lambda_json_impl::Value;
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(tag = "RequestType")]
@@ -88,6 +88,10 @@ where
 
 #[cfg(test)]
 mod test {
+    // To save on boiler plate, JSON data is parsed from a mut byte slice rather than an &str. The slice isn't actually mutated
+    // when using serde-json, but it IS when using simd-json - so we also take care not to reuse the slice
+    // once it has been deserialized.
+
     use std::collections::HashMap;
 
     use super::{CloudFormationCustomResourceRequest::*, *};
@@ -104,7 +108,9 @@ mod test {
 
     #[test]
     fn example_create_request() {
-        let mut data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-provider-create-request.json").to_vec();
+        let mut data =
+            include_bytes!("../../fixtures/example-cloudformation-custom-resource-provider-create-request.json")
+                .to_vec();
         let parsed: TestRequest = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
 
         match parsed {
@@ -119,7 +125,9 @@ mod test {
 
     #[test]
     fn example_update_request() {
-        let mut data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-provider-update-request.json").to_vec();
+        let mut data =
+            include_bytes!("../../fixtures/example-cloudformation-custom-resource-provider-update-request.json")
+                .to_vec();
         let parsed: TestRequest = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
 
         match parsed {
@@ -134,7 +142,9 @@ mod test {
 
     #[test]
     fn example_delete_request() {
-        let mut data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-provider-delete-request.json").to_vec();
+        let mut data =
+            include_bytes!("../../fixtures/example-cloudformation-custom-resource-provider-delete-request.json")
+                .to_vec();
         let parsed: TestRequest = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
 
         match parsed {
@@ -149,10 +159,13 @@ mod test {
 
     #[test]
     fn example_response() {
-        let mut data = include_bytes!("../../fixtures/example-cloudformation-custom-resource-provider-response.json").to_vec();
-        let parsed: CloudFormationCustomResourceResponse = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut data =
+            include_bytes!("../../fixtures/example-cloudformation-custom-resource-provider-response.json").to_vec();
+        let parsed: CloudFormationCustomResourceResponse =
+            aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: CloudFormationCustomResourceResponse = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: CloudFormationCustomResourceResponse =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

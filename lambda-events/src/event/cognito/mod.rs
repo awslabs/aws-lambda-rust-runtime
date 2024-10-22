@@ -1,5 +1,5 @@
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use aws_lambda_json_impl::Value;
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::collections::HashMap;
 
 use crate::custom_serde::{deserialize_lambda_map, deserialize_nullish_boolean};
@@ -630,6 +630,10 @@ pub struct CognitoEventUserPoolsCustomMessageResponse {
 
 #[cfg(test)]
 mod test {
+    // To save on boiler plate, JSON data is parsed from a mut byte slice rather than an &str. The slice isn't actually mutated
+    // when using serde-json, but it IS when using simd-json - so we also take care not to reuse the slice
+    // once it has been deserialized.
+
     use super::*;
 
     #[test]
@@ -645,23 +649,30 @@ mod test {
     #[test]
     #[cfg(feature = "cognito")]
     fn example_cognito_event_userpools_create_auth_challenge() {
-        let mut data = include_bytes!("../../fixtures/example-cognito-event-userpools-create-auth-challenge.json").to_vec();
-        let parsed: CognitoEventUserPoolsCreateAuthChallenge = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut data =
+            include_bytes!("../../fixtures/example-cognito-event-userpools-create-auth-challenge.json").to_vec();
+        let parsed: CognitoEventUserPoolsCreateAuthChallenge =
+            aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: CognitoEventUserPoolsCreateAuthChallenge = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: CognitoEventUserPoolsCreateAuthChallenge =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "cognito")]
     fn example_cognito_event_userpools_create_auth_challenge_user_not_found() {
-        let mut data = include_bytes!("../../fixtures/example-cognito-event-userpools-create-auth-challenge-user-not-found.json").to_vec();
-        let parsed: CognitoEventUserPoolsCreateAuthChallenge = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut data =
+            include_bytes!("../../fixtures/example-cognito-event-userpools-create-auth-challenge-user-not-found.json")
+                .to_vec();
+        let parsed: CognitoEventUserPoolsCreateAuthChallenge =
+            aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
 
         assert!(parsed.request.user_not_found);
 
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: CognitoEventUserPoolsCreateAuthChallenge = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: CognitoEventUserPoolsCreateAuthChallenge =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -671,17 +682,21 @@ mod test {
         let mut data = include_bytes!("../../fixtures/example-cognito-event-userpools-custommessage.json").to_vec();
         let parsed: CognitoEventUserPoolsCustomMessage = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: CognitoEventUserPoolsCustomMessage = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: CognitoEventUserPoolsCustomMessage =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "cognito")]
     fn example_cognito_event_userpools_define_auth_challenge() {
-        let mut data = include_bytes!("../../fixtures/example-cognito-event-userpools-define-auth-challenge.json").to_vec();
-        let parsed: CognitoEventUserPoolsDefineAuthChallenge = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut data =
+            include_bytes!("../../fixtures/example-cognito-event-userpools-define-auth-challenge.json").to_vec();
+        let parsed: CognitoEventUserPoolsDefineAuthChallenge =
+            aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: CognitoEventUserPoolsDefineAuthChallenge = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: CognitoEventUserPoolsDefineAuthChallenge =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -690,27 +705,34 @@ mod test {
     fn example_cognito_event_userpools_define_auth_challenge_optional_response_fields() {
         let mut data = include_bytes!(
             "../../fixtures/example-cognito-event-userpools-define-auth-challenge-optional-response-fields.json"
-        ).to_vec();
-        let parsed: CognitoEventUserPoolsDefineAuthChallenge = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        )
+        .to_vec();
+        let parsed: CognitoEventUserPoolsDefineAuthChallenge =
+            aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
 
         assert!(!parsed.response.fail_authentication);
         assert!(!parsed.response.issue_tokens);
 
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: CognitoEventUserPoolsDefineAuthChallenge = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: CognitoEventUserPoolsDefineAuthChallenge =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "cognito")]
     fn example_cognito_event_userpools_define_auth_challenge_user_not_found() {
-        let mut data = include_bytes!("../../fixtures/example-cognito-event-userpools-define-auth-challenge-user-not-found.json").to_vec();
-        let parsed: CognitoEventUserPoolsDefineAuthChallenge = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut data =
+            include_bytes!("../../fixtures/example-cognito-event-userpools-define-auth-challenge-user-not-found.json")
+                .to_vec();
+        let parsed: CognitoEventUserPoolsDefineAuthChallenge =
+            aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
 
         assert!(parsed.request.user_not_found);
 
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: CognitoEventUserPoolsDefineAuthChallenge = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: CognitoEventUserPoolsDefineAuthChallenge =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -720,17 +742,21 @@ mod test {
         let mut data = include_bytes!("../../fixtures/example-cognito-event-userpools-migrateuser.json").to_vec();
         let parsed: CognitoEventUserPoolsMigrateUser = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: CognitoEventUserPoolsMigrateUser = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: CognitoEventUserPoolsMigrateUser =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "cognito")]
     fn example_cognito_event_userpools_postauthentication() {
-        let mut data = include_bytes!("../../fixtures/example-cognito-event-userpools-postauthentication.json").to_vec();
-        let parsed: CognitoEventUserPoolsPostAuthentication = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut data =
+            include_bytes!("../../fixtures/example-cognito-event-userpools-postauthentication.json").to_vec();
+        let parsed: CognitoEventUserPoolsPostAuthentication =
+            aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: CognitoEventUserPoolsPostAuthentication = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: CognitoEventUserPoolsPostAuthentication =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -738,9 +764,11 @@ mod test {
     #[cfg(feature = "cognito")]
     fn example_cognito_event_userpools_postconfirmation() {
         let mut data = include_bytes!("../../fixtures/example-cognito-event-userpools-postconfirmation.json").to_vec();
-        let parsed: CognitoEventUserPoolsPostConfirmation = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let parsed: CognitoEventUserPoolsPostConfirmation =
+            aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: CognitoEventUserPoolsPostConfirmation = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: CognitoEventUserPoolsPostConfirmation =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -748,9 +776,11 @@ mod test {
     #[cfg(feature = "cognito")]
     fn example_cognito_event_userpools_preauthentication() {
         let mut data = include_bytes!("../../fixtures/example-cognito-event-userpools-preauthentication.json").to_vec();
-        let parsed: CognitoEventUserPoolsPreAuthentication = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let parsed: CognitoEventUserPoolsPreAuthentication =
+            aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: CognitoEventUserPoolsPreAuthentication = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: CognitoEventUserPoolsPreAuthentication =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -767,20 +797,24 @@ mod test {
     #[test]
     #[cfg(feature = "cognito")]
     fn example_cognito_event_userpools_pretokengen_incoming() {
-        let mut data = include_bytes!("../../fixtures/example-cognito-event-userpools-pretokengen-incoming.json").to_vec();
+        let mut data =
+            include_bytes!("../../fixtures/example-cognito-event-userpools-pretokengen-incoming.json").to_vec();
         let parsed: CognitoEventUserPoolsPreTokenGen = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: CognitoEventUserPoolsPreTokenGen = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: CognitoEventUserPoolsPreTokenGen =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "cognito")]
     fn example_cognito_event_userpools_pretokengen_v2_incoming() {
-        let mut data = include_bytes!("../../fixtures/example-cognito-event-userpools-pretokengen-v2-incoming.json").to_vec();
+        let mut data =
+            include_bytes!("../../fixtures/example-cognito-event-userpools-pretokengen-v2-incoming.json").to_vec();
         let parsed: CognitoEventUserPoolsPreTokenGenV2 = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: CognitoEventUserPoolsPreTokenGenV2 = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: CognitoEventUserPoolsPreTokenGenV2 =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -790,7 +824,8 @@ mod test {
         let mut data = include_bytes!("../../fixtures/example-cognito-event-userpools-pretokengen.json").to_vec();
         let parsed: CognitoEventUserPoolsPreTokenGen = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: CognitoEventUserPoolsPreTokenGen = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: CognitoEventUserPoolsPreTokenGen =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -800,17 +835,21 @@ mod test {
         let mut data = include_bytes!("../../fixtures/example-cognito-event-userpools-pretokengen-v2.json").to_vec();
         let parsed: CognitoEventUserPoolsPreTokenGenV2 = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: CognitoEventUserPoolsPreTokenGenV2 = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: CognitoEventUserPoolsPreTokenGenV2 =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "cognito")]
     fn example_cognito_event_userpools_verify_auth_challenge() {
-        let mut data = include_bytes!("../../fixtures/example-cognito-event-userpools-verify-auth-challenge.json").to_vec();
-        let parsed: CognitoEventUserPoolsVerifyAuthChallenge = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut data =
+            include_bytes!("../../fixtures/example-cognito-event-userpools-verify-auth-challenge.json").to_vec();
+        let parsed: CognitoEventUserPoolsVerifyAuthChallenge =
+            aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: CognitoEventUserPoolsVerifyAuthChallenge = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: CognitoEventUserPoolsVerifyAuthChallenge =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -819,13 +858,16 @@ mod test {
     fn example_cognito_event_userpools_verify_auth_challenge_optional_answer_correct() {
         let mut data = include_bytes!(
             "../../fixtures/example-cognito-event-userpools-verify-auth-challenge-optional-answer-correct.json"
-        ).to_vec();
-        let parsed: CognitoEventUserPoolsVerifyAuthChallenge = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        )
+        .to_vec();
+        let parsed: CognitoEventUserPoolsVerifyAuthChallenge =
+            aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
 
         assert!(!parsed.response.answer_correct);
 
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: CognitoEventUserPoolsVerifyAuthChallenge = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: CognitoEventUserPoolsVerifyAuthChallenge =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -834,26 +876,33 @@ mod test {
     fn example_cognito_event_userpools_verify_auth_challenge_null_answer_correct() {
         let mut data = include_bytes!(
             "../../fixtures/example-cognito-event-userpools-verify-auth-challenge-null-answer-correct.json"
-        ).to_vec();
-        let parsed: CognitoEventUserPoolsVerifyAuthChallenge = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        )
+        .to_vec();
+        let parsed: CognitoEventUserPoolsVerifyAuthChallenge =
+            aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
 
         assert!(!parsed.response.answer_correct);
 
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: CognitoEventUserPoolsVerifyAuthChallenge = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: CognitoEventUserPoolsVerifyAuthChallenge =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "cognito")]
     fn example_cognito_event_userpools_verify_auth_challenge_user_not_found() {
-        let mut data = include_bytes!("../../fixtures/example-cognito-event-userpools-verify-auth-challenge-user-not-found.json").to_vec();
-        let parsed: CognitoEventUserPoolsVerifyAuthChallenge = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut data =
+            include_bytes!("../../fixtures/example-cognito-event-userpools-verify-auth-challenge-user-not-found.json")
+                .to_vec();
+        let parsed: CognitoEventUserPoolsVerifyAuthChallenge =
+            aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
 
         assert!(parsed.request.user_not_found);
 
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-        let reparsed: CognitoEventUserPoolsVerifyAuthChallenge = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+        let reparsed: CognitoEventUserPoolsVerifyAuthChallenge =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }
@@ -892,7 +941,8 @@ mod trigger_source_tests {
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsPreSignupTriggerSource> =
                 aws_lambda_json_impl::from_str(&mut header).unwrap();
             let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-            let reparsed: CognitoEventUserPoolsHeader<_> = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> =
+                aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
             assert_eq!(parsed, reparsed);
         });
     }
@@ -905,7 +955,8 @@ mod trigger_source_tests {
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsPreAuthenticationTriggerSource> =
                 aws_lambda_json_impl::from_str(&mut header).unwrap();
             let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-            let reparsed: CognitoEventUserPoolsHeader<_> = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> =
+                aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
             assert_eq!(parsed, reparsed);
         });
     }
@@ -921,7 +972,8 @@ mod trigger_source_tests {
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsPostConfirmationTriggerSource> =
                 aws_lambda_json_impl::from_str(&mut header).unwrap();
             let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-            let reparsed: CognitoEventUserPoolsHeader<_> = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> =
+                aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
             assert_eq!(parsed, reparsed);
         });
     }
@@ -934,7 +986,8 @@ mod trigger_source_tests {
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsPostAuthenticationTriggerSource> =
                 aws_lambda_json_impl::from_str(&mut header).unwrap();
             let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-            let reparsed: CognitoEventUserPoolsHeader<_> = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> =
+                aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
             assert_eq!(parsed, reparsed);
         });
     }
@@ -947,7 +1000,8 @@ mod trigger_source_tests {
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsDefineAuthChallengeTriggerSource> =
                 aws_lambda_json_impl::from_str(&mut header).unwrap();
             let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-            let reparsed: CognitoEventUserPoolsHeader<_> = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> =
+                aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
             assert_eq!(parsed, reparsed);
         });
     }
@@ -961,7 +1015,8 @@ mod trigger_source_tests {
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsCreateAuthChallengeTriggerSource> =
                 aws_lambda_json_impl::from_str(&mut header).unwrap();
             let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-            let reparsed: CognitoEventUserPoolsHeader<_> = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> =
+                aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
             assert_eq!(parsed, reparsed);
         });
     }
@@ -974,7 +1029,8 @@ mod trigger_source_tests {
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsVerifyAuthChallengeTriggerSource> =
                 aws_lambda_json_impl::from_str(&mut header).unwrap();
             let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-            let reparsed: CognitoEventUserPoolsHeader<_> = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> =
+                aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
             assert_eq!(parsed, reparsed);
         });
     }
@@ -993,7 +1049,8 @@ mod trigger_source_tests {
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsPreTokenGenTriggerSource> =
                 aws_lambda_json_impl::from_str(&mut header).unwrap();
             let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-            let reparsed: CognitoEventUserPoolsHeader<_> = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> =
+                aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
             assert_eq!(parsed, reparsed);
         });
     }
@@ -1006,7 +1063,8 @@ mod trigger_source_tests {
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsMigrateUserTriggerSource> =
                 aws_lambda_json_impl::from_str(&mut header).unwrap();
             let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-            let reparsed: CognitoEventUserPoolsHeader<_> = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> =
+                aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
             assert_eq!(parsed, reparsed);
         });
     }
@@ -1027,7 +1085,8 @@ mod trigger_source_tests {
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsCustomMessageTriggerSource> =
                 aws_lambda_json_impl::from_str(&mut header).unwrap();
             let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
-            let reparsed: CognitoEventUserPoolsHeader<_> = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
+            let reparsed: CognitoEventUserPoolsHeader<_> =
+                aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
             assert_eq!(parsed, reparsed);
         });
     }

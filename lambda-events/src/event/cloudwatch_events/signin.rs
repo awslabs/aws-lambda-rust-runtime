@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use aws_lambda_json_impl::Value;
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]

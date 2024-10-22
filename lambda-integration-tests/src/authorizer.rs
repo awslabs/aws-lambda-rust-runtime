@@ -4,9 +4,9 @@ use aws_lambda_events::{
     apigw::{ApiGatewayCustomAuthorizerPolicy, ApiGatewayCustomAuthorizerResponse},
     event::iam::IamPolicyStatement,
 };
+use aws_lambda_json_impl::json;
 use lambda_runtime::{service_fn, tracing, Error, LambdaEvent};
 use serde::Deserialize;
-use aws_lambda_json_impl::json;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]

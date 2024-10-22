@@ -28,8 +28,8 @@ use aws_lambda_events::apigw::{ApiGatewayWebsocketProxyRequest, ApiGatewayWebsoc
 use aws_lambda_events::{encodings::Body, query_map::QueryMap};
 use http::{header::HeaderName, HeaderMap, HeaderValue};
 
-use serde::{Deserialize, Serialize};
 use aws_lambda_json_impl::JsonError;
+use serde::{Deserialize, Serialize};
 
 use std::{env, future::Future, io::Read, pin::Pin};
 use url::Url;

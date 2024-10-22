@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
+use aws_lambda_json_impl::Value;
 use chrono::{DateTime, Utc};
 use serde::{
     de::{DeserializeOwned, Visitor},
     ser::Error as SerError,
     Deserialize, Serialize,
 };
-use aws_lambda_json_impl::Value;
 
 /// `CloudWatchAlarm` is the generic outer structure of an event triggered by a CloudWatch Alarm.
 /// You probably want to use `CloudWatchMetricAlarm` or `CloudWatchCompositeAlarm` if you know which kind of alarm your function is receiving.
@@ -244,10 +244,14 @@ impl<'de> Visitor<'de> for ReasonDataVisitor {
         E: serde::de::Error,
     {
         let mut v_mut = v.to_owned().into_bytes();
-        if let Ok(metric) = aws_lambda_json_impl::from_slice::<CloudWatchAlarmStateReasonDataMetric>(&mut v_mut) {
+        if let Ok(metric) =
+            aws_lambda_json_impl::from_slice::<CloudWatchAlarmStateReasonDataMetric>(v_mut.as_mut_slice())
+        {
             return Ok(CloudWatchAlarmStateReasonData::Metric(metric));
         }
-        if let Ok(aggregate) = aws_lambda_json_impl::from_slice::<ClodWatchAlarmStateReasonDataComposite>(&mut v_mut) {
+        if let Ok(aggregate) =
+            aws_lambda_json_impl::from_slice::<ClodWatchAlarmStateReasonDataComposite>(v_mut.as_mut_slice())
+        {
             return Ok(CloudWatchAlarmStateReasonData::Composite(aggregate));
         }
         Ok(CloudWatchAlarmStateReasonData::Generic(Value::String(v.to_owned())))
@@ -256,6 +260,10 @@ impl<'de> Visitor<'de> for ReasonDataVisitor {
 
 #[cfg(test)]
 mod test {
+    // To save on boiler plate, JSON data is parsed from a mut byte slice rather than an &str. The slice isn't actually mutated
+    // when using serde-json, but it IS when using simd-json - so we also take care not to reuse the slice
+    // once it has been deserialized.
+
     use super::*;
 
     #[test]
@@ -305,7 +313,8 @@ mod test {
     #[test]
     #[cfg(feature = "cloudwatch_alarms")]
     fn example_cloudwatch_alarm_composite_with_suppressor_alarm() {
-        let mut data = include_bytes!("../../fixtures/example-cloudwatch-alarm-composite-with-suppressor-alarm.json").to_vec();
+        let mut data =
+            include_bytes!("../../fixtures/example-cloudwatch-alarm-composite-with-suppressor-alarm.json").to_vec();
         let parsed: CloudWatchCompositeAlarm = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let state = parsed.alarm_data.state.clone().unwrap();
         assert_eq!("WaitPeriod", state.actions_suppressed_by.unwrap());

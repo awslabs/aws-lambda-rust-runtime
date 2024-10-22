@@ -65,6 +65,10 @@ pub struct EcrScanEventFindingSeverityCounts {
 
 #[cfg(test)]
 mod test {
+    // To save on boiler plate, JSON data is parsed from a mut byte slice rather than an &str. The slice isn't actually mutated
+    // when using serde-json, but it IS when using simd-json - so we also take care not to reuse the slice
+    // once it has been deserialized.
+
     use super::*;
 
     #[test]
@@ -80,7 +84,8 @@ mod test {
     #[test]
     #[cfg(feature = "ecr_scan")]
     fn example_ecr_image_scan_event_with_missing_severities() {
-        let mut data = include_bytes!("../../fixtures/example-ecr-image-scan-event-with-missing-severities.json").to_vec();
+        let mut data =
+            include_bytes!("../../fixtures/example-ecr-image-scan-event-with-missing-severities.json").to_vec();
         let parsed: EcrScanEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
         let reparsed: EcrScanEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();

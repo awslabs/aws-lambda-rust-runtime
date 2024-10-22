@@ -2,9 +2,9 @@ use crate::{
     custom_serde::{codebuild_time, CodeBuildNumber},
     encodings::{MinuteDuration, SecondDuration},
 };
+use aws_lambda_json_impl::Value;
 use chrono::{DateTime, Utc};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use aws_lambda_json_impl::Value;
 
 pub type CodeBuildPhaseStatus = String;
 
@@ -212,6 +212,10 @@ pub type CodeBuildTime = DateTime<Utc>;
 
 #[cfg(test)]
 mod test {
+    // To save on boiler plate, JSON data is parsed from a mut byte slice rather than an &str. The slice isn't actually mutated
+    // when using serde-json, but it IS when using simd-json - so we also take care not to reuse the slice
+    // once it has been deserialized.
+
     use super::*;
 
     #[test]

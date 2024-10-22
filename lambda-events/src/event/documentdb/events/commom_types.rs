@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-use serde::{Deserialize, Serialize};
 use aws_lambda_json_impl::Value;
+use serde::{Deserialize, Serialize};
 
 pub type AnyDocument = HashMap<String, Value>;
 

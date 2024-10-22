@@ -248,6 +248,10 @@ pub struct CloudWatchDimension {
 
 #[cfg(test)]
 mod test {
+    // To save on boiler plate, JSON data is parsed from a mut byte slice rather than an &str. The slice isn't actually mutated
+    // when using serde-json, but it IS when using simd-json - so we also take care not to reuse the slice
+    // once it has been deserialized.
+
     use super::*;
 
     #[test]
@@ -273,7 +277,8 @@ mod test {
     #[test]
     #[cfg(feature = "sns")]
     fn my_example_sns_event_cloudwatch_single_metric() {
-        let mut data = include_bytes!("../../fixtures/example-cloudwatch-alarm-sns-payload-single-metric.json").to_vec();
+        let mut data =
+            include_bytes!("../../fixtures/example-cloudwatch-alarm-sns-payload-single-metric.json").to_vec();
         let parsed: SnsEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         assert_eq!(1, parsed.records.len());
 
@@ -291,7 +296,8 @@ mod test {
     #[test]
     #[cfg(feature = "sns")]
     fn my_example_sns_event_cloudwatch_multiple_metrics() {
-        let mut data = include_bytes!("../../fixtures/example-cloudwatch-alarm-sns-payload-multiple-metrics.json").to_vec();
+        let mut data =
+            include_bytes!("../../fixtures/example-cloudwatch-alarm-sns-payload-multiple-metrics.json").to_vec();
         let parsed: SnsEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         assert_eq!(2, parsed.records.len());
 

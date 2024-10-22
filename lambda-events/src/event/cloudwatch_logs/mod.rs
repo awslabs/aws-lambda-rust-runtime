@@ -118,6 +118,10 @@ impl Serialize for AwsLogs {
 
 #[cfg(test)]
 mod test {
+    // To save on boiler plate, JSON data is parsed from a mut byte slice rather than an &str. The slice isn't actually mutated
+    // when using serde-json, but it IS when using simd-json - so we also take care not to reuse the slice
+    // once it has been deserialized.
+
     use super::*;
 
     #[test]
@@ -145,8 +149,9 @@ mod test {
         assert_eq!(1552518348220, data.log_events[0].timestamp);
         assert_eq!("REPORT RequestId: 6234bffe-149a-b642-81ff-2e8e376d8aff\tDuration: 46.84 ms\tBilled Duration: 47 ms \tMemory Size: 192 MB\tMax Memory Used: 72 MB\t\n", data.log_events[0].message);
 
-        let mut new_json: String = aws_lambda_json_impl::to_string_pretty(&event).unwrap();
-        let new_event: LogsEvent = aws_lambda_json_impl::from_str(&mut new_json).expect("failed to deserialize");
+        let mut new_json = aws_lambda_json_impl::to_string_pretty(&event).unwrap().into_bytes();
+        let new_event: LogsEvent =
+            aws_lambda_json_impl::from_slice(new_json.as_mut_slice()).expect("failed to deserialize");
         assert_eq!(new_event, event);
     }
 

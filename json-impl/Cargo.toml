@@ -20,5 +20,8 @@ simd = [ "simd-json" ]
 
 [dependencies]
 serde_json = { version = "^1", features = ["raw_value"], optional = true }
-simd-json = { version = "^0", optional = true }
+#simd-json = { version = "^0", optional = true, features = ["ordered-float"] }
+simd-json = { git = 'https://github.com/bassmanitram/simd-json', branch = "feature/ordered-float", features = ["ordered-float"], optional = true}
 serde = { version = "^1", no-default-features = true }
+
+

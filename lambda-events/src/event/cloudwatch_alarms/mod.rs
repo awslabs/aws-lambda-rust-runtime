@@ -239,21 +239,6 @@ impl<'de> Visitor<'de> for ReasonDataVisitor {
         formatter.write_str("a string with the alarm state reason data")
     }
 
-    #[cfg(not(feature = "simd_json"))]
-    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-    where
-        E: serde::de::Error,
-    {
-        if let Ok(metric) = aws_lambda_json_impl::from_str::<CloudWatchAlarmStateReasonDataMetric>(v) {
-            return Ok(CloudWatchAlarmStateReasonData::Metric(metric));
-        }
-        if let Ok(aggregate) = aws_lambda_json_impl::from_str::<ClodWatchAlarmStateReasonDataComposite>(v) {
-            return Ok(CloudWatchAlarmStateReasonData::Composite(aggregate));
-        }
-        Ok(CloudWatchAlarmStateReasonData::Generic(Value::String(v.to_owned())))
-    }
-
-    #[cfg(feature = "simd_json")]
     fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
     where
         E: serde::de::Error,

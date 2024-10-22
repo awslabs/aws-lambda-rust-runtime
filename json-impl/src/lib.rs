@@ -9,12 +9,11 @@ pub use simd::*;
 
 #[cfg(not(feature = "simd"))]
 mod serde {
+	use serde::Deserialize;
 	use serde_json::{from_str as serde_json_from_str, from_slice as serde_json_from_slice};
 	pub use serde_json::{
 		self,
 		from_reader, 
-		from_slice, 
-		from_str,
 		from_value, 
 		json, 
 		to_string_pretty,

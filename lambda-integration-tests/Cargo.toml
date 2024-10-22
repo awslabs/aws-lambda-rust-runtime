@@ -13,9 +13,12 @@ readme = "../README.md"
 [dependencies]
 lambda_runtime = { path = "../lambda-runtime" }
 aws_lambda_events = { path = "../lambda-events" }
-aws_lambda_json_impl = { features = ["simd"], path = "../json-impl" }
+aws_lambda_json_impl = { path = "../json-impl" }
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1.0.204", features = ["derive"] }
+
+[features]
+simd_json = [ "aws_lambda_json_impl/simd" ]
 
 [dev-dependencies]
 reqwest = { version = "0.12.5", features = ["blocking"] }

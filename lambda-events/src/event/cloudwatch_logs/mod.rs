@@ -80,7 +80,7 @@ impl<'de> Deserialize<'de> for AwsLogs {
                             })?;
 
                             let bytes = flate2::read::GzDecoder::new(&bytes[..]);
-                            let mut de = aws_lambda_json_impl::from_reader(BufReader::new(bytes));
+                            let mut de = aws_lambda_json_impl::JsonDeserializer::from_reader(BufReader::new(bytes));
                             data = Some(LogData::deserialize(&mut de).map_err(Error::custom)?);
                         }
                         _ => return Err(Error::unknown_field(key, FIELDS)),

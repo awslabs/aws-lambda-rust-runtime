@@ -16,19 +16,32 @@ mod serde {
         to_string_pretty, to_value, to_writer, value::RawValue, Deserializer as JsonDeserializer, Value,
         to_vec,
     };
-    pub fn from_str_mut<'a, T>(s: &'a mut str) -> serde_json::Result<T>
+    pub fn from_bytes<'a, T>(b: Bytes) -> simd_json::Result<T>
     where
-        T: Deserialize<'a>,
+    T: DeserializeOwned,
     {
-        from_str(s)
+        from_slice(&mut b)
+    }
+
+    pub fn from_string<'a, T>(s: String) -> simd_json::Result<T>
+    where
+    T: DeserializeOwned,
+    {
+        from_str(s.as_str())
+    }
+    
+    pub fn from_vec<'a, T>(mut v: Vec<u8>) -> simd_json::Result<T>
+    where
+    T: DeserializeOwned,
+    {
+        from_slice(&mut v)
     }
 }
 
 #[cfg(feature = "simd")]
 mod simd {
     use bytes::Bytes;
-    use serde::{de::DeserializeOwned, Deserialize};
-    use simd_json::serde::from_str as unsafe_from_str; //THIS is mutable and is unsafe!
+    use serde::de::DeserializeOwned;
     pub use simd_json::{
         self,
         json,
@@ -36,6 +49,7 @@ mod simd {
         serde::{
             from_owned_value as from_value,
             from_reader,
+            from_str,   //THIS requires a mutable string slice AND is unsafe
             from_slice, //THIS requires a mutable slice!
             to_owned_value as to_value,
             to_string,
@@ -48,15 +62,6 @@ mod simd {
         Error as JsonError,
     };
 
-    /// BEWARE this ISN'T safe - but is marked so for compatibility at the
-    /// moment.
-    pub fn from_str_mut<'a, T>(s: &'a mut str) -> simd_json::Result<T>
-    where
-        T: Deserialize<'a>,
-    {
-        unsafe { unsafe_from_str(s) }
-    }
-
     pub fn from_bytes<'a, T>(b: Bytes) -> simd_json::Result<T>
     where
     T: DeserializeOwned,
@@ -68,6 +73,20 @@ mod simd {
                 from_slice(&mut v)
             }
         }
+    }
+
+    pub fn from_string<'a, T>(mut s: String) -> simd_json::Result<T>
+    where
+    T: DeserializeOwned,
+    {
+        unsafe{ from_str(s.as_mut_str()) }
+    }
+
+    pub fn from_vec<'a, T>(mut v: Vec<u8>) -> simd_json::Result<T>
+    where
+    T: DeserializeOwned,
+    {
+        from_slice(&mut v)
     }
 }
 

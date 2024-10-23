@@ -50,7 +50,7 @@ mod simd {
         serde::{
             from_owned_value as from_value,
             from_reader,
-            from_slice as from_slice_mut, //THIS is mutable!
+            from_slice, //THIS requires a mutable slice!
             to_owned_value as to_value,
             to_string,
             to_string_pretty,
@@ -76,10 +76,10 @@ mod simd {
     T: DeserializeOwned,
     {
         match b.try_into_mut() {
-            Ok(mut b) => from_slice_mut(&mut b),
+            Ok(mut b) => from_slice(&mut b),
             Err(b) => {
                 let mut v = b.to_vec();
-                from_slice_mut(&mut v)
+                from_slice(&mut v)
             }
         }
     }

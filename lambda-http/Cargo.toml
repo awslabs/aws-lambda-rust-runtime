@@ -27,7 +27,7 @@ opentelemetry = ["lambda_runtime/opentelemetry"] # enables access to the OpenTel
 anyhow = ["lambda_runtime/anyhow"] # enables From<T> for Diagnostic for anyhow error types, see README.md for more info
 eyre = ["lambda_runtime/eyre"] # enables From<T> for Diagnostic for eyre error types, see README.md for more info
 miette = ["lambda_runtime/miette"] # enables From<T> for Diagnostic for miette error types, see README.md for more info
-simd_json = [ "aws_lambda_json_impl/simd", "aws_lambda_events/simd_json" ]
+simd_json = [ "aws_lambda_json_impl/simd", "aws_lambda_events/simd_json", "lambda_runtime/simd_json" ]
 
 [dependencies]
 base64 = { workspace = true }

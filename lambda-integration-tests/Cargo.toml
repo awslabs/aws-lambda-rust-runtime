@@ -18,7 +18,7 @@ tokio = { version = "1", features = ["full"] }
 serde = { version = "1.0.204", features = ["derive"] }
 
 [features]
-simd_json = [ "aws_lambda_json_impl/simd" ]
+simd_json = [ "aws_lambda_json_impl/simd", "lambda_runtime/simd_json", "aws_lambda_events/simd_json" ]
 
 [dev-dependencies]
 reqwest = { version = "0.12.5", features = ["blocking"] }

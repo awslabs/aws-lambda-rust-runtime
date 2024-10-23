@@ -40,6 +40,7 @@ mod serde {
 
 #[cfg(feature = "simd")]
 mod simd {
+    use bytes::Bytes;
     use serde::{de::DeserializeOwned, Deserialize};
     use simd_json::serde::from_str as unsafe_from_str; //THIS is mutable and is unsafe!
     pub use simd_json::{
@@ -70,15 +71,15 @@ mod simd {
         unsafe { unsafe_from_str(s) }
     }
 
-    pub fn from_bytes<'a, T>(b: Bytes) -> serde_json::Result<T>
+    pub fn from_bytes<'a, T>(b: Bytes) -> simd_json::Result<T>
     where
     T: DeserializeOwned,
     {
         match b.try_into_mut() {
-            Ok(b) => from_slice(b),
+            Ok(mut b) => from_slice_mut(&mut b),
             Err(b) => {
-                let mut v = b.into_vec();
-                from_slice(&mut v)
+                let mut v = b.to_vec();
+                from_slice_mut(&mut v)
             }
         }
     }

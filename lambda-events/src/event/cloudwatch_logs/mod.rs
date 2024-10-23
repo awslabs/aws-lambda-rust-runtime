@@ -127,12 +127,12 @@ mod test {
     #[test]
     #[cfg(feature = "cloudwatch_logs")]
     fn test_deserialize_example() {
-        let mut json = r#"{
+        let json = r#"{
     "awslogs": {
         "data": "H4sIAFETomIAA12Ry27bMBBF9/4KQuiyqsQ36Z2DqEGBGC0sdRUHAS0NExV6uCJVNw3y76Fkx03CFTH3cubwztMChRO14Jy5h+JxD9ESRZerYnW3zvJ8dZVFn4+W/tDBMImYUMaFVDrF5FVs+vuroR/3k56Yg0sa0+4qk0D50MddX8Ev98aa+wFMO3lJinWS0gTT5ObT9arI8uJWM2uUkMCpZIxiorGRtsQMiOXCgHxt5MadK4d67+u++1o3HgYXWt7M4my4nhmOw+7Kph+rg/HlQwBwM1M0W2//c2V/oPPvmzydb7OpriZqygQhFItUa6GlUkymgrNUS5EKpQhRfMpGCEzC/xgWjCpNOBMn8nM3X4fcvWmn2DDnhGNFWXiffvCdtjON3mQ/vm8KtIHfY3j6rVoiEdaxsxZizLSJd4KRWGFrYwIKqBSVMtZu/eU4mCmoJWLii2KodVt/UTcNVOiNJEMdbf0a2n54RHn9DwKYJmh9EYrmLzoJPx2EwfJY33bRmfb5mOjiefECiB5LsVgCAAA="
     }
 }"#.to_owned();
-        let event: LogsEvent = aws_lambda_json_impl::from_str(&mut json).expect("failed to deserialize");
+        let event: LogsEvent = aws_lambda_json_impl::from_string(json).expect("failed to deserialize");
 
         let data = event.clone().aws_logs.data;
         assert_eq!("DATA_MESSAGE", data.message_type);

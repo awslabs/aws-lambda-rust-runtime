@@ -171,6 +171,7 @@ mod test {
         assert_eq!(serde_dynamo::Item::from(HashMap::new()), decoded.v);
     }
 
+    #[cfg(not(feature = "simd_json"))]
     #[test]
     fn test_deserialize_nullish_boolean() {
         #[derive(Deserialize)]
@@ -179,20 +180,49 @@ mod test {
             v: bool,
         }
 
-        let mut test = String::from_str(r#"{"v": null}"#).unwrap();
-        let decoded: Test = aws_lambda_json_impl::from_str(test.as_mut()).unwrap();
+        let test = r#"{"v": null}"#;
+        let decoded: Test = aws_lambda_json_impl::from_str(&test).unwrap();
         assert!(!decoded.v);
 
-        let mut test = String::from_str(r#"{}"#).unwrap();
-        let decoded: Test = aws_lambda_json_impl::from_str(test.as_mut()).unwrap();
+        let test = r#"{}"#;
+        let decoded: Test = aws_lambda_json_impl::from_str(&test).unwrap();
         assert!(!decoded.v);
 
-        let mut test = String::from_str(r#"{"v": true}"#).unwrap();
-        let decoded: Test = aws_lambda_json_impl::from_str(test.as_mut()).unwrap();
+        let test = r#"{"v": true}"#;
+        let decoded: Test = aws_lambda_json_impl::from_str(&test).unwrap();
         assert!(decoded.v);
 
-        let mut test = String::from_str(r#"{"v": false}"#).unwrap();
-        let decoded: Test = aws_lambda_json_impl::from_str(test.as_mut()).unwrap();
+        let test = r#"{"v": false}"#;
+        let decoded: Test = aws_lambda_json_impl::from_str(&test).unwrap();
+        assert!(!decoded.v);
+    }
+    #[cfg(feature = "simd_json")]
+    #[test]
+    fn test_deserialize_nullish_boolean() {
+        //
+        // Let's have some fun! This is how to do SAFE from_str with simd_json
+        //
+
+        #[derive(Deserialize)]
+        struct Test {
+            #[serde(default, deserialize_with = "deserialize_nullish_boolean")]
+            v: bool,
+        }
+
+        let test = String::from_str(r#"{"v": null}"#).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_string(test).unwrap();
+        assert!(!decoded.v);
+
+        let test = String::from_str(r#"{}"#).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_string(test).unwrap();
+        assert!(!decoded.v);
+
+        let test = String::from_str(r#"{"v": true}"#).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_string(test).unwrap();
+        assert!(decoded.v);
+
+        let test = String::from_str(r#"{"v": false}"#).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_string(test).unwrap();
         assert!(!decoded.v);
     }
 }

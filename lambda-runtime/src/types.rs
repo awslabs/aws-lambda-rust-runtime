@@ -3,13 +3,14 @@ use base64::prelude::*;
 use bytes::Bytes;
 use http::{header::ToStrError, HeaderMap, HeaderValue, StatusCode};
 use lambda_runtime_api_client::body::Body;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use std::{
     collections::HashMap,
     fmt::Debug,
     time::{Duration, SystemTime},
 };
 use tokio_stream::Stream;
+use aws_lambda_json_impl::JsonError;
 
 /// Client context sent by the AWS Mobile SDK.
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
@@ -99,18 +100,31 @@ impl Default for Context {
     }
 }
 
+#[cfg(not(feature = "simd_json"))]
+fn parse_header<'a,T>(h: &'a HeaderValue) -> Result<T, JsonError>
+where T: Deserialize<'a> {
+    aws_lambda_json_impl::from_str(h.to_str()?)?
+}
+
+#[cfg(feature = "simd_json")]
+fn parse_header<T>(h: &HeaderValue) -> Result<T, JsonError>
+where T: DeserializeOwned {
+    let v = h.as_bytes().to_vec();
+    aws_lambda_json_impl::from_vec(v)
+}
+
 impl Context {
     /// Create a new [Context] struct based on the function configuration
     /// and the incoming request data.
     pub fn new(request_id: &str, env_config: RefConfig, headers: &HeaderMap) -> Result<Self, Error> {
         let client_context: Option<ClientContext> = if let Some(value) = headers.get("lambda-runtime-client-context") {
-            aws_lambda_json_impl::from_str(value.to_str()?)?
+            parse_header(value)?
         } else {
             None
         };
 
         let identity: Option<CognitoIdentity> = if let Some(value) = headers.get("lambda-runtime-cognito-identity") {
-            aws_lambda_json_impl::from_str(value.to_str()?)?
+            parse_header(value)?
         } else {
             None
         };

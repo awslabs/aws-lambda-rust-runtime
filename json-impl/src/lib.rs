@@ -22,20 +22,6 @@ mod serde {
     {
         from_str(s)
     }
-
-    pub fn from_slice_mut<'a, T>(s: &'a mut [u8]) -> serde_json::Result<T>
-    where
-        T: Deserialize<'a>,
-    {
-        from_slice(s)
-    }
-
-    pub fn from_bytes<'a, T>(b: Bytes) -> serde_json::Result<T>
-    where
-    T: DeserializeOwned,
-    {
-        from_slice(&b)
-    }
 }
 
 #[cfg(feature = "simd")]

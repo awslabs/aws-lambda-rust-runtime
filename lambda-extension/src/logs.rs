@@ -237,7 +237,10 @@ mod tests {
 
     #[test]
     fn deserialize_full() {
-        let data = r#"{"time": "2020-08-20T12:31:32.123Z","type": "function", "record": "hello world"}"#;
+        // To avoid lots of complex boilerplate, we use a mutable bytes slice in the parse
+        // with serde_json the slice is not actually mutated
+        // with simd_json it is
+        let mut data = r#"{"time": "2020-08-20T12:31:32.123Z","type": "function", "record": "hello world"}"#.as_bytes().to_vec();
         let expected = LambdaLog {
             time: Utc
                 .with_ymd_and_hms(2020, 8, 20, 12, 31, 32)
@@ -247,7 +250,7 @@ mod tests {
             record: LambdaLogRecord::Function("hello world".to_string()),
         };
 
-        let actual = aws_lambda_json_impl::from_str::<LambdaLog>(data).unwrap();
+        let actual = aws_lambda_json_impl::from_slice::<LambdaLog>(data.as_mut_slice()).unwrap();
 
         assert_eq!(expected, actual);
     }
@@ -258,7 +261,11 @@ mod tests {
                 #[test]
                 fn $name() {
                     let (input, expected) = $value;
-                    let actual = aws_lambda_json_impl::from_str::<LambdaLog>(&input).expect("unable to deserialize");
+                    // To avoid lots of complex boilerplate, we use a mutable bytes slice in the parse
+                    // with serde_json the slice is not actually mutated
+                    // with simd_json it is
+                    let mut input = input.as_bytes().to_vec();
+                    let actual = aws_lambda_json_impl::from_slice::<LambdaLog>(input.as_mut_slice()).expect("unable to deserialize");
 
                     assert!(actual.record == expected);
                 }

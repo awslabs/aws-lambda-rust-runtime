@@ -104,13 +104,13 @@ impl Context {
     /// and the incoming request data.
     pub fn new(request_id: &str, env_config: RefConfig, headers: &HeaderMap) -> Result<Self, Error> {
         let client_context: Option<ClientContext> = if let Some(value) = headers.get("lambda-runtime-client-context") {
-            serde_json::from_str(value.to_str()?)?
+            aws_lambda_json_impl::from_str(value.to_str()?)?
         } else {
             None
         };
 
         let identity: Option<CognitoIdentity> = if let Some(value) = headers.get("lambda-runtime-cognito-identity") {
-            serde_json::from_str(value.to_str()?)?
+            aws_lambda_json_impl::from_str(value.to_str()?)?
         } else {
             None
         };
@@ -323,7 +323,7 @@ mod test {
             custom,
             environment,
         };
-        let client_context_str = serde_json::to_string(&client_context).unwrap();
+        let client_context_str = aws_lambda_json_impl::to_string(&client_context).unwrap();
         let mut headers = HeaderMap::new();
         headers.insert("lambda-runtime-aws-request-id", HeaderValue::from_static("my-id"));
         headers.insert("lambda-runtime-deadline-ms", HeaderValue::from_static("123"));
@@ -360,7 +360,7 @@ mod test {
             identity_id: String::new(),
             identity_pool_id: String::new(),
         };
-        let cognito_identity_str = serde_json::to_string(&cognito_identity).unwrap();
+        let cognito_identity_str = aws_lambda_json_impl::to_string(&cognito_identity).unwrap();
         let mut headers = HeaderMap::new();
         headers.insert("lambda-runtime-aws-request-id", HeaderValue::from_static("my-id"));
         headers.insert("lambda-runtime-deadline-ms", HeaderValue::from_static("123"));

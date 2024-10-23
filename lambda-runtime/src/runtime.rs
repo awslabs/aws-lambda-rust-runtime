@@ -327,7 +327,7 @@ mod endpoint_tests {
             error_type: "InvalidEventDataError".into(),
             error_message: "Error parsing event data".into(),
         };
-        let body = serde_json::to_string(&diagnostic)?;
+        let body = aws_lambda_json_impl::to_string(&diagnostic)?;
 
         let server = MockServer::start();
         let mock = server.mock(|when, then| {
@@ -377,7 +377,7 @@ mod endpoint_tests {
         let base = server.base_url().parse().expect("Invalid mock server Uri");
         let client = Client::builder().with_endpoint(base).build()?;
 
-        async fn func(event: crate::LambdaEvent<serde_json::Value>) -> Result<serde_json::Value, Error> {
+        async fn func(event: crate::LambdaEvent<aws_lambda_json_impl::Value>) -> Result<aws_lambda_json_impl::Value, Error> {
             let (event, _) = event.into_parts();
             Ok(event)
         }
@@ -421,7 +421,7 @@ mod endpoint_tests {
 
     async fn run_panicking_handler<F>(func: F) -> Result<(), Error>
     where
-        F: FnMut(crate::LambdaEvent<serde_json::Value>) -> BoxFuture<'static, Result<serde_json::Value, Error>>
+        F: FnMut(crate::LambdaEvent<aws_lambda_json_impl::Value>) -> BoxFuture<'static, Result<aws_lambda_json_impl::Value, Error>>
             + Send
             + 'static,
     {

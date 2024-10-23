@@ -11,7 +11,7 @@ const ERROR_CONTEXT: &str = "failed to deserialize the incoming data into the fu
 /// into the type that the function receives.
 #[derive(Debug)]
 pub(crate) struct DeserializeError {
-    inner: serde_path_to_error::Error<serde_json::Error>,
+    inner: serde_path_to_error::Error<aws_lambda_json_impl::JsonError>,
 }
 
 impl fmt::Display for DeserializeError {
@@ -32,11 +32,23 @@ impl Error for DeserializeError {
 }
 
 /// Deserialize the data sent to the function into the type that the function receives.
+#[cfg(not(feature = "simd_json"))]
 pub(crate) fn deserialize<T>(body: &[u8], context: Context) -> Result<LambdaEvent<T>, DeserializeError>
 where
     T: for<'de> Deserialize<'de>,
 {
-    let jd = &mut serde_json::Deserializer::from_slice(body);
+    let jd = &mut aws_lambda_json_impl::JsonDeserializer::from_slice(body);
+    serde_path_to_error::deserialize(jd)
+        .map(|payload| LambdaEvent::new(payload, context))
+        .map_err(|inner| DeserializeError { inner })
+}
+
+#[cfg(feature = "simd_json")]
+pub(crate) fn deserialize<T>(body: &mut [u8], context: Context) -> Result<LambdaEvent<T>, DeserializeError>
+where
+    T: for<'de> Deserialize<'de>,
+{
+    let jd = &mut aws_lambda_json_impl::JsonDeserializer::from_slice(body);
     serde_path_to_error::deserialize(jd)
         .map(|payload| LambdaEvent::new(payload, context))
         .map_err(|inner| DeserializeError { inner })

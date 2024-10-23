@@ -20,6 +20,7 @@ simd = [ "simd-json/ordered-float" ]
 [dependencies]
 serde_json = { version = "^1", features = ["raw_value"] }
 simd-json = { version = "^0", optional = true }
+bytes = { workspace = true }
 serde = { version = "^1", no-default-features = true }
 
 

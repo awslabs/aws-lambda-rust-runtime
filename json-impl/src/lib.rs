@@ -9,10 +9,12 @@ pub use simd::*;
 
 #[cfg(not(feature = "simd"))]
 mod serde {
-    use serde::Deserialize;
+    use bytes::Bytes;
+    use serde::{de::DeserializeOwned, Deserialize};
     pub use serde_json::{
         self, error::Error as JsonError, from_reader, from_slice, from_str, from_value, json, to_string,
         to_string_pretty, to_value, to_writer, value::RawValue, Deserializer as JsonDeserializer, Value,
+        to_vec,
     };
     pub fn from_str_mut<'a, T>(s: &'a mut str) -> serde_json::Result<T>
     where
@@ -20,17 +22,25 @@ mod serde {
     {
         from_str(s)
     }
+
     pub fn from_slice_mut<'a, T>(s: &'a mut [u8]) -> serde_json::Result<T>
     where
         T: Deserialize<'a>,
     {
         from_slice(s)
     }
+
+    pub fn from_bytes<'a, T>(b: Bytes) -> serde_json::Result<T>
+    where
+    T: DeserializeOwned,
+    {
+        from_slice(&b)
+    }
 }
 
 #[cfg(feature = "simd")]
 mod simd {
-    use serde::Deserialize;
+    use serde::{de::DeserializeOwned, Deserialize};
     use simd_json::serde::from_str as unsafe_from_str; //THIS is mutable and is unsafe!
     pub use simd_json::{
         self,
@@ -44,6 +54,7 @@ mod simd {
             to_string,
             to_string_pretty,
             to_writer,
+            to_vec,
         },
         tape::Value as RawValue, //THIS is gonna be the fun one!
         Deserializer as JsonDeserializer,
@@ -58,4 +69,18 @@ mod simd {
     {
         unsafe { unsafe_from_str(s) }
     }
+
+    pub fn from_bytes<'a, T>(b: Bytes) -> serde_json::Result<T>
+    where
+    T: DeserializeOwned,
+    {
+        match b.try_into_mut() {
+            Ok(b) => from_slice(b),
+            Err(b) => {
+                let mut v = b.into_vec();
+                from_slice(&mut v)
+            }
+        }
+    }
 }
+

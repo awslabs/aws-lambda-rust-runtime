@@ -208,7 +208,7 @@ where
                 .unwrap());
         }
     };
-    let logs: Vec<LambdaLog> = match serde_json::from_slice(&body.to_bytes()) {
+    let logs: Vec<LambdaLog> = match aws_lambda_json_impl::from_bytes(body.to_bytes()) {
         Ok(logs) => logs,
         Err(e) => {
             error!("Error parsing logs: {}", e);
@@ -247,7 +247,7 @@ mod tests {
             record: LambdaLogRecord::Function("hello world".to_string()),
         };
 
-        let actual = serde_json::from_str::<LambdaLog>(data).unwrap();
+        let actual = aws_lambda_json_impl::from_str::<LambdaLog>(data).unwrap();
 
         assert_eq!(expected, actual);
     }
@@ -258,7 +258,7 @@ mod tests {
                 #[test]
                 fn $name() {
                     let (input, expected) = $value;
-                    let actual = serde_json::from_str::<LambdaLog>(&input).expect("unable to deserialize");
+                    let actual = aws_lambda_json_impl::from_str::<LambdaLog>(&input).expect("unable to deserialize");
 
                     assert!(actual.record == expected);
                 }

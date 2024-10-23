@@ -1,6 +1,8 @@
 use http::Request;
 use http_body_util::BodyExt;
 use hyper::{body::Incoming, server::conn::http1, service::service_fn};
+use bytes::Bytes;
+use aws_lambda_json_impl::{from_bytes, JsonError};
 
 use hyper_util::rt::tokio::TokioIo;
 use lambda_runtime_api_client::Client;
@@ -396,7 +398,7 @@ where
 
             let body = body.collect().await?.to_bytes();
             trace!("{}", std::str::from_utf8(&body)?); // this may be very verbose
-            let event: NextEvent = serde_json::from_slice(&body)?;
+            let event: NextEvent = from_bytes(body)?;
             let is_invoke = event.is_invoke();
 
             let event = LambdaEvent::new(event);
@@ -541,7 +543,7 @@ async fn register<'a>(
 
     let (_, body) = res.into_parts();
     let body = body.collect().await?.to_bytes();
-    let response: RegisterResponseBody = serde_json::from_slice(&body)?;
+    let response: RegisterResponseBody = from_bytes(body)?;
 
     Ok(RegisterResponse {
         extension_id,

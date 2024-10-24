@@ -32,8 +32,6 @@ use aws_lambda_json_impl::{simd_json::ErrorType, JsonError};
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "simd_json")]
-use crate::deserializer::deserialize;
-
 
 use std::{env, future::Future, io::Read, pin::Pin};
 use url::Url;
@@ -463,15 +461,11 @@ impl RequestContext {
 ///     Ok(println!("{:#?}", request))
 /// }
 /// ```
-pub fn from_reader<R>(mut rdr: R) -> Result<crate::Request, JsonError>
+pub fn from_reader<R>(rdr: R) -> Result<crate::Request, JsonError>
 where
     R: Read,
 {
-    let mut data = Vec::new();
-    if let Err(e) = rdr.read_to_end(&mut data) {
-        return Err(JsonError::generic(ErrorType::Io(e)));
-    };
-    Ok(deserialize(data.as_mut_slice())?.into())
+    aws_lambda_json_impl::from_reader(rdr).map(LambdaRequest::into)
 }
 
 /// Deserializes a `Request` from a string of JSON text.
@@ -516,7 +510,7 @@ pub fn from_str(s: &str) -> Result<crate::Request, JsonError> {
 /// ```
 #[cfg(feature = "simd_json")]
 pub unsafe fn from_str(s: &mut str) -> Result<crate::Request, JsonError> {
-    Ok(deserialize(s.as_bytes_mut())?.into())
+    aws_lambda_json_impl::from_str(s).map(LambdaRequest::into)
 }
 
 /// Deserializes a `Request` from an owned String of JSON text.
@@ -536,7 +530,7 @@ pub unsafe fn from_str(s: &mut str) -> Result<crate::Request, JsonError> {
 /// ```
 pub fn from_string(s: String) -> Result<crate::Request, JsonError> {
     let mut v = s.into_bytes();
-    Ok(deserialize(v.as_mut_slice())?.into())
+    aws_lambda_json_impl::from_slice(v.as_mut_slice()).map(LambdaRequest::into)
 }
 
 fn x_forwarded_proto() -> HeaderName {

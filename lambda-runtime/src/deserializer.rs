@@ -89,7 +89,10 @@ pub(crate) fn deserialize<T>(body: Bytes, context: Context) -> Result<LambdaEven
 where
     T: for<'de> Deserialize<'de>,
 {
+    //THIS is where we can decide what type of serializer we actually want!
     aws_lambda_json_impl::from_bytes(body)
         .map(|payload| LambdaEvent::new(payload, context))
         .map_err(|inner| DeserializeError { inner })
 }
+
+

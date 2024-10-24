@@ -28,8 +28,12 @@ use aws_lambda_events::apigw::{ApiGatewayWebsocketProxyRequest, ApiGatewayWebsoc
 use aws_lambda_events::{encodings::Body, query_map::QueryMap};
 use http::{header::HeaderName, HeaderMap, HeaderValue};
 
-use aws_lambda_json_impl::JsonError;
+use aws_lambda_json_impl::{simd_json::ErrorType, JsonError};
 use serde::{Deserialize, Serialize};
+
+#[cfg(feature = "simd_json")]
+use crate::deserializer::deserialize;
+
 
 use std::{env, future::Future, io::Read, pin::Pin};
 use url::Url;
@@ -459,11 +463,15 @@ impl RequestContext {
 ///     Ok(println!("{:#?}", request))
 /// }
 /// ```
-pub fn from_reader<R>(rdr: R) -> Result<crate::Request, JsonError>
+pub fn from_reader<R>(mut rdr: R) -> Result<crate::Request, JsonError>
 where
     R: Read,
 {
-    aws_lambda_json_impl::from_reader(rdr).map(LambdaRequest::into)
+    let mut data = Vec::new();
+    if let Err(e) = rdr.read_to_end(&mut data) {
+        return Err(JsonError::generic(ErrorType::Io(e)));
+    };
+    Ok(deserialize(data.as_mut_slice())?.into())
 }
 
 /// Deserializes a `Request` from a string of JSON text.
@@ -482,8 +490,53 @@ where
 ///     Ok(println!("{:#?}", request))
 /// }
 /// ```
+#[cfg(not(feature = "simd_json"))]
 pub fn from_str(s: &str) -> Result<crate::Request, JsonError> {
     aws_lambda_json_impl::from_str(s).map(LambdaRequest::into)
+}
+
+/// Deserializes a `Request` from a string of JSON text using simd_json
+///
+/// # Example
+///
+/// ```rust,no_run
+/// use lambda_http::request::from_str;
+/// use std::fs::File;
+/// use std::error::Error;
+///
+/// fn main() -> Result<(), Box<dyn Error>> {
+///     let mut json = r#"{ ...raw json here... }"#.to_owned();
+///     let request = from_str(&mut json)?;
+///     Ok(println!("{:#?}", request))
+/// }
+/// 
+/// # SAFETY
+/// simd_json requires mutable access to the string slice and may
+/// leave the slice with invalid UTF8 data
+/// ```
+#[cfg(feature = "simd_json")]
+pub unsafe fn from_str(s: &mut str) -> Result<crate::Request, JsonError> {
+    Ok(deserialize(s.as_bytes_mut())?.into())
+}
+
+/// Deserializes a `Request` from an owned String of JSON text.
+///
+/// # Example
+///
+/// ```rust,no_run
+/// use lambda_http::request::from_string;
+/// use std::fs::File;
+/// use std::error::Error;
+///
+/// fn main() -> Result<(), Box<dyn Error>> {
+///     let mut json = r#"{ ...raw json here... }"#.to_owned();
+///     let request = from_str(json);
+///     Ok(println!("{:#?}", request))
+/// }
+/// ```
+pub fn from_string(s: String) -> Result<crate::Request, JsonError> {
+    let mut v = s.into_bytes();
+    Ok(deserialize(v.as_mut_slice())?.into())
 }
 
 fn x_forwarded_proto() -> HeaderName {
@@ -529,6 +582,8 @@ mod tests {
     use super::*;
     use crate::ext::RequestExt;
     use std::fs::File;
+    #[cfg(feature = "simd_json")]
+    use aws_lambda_json_impl::simd_json::prelude::ValueAsScalar;
 
     #[test]
     fn deserializes_apigw_request_events_from_readables() {
@@ -539,6 +594,7 @@ mod tests {
         assert!(result.is_ok(), "event was not parsed as expected {result:?}");
     }
 
+    #[cfg(not(feature = "simd_json"))]
     #[test]
     fn deserializes_minimal_apigw_http_request_events() {
         // from the docs
@@ -561,12 +617,41 @@ mod tests {
         );
     }
 
+    #[cfg(feature = "simd_json")]
+    #[test]
+    fn deserializes_minimal_apigw_http_request_events_with_simd() {
+        // from the docs
+        // https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request
+        let mut input = include_str!("../tests/data/apigw_v2_proxy_request_minimal.json").to_owned();
+        let result = unsafe{ from_str(&mut input) };
+        assert!(
+            result.is_ok(),
+            "event was not parsed as expected {result:?} given {input}" //SO not safe to do!
+        );
+        let req = result.expect("failed to parse request");
+        assert_eq!(req.method(), "GET");
+        assert_eq!(req.uri(), "https://xxx.execute-api.us-east-1.amazonaws.com/");
+
+        // Ensure this is an APIGWv2 request
+        let req_context = req.request_context_ref().expect("Request is missing RequestContext");
+        assert!(
+            matches!(req_context, &RequestContext::ApiGatewayV2(_)),
+            "expected ApiGatewayV2 context, got {req_context:?}"
+        );
+    }
+
+    //
+    // From here on, for testing, we use the from_string function in order top avoid
+    // duplicating test sources and having to deal with safety and mutability differences
+    // between the two JSON parsers we support
+    //
+
     #[test]
     fn deserializes_apigw_http_request_events() {
         // from the docs
         // https://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-api-gateway-request
         let input = include_str!("../tests/data/apigw_v2_proxy_request.json");
-        let result = from_str(input);
+        let result = from_string(input.to_owned());
         assert!(
             result.is_ok(),
             "event was not parsed as expected {result:?} given {input}"
@@ -599,7 +684,7 @@ mod tests {
         // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
         // https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html
         let input = include_str!("../tests/data/apigw_proxy_request.json");
-        let result = from_str(input);
+        let result = from_string(input.to_owned());
         assert!(
             result.is_ok(),
             "event was not parsed as expected {result:?} given {input}"
@@ -624,7 +709,7 @@ mod tests {
         // from the docs
         // https://docs.aws.amazon.com/lambda/latest/dg/urls-invocation.html#urls-payloads
         let input = include_str!("../tests/data/lambda_function_url_request.json");
-        let result = from_str(input);
+        let result = from_string(input.to_owned());
         assert!(
             result.is_ok(),
             "event was not parsed as expected {result:?} given {input}"
@@ -657,7 +742,7 @@ mod tests {
         // from the docs
         // https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html#multi-value-headers
         let input = include_str!("../tests/data/alb_request.json");
-        let result = from_str(input);
+        let result = from_string(input.to_owned());
         assert!(
             result.is_ok(),
             "event was not parsed as expected {result:?} given {input}"
@@ -682,7 +767,7 @@ mod tests {
         // from the docs
         // https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html#multi-value-headers
         let input = include_str!("../tests/data/alb_request_encoded_query_parameters.json");
-        let result = from_str(input);
+        let result = from_string(input.to_owned());
         assert!(
             result.is_ok(),
             "event was not parsed as expected {result:?} given {input}"
@@ -707,7 +792,7 @@ mod tests {
         // from docs
         // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
         let input = include_str!("../tests/data/apigw_multi_value_proxy_request.json");
-        let result = from_str(input);
+        let result = from_string(input.to_owned());
         assert!(
             result.is_ok(),
             "event is was not parsed as expected {result:?} given {input}"
@@ -737,7 +822,7 @@ mod tests {
         // from docs
         // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
         let input = include_str!("../tests/data/alb_multi_value_request.json");
-        let result = from_str(input);
+        let result = from_string(input.to_owned());
         assert!(
             result.is_ok(),
             "event is was not parsed as expected {result:?} given {input}"
@@ -763,7 +848,7 @@ mod tests {
         // from docs
         // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
         let input = include_str!("../tests/data/alb_multi_value_request_encoded_query_parameters.json");
-        let result = from_str(input);
+        let result = from_string(input.to_owned());
         assert!(
             result.is_ok(),
             "event is was not parsed as expected {result:?} given {input}"
@@ -794,7 +879,7 @@ mod tests {
         // * sam local start-api
         // * Invoke the API
         let input = include_str!("../tests/data/apigw_v2_sam_local.json");
-        let result = from_str(input);
+        let result = from_string(input.to_owned());
         assert!(
             result.is_ok(),
             "event was not parsed as expected {result:?} given {input}"
@@ -808,7 +893,7 @@ mod tests {
     fn deserialize_apigw_no_host() {
         // generated from the 'apigateway-aws-proxy' test event template in the Lambda console
         let input = include_str!("../tests/data/apigw_no_host.json");
-        let result = from_str(input);
+        let result = from_string(input.to_owned());
         assert!(
             result.is_ok(),
             "event was not parsed as expected {result:?} given {input}"
@@ -822,7 +907,7 @@ mod tests {
     fn deserialize_alb_no_host() {
         // generated from ALB health checks
         let input = include_str!("../tests/data/alb_no_host.json");
-        let result = from_str(input);
+        let result = from_string(input.to_owned());
         assert!(
             result.is_ok(),
             "event was not parsed as expected {result:?} given {input}"
@@ -836,7 +921,7 @@ mod tests {
     fn deserialize_apigw_path_with_space() {
         // generated from ALB health checks
         let input = include_str!("../tests/data/apigw_request_path_with_space.json");
-        let result = from_str(input);
+        let result = from_string(input.to_owned());
         assert!(
             result.is_ok(),
             "event was not parsed as expected {result:?} given {input}"
@@ -854,7 +939,7 @@ mod tests {
     #[test]
     fn deserializes_apigw_http_request_with_stage_in_path() {
         let input = include_str!("../tests/data/apigw_v2_proxy_request_with_stage_in_path.json");
-        let result = from_str(input);
+        let result = from_string(input.to_owned());
         assert!(
             result.is_ok(),
             "event was not parsed as expected {result:?} given {input}"
@@ -880,7 +965,7 @@ mod tests {
         // from docs
         // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
         let input = include_str!("../tests/data/apigw_multi_value_proxy_request.json");
-        let request = from_str(input).expect("failed to parse request");
+        let request = from_string(input.to_owned()).expect("failed to parse request");
         let (mut parts, _) = request.into_parts();
 
         #[derive(Deserialize)]
@@ -902,7 +987,7 @@ mod tests {
         use axum_core::extract::FromRequestParts;
         use axum_extra::extract::Query;
         let input = include_str!("../tests/data/apigw_v2_proxy_request.json");
-        let request = from_str(input).expect("failed to parse request");
+        let request = from_string(input.to_owned()).expect("failed to parse request");
         let (mut parts, _) = request.into_parts();
 
         #[derive(Deserialize)]
@@ -923,7 +1008,7 @@ mod tests {
         use axum_core::extract::FromRequestParts;
         use axum_extra::extract::Query;
         let input = include_str!("../tests/data/alb_multi_value_request.json");
-        let request = from_str(input).expect("failed to parse request");
+        let request = from_string(input.to_owned()).expect("failed to parse request");
         let (mut parts, _) = request.into_parts();
 
         #[derive(Deserialize)]
@@ -943,7 +1028,7 @@ mod tests {
     #[cfg(feature = "apigw_rest")]
     fn deserializes_request_authorizer() {
         let input = include_str!("../../lambda-events/src/fixtures/example-apigw-request.json");
-        let result = from_str(input);
+        let result = from_string(input.to_owned());
         assert!(
             result.is_ok(),
             "event was not parsed as expected {result:?} given {input}"

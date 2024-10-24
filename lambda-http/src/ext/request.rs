@@ -244,6 +244,7 @@ impl RequestPayloadExt for http::Request<Body> {
             .unwrap_or_else(|| Ok(None))
     }
 
+    #[cfg(not(feature = "simd_json"))]
     fn json<D>(&self) -> Result<Option<D>, JsonPayloadError>
     where
         D: DeserializeOwned,
@@ -252,6 +253,20 @@ impl RequestPayloadExt for http::Request<Body> {
             return Ok(None);
         }
         aws_lambda_json_impl::from_slice::<D>(self.body().as_ref())
+            .map(Some)
+            .map_err(JsonPayloadError::Parsing)
+    }
+
+    #[cfg(feature = "simd_json")]
+    fn json<D>(&self) -> Result<Option<D>, JsonPayloadError>
+    where
+        D: DeserializeOwned,
+    {
+        if self.body().is_empty() {
+            return Ok(None);
+        }
+        let mut body = self.body().to_vec();
+        aws_lambda_json_impl::from_slice::<D>(body.as_mut_slice())
             .map(Some)
             .map_err(JsonPayloadError::Parsing)
     }

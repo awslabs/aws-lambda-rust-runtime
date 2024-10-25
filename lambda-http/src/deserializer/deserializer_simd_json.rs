@@ -56,6 +56,7 @@ impl<'de> Deserialize<'de> for LambdaRequest {
         let t = d.into_tape();
         debug!("Getting the value");
         let v = t.as_value();
+        debug!("Establishing the event type");
 
         #[cfg(feature = "apigw_rest")]
         if let (Some(rc), true) = (v.get_object("request_context"),v.contains_key("http_method")) {

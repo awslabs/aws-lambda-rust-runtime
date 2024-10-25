@@ -32,12 +32,18 @@ impl<'de> Deserialize<'de> for LambdaRequest {
         //if TypeId::of::<D>() != TypeId::of::<JsonDeserializer<'_>>() {panic!("Deserializer must be simd_json::Deserializer")};
 
         //
-        // OK, what comes now is as blatant "crash and burn" moment ... IF the deserializer is NOT a simd_json::Deserializer.
-        // At the moment, I can't find a type-safe way to do this (without a million lines of code that obfuscate the
-        // intent beyond all comprehension) - HOWEVER... IF we are here, then someone has built us with the feature
-        // simd_json enabled - which means that all KNOWN invokers have ALSO been built with simd_json enabled - which means
-        // that this is safe... IF callers ONLY use the standard invokers (i.e. the Lambda Runtime or the standard entry-point
-        // functions in aws_lambda_json_impl). If not ... well, then you are on your own!
+        // OK, what comes next is a blatant "THIS is gonna crash" moment ... IF the deserializer is NOT a simd_json::Deserializer.
+        // At the moment, I can't find a type-safe way to check the Deserializer implementation (without a million lines of code 
+        // that obfuscate the simple intent beyond all comprehension).
+        //
+        // HOWEVER... IF we are here, then someone has built us with the simd_json feature enabled - which means that all KNOWN 
+        // invokers have ALSO been built with simd_json enabled - which means that this is safe... IF users ONLY exploit the standard 
+        // invokers (i.e. the Lambda Runtime or the standard entry-point functions in aws_lambda_json_impl).
+        // 
+        // If not ... well, then they are on their own!
+        //
+        // TODO: Find an economical way to safely type-check and "cast" the deserializer because, while
+        //       this works, because Deserializer is not object safe, the "cast" requires a move.
         //
         let d = unsafe { std::ptr::read(&deserializer as *const _ as *const JsonDeserializer<'de>) };
         std::mem::forget(deserializer);

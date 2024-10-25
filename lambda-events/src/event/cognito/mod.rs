@@ -937,7 +937,7 @@ mod trigger_source_tests {
             "PreSignUp_ExternalProvider",
         ];
         possible_triggers.into_iter().for_each(|trigger| {
-            let mut header = gen_header(trigger);
+            let header = gen_header(trigger);
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsPreSignupTriggerSource> =
                 aws_lambda_json_impl::from_string(header).unwrap();
             let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
@@ -951,7 +951,7 @@ mod trigger_source_tests {
     fn pre_authentication() {
         let possible_triggers = ["PreAuthentication_Authentication"];
         possible_triggers.into_iter().for_each(|trigger| {
-            let mut header = gen_header(trigger);
+            let header = gen_header(trigger);
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsPreAuthenticationTriggerSource> =
                 aws_lambda_json_impl::from_string(header).unwrap();
             let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
@@ -968,7 +968,7 @@ mod trigger_source_tests {
         ];
 
         possible_triggers.into_iter().for_each(|trigger| {
-            let mut header = gen_header(trigger);
+            let header = gen_header(trigger);
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsPostConfirmationTriggerSource> =
                 aws_lambda_json_impl::from_string(header).unwrap();
             let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
@@ -982,7 +982,7 @@ mod trigger_source_tests {
         let possible_triggers = ["PostAuthentication_Authentication"];
 
         possible_triggers.into_iter().for_each(|trigger| {
-            let mut header = gen_header(trigger);
+            let header = gen_header(trigger);
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsPostAuthenticationTriggerSource> =
                 aws_lambda_json_impl::from_string(header).unwrap();
             let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
@@ -996,7 +996,7 @@ mod trigger_source_tests {
         let possible_triggers = ["DefineAuthChallenge_Authentication"];
 
         possible_triggers.into_iter().for_each(|trigger| {
-            let mut header = gen_header(trigger);
+            let header = gen_header(trigger);
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsDefineAuthChallengeTriggerSource> =
                 aws_lambda_json_impl::from_string(header).unwrap();
             let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
@@ -1011,7 +1011,7 @@ mod trigger_source_tests {
         let possible_triggers = ["CreateAuthChallenge_Authentication"];
 
         possible_triggers.into_iter().for_each(|trigger| {
-            let mut header = gen_header(trigger);
+            let header = gen_header(trigger);
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsCreateAuthChallengeTriggerSource> =
                 aws_lambda_json_impl::from_string(header).unwrap();
             let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
@@ -1025,7 +1025,7 @@ mod trigger_source_tests {
         let possible_triggers = ["VerifyAuthChallengeResponse_Authentication"];
 
         possible_triggers.into_iter().for_each(|trigger| {
-            let mut header = gen_header(trigger);
+            let header = gen_header(trigger);
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsVerifyAuthChallengeTriggerSource> =
                 aws_lambda_json_impl::from_string(header).unwrap();
             let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
@@ -1045,7 +1045,7 @@ mod trigger_source_tests {
         ];
 
         possible_triggers.into_iter().for_each(|trigger| {
-            let mut header = gen_header(trigger);
+            let header = gen_header(trigger);
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsPreTokenGenTriggerSource> =
                 aws_lambda_json_impl::from_string(header).unwrap();
             let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
@@ -1059,7 +1059,7 @@ mod trigger_source_tests {
         let possible_triggers = ["UserMigration_Authentication", "UserMigration_ForgotPassword"];
 
         possible_triggers.into_iter().for_each(|trigger| {
-            let mut header = gen_header(trigger);
+            let header = gen_header(trigger);
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsMigrateUserTriggerSource> =
                 aws_lambda_json_impl::from_string(header).unwrap();
             let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
@@ -1081,7 +1081,7 @@ mod trigger_source_tests {
         ];
 
         possible_triggers.into_iter().for_each(|trigger| {
-            let mut header = gen_header(trigger);
+            let header = gen_header(trigger);
             let parsed: CognitoEventUserPoolsHeader<CognitoEventUserPoolsCustomMessageTriggerSource> =
                 aws_lambda_json_impl::from_string(header).unwrap();
             let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();

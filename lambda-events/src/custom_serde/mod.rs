@@ -97,8 +97,6 @@ where
 #[cfg(test)]
 #[allow(deprecated)]
 mod test {
-    use std::str::FromStr;
-
     use super::*;
     use serde::{Deserialize, Serialize};
 
@@ -181,19 +179,19 @@ mod test {
         }
 
         let test = r#"{"v": null}"#;
-        let decoded: Test = aws_lambda_json_impl::from_str(&test).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_str(test).unwrap();
         assert!(!decoded.v);
 
         let test = r#"{}"#;
-        let decoded: Test = aws_lambda_json_impl::from_str(&test).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_str(test).unwrap();
         assert!(!decoded.v);
 
         let test = r#"{"v": true}"#;
-        let decoded: Test = aws_lambda_json_impl::from_str(&test).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_str(test).unwrap();
         assert!(decoded.v);
 
         let test = r#"{"v": false}"#;
-        let decoded: Test = aws_lambda_json_impl::from_str(&test).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_str(test).unwrap();
         assert!(!decoded.v);
     }
     #[cfg(feature = "simd_json")]
@@ -209,19 +207,19 @@ mod test {
             v: bool,
         }
 
-        let test = String::from_str(r#"{"v": null}"#).unwrap();
+        let test = r#"{"v": null}"#.to_owned();
         let decoded: Test = aws_lambda_json_impl::from_string(test).unwrap();
         assert!(!decoded.v);
 
-        let test = String::from_str(r#"{}"#).unwrap();
+        let test = r#"{}"#.to_owned();
         let decoded: Test = aws_lambda_json_impl::from_string(test).unwrap();
         assert!(!decoded.v);
 
-        let test = String::from_str(r#"{"v": true}"#).unwrap();
+        let test = r#"{"v": true}"#.to_owned();
         let decoded: Test = aws_lambda_json_impl::from_string(test).unwrap();
         assert!(decoded.v);
 
-        let test = String::from_str(r#"{"v": false}"#).unwrap();
+        let test = r#"{"v": false}"#.to_owned();
         let decoded: Test = aws_lambda_json_impl::from_string(test).unwrap();
         assert!(!decoded.v);
     }

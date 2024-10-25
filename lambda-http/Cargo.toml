@@ -48,6 +48,7 @@ aws_lambda_json_impl = { path = "../json-impl" }
 serde_urlencoded = "0.7"
 tokio-stream = "0.1.2"
 url = "2.2"
+tracing = "0"
 
 [dependencies.aws_lambda_events]
 path = "../lambda-events"

@@ -9,6 +9,7 @@ use aws_lambda_events::apigw::ApiGatewayV2httpRequest;
 use aws_lambda_events::apigw::ApiGatewayWebsocketProxyRequest;
 use aws_lambda_json_impl::JsonDeserializer;
 use serde::{de::Error, Deserialize};
+use tracing::debug;
 
 const ERROR_CONTEXT: &str = "this function expects a JSON payload from Amazon API Gateway, Amazon Elastic Load Balancer, or AWS Lambda Function URLs, but the data doesn't match any of those services' events";
 
@@ -28,6 +29,7 @@ impl<'de> Deserialize<'de> for LambdaRequest {
     where
         D: serde::Deserializer<'de>
     {
+        
         // We can't do this because D is not enforced to be 'static
         //if TypeId::of::<D>() != TypeId::of::<JsonDeserializer<'_>>() {panic!("Deserializer must be simd_json::Deserializer")};
 
@@ -45,15 +47,20 @@ impl<'de> Deserialize<'de> for LambdaRequest {
         // TODO: Find an economical way to safely type-check and "cast" the deserializer because, while
         //       this works, because Deserializer is not object safe, the "cast" requires a move.
         //
+        debug!("Deserializing event into some sort of HTTP event - going unsafe...");
         let d = unsafe { std::ptr::read(&deserializer as *const _ as *const JsonDeserializer<'de>) };
         std::mem::forget(deserializer);
+        debug!("Back from unsafe...");
  
+        debug!("Getting the tape");
         let t = d.into_tape();
+        debug!("Getting the value");
         let v = t.as_value();
 
         #[cfg(feature = "apigw_rest")]
         if let (Some(rc), true) = (v.get_object("request_context"),v.contains_key("http_method")) {
             if rc.get("http").is_none() {
+                debug!("Parsing REST API request");
                 let res: ApiGatewayProxyRequest = t.deserialize().map_err(Error::custom)?;
                 return Ok(LambdaRequest::ApiGatewayV1(res));
             }
@@ -61,6 +68,7 @@ impl<'de> Deserialize<'de> for LambdaRequest {
         #[cfg(feature = "apigw_http")]
         if let Some(rc) = v.get_object("request_context") {
             if rc.get("http").is_some() {
+                debug!("Parsing HTTP API request");
                 let res: ApiGatewayV2httpRequest = t.deserialize().map_err(Error::custom)?;
                 return Ok(LambdaRequest::ApiGatewayV2(res));
             }
@@ -68,21 +76,25 @@ impl<'de> Deserialize<'de> for LambdaRequest {
         #[cfg(feature = "alb")]
         if let Some(rc) = v.get_object("request_context") {
             if rc.get("elb").is_some() {
+                debug!("Parsing ALB request");
                 let res: AlbTargetGroupRequest = t.deserialize().map_err(Error::custom)?;
                 return Ok(LambdaRequest::Alb(res));
             }
         }
         #[cfg(feature = "apigw_websockets")]
         if v.contains_key("connected_at") {
+            debug!("Parsing WebSocket request");
             let res: ApiGatewayWebsocketProxyRequest = t.deserialize().map_err(Error::custom)?;
             return Ok(LambdaRequest::WebSocket(res));
         }
 
         #[cfg(feature = "pass_through")]
         if PASS_THROUGH_ENABLED {
+            debug!("Defaulting to pass_through");
             return Ok(LambdaRequest::PassThrough(data.to_string()));
         }
 
+        debug!("Failed to find a candidate request type");
         Err(Error::custom(ERROR_CONTEXT))
 
     }

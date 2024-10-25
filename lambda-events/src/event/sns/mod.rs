@@ -279,6 +279,7 @@ mod test {
     fn my_example_sns_event_cloudwatch_single_metric() {
         let mut data =
             include_bytes!("../../fixtures/example-cloudwatch-alarm-sns-payload-single-metric.json").to_vec();
+        
         let parsed: SnsEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         assert_eq!(1, parsed.records.len());
 
@@ -286,6 +287,13 @@ mod test {
         let reparsed: SnsEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
 
+        //
+        // Without this, the test fails when using simd_json - precisely because simd_json needs a
+        // MUTABLE reference and it WILL modify the slice!
+        //
+        let mut data =
+            include_bytes!("../../fixtures/example-cloudwatch-alarm-sns-payload-single-metric.json").to_vec();
+        
         let parsed: SnsEventObj<CloudWatchAlarmPayload> =
             aws_lambda_json_impl::from_slice(data.as_mut_slice()).expect("failed to parse CloudWatch Alarm payload");
 

@@ -3,7 +3,10 @@ use base64::prelude::*;
 use bytes::Bytes;
 use http::{header::ToStrError, HeaderMap, HeaderValue, StatusCode};
 use lambda_runtime_api_client::body::Body;
-use serde::{Deserialize, Serialize, de::DeserializeOwned};
+use serde::{Deserialize, Serialize};
+#[cfg(feature = "simd_json")]
+use serde::de::DeserializeOwned;
+
 use std::{
     collections::HashMap,
     fmt::Debug,
@@ -103,7 +106,7 @@ impl Default for Context {
 #[cfg(not(feature = "simd_json"))]
 fn parse_header<'a,T>(h: &'a HeaderValue) -> Result<T, JsonError>
 where T: Deserialize<'a> {
-    aws_lambda_json_impl::from_str(h.to_str()?)?
+    aws_lambda_json_impl::from_slice(h.as_bytes())
 }
 
 #[cfg(feature = "simd_json")]

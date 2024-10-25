@@ -27,14 +27,13 @@ use aws_lambda_events::apigw::{ApiGatewayV2httpRequest, ApiGatewayV2httpRequestC
 use aws_lambda_events::apigw::{ApiGatewayWebsocketProxyRequest, ApiGatewayWebsocketProxyRequestContext};
 use aws_lambda_events::{encodings::Body, query_map::QueryMap};
 use http::{header::HeaderName, HeaderMap, HeaderValue};
-
-use aws_lambda_json_impl::{simd_json::ErrorType, JsonError};
 use serde::{Deserialize, Serialize};
-
-#[cfg(feature = "simd_json")]
-
 use std::{env, future::Future, io::Read, pin::Pin};
 use url::Url;
+use aws_lambda_json_impl::JsonError;
+
+#[cfg(feature = "simd_json")]
+use aws_lambda_json_impl::simd_json::ErrorType;
 
 /// Internal representation of an Lambda http event from
 /// ALB, API Gateway REST and HTTP API proxy event perspectives

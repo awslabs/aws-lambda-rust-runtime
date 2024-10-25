@@ -78,7 +78,8 @@ pub(crate) fn deserialize<T>(body: Bytes, context: Context) -> Result<LambdaEven
 where
     T: for<'de> Deserialize<'de>,
 {
-    let jd = &mut aws_lambda_json_impl::from_bytes(body);
+    use aws_lambda_json_impl::JsonDeserializer;
+    let jd = &mut JsonDeserializer::from_slice(&body);
     serde_path_to_error::deserialize(jd)
         .map(|payload| LambdaEvent::new(payload, context))
         .map_err(|inner| DeserializeError { inner })

@@ -54,7 +54,7 @@ mod tests {
 
     #[test]
     fn test_deserialize_apigw_rest() {
-        let data = include_bytes!("../../lambda-events/src/fixtures/example-apigw-request.json");
+        let data = include_bytes!("../../../lambda-events/src/fixtures/example-apigw-request.json");
 
         let req: LambdaRequest = aws_lambda_json_impl::from_slice(data).expect("failed to deserialize apigw rest data");
         match req {
@@ -67,7 +67,7 @@ mod tests {
 
     #[test]
     fn test_deserialize_apigw_http() {
-        let data = include_bytes!("../../lambda-events/src/fixtures/example-apigw-v2-request-iam.json");
+        let data = include_bytes!("../../../lambda-events/src/fixtures/example-apigw-v2-request-iam.json");
 
         let req: LambdaRequest = aws_lambda_json_impl::from_slice(data).expect("failed to deserialize apigw http data");
         match req {
@@ -80,7 +80,7 @@ mod tests {
 
     #[test]
     fn test_deserialize_sam_rest() {
-        let data = include_bytes!("../../lambda-events/src/fixtures/example-apigw-sam-rest-request.json");
+        let data = include_bytes!("../../../lambda-events/src/fixtures/example-apigw-sam-rest-request.json");
 
         let req: LambdaRequest = aws_lambda_json_impl::from_slice(data).expect("failed to deserialize SAM rest data");
         match req {
@@ -93,7 +93,7 @@ mod tests {
 
     #[test]
     fn test_deserialize_sam_http() {
-        let data = include_bytes!("../../lambda-events/src/fixtures/example-apigw-sam-http-request.json");
+        let data = include_bytes!("../../../lambda-events/src/fixtures/example-apigw-sam-http-request.json");
 
         let req: LambdaRequest = aws_lambda_json_impl::from_slice(data).expect("failed to deserialize SAM http data");
         match req {
@@ -107,7 +107,7 @@ mod tests {
     #[test]
     fn test_deserialize_alb() {
         let data = include_bytes!(
-            "../../lambda-events/src/fixtures/example-alb-lambda-target-request-multivalue-headers.json"
+            "../../../lambda-events/src/fixtures/example-alb-lambda-target-request-multivalue-headers.json"
         );
 
         let req: LambdaRequest = aws_lambda_json_impl::from_slice(data).expect("failed to deserialize alb rest data");
@@ -125,7 +125,7 @@ mod tests {
     #[test]
     fn test_deserialize_apigw_websocket() {
         let data =
-            include_bytes!("../../lambda-events/src/fixtures/example-apigw-websocket-request-without-method.json");
+            include_bytes!("../../../lambda-events/src/fixtures/example-apigw-websocket-request-without-method.json");
 
         let req: LambdaRequest = aws_lambda_json_impl::from_slice(data).expect("failed to deserialize apigw websocket data");
         match req {
@@ -139,7 +139,7 @@ mod tests {
     #[test]
     #[cfg(feature = "pass_through")]
     fn test_deserialize_bedrock_agent() {
-        let data = include_bytes!("../../lambda-events/src/fixtures/example-bedrock-agent-runtime-event.json");
+        let data = include_bytes!("../../../lambda-events/src/fixtures/example-bedrock-agent-runtime-event.json");
 
         let req: LambdaRequest =
             aws_lambda_json_impl::from_slice(data).expect("failed to deserialize bedrock agent request data");
@@ -154,7 +154,7 @@ mod tests {
     #[test]
     #[cfg(feature = "pass_through")]
     fn test_deserialize_sqs() {
-        let data = include_bytes!("../../lambda-events/src/fixtures/example-sqs-event.json");
+        let data = include_bytes!("../../../lambda-events/src/fixtures/example-sqs-event.json");
 
         let req: LambdaRequest = aws_lambda_json_impl::from_slice(data).expect("failed to deserialize sqs event data");
         match req {

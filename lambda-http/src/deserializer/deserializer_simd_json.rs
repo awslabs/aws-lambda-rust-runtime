@@ -1,5 +1,3 @@
-use std::any::TypeId;
-
 use crate::request::LambdaRequest;
 #[cfg(feature = "alb")]
 use aws_lambda_events::alb::AlbTargetGroupRequest;
@@ -50,27 +48,27 @@ impl<'de> Deserialize<'de> for LambdaRequest {
         #[cfg(feature = "apigw_rest")]
         if let (Some(rc), true) = (v.get_object("request_context"),v.contains_key("http_method")) {
             if rc.get("http").is_none() {
-                let res: ApiGatewayProxyRequest = t.deserialize().map_err(|e|Error::custom(e))?;
+                let res: ApiGatewayProxyRequest = t.deserialize().map_err(Error::custom)?;
                 return Ok(LambdaRequest::ApiGatewayV1(res));
             }
         }
         #[cfg(feature = "apigw_http")]
         if let Some(rc) = v.get_object("request_context") {
             if rc.get("http").is_some() {
-                let res: ApiGatewayV2httpRequest = t.deserialize().map_err(|e|Error::custom(e))?;
+                let res: ApiGatewayV2httpRequest = t.deserialize().map_err(Error::custom)?;
                 return Ok(LambdaRequest::ApiGatewayV2(res));
             }
         }
         #[cfg(feature = "alb")]
         if let Some(rc) = v.get_object("request_context") {
-            if let Some(_) = rc.get("elb") {
-                let res: AlbTargetGroupRequest = t.deserialize().map_err(|e|Error::custom(e))?;
+            if rc.get("elb").is_some() {
+                let res: AlbTargetGroupRequest = t.deserialize().map_err(Error::custom)?;
                 return Ok(LambdaRequest::Alb(res));
             }
         }
         #[cfg(feature = "apigw_websockets")]
         if v.contains_key("connected_at") {
-            let res: ApiGatewayWebsocketProxyRequest = t.deserialize().map_err(|e|Error::custom(e))?;
+            let res: ApiGatewayWebsocketProxyRequest = t.deserialize().map_err(Error::custom)?;
             return Ok(LambdaRequest::WebSocket(res));
         }
 

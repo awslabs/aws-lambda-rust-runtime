@@ -32,9 +32,6 @@ use std::{env, future::Future, io::Read, pin::Pin};
 use url::Url;
 use aws_lambda_json_impl::JsonError;
 
-#[cfg(feature = "simd_json")]
-use aws_lambda_json_impl::simd_json::ErrorType;
-
 /// Internal representation of an Lambda http event from
 /// ALB, API Gateway REST and HTTP API proxy event perspectives
 ///
@@ -502,11 +499,13 @@ pub fn from_str(s: &str) -> Result<crate::Request, JsonError> {
 ///     let request = from_str(&mut json)?;
 ///     Ok(println!("{:#?}", request))
 /// }
-/// 
-/// # SAFETY
-/// simd_json requires mutable access to the string slice and may
-/// leave the slice with invalid UTF8 data
 /// ```
+/// 
+/// # Safety
+/// 
+/// simd_json requires mutable access to the string slice and may
+/// leave the slice with invalid UTF8 data.
+/// 
 #[cfg(feature = "simd_json")]
 pub unsafe fn from_str(s: &mut str) -> Result<crate::Request, JsonError> {
     aws_lambda_json_impl::from_str(s).map(LambdaRequest::into)

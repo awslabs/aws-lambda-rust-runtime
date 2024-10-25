@@ -62,7 +62,7 @@ mod simd {
         Error as JsonError,
     };
 
-    pub fn from_bytes<'a, T>(b: Bytes) -> simd_json::Result<T>
+    pub fn from_bytes<T>(b: Bytes) -> simd_json::Result<T>
     where
     T: DeserializeOwned,
     {
@@ -75,14 +75,14 @@ mod simd {
         }
     }
 
-    pub fn from_string<'a, T>(mut s: String) -> simd_json::Result<T>
+    pub fn from_string<T>(mut s: String) -> simd_json::Result<T>
     where
     T: DeserializeOwned,
     {
         unsafe{ from_str(s.as_mut_str()) }
     }
 
-    pub fn from_vec<'a, T>(mut v: Vec<u8>) -> simd_json::Result<T>
+    pub fn from_vec<T>(mut v: Vec<u8>) -> simd_json::Result<T>
     where
     T: DeserializeOwned,
     {

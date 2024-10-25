@@ -30,10 +30,17 @@ impl<'de> Deserialize<'de> for LambdaRequest {
     where
         D: serde::Deserializer<'de>
     {
-        // Firstly we can say 'this is a programming error if this isn't a simd_json::Deserializer.
+        // We can't do this because D is not enforced to be 'static
         //if TypeId::of::<D>() != TypeId::of::<JsonDeserializer<'_>>() {panic!("Deserializer must be simd_json::Deserializer")};
- 
-        // And now, like a lot of simd_json, we have to venture into the unsafe!
+
+        //
+        // OK, what comes now is as blatant "crash and burn" moment ... IF the deserializer is NOT a simd_json::Deserializer.
+        // At the moment, I can't find a type-safe way to do this (without a million lines of code that obfuscate the
+        // intent beyond all comprehension) - HOWEVER... IF we are here, then someone has built us with the feature
+        // simd_json enabled - which means that all KNOWN invokers have ALSO been built with simd_json enabled - which means
+        // that this is safe... IF callers ONLY use the standard invokers (i.e. the Lambda Runtime or the standard entry-point
+        // functions in aws_lambda_json_impl). If not ... well, then you are on your own!
+        //
         let d = unsafe { std::ptr::read(&deserializer as *const _ as *const JsonDeserializer<'de>) };
         std::mem::forget(deserializer);
  

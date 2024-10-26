@@ -30,32 +30,6 @@ impl<'de> Deserialize<'de> for LambdaRequest {
         D: serde::Deserializer<'de>
     {
         
-        // We can't do this because D is not enforced to be 'static
-        //if TypeId::of::<D>() != TypeId::of::<JsonDeserializer<'_>>() {panic!("Deserializer must be simd_json::Deserializer")};
-
-        //
-        // OK, what comes next is a blatant "THIS is gonna crash" moment ... IF the deserializer is NOT a simd_json::Deserializer.
-        // At the moment, I can't find a type-safe way to check the Deserializer implementation (without a million lines of code 
-        // that obfuscate the simple intent beyond all comprehension).
-        //
-        // HOWEVER... IF we are here, then someone has built us with the simd_json feature enabled - which means that all KNOWN 
-        // invokers have ALSO been built with simd_json enabled - which means that this is safe... IF users ONLY exploit the standard 
-        // invokers (i.e. the Lambda Runtime or the standard entry-point functions in aws_lambda_json_impl).
-        // 
-        // If not ... well, then they are on their own!
-        //
-        // TODO: Find an economical way to safely type-check and "cast" the deserializer because, while
-        //       this works, because Deserializer is not object safe, the "cast" requires a move.
-        //
-        debug!("Deserializing event into some sort of HTTP event - going unsafe...");
-        let d = unsafe { std::ptr::read(&deserializer as *const _ as *const JsonDeserializer<'de>) };
-        std::mem::forget(deserializer);
-        debug!("Back from unsafe...");
- 
-        debug!("Getting the tape");
-        let t = d.into_tape();
-        debug!("Getting the value");
-        let v = t.as_value();
         debug!("Establishing the event type");
 
         #[cfg(feature = "apigw_rest")]
@@ -162,7 +136,7 @@ mod tests {
         let mut data = include_bytes!(
             "../../../lambda-events/src/fixtures/example-alb-lambda-target-request-multivalue-headers.json"
         ).to_vec();
-
+        
         let req: LambdaRequest = aws_lambda_json_impl::from_slice(data.as_mut_slice()).expect("failed to deserialize alb rest data");
         match req {
             LambdaRequest::Alb(req) => {

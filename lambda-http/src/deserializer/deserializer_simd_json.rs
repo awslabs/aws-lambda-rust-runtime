@@ -60,9 +60,6 @@ impl<'de> Deserialize<'de> for LambdaRequest {
         } else {
             (false, false, false)
         };
-//        debug!("State of d before restart: {:?}", d);
-//        d.restart();
-//        debug!("State of d after restart: {:?}", d);
         
         #[cfg(feature = "apigw_rest")]
         if !(http_context || alb_context || websocket_context) {

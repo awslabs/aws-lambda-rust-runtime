@@ -527,7 +527,7 @@ mod tests {
         assert!(payload.is_err());
 
         if let Err(JsonPayloadError::Parsing(err)) = payload {
-            assert!(err.is_syntax())
+            assert!(err.is_syntax(), "Error should be syntax: {:?}", err)
         } else {
             panic!(
                 "{}",
@@ -544,7 +544,7 @@ mod tests {
         let result = request.json::<Payload>();
 
         if let Err(JsonPayloadError::Parsing(err)) = result {
-            assert!(err.is_data())
+            assert!(err.is_data(), "Error should be data: {:?}", err)
         } else {
             panic!(
                 "{}",

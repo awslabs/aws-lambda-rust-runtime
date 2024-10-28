@@ -49,7 +49,9 @@ impl<'de> Deserialize<'de> for LambdaRequest {
         debug!("Deserializing event into some sort of HTTP event - going unsafe...");
         let d = unsafe { std::ptr::read_unaligned(&deserializer as *const _ as *mut &mut JsonDeserializer<'de>) };
 //      std::mem::forget(deserializer); We need deserializer - otherwise we have to Box the Deserialize dyn when casting back and using for deserialize calls
-        debug!("Getting the value");
+
+
+        debug!("Getting the value from d: {:?}", d);
         let v = d.as_value();
         debug!("Establishing the event type");
 
@@ -58,7 +60,9 @@ impl<'de> Deserialize<'de> for LambdaRequest {
         } else {
             (false, false, false)
         };
+        debug!("State of d before restart: {:?}", d);
         d.restart();
+        debug!("State of d after restart: {:?}", d);
         
         #[cfg(feature = "apigw_rest")]
         if !(http_context || alb_context || websocket_context) {

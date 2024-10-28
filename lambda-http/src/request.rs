@@ -496,7 +496,7 @@ pub fn from_str(s: &str) -> Result<crate::Request, JsonError> {
 ///
 /// fn main() -> Result<(), Box<dyn Error>> {
 ///     let mut json = r#"{ ...raw json here... }"#.to_owned();
-///     let request = from_str(&mut json)?;
+///     let request = unsafe{ from_str(&mut json) }?;
 ///     Ok(println!("{:#?}", request))
 /// }
 /// ```
@@ -522,7 +522,7 @@ pub unsafe fn from_str(s: &mut str) -> Result<crate::Request, JsonError> {
 ///
 /// fn main() -> Result<(), Box<dyn Error>> {
 ///     let mut json = r#"{ ...raw json here... }"#.to_owned();
-///     let request = from_str(json);
+///     let request = from_string(json);
 ///     Ok(println!("{:#?}", request))
 /// }
 /// ```

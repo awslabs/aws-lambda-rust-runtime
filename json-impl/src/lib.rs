@@ -61,6 +61,7 @@ mod simd {
         Deserializer as JsonDeserializer,
         Error as JsonError,
     };
+    pub use value_trait::prelude::*;
 
     pub fn from_bytes<T>(b: Bytes) -> simd_json::Result<T>
     where

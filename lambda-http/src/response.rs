@@ -133,9 +133,15 @@ impl LambdaResponse {
             RequestOrigin::PassThrough => {
                 match body {
                     // text body must be a valid json string
+                    #[cfg(not(feature = "simd_json"))]
                     Some(Body::Text(body)) => {LambdaResponse::PassThrough(aws_lambda_json_impl::from_str(&body).unwrap_or_default())},
+                    #[cfg(feature = "simd_json")]
+                    Some(Body::Text(body)) => {LambdaResponse::PassThrough(aws_lambda_json_impl::from_string(body).unwrap_or_default())},
                     // binary body and other cases return Value::Null
+                    #[cfg(not(feature = "simd_json"))]
                     _ => LambdaResponse::PassThrough(aws_lambda_json_impl::Value::Null),
+                    #[cfg(feature = "simd_json")]
+                    _ => LambdaResponse::PassThrough(aws_lambda_json_impl::Value::Static(aws_lambda_json_impl::StaticNode::Null)),
                 }
             }
             #[cfg(not(any(

@@ -36,9 +36,8 @@ impl<'de> Deserialize<'de> for LambdaRequest {
         //
         // There is a future feature of simd_json being considered that is very similar to serde_json's RawValue - effectively a
         // Deserializer-implementation-specific way of introspecting/peeking at the parsed JSON before continuing with deserialization.
-        // That's what the serde_json implementation of this uses, but, for now we have to resort to some wildly unsafe code in order
-        // to cast the incoming D to &mut simd_json::Deserializer. AND we don't "forget" the incoming value either because we need THAT
-        // to pass to our sub-deserialize attempts!
+        // That's what the serde_json implementation of this uses, but, for now we have to resort to this wildly unsafe cast of the
+        // the incoming D to &mut simd_json::Deserializer.
         //
         // HOWEVER... IF we are here, then someone has built this code with the simd_json feature enabled - which means that all KNOWN 
         // invokers have ALSO been built with simd_json enabled - which means that this is, in fact, "safe"... IF users ONLY exploit the 
@@ -46,15 +45,12 @@ impl<'de> Deserialize<'de> for LambdaRequest {
         // 
         // If not ... well, expect bad things to happen!
         //
-        debug!("Deserializing event into some sort of HTTP event - going unsafe...");
-        let d = unsafe { std::ptr::read_unaligned(&deserializer as *const _ as *mut &mut JsonDeserializer<'de>) };
-//      std::mem::forget(deserializer); We need deserializer - otherwise we have to Box the Deserialize dyn when casting back and using for deserialize calls
+        let d = unsafe { &*(&deserializer as *const _ as *mut &mut JsonDeserializer<'de>) };
 
-
-        debug!("Getting the value from d: {:?}", d);
+        // Get a simd_json "raw" Value representing what is in the deserializer;
         let v = d.as_value();
-        debug!("Establishing the event type");
 
+        // Introspect for the type markers on V2 payloads
         let (http_context, alb_context, websocket_context) = if let Some(rc) = v.get("requestContext") {
             (rc.contains_key("http"), rc.contains_key("elb"), rc.contains_key("connectedAt"))
         } else {
@@ -62,6 +58,7 @@ impl<'de> Deserialize<'de> for LambdaRequest {
         };
         
         #[cfg(feature = "apigw_rest")]
+        // If it's not a V2 payload, then we try to deserialize a V1 payload
         if !(http_context || alb_context || websocket_context) {
             debug!("Parsing REST API request");
             return ApiGatewayProxyRequest::deserialize(deserializer).map_err(Error::custom).map(LambdaRequest::ApiGatewayV1);

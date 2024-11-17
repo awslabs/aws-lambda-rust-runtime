@@ -1,8 +1,11 @@
 use base64::Engine;
+#[cfg(any(feature = "appsync_events"))]
+use serde::{de::DeserializeOwned, ser::Error as SerError, Serialize};
 use serde::{
     de::{Deserialize, Deserializer, Error as DeError},
     ser::Serializer,
 };
+
 use std::collections::HashMap;
 
 #[cfg(feature = "codebuild")]
@@ -92,6 +95,27 @@ where
     // https://github.com/serde-rs/serde/issues/1098
     let opt = Option::deserialize(deserializer)?;
     Ok(opt.unwrap_or_default())
+}
+
+#[cfg(any(feature = "appsync_events"))]
+pub(crate) fn serialize_stringified_json<T, S>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
+where
+    T: Serialize,
+    S: Serializer,
+{
+    let json_str = serde_json::to_string(value).map_err(|e| S::Error::custom(e))?;
+
+    json_str.serialize(serializer)
+}
+
+pub(crate) fn deserialize_stringified_json<'de, T, D>(deserializer: D) -> Result<T, D::Error>
+where
+    T: DeserializeOwned,
+    D: Deserializer<'de>,
+{
+    let json_str = String::deserialize(deserializer)?;
+
+    serde_json::from_str(&json_str).map_err(|e| D::Error::custom(e))
 }
 
 #[cfg(test)]

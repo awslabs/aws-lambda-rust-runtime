@@ -38,6 +38,7 @@ default = [
   "alb",
   "apigw",
   "appsync",
+  "appsync_events",
   "autoscaling",
   "bedrock_agent_runtime",
   "chime_bot",
@@ -83,6 +84,7 @@ activemq = []
 alb = ["bytes", "http", "http-body", "http-serde", "query_map"]
 apigw = ["bytes", "http", "http-body", "http-serde", "iam", "query_map"]
 appsync = []
+appsync_events = []
 autoscaling = ["chrono"]
 bedrock_agent_runtime = []
 chime_bot = ["chrono"]

@@ -13,6 +13,10 @@ pub mod apigw;
 #[cfg(feature = "appsync")]
 pub mod appsync;
 
+/// AWS Lambda event definitions for appsync.
+#[cfg(feature = "appsync_events")]
+pub mod appsync_events;
+
 /// AWS Lambda event definitions for autoscaling.
 #[cfg(feature = "autoscaling")]
 pub mod autoscaling;

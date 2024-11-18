@@ -1,0 +1,30 @@
+version: 2
+updates:
+  - package-ecosystem: "cargo"
+    directory: "."
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "cargo"
+    directory: "lambda-events"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "cargo"
+    directory: "lambda-extension"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "cargo"
+    directory: "lambda-http"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "cargo"
+    directory: "lambda-integration-tests"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "cargo"
+    directory: "lambda-runtime-api-client"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "cargo"
+    directory: "lambda-runtime"
+    schedule:
+      interval: "weekly"

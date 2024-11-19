@@ -18,7 +18,8 @@ pub type CodeBuildNumber = f32;
     feature = "apigw",
     feature = "s3",
     feature = "iot",
-    feature = "lambda_function_urls"
+    feature = "lambda_function_urls",
+    feature = "appsync_events"
 ))]
 mod headers;
 #[cfg(any(
@@ -26,7 +27,8 @@ mod headers;
     feature = "apigw",
     feature = "s3",
     feature = "iot",
-    feature = "lambda_function_urls"
+    feature = "lambda_function_urls",
+    feature = "appsync_events"
 ))]
 pub(crate) use self::headers::*;
 

@@ -1,5 +1,5 @@
 use base64::Engine;
-#[cfg(any(feature = "appsync_events"))]
+#[cfg(feature = "appsync_events")]
 use serde::{de::DeserializeOwned, ser::Error as SerError, Serialize};
 use serde::{
     de::{Deserialize, Deserializer, Error as DeError},
@@ -97,17 +97,18 @@ where
     Ok(opt.unwrap_or_default())
 }
 
-#[cfg(any(feature = "appsync_events"))]
+#[cfg(feature = "appsync_events")]
 pub(crate) fn serialize_stringified_json<T, S>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
 where
     T: Serialize,
     S: Serializer,
 {
-    let json_str = serde_json::to_string(value).map_err(|e| S::Error::custom(e))?;
+    let json_str = serde_json::to_string(value).map_err(S::Error::custom)?;
 
     json_str.serialize(serializer)
 }
 
+#[cfg(feature = "appsync_events")]
 pub(crate) fn deserialize_stringified_json<'de, T, D>(deserializer: D) -> Result<T, D::Error>
 where
     T: DeserializeOwned,
@@ -115,7 +116,7 @@ where
 {
     let json_str = String::deserialize(deserializer)?;
 
-    serde_json::from_str(&json_str).map_err(|e| D::Error::custom(e))
+    serde_json::from_str(&json_str).map_err(D::Error::custom)
 }
 
 #[cfg(test)]

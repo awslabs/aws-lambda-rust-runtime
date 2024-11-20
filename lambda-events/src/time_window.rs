@@ -68,12 +68,12 @@ mod test {
 
     #[test]
     fn test_window_deserializer() {
-        let v = serde_json::json!({
+        let v = aws_lambda_json_impl::json!({
             "start": "2020-12-09T07:04:00Z",
             "end": "2020-12-09T07:06:00Z",
         });
 
-        let parsed: Window = serde_json::from_value(v).unwrap();
+        let parsed: Window = aws_lambda_json_impl::from_value(v).unwrap();
         assert_eq!("2020-12-09T07:04:00+00:00", &parsed.start.to_rfc3339());
         assert_eq!("2020-12-09T07:06:00+00:00", &parsed.end.to_rfc3339());
     }

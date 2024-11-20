@@ -15,7 +15,7 @@ use crate::Body;
 #[derive(Debug)]
 pub enum PayloadError {
     /// Returned when `application/json` bodies fail to deserialize a payload
-    Json(serde_json::Error),
+    Json(aws_lambda_json_impl::JsonError),
     /// Returned when `application/x-www-form-urlencoded` bodies fail to deserialize a payload
     WwwFormUrlEncoded(SerdeError),
 }
@@ -24,7 +24,7 @@ pub enum PayloadError {
 #[derive(Debug)]
 pub enum JsonPayloadError {
     /// Problem deserializing a JSON payload.
-    Parsing(serde_json::Error),
+    Parsing(aws_lambda_json_impl::JsonError),
 }
 
 /// Indicates a problem processing an x-www-form-urlencoded payload.
@@ -244,6 +244,7 @@ impl RequestPayloadExt for http::Request<Body> {
             .unwrap_or_else(|| Ok(None))
     }
 
+    #[cfg(not(feature = "simd_json"))]
     fn json<D>(&self) -> Result<Option<D>, JsonPayloadError>
     where
         D: DeserializeOwned,
@@ -251,7 +252,21 @@ impl RequestPayloadExt for http::Request<Body> {
         if self.body().is_empty() {
             return Ok(None);
         }
-        serde_json::from_slice::<D>(self.body().as_ref())
+        aws_lambda_json_impl::from_slice::<D>(self.body().as_ref())
+            .map(Some)
+            .map_err(JsonPayloadError::Parsing)
+    }
+
+    #[cfg(feature = "simd_json")]
+    fn json<D>(&self) -> Result<Option<D>, JsonPayloadError>
+    where
+        D: DeserializeOwned,
+    {
+        if self.body().is_empty() {
+            return Ok(None);
+        }
+        let mut body = self.body().to_vec();
+        aws_lambda_json_impl::from_slice::<D>(body.as_mut_slice())
             .map(Some)
             .map_err(JsonPayloadError::Parsing)
     }
@@ -512,7 +527,7 @@ mod tests {
         assert!(payload.is_err());
 
         if let Err(JsonPayloadError::Parsing(err)) = payload {
-            assert!(err.is_syntax())
+            assert!(err.is_syntax(), "Error should be syntax: {:?}", err)
         } else {
             panic!(
                 "{}",
@@ -529,7 +544,7 @@ mod tests {
         let result = request.json::<Payload>();
 
         if let Err(JsonPayloadError::Parsing(err)) = result {
-            assert!(err.is_data())
+            assert!(err.is_data(), "Error should be data: {:?}", err)
         } else {
             panic!(
                 "{}",

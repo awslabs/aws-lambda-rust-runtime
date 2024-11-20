@@ -1,6 +1,6 @@
+use aws_lambda_json_impl::Value;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -83,33 +83,37 @@ pub struct UserIdentity {
 
 #[cfg(test)]
 mod tests {
+    // To save on boiler plate, JSON data is parsed from a mut byte slice rather than an &str. The slice isn't actually mutated
+    // when using serde-json, but it IS when using simd-json - so we also take care not to reuse the slice
+    // once it has been deserialized.
+
     use super::AWSAPICall;
 
     #[test]
     #[cfg(feature = "cloudwatch_events")]
     fn example_cloudwatch_cloudtrail_unknown_assumed_role() {
-        let data = include_bytes!("../../fixtures/example-cloudwatch-cloudtrail-assumed-role.json");
-        let parsed: AWSAPICall = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: AWSAPICall = serde_json::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-cloudwatch-cloudtrail-assumed-role.json").to_vec();
+        let parsed: AWSAPICall = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: AWSAPICall = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
     #[test]
     #[cfg(feature = "cloudwatch_events")]
     fn example_cloudwatch_cloudtrail_unknown_federate() {
-        let data = include_bytes!("../../fixtures/example-cloudwatch-cloudtrail-unknown-federate.json");
-        let parsed: AWSAPICall = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: AWSAPICall = serde_json::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-cloudwatch-cloudtrail-unknown-federate.json").to_vec();
+        let parsed: AWSAPICall = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: AWSAPICall = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
     #[test]
     #[cfg(feature = "cloudwatch_events")]
     fn example_cloudwatch_cloudtrail_assumed_role() {
-        let data = include_bytes!("../../fixtures/example-cloudwatch-cloudtrail-unknown-user-auth.json");
-        let parsed: AWSAPICall = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: AWSAPICall = serde_json::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-cloudwatch-cloudtrail-unknown-user-auth.json").to_vec();
+        let parsed: AWSAPICall = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: AWSAPICall = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

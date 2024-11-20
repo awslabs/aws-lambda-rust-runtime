@@ -78,14 +78,14 @@ mod tests {
             #[serde(with = "str_time")]
             pub date: TestTime,
         }
-        let data = serde_json::json!({
+        let data = aws_lambda_json_impl::json!({
             "date": "Sep 1, 2017 4:12:29 PM"
         });
 
         let expected = NaiveDateTime::parse_from_str("Sep 1, 2017 4:12:29 PM", CODEBUILD_TIME_FORMAT)
             .unwrap()
             .and_utc();
-        let decoded: Test = serde_json::from_value(data).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_value(data).unwrap();
         assert_eq!(expected, decoded.date);
     }
 
@@ -96,14 +96,14 @@ mod tests {
             #[serde(with = "optional_time")]
             pub date: Option<TestTime>,
         }
-        let data = serde_json::json!({
+        let data = aws_lambda_json_impl::json!({
             "date": "Sep 1, 2017 4:12:29 PM"
         });
 
         let expected = NaiveDateTime::parse_from_str("Sep 1, 2017 4:12:29 PM", CODEBUILD_TIME_FORMAT)
             .unwrap()
             .and_utc();
-        let decoded: Test = serde_json::from_value(data).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_value(data).unwrap();
         assert_eq!(Some(expected), decoded.date);
     }
 }

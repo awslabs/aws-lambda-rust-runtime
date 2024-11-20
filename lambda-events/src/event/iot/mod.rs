@@ -72,25 +72,30 @@ pub struct IoTCoreCustomAuthorizerResponse {
 
 #[cfg(test)]
 mod test {
+    // To save on boiler plate, JSON data is parsed from a mut byte slice rather than an &str. The slice isn't actually mutated
+    // when using serde-json, but it IS when using simd-json - so we also take care not to reuse the slice
+    // once it has been deserialized.
+
     use super::*;
 
     #[test]
     #[cfg(feature = "iot")]
     fn example_iot_custom_auth_request() {
-        let data = include_bytes!("../../fixtures/example-iot-custom-auth-request.json");
-        let parsed: IoTCoreCustomAuthorizerRequest = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: IoTCoreCustomAuthorizerRequest = serde_json::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-iot-custom-auth-request.json").to_vec();
+        let parsed: IoTCoreCustomAuthorizerRequest = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: IoTCoreCustomAuthorizerRequest = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "iot")]
     fn example_iot_custom_auth_response() {
-        let data = include_bytes!("../../fixtures/example-iot-custom-auth-response.json");
-        let parsed: IoTCoreCustomAuthorizerResponse = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: IoTCoreCustomAuthorizerResponse = serde_json::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-iot-custom-auth-response.json").to_vec();
+        let parsed: IoTCoreCustomAuthorizerResponse = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: IoTCoreCustomAuthorizerResponse =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

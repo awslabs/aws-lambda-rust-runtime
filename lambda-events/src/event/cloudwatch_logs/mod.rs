@@ -80,8 +80,7 @@ impl<'de> Deserialize<'de> for AwsLogs {
                             })?;
 
                             let bytes = flate2::read::GzDecoder::new(&bytes[..]);
-                            let mut de = serde_json::Deserializer::from_reader(BufReader::new(bytes));
-                            data = Some(LogData::deserialize(&mut de).map_err(Error::custom)?);
+                            data = aws_lambda_json_impl::from_reader(BufReader::new(bytes)).map_err(Error::custom)?;
                         }
                         _ => return Err(Error::unknown_field(key, FIELDS)),
                     }
@@ -105,7 +104,7 @@ impl Serialize for AwsLogs {
         let base = base64::write::EncoderWriter::new(Vec::new(), &base64::engine::general_purpose::STANDARD_NO_PAD);
         let mut gzip = flate2::write::GzEncoder::new(base, flate2::Compression::default());
 
-        serde_json::to_writer(&mut gzip, &self.data).map_err(SeError::custom)?;
+        aws_lambda_json_impl::to_writer(&mut gzip, &self.data).map_err(SeError::custom)?;
         let mut base = gzip.finish().map_err(SeError::custom)?;
         let data = base.finish().map_err(SeError::custom)?;
         let string = std::str::from_utf8(data.as_slice()).map_err(SeError::custom)?;
@@ -118,6 +117,10 @@ impl Serialize for AwsLogs {
 
 #[cfg(test)]
 mod test {
+    // To save on boiler plate, JSON data is parsed from a mut byte slice rather than an &str. The slice isn't actually mutated
+    // when using serde-json, but it IS when using simd-json - so we also take care not to reuse the slice
+    // once it has been deserialized.
+
     use super::*;
 
     #[test]
@@ -127,8 +130,8 @@ mod test {
     "awslogs": {
         "data": "H4sIAFETomIAA12Ry27bMBBF9/4KQuiyqsQ36Z2DqEGBGC0sdRUHAS0NExV6uCJVNw3y76Fkx03CFTH3cubwztMChRO14Jy5h+JxD9ESRZerYnW3zvJ8dZVFn4+W/tDBMImYUMaFVDrF5FVs+vuroR/3k56Yg0sa0+4qk0D50MddX8Ev98aa+wFMO3lJinWS0gTT5ObT9arI8uJWM2uUkMCpZIxiorGRtsQMiOXCgHxt5MadK4d67+u++1o3HgYXWt7M4my4nhmOw+7Kph+rg/HlQwBwM1M0W2//c2V/oPPvmzydb7OpriZqygQhFItUa6GlUkymgrNUS5EKpQhRfMpGCEzC/xgWjCpNOBMn8nM3X4fcvWmn2DDnhGNFWXiffvCdtjON3mQ/vm8KtIHfY3j6rVoiEdaxsxZizLSJd4KRWGFrYwIKqBSVMtZu/eU4mCmoJWLii2KodVt/UTcNVOiNJEMdbf0a2n54RHn9DwKYJmh9EYrmLzoJPx2EwfJY33bRmfb5mOjiefECiB5LsVgCAAA="
     }
-}"#;
-        let event: LogsEvent = serde_json::from_str(json).expect("failed to deserialize");
+}"#.to_owned();
+        let event: LogsEvent = aws_lambda_json_impl::from_string(json).expect("failed to deserialize");
 
         let data = event.clone().aws_logs.data;
         assert_eq!("DATA_MESSAGE", data.message_type);
@@ -145,18 +148,19 @@ mod test {
         assert_eq!(1552518348220, data.log_events[0].timestamp);
         assert_eq!("REPORT RequestId: 6234bffe-149a-b642-81ff-2e8e376d8aff\tDuration: 46.84 ms\tBilled Duration: 47 ms \tMemory Size: 192 MB\tMax Memory Used: 72 MB\t\n", data.log_events[0].message);
 
-        let new_json: String = serde_json::to_string_pretty(&event).unwrap();
-        let new_event: LogsEvent = serde_json::from_str(&new_json).expect("failed to deserialize");
+        let mut new_json = aws_lambda_json_impl::to_string_pretty(&event).unwrap().into_bytes();
+        let new_event: LogsEvent =
+            aws_lambda_json_impl::from_slice(new_json.as_mut_slice()).expect("failed to deserialize");
         assert_eq!(new_event, event);
     }
 
     #[test]
     #[cfg(feature = "cloudwatch_logs")]
     fn example_cloudwatch_logs_event() {
-        let data = include_bytes!("../../fixtures/example-cloudwatch_logs-event.json");
-        let parsed: LogsEvent = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: LogsEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-cloudwatch_logs-event.json").to_vec();
+        let parsed: LogsEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: LogsEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

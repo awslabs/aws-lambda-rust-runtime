@@ -158,7 +158,7 @@ mod test {
 
     #[test]
     fn round_trip_lambda_error() {
-        use serde_json::{json, Value};
+        use aws_lambda_json_impl::{json, Value};
         let expected = json!({
             "errorType": "InvalidEventDataError",
             "errorMessage": "Error parsing event data.",
@@ -168,7 +168,7 @@ mod test {
             error_type: "InvalidEventDataError".into(),
             error_message: "Error parsing event data.".into(),
         };
-        let actual: Value = serde_json::to_value(actual).expect("failed to serialize diagnostic");
+        let actual: Value = aws_lambda_json_impl::to_value(actual).expect("failed to serialize diagnostic");
         assert_eq!(expected, actual);
     }
 

@@ -7,7 +7,7 @@ use axum::{
     Router,
 };
 use lambda_http::{run, tracing, Error, RequestExt};
-use serde_json::{json, Value};
+use aws_lambda_json_impl::{json, Value};
 use std::{collections::HashMap, env::set_var};
 
 struct AuthorizerField(String);

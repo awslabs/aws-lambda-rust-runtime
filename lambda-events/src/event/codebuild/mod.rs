@@ -2,9 +2,9 @@ use crate::{
     custom_serde::{codebuild_time, CodeBuildNumber},
     encodings::{MinuteDuration, SecondDuration},
 };
+use aws_lambda_json_impl::Value;
 use chrono::{DateTime, Utc};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use serde_json::Value;
 
 pub type CodeBuildPhaseStatus = String;
 
@@ -212,25 +212,29 @@ pub type CodeBuildTime = DateTime<Utc>;
 
 #[cfg(test)]
 mod test {
+    // To save on boiler plate, JSON data is parsed from a mut byte slice rather than an &str. The slice isn't actually mutated
+    // when using serde-json, but it IS when using simd-json - so we also take care not to reuse the slice
+    // once it has been deserialized.
+
     use super::*;
 
     #[test]
     #[cfg(feature = "codebuild")]
     fn example_codebuild_phase_change() {
-        let data = include_bytes!("../../fixtures/example-codebuild-phase-change.json");
-        let parsed: CodeBuildEvent = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CodeBuildEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-codebuild-phase-change.json").to_vec();
+        let parsed: CodeBuildEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: CodeBuildEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "codebuild")]
     fn example_codebuild_state_change() {
-        let data = include_bytes!("../../fixtures/example-codebuild-state-change.json");
-        let parsed: CodeBuildEvent = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: CodeBuildEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-codebuild-state-change.json").to_vec();
+        let parsed: CodeBuildEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: CodeBuildEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

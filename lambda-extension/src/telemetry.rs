@@ -291,7 +291,7 @@ where
         }
     };
 
-    let telemetry: Vec<LambdaTelemetry> = match serde_json::from_slice(&body.to_bytes()) {
+    let telemetry: Vec<LambdaTelemetry> = match aws_lambda_json_impl::from_bytes(body.to_bytes()) {
         Ok(telemetry) => telemetry,
         Err(e) => {
             error!("Error parsing telemetry: {}", e);
@@ -324,7 +324,11 @@ mod deserialization_tests {
                 #[test]
                 fn $name() {
                     let (input, expected) = $value;
-                    let actual = serde_json::from_str::<LambdaTelemetry>(&input).expect("unable to deserialize");
+                    // To avoid lots of complex boilerplate, we use a mutable bytes slice in the parse
+                    // with serde_json the slice is not actually mutated
+                    // with simd_json it is
+                    let mut input = input.as_bytes().to_vec();
+                    let actual = aws_lambda_json_impl::from_slice::<LambdaTelemetry>(input.as_mut_slice()).expect("unable to deserialize");
 
                     assert!(actual.record == expected);
                 }
@@ -482,7 +486,7 @@ mod serialization_tests {
                 #[test]
                 fn $name() {
                     let (input, expected) = $value;
-                    let actual = serde_json::to_string(&input).expect("unable to serialize");
+                    let actual = aws_lambda_json_impl::to_string(&input).expect("unable to serialize");
                     println!("Input: {:?}\n", input);
                     println!("Expected:\n {:?}\n", expected);
                     println!("Actual:\n {:?}\n", actual);

@@ -304,21 +304,21 @@ mod tests {
     fn serialize_text() {
         let mut map = HashMap::new();
         map.insert("foo", Body::from("bar"));
-        assert_eq!(serde_json::to_string(&map).unwrap(), r#"{"foo":"bar"}"#);
+        assert_eq!(aws_lambda_json_impl::to_string(&map).unwrap(), r#"{"foo":"bar"}"#);
     }
 
     #[test]
     fn serialize_binary() {
         let mut map = HashMap::new();
         map.insert("foo", Body::from("bar".as_bytes()));
-        assert_eq!(serde_json::to_string(&map).unwrap(), r#"{"foo":"YmFy"}"#);
+        assert_eq!(aws_lambda_json_impl::to_string(&map).unwrap(), r#"{"foo":"YmFy"}"#);
     }
 
     #[test]
     fn serialize_empty() {
         let mut map = HashMap::new();
         map.insert("foo", Body::Empty);
-        assert_eq!(serde_json::to_string(&map).unwrap(), r#"{"foo":null}"#);
+        assert_eq!(aws_lambda_json_impl::to_string(&map).unwrap(), r#"{"foo":null}"#);
     }
 
     #[test]

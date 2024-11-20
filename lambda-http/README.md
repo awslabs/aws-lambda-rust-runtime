@@ -45,7 +45,7 @@ The code below creates a simple API Gateway proxy (HTTP, REST) that accepts in i
 ```rust
 use lambda_http::{run, http::{StatusCode, Response}, service_fn, Error, IntoResponse, Request, RequestPayloadExt};
 use serde::{Deserialize, Serialize};
-use serde_json::json;
+use aws_lambda_json_impl::json;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -83,7 +83,7 @@ pub struct MyPayload {
 
 ```rust
 use lambda_http::{run, http::{StatusCode, Response}, service_fn, Error, RequestExt, IntoResponse, Request};
-use serde_json::json;
+use aws_lambda_json_impl::json;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -124,7 +124,7 @@ use aws_lambda_events::apigw::{
     ApiGatewayCustomAuthorizerRequestTypeRequest, ApiGatewayCustomAuthorizerResponse, ApiGatewayCustomAuthorizerPolicy, IamPolicyStatement,
 };
 use lambda_runtime::{run, service_fn, Error, LambdaEvent};
-use serde_json::json;
+use aws_lambda_json_impl::json;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -183,7 +183,7 @@ One of the [best practices](https://docs.aws.amazon.com/lambda/latest/dg/best-pr
 use aws_sdk_dynamodb::model::AttributeValue;
 use chrono::Utc;
 use lambda_http::{run, http::{StatusCode, Response}, service_fn, Error, RequestExt, IntoResponse, Request};
-use serde_json::json;
+use aws_lambda_json_impl::json;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {

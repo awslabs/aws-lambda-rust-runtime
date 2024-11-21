@@ -29,6 +29,10 @@ pub use event::apigw;
 #[cfg(feature = "appsync")]
 pub use event::appsync;
 
+/// AWS Lambda event definitions for appsync events.
+#[cfg(feature = "appsync_events")]
+pub use event::appsync_events;
+
 /// AWS Lambda event definitions for autoscaling.
 #[cfg(feature = "autoscaling")]
 pub use event::autoscaling;

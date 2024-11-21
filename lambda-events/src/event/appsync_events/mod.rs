@@ -133,13 +133,13 @@ pub struct AppSyncEventsSubscribeSuccessMessage {
 pub struct AppSyncEventsErrorMessage {
     pub id: Option<String>,
     #[serde(default)]
-    pub errors: Option<Vec<AppSyncEventSubscribeErrorDescription>>,
+    pub errors: Option<Vec<AppSyncEventErrorDescription>>,
 }
 
 /// `AppSyncEventSubscribeErrorDescription` contains information about an error.
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AppSyncEventSubscribeErrorDescription {
+pub struct AppSyncEventErrorDescription {
     #[serde(default)]
     pub error_type: Option<String>,
     #[serde(default)]

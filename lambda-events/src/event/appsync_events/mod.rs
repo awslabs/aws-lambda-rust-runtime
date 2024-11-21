@@ -132,7 +132,7 @@ pub struct AppSyncEventsSubscribeSuccessMessage {
 #[serde(rename_all = "camelCase")]
 pub struct AppSyncEventsErrorMessage {
     pub id: Option<String>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub errors: Option<Vec<AppSyncEventErrorDescription>>,
 }
 

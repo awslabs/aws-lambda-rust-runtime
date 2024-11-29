@@ -79,7 +79,7 @@ where
 /// `AppSyncEventsWebscoketMessage` represents all possible messages which can be sent between
 /// AppSync Events and a connected websocket client.
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "snake_case", tag = "type")]
 pub enum AppSyncEventsWebsocketMessage<T1 = Value>
 where
     T1: DeserializeOwned + Serialize,

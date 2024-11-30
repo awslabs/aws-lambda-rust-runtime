@@ -4,7 +4,7 @@ use crate::LambdaInvocation;
 use opentelemetry_semantic_conventions::trace as traceconv;
 use pin_project::pin_project;
 use tower::{Layer, Service};
-use tracing::{instrument::Instrumented, Instrument, field};
+use tracing::{field, instrument::Instrumented, Instrument};
 
 /// Tower layer to add OpenTelemetry tracing to a Lambda function invocation. The layer accepts
 /// a function to flush OpenTelemetry after the end of the invocation.

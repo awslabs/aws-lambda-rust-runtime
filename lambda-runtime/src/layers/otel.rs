@@ -4,7 +4,7 @@ use crate::LambdaInvocation;
 use opentelemetry_semantic_conventions::trace as traceconv;
 use pin_project::pin_project;
 use tower::{Layer, Service};
-use tracing::{instrument::Instrumented, Instrument};
+use tracing::{instrument::Instrumented, Instrument, field};
 
 /// Tower layer to add OpenTelemetry tracing to a Lambda function invocation. The layer accepts
 /// a function to flush OpenTelemetry after the end of the invocation.
@@ -75,6 +75,7 @@ where
         let span = tracing::info_span!(
             "Lambda function invocation",
             "otel.name" = req.context.env_config.function_name,
+            "otel.kind" = field::Empty,
             { traceconv::FAAS_TRIGGER } = &self.otel_attribute_trigger,
             { traceconv::FAAS_INVOCATION_ID } = req.context.request_id,
             { traceconv::FAAS_COLDSTART } = self.coldstart

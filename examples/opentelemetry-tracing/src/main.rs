@@ -1,6 +1,6 @@
 use lambda_runtime::{
     layers::{OpenTelemetryFaasTrigger, OpenTelemetryLayer as OtelLayer},
-    LambdaEvent, Runtime,
+    LambdaEvent, Runtime, tracing::Span
 };
 use opentelemetry::trace::TracerProvider;
 use opentelemetry_sdk::{runtime, trace};
@@ -8,6 +8,8 @@ use tower::{service_fn, BoxError};
 use tracing_subscriber::prelude::*;
 
 async fn echo(event: LambdaEvent<serde_json::Value>) -> Result<serde_json::Value, &'static str> {
+    let span = Span::current();
+    span.record("otel.kind", "SERVER");
     Ok(event.payload)
 }
 

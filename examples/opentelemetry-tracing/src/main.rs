@@ -1,6 +1,7 @@
 use lambda_runtime::{
     layers::{OpenTelemetryFaasTrigger, OpenTelemetryLayer as OtelLayer},
-    LambdaEvent, Runtime, tracing::Span
+    tracing::Span,
+    LambdaEvent, Runtime,
 };
 use opentelemetry::trace::TracerProvider;
 use opentelemetry_sdk::{runtime, trace};

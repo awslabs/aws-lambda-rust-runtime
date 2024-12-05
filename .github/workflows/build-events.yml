@@ -4,9 +4,11 @@ on:
   push:
     paths:
       - "lambda-events/**"
+      - "Cargo.toml"
   pull_request:
     paths:
       - "lambda-events/**"
+      - "Cargo.toml"
 
 jobs:
   build:
@@ -14,7 +16,7 @@ jobs:
     strategy:
       matrix:
         toolchain:
-          - "1.70.0" # Current MSRV
+          - "1.71.1" # Current MSRV
           - stable
     env:
       RUST_BACKTRACE: 1

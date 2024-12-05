@@ -72,7 +72,7 @@ where
     }
 }
 
-impl<'a, R, B, S, D, E> IntoRequest for EventCompletionRequest<'a, R, B, S, D, E>
+impl<R, B, S, D, E> IntoRequest for EventCompletionRequest<'_, R, B, S, D, E>
 where
     R: IntoFunctionResponse<B, S>,
     B: Serialize,
@@ -170,7 +170,7 @@ impl<'a> EventErrorRequest<'a> {
     }
 }
 
-impl<'a> IntoRequest for EventErrorRequest<'a> {
+impl IntoRequest for EventErrorRequest<'_> {
     fn into_req(self) -> Result<Request<Body>, Error> {
         let uri = format!("/2018-06-01/runtime/invocation/{}/error", self.request_id);
         let uri = Uri::from_str(&uri)?;

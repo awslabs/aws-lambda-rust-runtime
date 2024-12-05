@@ -18,7 +18,7 @@ pub struct CatchPanicService<'a, S> {
     _phantom: PhantomData<&'a ()>,
 }
 
-impl<'a, S> CatchPanicService<'a, S> {
+impl<S> CatchPanicService<'_, S> {
     pub fn new(inner: S) -> Self {
         Self {
             inner,
@@ -66,7 +66,7 @@ pub enum CatchPanicFuture<'a, F> {
     Error(Box<dyn Any + Send + 'static>),
 }
 
-impl<'a, F, T, E> Future for CatchPanicFuture<'a, F>
+impl<F, T, E> Future for CatchPanicFuture<'_, F>
 where
     F: Future<Output = Result<T, E>>,
     E: Into<Diagnostic> + Debug,
@@ -95,7 +95,7 @@ where
     }
 }
 
-impl<'a, F> CatchPanicFuture<'a, F> {
+impl<F> CatchPanicFuture<'_, F> {
     fn build_panic_diagnostic(err: &Box<dyn Any + Send>) -> Diagnostic {
         let error_message = if let Some(msg) = err.downcast_ref::<&str>() {
             format!("Lambda panicked: {msg}")

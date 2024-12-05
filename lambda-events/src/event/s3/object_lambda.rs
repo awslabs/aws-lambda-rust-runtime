@@ -87,7 +87,6 @@ pub struct UserRequest {
 /// `UserIdentity` contains details about the identity that made the call to S3 Object Lambda
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-
 pub struct UserIdentity {
     pub r#type: String,
     pub principal_id: String,

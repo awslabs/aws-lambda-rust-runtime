@@ -232,7 +232,7 @@ impl Serialize for CloudWatchAlarmStateReasonData {
 
 struct ReasonDataVisitor;
 
-impl<'de> Visitor<'de> for ReasonDataVisitor {
+impl Visitor<'_> for ReasonDataVisitor {
     type Value = CloudWatchAlarmStateReasonData;
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

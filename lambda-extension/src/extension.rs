@@ -43,7 +43,7 @@ pub struct Extension<'a, E, L, T> {
     telemetry_port_number: u16,
 }
 
-impl<'a> Extension<'a, Identity<LambdaEvent>, MakeIdentity<Vec<LambdaLog>>, MakeIdentity<Vec<LambdaTelemetry>>> {
+impl Extension<'_, Identity<LambdaEvent>, MakeIdentity<Vec<LambdaLog>>, MakeIdentity<Vec<LambdaTelemetry>>> {
     /// Create a new base [`Extension`] with a no-op events processor
     pub fn new() -> Self {
         Extension {
@@ -62,8 +62,8 @@ impl<'a> Extension<'a, Identity<LambdaEvent>, MakeIdentity<Vec<LambdaLog>>, Make
     }
 }
 
-impl<'a> Default
-    for Extension<'a, Identity<LambdaEvent>, MakeIdentity<Vec<LambdaLog>>, MakeIdentity<Vec<LambdaTelemetry>>>
+impl Default
+    for Extension<'_, Identity<LambdaEvent>, MakeIdentity<Vec<LambdaLog>>, MakeIdentity<Vec<LambdaTelemetry>>>
 {
     fn default() -> Self {
         Self::new()

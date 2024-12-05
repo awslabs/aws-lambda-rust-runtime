@@ -4,9 +4,11 @@ on:
   push:
     paths:
       - "lambda-events/**"
+      - "Cargo.toml"
   pull_request:
     paths:
       - "lambda-events/**"
+      - "Cargo.toml"
 
 jobs:
   build:

@@ -5,11 +5,15 @@ on:
     paths:
       - 'lambda-runtime-api-client/**'
       - 'lambda-extension/**'
+      - 'lambda-runtime/**'
+      - 'Cargo.toml'
 
   pull_request:
     paths:
       - 'lambda-runtime-api-client/**'
       - 'lambda-extension/**'
+      - 'lambda-runtime/**'
+      - 'Cargo.toml'
 
 
 jobs:

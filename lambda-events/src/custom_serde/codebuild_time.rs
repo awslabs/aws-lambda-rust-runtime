@@ -10,7 +10,7 @@ use std::fmt;
 const CODEBUILD_TIME_FORMAT: &str = "%b %e, %Y %l:%M:%S %p";
 
 struct TimeVisitor;
-impl<'de> Visitor<'de> for TimeVisitor {
+impl Visitor<'_> for TimeVisitor {
     type Value = DateTime<Utc>;
 
     fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {

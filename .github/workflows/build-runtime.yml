@@ -6,12 +6,14 @@ on:
       - 'lambda-runtime-api-client/**'
       - 'lambda-runtime/**'
       - 'lambda-http/**'
+      - 'Cargo.toml'
 
   pull_request:
     paths:
       - 'lambda-runtime-api-client/**'
       - 'lambda-runtime/**'
       - 'lambda-http/**'
+      - 'Cargo.toml'
 
 jobs:
   build-runtime:
@@ -19,7 +21,7 @@ jobs:
     strategy:
       matrix:
         toolchain:
-          - "1.70.0" # Current MSRV
+          - "1.71.1" # Current MSRV
           - stable
     env:
       RUST_BACKTRACE: 1

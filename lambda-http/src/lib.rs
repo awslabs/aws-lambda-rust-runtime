@@ -114,7 +114,7 @@ pub enum TransformResponse<'a, R, E> {
     Response(RequestOrigin, ResponseFuture),
 }
 
-impl<'a, R, E> Future for TransformResponse<'a, R, E>
+impl<R, E> Future for TransformResponse<'_, R, E>
 where
     R: IntoResponse,
 {

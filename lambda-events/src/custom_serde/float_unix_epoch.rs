@@ -73,7 +73,7 @@ where
     d.deserialize_f64(SecondsFloatTimestampVisitor)
 }
 
-impl<'de> de::Visitor<'de> for SecondsFloatTimestampVisitor {
+impl de::Visitor<'_> for SecondsFloatTimestampVisitor {
     type Value = DateTime<Utc>;
 
     fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {

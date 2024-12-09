@@ -55,11 +55,11 @@ pub struct Runtime<S> {
     client: Arc<ApiClient>,
 }
 
-impl<'a, F, EventPayload, Response, BufferedResponse, StreamingResponse, StreamItem, StreamError>
+impl<F, EventPayload, Response, BufferedResponse, StreamingResponse, StreamItem, StreamError>
     Runtime<
         RuntimeApiClientService<
             RuntimeApiResponseService<
-                CatchPanicService<'a, F>,
+                CatchPanicService<'_, F>,
                 EventPayload,
                 Response,
                 BufferedResponse,

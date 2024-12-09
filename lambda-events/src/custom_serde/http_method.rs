@@ -10,7 +10,7 @@ pub fn serialize<S: Serializer>(method: &Method, ser: S) -> Result<S::Ok, S::Err
 }
 
 struct MethodVisitor;
-impl<'de> Visitor<'de> for MethodVisitor {
+impl Visitor<'_> for MethodVisitor {
     type Value = Method;
 
     fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {

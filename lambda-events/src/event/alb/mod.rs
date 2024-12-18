@@ -69,35 +69,40 @@ pub struct AlbTargetGroupResponse {
 
 #[cfg(test)]
 mod test {
+    // To save on boiler plate, JSON data is parsed from a mut byte slice rather than an &str. The slice isn't actually mutated
+    // when using serde-json, but it IS when using simd-json - so we also take care not to reuse the slice
+    // once it has been deserialized.
+
     use super::*;
 
     #[test]
     #[cfg(feature = "alb")]
     fn example_alb_lambda_target_request_headers_only() {
-        let data = include_bytes!("../../fixtures/example-alb-lambda-target-request-headers-only.json");
-        let parsed: AlbTargetGroupRequest = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: AlbTargetGroupRequest = serde_json::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-alb-lambda-target-request-headers-only.json").to_vec();
+        let parsed: AlbTargetGroupRequest = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: AlbTargetGroupRequest = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "alb")]
     fn example_alb_lambda_target_request_multivalue_headers() {
-        let data = include_bytes!("../../fixtures/example-alb-lambda-target-request-multivalue-headers.json");
-        let parsed: AlbTargetGroupRequest = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: AlbTargetGroupRequest = serde_json::from_slice(output.as_bytes()).unwrap();
+        let mut data =
+            include_bytes!("../../fixtures/example-alb-lambda-target-request-multivalue-headers.json").to_vec();
+        let parsed: AlbTargetGroupRequest = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: AlbTargetGroupRequest = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "alb")]
     fn example_alb_lambda_target_response() {
-        let data = include_bytes!("../../fixtures/example-alb-lambda-target-response.json");
-        let parsed: AlbTargetGroupResponse = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: AlbTargetGroupResponse = serde_json::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-alb-lambda-target-response.json").to_vec();
+        let parsed: AlbTargetGroupResponse = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: AlbTargetGroupResponse = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

@@ -86,7 +86,7 @@ where
                 let uri = format!("/2018-06-01/runtime/invocation/{}/response", self.request_id);
                 let uri = Uri::from_str(&uri)?;
 
-                let body = serde_json::to_vec(&body)?;
+                let body = aws_lambda_json_impl::to_vec(&body)?;
                 let body = Body::from(body);
 
                 let req = build_request().method(Method::POST).uri(uri).body(body)?;
@@ -116,7 +116,7 @@ where
                     .entry(CONTENT_TYPE)
                     .or_insert("application/octet-stream".parse()?);
 
-                let metadata_prelude = serde_json::to_string(&response.metadata_prelude)?;
+                let metadata_prelude = aws_lambda_json_impl::to_string(&response.metadata_prelude)?;
 
                 tracing::trace!(?metadata_prelude);
 
@@ -174,7 +174,7 @@ impl IntoRequest for EventErrorRequest<'_> {
     fn into_req(self) -> Result<Request<Body>, Error> {
         let uri = format!("/2018-06-01/runtime/invocation/{}/error", self.request_id);
         let uri = Uri::from_str(&uri)?;
-        let body = serde_json::to_vec(&self.diagnostic)?;
+        let body = aws_lambda_json_impl::to_vec(&self.diagnostic)?;
         let body = Body::from(body);
 
         let req = build_request()

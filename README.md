@@ -54,7 +54,7 @@ If you'd like to manually create your first function, the code below shows you a
 
 ```rust,no_run
 use lambda_runtime::{service_fn, LambdaEvent, Error};
-use serde_json::{json, Value};
+use aws_lambda_json_impl::{json, Value};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -375,7 +375,7 @@ To serialize and deserialize events and responses, we suggest using the [`serde`
 
 ```rust,no_run
 use serde::{Serialize, Deserialize};
-use serde_json::json;
+use aws_lambda_json_impl::json;
 use std::error::Error;
 
 #[derive(Serialize, Deserialize)]

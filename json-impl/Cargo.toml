@@ -1,0 +1,26 @@
+[package]
+name = "aws_lambda_json_impl"
+version = "0.15.1"
+description = "AWS Lambda JSON adapter switch between serde_json and simd_json"
+authors = [
+  "Martin Bartmett <martin.j.bartmett@gmail.com>",
+]
+license = "MIT"
+homepage = "https://github.com/awslabs/aws-lambda-rust-runtime"
+repository = "https://github.com/awslabs/aws-lambda-rust-runtime"
+readme = "README.md"
+keywords = ["lambda", "aws", "amazon", "events", "S3", "json"]
+categories = ["api-bindings", "encoding", "web-programming"]
+edition = "2021"
+
+[features]
+default = [ ]
+simd = [ "simd-json/ordered-float", "value-trait/ordered-float" ]
+
+[dependencies]
+serde_json = { version = "^1", features = ["raw_value"] }
+#simd-json = { version = "^0", optional = true }
+simd-json = { git = "https://github.com/simd-lite/simd-json.git", branch = "main", optional = true }
+value-trait = { version = "^0", optional = true }
+bytes = { workspace = true }
+serde = { version = "^1", no-default-features = true }

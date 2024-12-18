@@ -180,15 +180,19 @@ pub struct SqsApiMessage {
 
 #[cfg(test)]
 mod test {
+    // To save on boiler plate, JSON data is parsed from a mut byte slice rather than an &str. The slice isn't actually mutated
+    // when using serde-json, but it IS when using simd-json - so we also take care not to reuse the slice
+    // once it has been deserialized.
+
     use super::*;
 
     #[test]
     #[cfg(feature = "sqs")]
     fn example_sqs_event() {
-        let data = include_bytes!("../../fixtures/example-sqs-event.json");
-        let parsed: SqsEvent = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: SqsEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-sqs-event.json").to_vec();
+        let parsed: SqsEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: SqsEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -201,14 +205,14 @@ mod test {
             b: u32,
         }
 
-        let data = include_bytes!("../../fixtures/example-sqs-event-obj.json");
-        let parsed: SqsEventObj<CustStruct> = serde_json::from_slice(data).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-sqs-event-obj.json").to_vec();
+        let parsed: SqsEventObj<CustStruct> = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
 
         assert_eq!(parsed.records[0].body.a, "Test");
         assert_eq!(parsed.records[0].body.b, 123);
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: SqsEventObj<CustStruct> = serde_json::from_slice(output.as_bytes()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: SqsEventObj<CustStruct> = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -217,10 +221,10 @@ mod test {
     fn example_sqs_batch_response() {
         // Example sqs batch response fetched 2022-05-13, from:
         // https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-batchfailurereporting
-        let data = include_bytes!("../../fixtures/example-sqs-batch-response.json");
-        let parsed: SqsBatchResponse = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: SqsBatchResponse = serde_json::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-sqs-batch-response.json").to_vec();
+        let parsed: SqsBatchResponse = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: SqsBatchResponse = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
@@ -235,14 +239,14 @@ mod test {
             country: String,
         }
 
-        let data = include_bytes!("../../fixtures/example-sqs-api-event-obj.json");
-        let parsed: SqsApiEventObj<CustStruct> = serde_json::from_slice(data).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-sqs-api-event-obj.json").to_vec();
+        let parsed: SqsApiEventObj<CustStruct> = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
 
         assert_eq!(parsed.messages[0].body.city, "provincetown");
         assert_eq!(parsed.messages[0].body.country, "usa");
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: SqsApiEventObj<CustStruct> = serde_json::from_slice(output.as_bytes()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: SqsApiEventObj<CustStruct> = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

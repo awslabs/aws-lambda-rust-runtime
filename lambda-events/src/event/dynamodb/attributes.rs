@@ -8,59 +8,59 @@ mod test {
 
     #[test]
     fn test_null_attribute() {
-        let value = serde_json::json!({
+        let value = aws_lambda_json_impl::json!({
             "NULL": true
         });
 
-        let attr: AttributeValue = serde_json::from_value(value.clone()).unwrap();
+        let attr: AttributeValue = aws_lambda_json_impl::from_value(value.clone()).unwrap();
         match attr {
             AttributeValue::Null(true) => {}
             other => panic!("unexpected value {:?}", other),
         }
 
-        let reparsed = serde_json::to_value(attr).unwrap();
+        let reparsed = aws_lambda_json_impl::to_value(attr).unwrap();
         assert_eq!(value, reparsed);
     }
 
     #[test]
     fn test_string_attribute() {
-        let value = serde_json::json!({
+        let value = aws_lambda_json_impl::json!({
             "S": "value"
         });
 
-        let attr: AttributeValue = serde_json::from_value(value.clone()).unwrap();
+        let attr: AttributeValue = aws_lambda_json_impl::from_value(value.clone()).unwrap();
         match attr {
             AttributeValue::S(ref s) => assert_eq!("value", s.as_str()),
             other => panic!("unexpected value {:?}", other),
         }
 
-        let reparsed = serde_json::to_value(attr).unwrap();
+        let reparsed = aws_lambda_json_impl::to_value(attr).unwrap();
         assert_eq!(value, reparsed);
     }
 
     #[test]
     fn test_number_attribute() {
-        let value = serde_json::json!({
+        let value = aws_lambda_json_impl::json!({
             "N": "123.45"
         });
 
-        let attr: AttributeValue = serde_json::from_value(value.clone()).unwrap();
+        let attr: AttributeValue = aws_lambda_json_impl::from_value(value.clone()).unwrap();
         match attr {
             AttributeValue::N(ref n) => assert_eq!("123.45", n.as_str()),
             other => panic!("unexpected value {:?}", other),
         }
 
-        let reparsed = serde_json::to_value(attr).unwrap();
+        let reparsed = aws_lambda_json_impl::to_value(attr).unwrap();
         assert_eq!(value, reparsed);
     }
 
     #[test]
     fn test_binary_attribute() {
-        let value = serde_json::json!({
+        let value = aws_lambda_json_impl::json!({
             "B": "dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmNvZGVk"
         });
 
-        let attr: AttributeValue = serde_json::from_value(value.clone()).unwrap();
+        let attr: AttributeValue = aws_lambda_json_impl::from_value(value.clone()).unwrap();
         match attr {
             AttributeValue::B(ref b) => {
                 let expected = base64::engine::general_purpose::STANDARD
@@ -71,33 +71,33 @@ mod test {
             other => panic!("unexpected value {:?}", other),
         }
 
-        let reparsed = serde_json::to_value(attr).unwrap();
+        let reparsed = aws_lambda_json_impl::to_value(attr).unwrap();
         assert_eq!(value, reparsed);
     }
 
     #[test]
     fn test_boolean_attribute() {
-        let value = serde_json::json!({
+        let value = aws_lambda_json_impl::json!({
             "BOOL": true
         });
 
-        let attr: AttributeValue = serde_json::from_value(value.clone()).unwrap();
+        let attr: AttributeValue = aws_lambda_json_impl::from_value(value.clone()).unwrap();
         match attr {
             AttributeValue::Bool(b) => assert!(b),
             other => panic!("unexpected value {:?}", other),
         }
 
-        let reparsed = serde_json::to_value(attr).unwrap();
+        let reparsed = aws_lambda_json_impl::to_value(attr).unwrap();
         assert_eq!(value, reparsed);
     }
 
     #[test]
     fn test_string_set_attribute() {
-        let value = serde_json::json!({
+        let value = aws_lambda_json_impl::json!({
             "SS": ["Giraffe", "Hippo" ,"Zebra"]
         });
 
-        let attr: AttributeValue = serde_json::from_value(value.clone()).unwrap();
+        let attr: AttributeValue = aws_lambda_json_impl::from_value(value.clone()).unwrap();
         match attr {
             AttributeValue::Ss(ref s) => {
                 let expected = vec!["Giraffe", "Hippo", "Zebra"];
@@ -106,17 +106,17 @@ mod test {
             other => panic!("unexpected value {:?}", other),
         }
 
-        let reparsed = serde_json::to_value(attr).unwrap();
+        let reparsed = aws_lambda_json_impl::to_value(attr).unwrap();
         assert_eq!(value, reparsed);
     }
 
     #[test]
     fn test_number_set_attribute() {
-        let value = serde_json::json!({
+        let value = aws_lambda_json_impl::json!({
             "NS": ["42.2", "-19", "7.5", "3.14"]
         });
 
-        let attr: AttributeValue = serde_json::from_value(value.clone()).unwrap();
+        let attr: AttributeValue = aws_lambda_json_impl::from_value(value.clone()).unwrap();
         match attr {
             AttributeValue::Ns(ref s) => {
                 let expected = vec!["42.2", "-19", "7.5", "3.14"];
@@ -125,17 +125,17 @@ mod test {
             other => panic!("unexpected value {:?}", other),
         }
 
-        let reparsed = serde_json::to_value(attr).unwrap();
+        let reparsed = aws_lambda_json_impl::to_value(attr).unwrap();
         assert_eq!(value, reparsed);
     }
 
     #[test]
     fn test_binary_set_attribute() {
-        let value = serde_json::json!({
+        let value = aws_lambda_json_impl::json!({
             "BS": ["U3Vubnk=", "UmFpbnk=", "U25vd3k="]
         });
 
-        let attr: AttributeValue = serde_json::from_value(value.clone()).unwrap();
+        let attr: AttributeValue = aws_lambda_json_impl::from_value(value.clone()).unwrap();
         match attr {
             AttributeValue::Bs(ref s) => {
                 let expected = vec!["U3Vubnk=", "UmFpbnk=", "U25vd3k="]
@@ -147,17 +147,17 @@ mod test {
             other => panic!("unexpected value {:?}", other),
         }
 
-        let reparsed = serde_json::to_value(attr).unwrap();
+        let reparsed = aws_lambda_json_impl::to_value(attr).unwrap();
         assert_eq!(value, reparsed);
     }
 
     #[test]
     fn test_attribute_list_attribute() {
-        let value = serde_json::json!({
+        let value = aws_lambda_json_impl::json!({
             "L": [ {"S": "Cookies"} , {"S": "Coffee"}, {"N": "3.14159"}]
         });
 
-        let attr: AttributeValue = serde_json::from_value(value.clone()).unwrap();
+        let attr: AttributeValue = aws_lambda_json_impl::from_value(value.clone()).unwrap();
         match attr {
             AttributeValue::L(ref s) => {
                 let expected = vec![
@@ -170,17 +170,17 @@ mod test {
             other => panic!("unexpected value {:?}", other),
         }
 
-        let reparsed = serde_json::to_value(attr).unwrap();
+        let reparsed = aws_lambda_json_impl::to_value(attr).unwrap();
         assert_eq!(value, reparsed);
     }
 
     #[test]
     fn test_attribute_map_attribute() {
-        let value = serde_json::json!({
+        let value = aws_lambda_json_impl::json!({
             "M": {"Name": {"S": "Joe"}, "Age": {"N": "35"}}
         });
 
-        let attr: AttributeValue = serde_json::from_value(value).unwrap();
+        let attr: AttributeValue = aws_lambda_json_impl::from_value(value).unwrap();
         match attr {
             AttributeValue::M(s) => {
                 let mut expected = HashMap::new();

@@ -5,7 +5,7 @@ use aws_sigv4::{
     sign::v4,
 };
 use lambda_runtime::{run, service_fn, Error, LambdaEvent};
-use serde_json::{json, Value};
+use aws_lambda_json_impl::{json, Value};
 use sqlx::postgres::PgConnectOptions;
 use std::env;
 use std::time::{Duration, SystemTime};

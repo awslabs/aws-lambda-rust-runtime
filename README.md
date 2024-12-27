@@ -82,7 +82,7 @@ when a function invocation fails, AWS Lambda expects you to return an object tha
 }
 ```
 
-The Rust Runtime for Lambda uses a struct called `Diagnostic` to represent function errors internally. The runtime implements the converstion of several general errors types, like `std::error::Error`, into `Diagnostic`. For these general implementations, the `error_type` is the name of the value type returned by your function. For example, if your function returns `lambda_runtime::Error`, the `error_type` will be something like `alloc::boxed::Box<dyn core::error::Error + core::marker::Send + core::marker::Sync>`, which is not very descriptive.
+The Rust Runtime for Lambda uses a struct called `Diagnostic` to represent function errors internally. The runtime implements the conversion of several general error types, like `std::error::Error`, into `Diagnostic`. For these general implementations, the `error_type` is the name of the value type returned by your function. For example, if your function returns `lambda_runtime::Error`, the `error_type` will be something like `alloc::boxed::Box<dyn core::error::Error + core::marker::Send + core::marker::Sync>`, which is not very descriptive.
 
 ### Implement your own Diagnostic
 

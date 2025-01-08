@@ -1,6 +1,7 @@
 use crate::{
     custom_serde::{
-        deserialize_headers, deserialize_nullish_boolean, http_method, serialize_headers, serialize_multi_value_headers,
+        deserialize_headers, deserialize_nullish_boolean, http_method, serialize_headers,
+        serialize_multi_value_headers, serialize_query_string_parameters,
     },
     encodings::Body,
 };
@@ -17,7 +18,7 @@ pub struct AlbTargetGroupRequest {
     #[serde(default)]
     pub path: Option<String>,
     #[serde(default)]
-    #[serde(serialize_with = "query_map::serde::aws_api_gateway_v1::serialize_query_string_parameters")]
+    #[serde(serialize_with = "serialize_query_string_parameters")]
     pub query_string_parameters: QueryMap,
     #[serde(default)]
     pub multi_value_query_string_parameters: QueryMap,

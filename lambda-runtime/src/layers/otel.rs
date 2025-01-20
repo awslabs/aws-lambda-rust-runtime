@@ -8,7 +8,6 @@ use tracing::{field, instrument::Instrumented, Instrument};
 
 /// Tower layer to add OpenTelemetry tracing to a Lambda function invocation. The layer accepts
 /// a function to flush OpenTelemetry after the end of the invocation.
-#[derive(Copy, Clone)]
 pub struct OpenTelemetryLayer<F> {
     flush_fn: F,
     otel_attribute_trigger: OpenTelemetryFaasTrigger,

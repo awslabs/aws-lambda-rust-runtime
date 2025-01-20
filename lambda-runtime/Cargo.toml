@@ -29,16 +29,9 @@ bytes = { workspace = true }
 eyre = { version = "0.6.12", optional = true }
 futures = { workspace = true }
 http = { workspace = true }
-http-body = { workspace = true }
 http-body-util = { workspace = true }
 http-serde = { workspace = true }
 hyper = { workspace = true, features = ["http1", "client"] }
-hyper-util = { workspace = true, features = [
-    "client",
-    "client-legacy",
-    "http1",
-    "tokio",
-] }
 lambda_runtime_api_client = { version = "0.11.1", path = "../lambda-runtime-api-client", default-features = false }
 miette = { version = "7.4.0", optional = true }
 opentelemetry-semantic-conventions = { version = "0.27", optional = true, features = ["semconv_experimental"] }
@@ -54,17 +47,7 @@ tokio = { version = "1.43", features = [
 ] }
 tokio-stream = "0.1.17"
 tower = { workspace = true, features = ["util"] }
-tower-layer = { workspace = true }
 tracing = { version = "0.1", features = ["log"] }
 
 [dev-dependencies]
 httpmock = "0.7.0"
-hyper-util = { workspace = true, features = [
-    "client",
-    "client-legacy",
-    "http1",
-    "server",
-    "server-auto",
-    "tokio",
-] }
-pin-project-lite = { workspace = true }

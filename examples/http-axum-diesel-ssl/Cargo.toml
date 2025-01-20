@@ -8,7 +8,6 @@ axum = "0.7"
 diesel = "2.2.6"
 diesel-async = { version = "0.5.2", features = ["postgres", "bb8"] }
 lambda_http = { path = "../../lambda-http" }
-lambda_runtime = { path = "../../lambda-runtime" }
 serde = "1.0.217"
 futures-util = "0.3.31"
 rustls = "0.23.21"

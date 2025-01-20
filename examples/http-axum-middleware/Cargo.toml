@@ -8,6 +8,5 @@ axum = "0.7"
 lambda_http = { path = "../../lambda-http", default-features = false, features = [
   "apigw_rest", "tracing"
 ] }
-lambda_runtime = { path = "../../lambda-runtime" }
 serde_json = "1.0"
 tokio = { version = "1", features = ["macros"] }

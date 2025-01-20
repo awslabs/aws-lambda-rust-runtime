@@ -19,7 +19,6 @@ tracing = ["lambda_runtime_api_client/tracing"]
 
 [dependencies]
 async-stream = "0.3"
-bytes = { workspace = true }
 chrono = { workspace = true, features = ["serde"] }
 http = { workspace = true }
 http-body-util = { workspace = true }

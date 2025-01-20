@@ -4,7 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-simple-error = "0.3.1"
 serde_json = "1.0.137"
 serde = { version = "1.0.217", features = ["derive"] }
 serde_dynamo = { version = "4.2.14", features = ["aws-sdk-dynamodb+1"] }

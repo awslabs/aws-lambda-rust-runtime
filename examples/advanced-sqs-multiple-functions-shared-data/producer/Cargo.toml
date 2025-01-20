@@ -9,7 +9,6 @@ env = { "QUEUE_URL" = "https://changeMe" }
 [dependencies]
 #aws dependencies
 aws-config = "1.5.14"
-aws-sdk-config = "1.57.0"
 aws-sdk-sqs = "1.54.0"
 
 #lambda runtime

@@ -74,11 +74,6 @@ pub async fn add_item(client: &Client, item: Item, table: &str) -> Result<(), Er
     let item = to_item(item)?;
 
     let request = client.put_item().table_name(table).set_item(Some(item));
-    // .item("username", user_av)
-    // .item("account_type", type_av)
-    // .item("age", age_av)
-    // .item("first_name", first_av)
-    // .item("last_name", last_av);
 
     tracing::info!("adding item to DynamoDB");
 

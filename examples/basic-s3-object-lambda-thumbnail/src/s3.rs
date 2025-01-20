@@ -72,7 +72,7 @@ fn check_error(error: SdkError<WriteGetObjectResponseError>) {
             }
             if err.is_user() {
                 tracing::info!("User error");
-            };
+            }
             if err.is_other() {
                 tracing::info!("Other error");
             }

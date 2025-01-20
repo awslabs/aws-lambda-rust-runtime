@@ -58,7 +58,7 @@ async fn main() -> Result<(), Error> {
     tracing::init_default_subscriber();
 
     //Get config from environment.
-    let config = aws_config::from_env().load().await;
+    let config = aws_config::load_from_env().await;
     //Create the DynamoDB client.
     let client = Client::new(&config);
 

@@ -61,7 +61,7 @@ async fn main() -> Result<(), Error> {
     // required to enable CloudWatch error logging by the runtime
     tracing::init_default_subscriber();
 
-    let config = aws_config::from_env().load().await;
+    let config = aws_config::load_from_env().await;
     let logs_processor = SharedService::new(FirehoseLogsProcessor::new(Client::new(&config)));
 
     Extension::new()

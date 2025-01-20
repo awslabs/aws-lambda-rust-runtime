@@ -1,5 +1,4 @@
 use axum::{
-    async_trait,
     extract::{FromRequest, Request},
     http::StatusCode,
     response::Json,
@@ -13,7 +12,6 @@ use std::{collections::HashMap, env::set_var};
 struct AuthorizerField(String);
 struct AuthorizerFields(HashMap<String, serde_json::Value>);
 
-#[async_trait]
 impl<S> FromRequest<S> for AuthorizerField
 where
     S: Send + Sync,
@@ -30,7 +28,6 @@ where
     }
 }
 
-#[async_trait]
 impl<S> FromRequest<S> for AuthorizerFields
 where
     S: Send + Sync,

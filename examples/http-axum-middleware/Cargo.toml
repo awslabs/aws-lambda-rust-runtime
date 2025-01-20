@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-axum = "0.7"
+axum = "0.8"
 lambda_http = { path = "../../lambda-http", default-features = false, features = [
   "apigw_rest", "tracing"
 ] }

@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-axum = "0.7"
+axum = "0.8"
 diesel = "2.2.6"
 diesel-async = { version = "0.5.2", features = ["postgres", "bb8"] }
 lambda_http = { path = "../../lambda-http" }

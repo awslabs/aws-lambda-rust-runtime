@@ -34,5 +34,3 @@ hyper-util = { workspace = true, features = [
 tower = { workspace = true, features = ["util"] }
 tracing = { version = "0.1", features = ["log"], optional = true }
 tracing-subscriber = { version = "0.3", default-features = false, features = ["fmt", "json", "env-filter"], optional = true }
-
-[dev-dependencies]

@@ -19,15 +19,15 @@ aws_lambda_events = { path = "../../lambda-events" }
 lambda_runtime = { path = "../../lambda-runtime" }
 serde = "1"
 tokio = { version = "1", features = ["macros"] }
-aws-config = "0.55"
-aws-smithy-http = "0.55.3"
-aws-sdk-s3 = "0.28"
+aws-config = "1.5.14"
+aws-smithy-http = "0.60.12"
+aws-sdk-s3 = "1.69.0"
 thumbnailer = "0.5.1"
-mime = "0.3.16"
-async-trait = "0.1.68"
-webp = "=0.2.1"
+mime = "0.3.17"
+async-trait = "0.1.85"
+webp = "=0.3.0"
 
 [dev-dependencies]
-mockall = "0.11"
+mockall = "0.13.1"
 tokio-test = "0.4"
 chrono = "0.4"

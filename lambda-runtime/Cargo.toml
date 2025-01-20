@@ -22,7 +22,7 @@ eyre = ["dep:eyre"] # enables From<T> for Diagnostic for eyre error types, see R
 miette = ["dep:miette"] # enables From<T> for Diagnostic for miette error types, see README.md for more info
 
 [dependencies]
-anyhow = { version = "1.0.86", optional = true }
+anyhow = { version = "1.0.95", optional = true }
 async-stream = "0.3"
 base64 = { workspace = true }
 bytes = { workspace = true }
@@ -40,19 +40,19 @@ hyper-util = { workspace = true, features = [
     "tokio",
 ] }
 lambda_runtime_api_client = { version = "0.11.1", path = "../lambda-runtime-api-client", default-features = false }
-miette = { version = "7.2.0", optional = true }
+miette = { version = "7.4.0", optional = true }
 opentelemetry-semantic-conventions = { version = "0.27", optional = true, features = ["semconv_experimental"] }
 pin-project = "1"
 serde = { version = "1", features = ["derive", "rc"] }
 serde_json = "^1"
-serde_path_to_error = "0.1.11"
-tokio = { version = "1.0", features = [
+serde_path_to_error = "0.1.16"
+tokio = { version = "1.43", features = [
     "macros",
     "io-util",
     "sync",
     "rt-multi-thread",
 ] }
-tokio-stream = "0.1.2"
+tokio-stream = "0.1.17"
 tower = { workspace = true, features = ["util"] }
 tower-layer = { workspace = true }
 tracing = { version = "0.1", features = ["log"] }

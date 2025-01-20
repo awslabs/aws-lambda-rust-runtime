@@ -19,7 +19,7 @@ edition = "2021"
 base64 = { workspace = true }
 bytes = { workspace = true, features = ["serde"], optional = true }
 chrono = { workspace = true, optional = true }
-flate2 = { version = "1.0.24", optional = true }
+flate2 = { version = "1.0.35", optional = true }
 http = { workspace = true, optional = true }
 http-body = { workspace = true, optional = true }
 http-serde = { workspace = true, optional = true }
@@ -30,7 +30,7 @@ query_map = { version = "^0.7", features = [
 serde = { version = "^1", features = ["derive"] }
 serde_with = { version = "^3", features = ["json"], optional = true }
 serde_json = "^1"
-serde_dynamo = { version = "^4.1", optional = true }
+serde_dynamo = { version = "^4.2", optional = true }
 
 [features]
 default = [

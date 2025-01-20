@@ -1,19 +1,20 @@
-use diesel::{ConnectionError, ConnectionResult};
-use futures_util::future::BoxFuture;
-use futures_util::FutureExt;
-use std::time::Duration;
-
 use axum::{
     extract::{Path, State},
     response::Json,
     routing::get,
     Router,
 };
-use bb8::Pool;
 use diesel::prelude::*;
-use diesel_async::{pooled_connection::AsyncDieselConnectionManager, AsyncPgConnection, RunQueryDsl};
+use diesel::{ConnectionError, ConnectionResult};
+use diesel_async::{
+    pooled_connection::{bb8::Pool, AsyncDieselConnectionManager, ManagerConfig},
+    AsyncPgConnection, RunQueryDsl,
+};
+use futures_util::future::BoxFuture;
+use futures_util::FutureExt;
 use lambda_http::{http::StatusCode, run, tracing, Error};
 use serde::{Deserialize, Serialize};
+use std::time::Duration;
 
 table! {
     posts (id) {
@@ -40,7 +41,7 @@ struct NewPost {
     published: bool,
 }
 
-type AsyncPool = Pool<AsyncDieselConnectionManager<AsyncPgConnection>>;
+type AsyncPool = Pool<AsyncPgConnection>;
 type ServerError = (StatusCode, String);
 
 async fn create_post(State(pool): State<AsyncPool>, Json(post): Json<NewPost>) -> Result<Json<Post>, ServerError> {
@@ -104,7 +105,10 @@ async fn main() -> Result<(), Error> {
     // Format for DATABASE_URL=postgres://your_username:your_password@your_host:5432/your_db?sslmode=require
     let db_url = std::env::var("DATABASE_URL").expect("Env var `DATABASE_URL` not set");
 
-    let mgr = AsyncDieselConnectionManager::<AsyncPgConnection>::new_with_setup(db_url, establish_connection);
+    let mut config = ManagerConfig::default();
+    config.custom_setup = Box::new(establish_connection);
+
+    let mgr = AsyncDieselConnectionManager::<AsyncPgConnection>::new_with_config(db_url, config);
 
     let pool = Pool::builder()
         .max_size(10)
@@ -129,19 +133,15 @@ fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<AsyncPgConne
     let fut = async {
         // We first set up the way we want rustls to work.
         let rustls_config = rustls::ClientConfig::builder()
-            .with_safe_defaults()
             .with_root_certificates(root_certs())
             .with_no_client_auth();
+
         let tls = tokio_postgres_rustls::MakeRustlsConnect::new(rustls_config);
         let (client, conn) = tokio_postgres::connect(config, tls)
             .await
             .map_err(|e| ConnectionError::BadConnection(e.to_string()))?;
-        tokio::spawn(async move {
-            if let Err(e) = conn.await {
-                eprintln!("Database connection: {e}");
-            }
-        });
-        AsyncPgConnection::try_from(client).await
+
+        AsyncPgConnection::try_from_client_and_connection(client, conn).await
     };
     fut.boxed()
 }
@@ -149,7 +149,6 @@ fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<AsyncPgConne
 fn root_certs() -> rustls::RootCertStore {
     let mut roots = rustls::RootCertStore::empty();
     let certs = rustls_native_certs::load_native_certs().expect("Certs not loadable!");
-    let certs: Vec<_> = certs.into_iter().map(|cert| cert.0).collect();
-    roots.add_parsable_certificates(&certs);
+    roots.add_parsable_certificates(certs);
     roots
 }

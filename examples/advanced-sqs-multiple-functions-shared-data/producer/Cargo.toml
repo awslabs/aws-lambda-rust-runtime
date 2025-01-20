@@ -8,13 +8,13 @@ env = { "QUEUE_URL" = "https://changeMe" }
 
 [dependencies]
 #aws dependencies
-aws-config = "0.57.1"
-aws-sdk-config = "0.35.0"
-aws-sdk-sqs = "0.35.0"
+aws-config = "1.5.14"
+aws-sdk-config = "1.57.0"
+aws-sdk-sqs = "1.54.0"
 
 #lambda runtime
 lambda_runtime = { path = "../../../lambda-runtime" }
-serde_json = "1.0.108"
+serde_json = "1.0.137"
 tokio = { version = "1", features = ["macros"] }
 
 #shared lib

@@ -5,10 +5,9 @@ edition = "2021"
 
 [dependencies]
 axum = "0.7"
-bb8 = "0.8.0"
-diesel = "2.0.3"
-diesel-async = { version = "0.2.1", features = ["postgres", "bb8"] }
+diesel = "2.2.6"
+diesel-async = { version = "0.5.2", features = ["postgres", "bb8"] }
 lambda_http = { path = "../../lambda-http" }
 lambda_runtime = { path = "../../lambda-runtime" }
-serde = "1.0.159"
+serde = "1.0.217"
 tokio = { version = "1", features = ["macros"] }

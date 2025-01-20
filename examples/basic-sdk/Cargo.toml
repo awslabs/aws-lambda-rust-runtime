@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 async-trait = "0.1"
-aws-config = "1.5.14"
+aws-config = { version = "1.5.14", features = ["behavior-version-latest"] }
 aws-sdk-s3 = "1.69.0"
 lambda_runtime = { path = "../../lambda-runtime" }
 serde = "1.0.217"

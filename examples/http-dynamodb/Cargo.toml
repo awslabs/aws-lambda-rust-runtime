@@ -9,5 +9,5 @@ serde = { version = "1.0.217", features = ["derive"] }
 serde_dynamo = { version = "4.2.14", features = ["aws-sdk-dynamodb+1"] }
 lambda_http = { path = "../../lambda-http" }
 aws-sdk-dynamodb = "1.60.0"
-aws-config = "1.5.14"
+aws-config = { version = "1.5.14", features = ["behavior-version-latest"] }
 tokio = { version = "1.43.0", features = ["macros"] }

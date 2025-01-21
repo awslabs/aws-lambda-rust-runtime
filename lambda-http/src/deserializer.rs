@@ -20,7 +20,7 @@ impl<'de> Deserialize<'de> for LambdaRequest {
     where
         D: serde::Deserializer<'de>,
     {
-        let raw_value: Box<RawValue> = Box::deserialize(deserializer)?;
+        let raw_value: Box<RawValue> = Box::<RawValue>::deserialize(deserializer)?;
         let data = raw_value.get();
 
         #[cfg(feature = "apigw_rest")]

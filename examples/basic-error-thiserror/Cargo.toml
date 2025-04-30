@@ -18,5 +18,5 @@ edition = "2021"
 
 lambda_runtime = { path = "../../lambda-runtime" }
 serde = "1"
-thiserror = "1.0.61"
+thiserror = "2.0"
 tokio = { version = "1", features = ["macros"] }

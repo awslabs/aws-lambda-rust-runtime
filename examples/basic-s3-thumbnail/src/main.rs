@@ -163,11 +163,11 @@ mod tests {
 
             #[async_trait]
             impl GetFile for FakeS3Client {
-                pub async fn get_file(&self, bucket: &str, key: &str) -> Result<Vec<u8>, GetObjectError>;
+                async fn get_file(&self, bucket: &str, key: &str) -> Result<Vec<u8>, GetObjectError>;
             }
             #[async_trait]
             impl PutFile for FakeS3Client {
-                pub async fn put_file(&self, bucket: &str, key: &str, bytes: Vec<u8>) -> Result<String, String>;
+                async fn put_file(&self, bucket: &str, key: &str, bytes: Vec<u8>) -> Result<String, String>;
             }
         }
 

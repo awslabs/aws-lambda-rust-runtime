@@ -20,7 +20,7 @@ async fn main() -> Result<(), Error> {
     // read the queue url from the environment
     let queue_url = std::env::var("QUEUE_URL").expect("could not read QUEUE_URL");
     // build the config from environment variables (fed by AWS Lambda)
-    let config = aws_config::from_env().load().await;
+    let config = aws_config::load_from_env().await;
     // create our SQS Manager
     let sqs_manager = SQSManager::new(aws_sdk_sqs::Client::new(&config), queue_url);
     let sqs_manager_ref = &sqs_manager;

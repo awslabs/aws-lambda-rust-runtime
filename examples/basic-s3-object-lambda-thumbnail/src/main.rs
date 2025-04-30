@@ -90,24 +90,23 @@ mod tests {
     use aws_lambda_events::s3::object_lambda::ListObjectsV2Context;
     use aws_lambda_events::s3::object_lambda::UserIdentity;
     use aws_lambda_events::s3::object_lambda::UserRequest;
-    use aws_lambda_events::serde_json::json;
     use lambda_runtime::{Context, LambdaEvent};
     use mockall::mock;
     use s3::GetFile;
     use s3::SendFile;
+    use serde_json::json;
 
     #[tokio::test]
     async fn response_is_good() {
         mock! {
             FakeS3Client {}
 
-            #[async_trait]
             impl GetFile for FakeS3Client {
-                pub fn get_file(&self, url: String) -> Result<Vec<u8>, Box<dyn error::Error>>;
+                fn get_file(&self, url: String) -> Result<Vec<u8>, Box<dyn error::Error>>;
             }
             #[async_trait]
             impl SendFile for FakeS3Client {
-                pub async fn send_file(&self, route: String, token: String, vec: Vec<u8>) -> Result<String, Box<dyn error::Error>>;
+                async fn send_file(&self, route: String, token: String, vec: Vec<u8>) -> Result<String, Box<dyn error::Error>>;
             }
         }
 

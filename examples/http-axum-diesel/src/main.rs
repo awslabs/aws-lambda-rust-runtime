@@ -4,9 +4,11 @@ use axum::{
     routing::get,
     Router,
 };
-use bb8::Pool;
 use diesel::prelude::*;
-use diesel_async::{pooled_connection::AsyncDieselConnectionManager, AsyncPgConnection, RunQueryDsl};
+use diesel_async::{
+    pooled_connection::{bb8::Pool, AsyncDieselConnectionManager},
+    AsyncPgConnection, RunQueryDsl,
+};
 use lambda_http::{http::StatusCode, run, tracing, Error};
 use serde::{Deserialize, Serialize};
 
@@ -35,7 +37,7 @@ struct NewPost {
     published: bool,
 }
 
-type AsyncPool = Pool<AsyncDieselConnectionManager<AsyncPgConnection>>;
+type AsyncPool = Pool<AsyncPgConnection>;
 type ServerError = (StatusCode, String);
 
 async fn create_post(State(pool): State<AsyncPool>, Json(post): Json<NewPost>) -> Result<Json<Post>, ServerError> {

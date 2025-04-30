@@ -5,5 +5,4 @@ edition = "2021"
 
 [dependencies]
 lambda_http = { path = "../../lambda-http" }
-lambda_runtime = { path = "../../lambda-runtime" }
 tokio = { version = "1", features = ["macros"] }

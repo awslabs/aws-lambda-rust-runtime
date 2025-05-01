@@ -1,7 +1,7 @@
 use std::{fmt::Display, future::Future, pin::Pin, task};
 
 use crate::LambdaInvocation;
-use opentelemetry_semantic_conventions::attribute as attribute;
+use opentelemetry_semantic_conventions::attribute;
 use pin_project::pin_project;
 use tower::{Layer, Service};
 use tracing::{field, instrument::Instrumented, Instrument};

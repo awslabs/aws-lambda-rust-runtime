@@ -18,9 +18,10 @@ the Lambda service returns the response to the caller immediately. Extensions ma
 without introducing an observable delay.
 
 ## Build & Deploy
+Two deploy options for internal extensions: 
 
 1. Install [cargo-lambda](https://github.com/cargo-lambda/cargo-lambda#installation)
-2. Build the extension with `cargo lambda build --release`
+2. Build a function with the internal extension embedded with `cargo lambda build --release`
 3. Deploy the function to AWS Lambda with `cargo lambda deploy --iam-role YOUR_ROLE`
 
 The last command will give you an ARN for the extension layer that you can use in your functions.
@@ -28,3 +29,18 @@ The last command will give you an ARN for the extension layer that you can use i
 ## Build for ARM 64
 
 Build the extension with `cargo lambda build --release --arm64`
+
+
+## Test your Function
+
+From your local:
+```
+cargo lambda watch
+# in new terminal window
+cargo lambda invoke --data-ascii '{"Records":[{"messageId":"MessageID_1","receiptHandle":"MessageReceiptHandle","body":"{\"a\":\"Test\",\"b\":123}"}]}'
+```
+
+If you have deployed to AWS using the commands in the 'Build & Deploy' section, you can also invoke your function remotely:
+```
+cargo lambda invoke extension-internal-flush --remote --data-ascii '{"Records":[{"messageId":"MessageID_1","receiptHandle":"MessageReceiptHandle","body":"{\"a\":\"Test\",\"b\":123}"}]}'
+```

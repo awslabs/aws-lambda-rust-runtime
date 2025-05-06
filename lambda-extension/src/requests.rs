@@ -24,7 +24,7 @@ pub(crate) fn next_event_request(extension_id: &str) -> Result<Request<Body>, Er
 }
 
 pub(crate) fn register_request(extension_name: &str, events: &[&str]) -> Result<Request<Body>, Error> {
-    let events = serde_json::json!({ "events": events });
+    let events = aws_lambda_json_impl::json!({ "events": events });
 
     let req = build_request()
         .method(Method::POST)
@@ -32,7 +32,7 @@ pub(crate) fn register_request(extension_name: &str, events: &[&str]) -> Result<
         .header(EXTENSION_NAME_HEADER, extension_name)
         .header(EXTENSION_ACCEPT_FEATURE, EXTENSION_ACCEPT_FEATURE_VALUE)
         .header(CONTENT_TYPE_HEADER_NAME, CONTENT_TYPE_HEADER_VALUE)
-        .body(Body::from(serde_json::to_string(&events)?))?;
+        .body(Body::from(aws_lambda_json_impl::to_string(&events)?))?;
 
     Ok(req)
 }
@@ -67,7 +67,7 @@ pub(crate) fn subscribe_request(
 ) -> Result<Request<Body>, Error> {
     let types = types.unwrap_or(&["platform", "function"]);
 
-    let data = serde_json::json!({
+    let data = aws_lambda_json_impl::json!({
         "schemaVersion": api.schema_version(),
         "types": types,
         "buffering": buffering.unwrap_or_default(),
@@ -82,7 +82,7 @@ pub(crate) fn subscribe_request(
         .uri(api.uri())
         .header(EXTENSION_ID_HEADER, extension_id)
         .header(CONTENT_TYPE_HEADER_NAME, CONTENT_TYPE_HEADER_VALUE)
-        .body(Body::from(serde_json::to_string(&data)?))?;
+        .body(Body::from(aws_lambda_json_impl::to_string(&data)?))?;
 
     Ok(req)
 }
@@ -127,7 +127,7 @@ fn error_request(
 
     let body = match request {
         None => Body::empty(),
-        Some(err) => Body::from(serde_json::to_string(&err)?),
+        Some(err) => Body::from(aws_lambda_json_impl::to_string(&err)?),
     };
 
     let req = build_request()

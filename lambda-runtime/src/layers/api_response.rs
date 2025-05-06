@@ -102,7 +102,7 @@ where
         };
 
         let request_id = req.context.request_id.clone();
-        let lambda_event = match deserializer::deserialize::<EventPayload>(&req.body, req.context) {
+        let lambda_event = match deserializer::deserialize::<EventPayload>(req.body, req.context) {
             Ok(lambda_event) => lambda_event,
             Err(err) => match build_event_error_request(&request_id, err) {
                 Ok(request) => return RuntimeApiResponseFuture::Ready(Some(Ok(request))),

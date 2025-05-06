@@ -84,29 +84,33 @@ pub enum KinesisEncryptionType {
 
 #[cfg(test)]
 mod test {
+    // To save on boiler plate, JSON data is parsed from a mut byte slice rather than an &str. The slice isn't actually mutated
+    // when using serde-json, but it IS when using simd-json - so we also take care not to reuse the slice
+    // once it has been deserialized.
+
     use super::*;
 
     #[test]
     #[cfg(feature = "kinesis")]
     fn example_kinesis_event() {
-        let data = include_bytes!("../../fixtures/example-kinesis-event.json");
-        let parsed: KinesisEvent = serde_json::from_slice(data).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-kinesis-event.json").to_vec();
+        let parsed: KinesisEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         assert_eq!(KinesisEncryptionType::None, parsed.records[0].kinesis.encryption_type);
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: KinesisEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: KinesisEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "kinesis")]
     fn example_kinesis_event_encrypted() {
-        let data = include_bytes!("../../fixtures/example-kinesis-event-encrypted.json");
-        let parsed: KinesisEvent = serde_json::from_slice(data).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-kinesis-event-encrypted.json").to_vec();
+        let parsed: KinesisEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
         assert_eq!(KinesisEncryptionType::Kms, parsed.records[0].kinesis.encryption_type);
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: KinesisEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: KinesisEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

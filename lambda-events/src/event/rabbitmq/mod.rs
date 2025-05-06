@@ -1,5 +1,5 @@
+use aws_lambda_json_impl::Value;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use serde_json::Value;
 use std::collections::HashMap;
 
 use crate::custom_serde::deserialize_lambda_map;
@@ -60,15 +60,19 @@ where
 
 #[cfg(test)]
 mod test {
+    // To save on boiler plate, JSON data is parsed from a mut byte slice rather than an &str. The slice isn't actually mutated
+    // when using serde-json, but it IS when using simd-json - so we also take care not to reuse the slice
+    // once it has been deserialized.
+
     use super::*;
 
     #[test]
     #[cfg(feature = "rabbitmq")]
     fn example_rabbitmq_event() {
-        let data = include_bytes!("../../fixtures/example-rabbitmq-event.json");
-        let parsed: RabbitMqEvent = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: RabbitMqEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-rabbitmq-event.json").to_vec();
+        let parsed: RabbitMqEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: RabbitMqEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

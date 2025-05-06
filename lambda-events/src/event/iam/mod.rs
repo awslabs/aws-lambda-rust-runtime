@@ -129,7 +129,7 @@ mod tests {
 
     #[test]
     fn test_deserialize_string_condition() {
-        let data = serde_json::json!({
+        let data = aws_lambda_json_impl::json!({
             "condition": {
                 "StringEquals": {
                     "iam:RegisterSecurityKey": "Activate",
@@ -144,7 +144,7 @@ mod tests {
             condition: Option<IamPolicyCondition>,
         }
 
-        let test: Test = serde_json::from_value(data).unwrap();
+        let test: Test = aws_lambda_json_impl::from_value(data).unwrap();
         let condition = test.condition.unwrap();
         assert_eq!(1, condition.len());
 
@@ -154,7 +154,7 @@ mod tests {
 
     #[test]
     fn test_deserialize_slide_condition() {
-        let data = serde_json::json!({
+        let data = aws_lambda_json_impl::json!({
             "condition": {"StringLike": {"s3:prefix": ["janedoe/*"]}}
         });
 
@@ -164,7 +164,7 @@ mod tests {
             condition: Option<IamPolicyCondition>,
         }
 
-        let test: Test = serde_json::from_value(data).unwrap();
+        let test: Test = aws_lambda_json_impl::from_value(data).unwrap();
         let condition = test.condition.unwrap();
         assert_eq!(1, condition.len());
 
@@ -179,11 +179,11 @@ mod tests {
             resource: vec!["some:resource".into()],
             condition: None,
         };
-        let policy_ser = serde_json::to_value(policy).unwrap();
+        let policy_ser = aws_lambda_json_impl::to_value(policy).unwrap();
 
         assert_eq!(
             policy_ser,
-            serde_json::json!({
+            aws_lambda_json_impl::json!({
                 "Action": ["some:action"],
                 "Effect": "Allow",
                 "Resource": ["some:resource"]

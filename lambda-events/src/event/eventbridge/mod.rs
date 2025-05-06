@@ -1,6 +1,6 @@
+use aws_lambda_json_impl::Value;
 use chrono::{DateTime, Utc};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use serde_json::Value;
 
 /// Parse EventBridge events.
 /// Deserialize the event detail into a structure that's `DeserializeOwned`.
@@ -35,6 +35,10 @@ where
 #[cfg(test)]
 #[cfg(feature = "eventbridge")]
 mod test {
+    // To save on boiler plate, JSON data is parsed from a mut byte slice rather than an &str. The slice isn't actually mutated
+    // when using serde-json, but it IS when using simd-json - so we also take care not to reuse the slice
+    // once it has been deserialized.
+
     use super::*;
 
     #[test]
@@ -47,27 +51,28 @@ mod test {
         }
 
         // Example from https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/monitoring-instance-state-changes.html
-        let data = include_bytes!("../../fixtures/example-eventbridge-event-obj.json");
-        let parsed: EventBridgeEvent<Ec2StateChange> = serde_json::from_slice(data).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-eventbridge-event-obj.json").to_vec();
+        let parsed: EventBridgeEvent<Ec2StateChange> = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
 
         assert_eq!("i-abcd1111", parsed.detail.instance_id);
         assert_eq!("pending", parsed.detail.state);
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: EventBridgeEvent<Ec2StateChange> = serde_json::from_slice(output.as_bytes()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: EventBridgeEvent<Ec2StateChange> =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     fn example_eventbridge_schedule_event() {
-        let data = include_bytes!("../../fixtures/example-eventbridge-schedule.json");
-        let parsed: EventBridgeEvent = serde_json::from_slice(data).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-eventbridge-schedule.json").to_vec();
+        let parsed: EventBridgeEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
 
         assert_eq!("aws.events", parsed.source);
         assert_eq!("Scheduled Event", parsed.detail_type);
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: EventBridgeEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: EventBridgeEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

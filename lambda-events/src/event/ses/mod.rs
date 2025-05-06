@@ -120,35 +120,39 @@ pub struct SimpleEmailDisposition {
 
 #[cfg(test)]
 mod test {
+    // To save on boiler plate, JSON data is parsed from a mut byte slice rather than an &str. The slice isn't actually mutated
+    // when using serde-json, but it IS when using simd-json - so we also take care not to reuse the slice
+    // once it has been deserialized.
+
     use super::*;
 
     #[test]
     #[cfg(feature = "ses")]
     fn example_ses_lambda_event() {
-        let data = include_bytes!("../../fixtures/example-ses-lambda-event.json");
-        let parsed: SimpleEmailEvent = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: SimpleEmailEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-ses-lambda-event.json").to_vec();
+        let parsed: SimpleEmailEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: SimpleEmailEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "ses")]
     fn example_ses_s3_event() {
-        let data = include_bytes!("../../fixtures/example-ses-s3-event.json");
-        let parsed: SimpleEmailEvent = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: SimpleEmailEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-ses-s3-event.json").to_vec();
+        let parsed: SimpleEmailEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: SimpleEmailEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "ses")]
     fn example_ses_sns_event() {
-        let data = include_bytes!("../../fixtures/example-ses-sns-event.json");
-        let parsed: SimpleEmailEvent = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: SimpleEmailEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-ses-sns-event.json").to_vec();
+        let parsed: SimpleEmailEvent = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: SimpleEmailEvent = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

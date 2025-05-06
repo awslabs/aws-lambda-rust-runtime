@@ -215,6 +215,10 @@ where
 #[cfg(test)]
 #[allow(deprecated)]
 mod test {
+    // To save on boiler plate, JSON data is parsed from a mut byte slice rather than an &str. The slice isn't actually mutated
+    // when using serde-json, but it IS when using simd-json - so we also take care not to reuse the slice
+    // once it has been deserialized.
+
     use super::*;
     use chrono::TimeZone;
 
@@ -228,19 +232,20 @@ mod test {
         let expected = Utc.ymd(2017, 10, 5).and_hms_nano(15, 33, 44, 302_000_000);
 
         // Test parsing strings.
-        let data = serde_json::json!({
+        let data = aws_lambda_json_impl::json!({
             "v": "1507217624302",
         });
-        let decoded: Test = serde_json::from_value(data).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_value(data).unwrap();
         assert_eq!(expected, decoded.v,);
         // Test parsing ints.
-        let decoded: Test = serde_json::from_slice(r#"{"v":1507217624302}"#.as_bytes()).unwrap();
+        let mut test = r#"{"v":1507217624302}"#.as_bytes().to_vec();
+        let decoded: Test = aws_lambda_json_impl::from_slice(test.as_mut_slice()).unwrap();
         assert_eq!(expected, decoded.v,);
         // Test parsing floats.
-        let data = serde_json::json!({
+        let data = aws_lambda_json_impl::json!({
             "v": 1507217624302.0,
         });
-        let decoded: Test = serde_json::from_value(data).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_value(data).unwrap();
         assert_eq!(expected, decoded.v,);
     }
 
@@ -254,7 +259,7 @@ mod test {
         let instance = Test {
             v: Utc.ymd(1983, 7, 22).and_hms_nano(1, 0, 0, 99_888_777),
         };
-        let encoded = serde_json::to_string(&instance).unwrap();
+        let encoded = aws_lambda_json_impl::to_string(&instance).unwrap();
         assert_eq!(encoded, String::from(r#"{"v":"427683600099"}"#));
     }
 
@@ -270,21 +275,21 @@ mod test {
         let instance = Test {
             v: Utc.ymd(1983, 7, 22).and_hms_nano(1, 0, 0, 99),
         };
-        let encoded = serde_json::to_string(&instance).unwrap();
+        let encoded = aws_lambda_json_impl::to_string(&instance).unwrap();
         assert_eq!(encoded, String::from(r#"{"v":"427683600"}"#));
 
         // Make sure milliseconds are included.
         let instance = Test {
             v: Utc.ymd(1983, 7, 22).and_hms_nano(1, 0, 0, 2_000_000),
         };
-        let encoded = serde_json::to_string(&instance).unwrap();
+        let encoded = aws_lambda_json_impl::to_string(&instance).unwrap();
         assert_eq!(encoded, String::from(r#"{"v":"427683600.002"}"#));
 
         // Make sure leap seconds are included.
         let instance = Test {
             v: Utc.ymd(1983, 7, 22).and_hms_nano(23, 59, 59, 1_999_999_999),
         };
-        let encoded = serde_json::to_string(&instance).unwrap();
+        let encoded = aws_lambda_json_impl::to_string(&instance).unwrap();
         assert_eq!(encoded, String::from(r#"{"v":"427766400.999"}"#));
     }
 
@@ -298,16 +303,16 @@ mod test {
 
         let expected = TimeDelta::try_seconds(36).unwrap();
 
-        let data = serde_json::json!({
+        let data = aws_lambda_json_impl::json!({
             "v": 36,
         });
-        let decoded: Test = serde_json::from_value(data).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_value(data).unwrap();
         assert_eq!(expected, decoded.v,);
 
-        let data = serde_json::json!({
+        let data = aws_lambda_json_impl::json!({
             "v": 36.1,
         });
-        let decoded: Test = serde_json::from_value(data).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_value(data).unwrap();
         assert_eq!(expected, decoded.v,);
     }
 
@@ -321,7 +326,7 @@ mod test {
         let instance = Test {
             v: TimeDelta::try_seconds(36).unwrap(),
         };
-        let encoded = serde_json::to_string(&instance).unwrap();
+        let encoded = aws_lambda_json_impl::to_string(&instance).unwrap();
         assert_eq!(encoded, String::from(r#"{"v":36}"#));
     }
 
@@ -335,16 +340,16 @@ mod test {
 
         let expected = TimeDelta::try_minutes(36).unwrap();
 
-        let data = serde_json::json!({
+        let data = aws_lambda_json_impl::json!({
             "v": 36,
         });
-        let decoded: Test = serde_json::from_value(data).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_value(data).unwrap();
         assert_eq!(expected, decoded.v,);
 
-        let data = serde_json::json!({
+        let data = aws_lambda_json_impl::json!({
             "v": 36.1,
         });
-        let decoded: Test = serde_json::from_value(data).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_value(data).unwrap();
         assert_eq!(expected, decoded.v,);
     }
 
@@ -358,7 +363,7 @@ mod test {
         let instance = Test {
             v: TimeDelta::try_minutes(36).unwrap(),
         };
-        let encoded = serde_json::to_string(&instance).unwrap();
+        let encoded = aws_lambda_json_impl::to_string(&instance).unwrap();
         assert_eq!(encoded, String::from(r#"{"v":36}"#));
     }
 }

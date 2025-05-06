@@ -1,5 +1,5 @@
+use aws_lambda_json_impl::Value;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use serde_json::Value;
 use std::collections::HashMap;
 
 use crate::custom_serde::deserialize_lambda_map;
@@ -119,45 +119,50 @@ where
 
 #[cfg(test)]
 mod test {
+    // To save on boiler plate, JSON data is parsed from a mut byte slice rather than an &str. The slice isn't actually mutated
+    // when using serde-json, but it IS when using simd-json - so we also take care not to reuse the slice
+    // once it has been deserialized.
+
     use super::*;
 
     #[test]
     #[cfg(feature = "appsync")]
     fn example_appsync_identity_cognito() {
-        let data = include_bytes!("../../fixtures/example-appsync-identity-cognito.json");
-        let parsed: AppSyncCognitoIdentity = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: AppSyncCognitoIdentity = serde_json::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-appsync-identity-cognito.json").to_vec();
+        let parsed: AppSyncCognitoIdentity = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: AppSyncCognitoIdentity = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "appsync")]
     fn example_appsync_identity_iam() {
-        let data = include_bytes!("../../fixtures/example-appsync-identity-iam.json");
-        let parsed: AppSyncIamIdentity = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: AppSyncIamIdentity = serde_json::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-appsync-identity-iam.json").to_vec();
+        let parsed: AppSyncIamIdentity = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: AppSyncIamIdentity = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "appsync")]
     fn example_appsync_lambda_auth_request() {
-        let data = include_bytes!("../../fixtures/example-appsync-lambda-auth-request.json");
-        let parsed: AppSyncLambdaAuthorizerRequest = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: AppSyncLambdaAuthorizerRequest = serde_json::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-appsync-lambda-auth-request.json").to_vec();
+        let parsed: AppSyncLambdaAuthorizerRequest = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: AppSyncLambdaAuthorizerRequest = aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 
     #[test]
     #[cfg(feature = "appsync")]
     fn example_appsync_lambda_auth_response() {
-        let data = include_bytes!("../../fixtures/example-appsync-lambda-auth-response.json");
-        let parsed: AppSyncLambdaAuthorizerResponse = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: AppSyncLambdaAuthorizerResponse = serde_json::from_slice(output.as_bytes()).unwrap();
+        let mut data = include_bytes!("../../fixtures/example-appsync-lambda-auth-response.json").to_vec();
+        let parsed: AppSyncLambdaAuthorizerResponse = aws_lambda_json_impl::from_slice(data.as_mut_slice()).unwrap();
+        let mut output = aws_lambda_json_impl::to_string(&parsed).unwrap().into_bytes();
+        let reparsed: AppSyncLambdaAuthorizerResponse =
+            aws_lambda_json_impl::from_slice(output.as_mut_slice()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

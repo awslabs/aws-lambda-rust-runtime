@@ -396,7 +396,7 @@ where
 
             let body = body.collect().await?.to_bytes();
             trace!("{}", std::str::from_utf8(&body)?); // this may be very verbose
-            let event: NextEvent = serde_json::from_slice(&body)?;
+            let event: NextEvent = aws_lambda_json_impl::from_bytes(body)?;
             let is_invoke = event.is_invoke();
 
             let event = LambdaEvent::new(event);
@@ -541,7 +541,7 @@ async fn register<'a>(
 
     let (_, body) = res.into_parts();
     let body = body.collect().await?.to_bytes();
-    let response: RegisterResponseBody = serde_json::from_slice(&body)?;
+    let response: RegisterResponseBody = aws_lambda_json_impl::from_bytes(body)?;
 
     Ok(RegisterResponse {
         extension_id,

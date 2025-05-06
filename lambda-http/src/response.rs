@@ -51,7 +51,7 @@ pub enum LambdaResponse {
     #[cfg(feature = "alb")]
     Alb(AlbTargetGroupResponse),
     #[cfg(feature = "pass_through")]
-    PassThrough(serde_json::Value),
+    PassThrough(aws_lambda_json_impl::Value),
 }
 
 /// Transformation from http type to internal type
@@ -133,9 +133,15 @@ impl LambdaResponse {
             RequestOrigin::PassThrough => {
                 match body {
                     // text body must be a valid json string
-                    Some(Body::Text(body)) => {LambdaResponse::PassThrough(serde_json::from_str(&body).unwrap_or_default())},
+                    #[cfg(not(feature = "simd_json"))]
+                    Some(Body::Text(body)) => {LambdaResponse::PassThrough(aws_lambda_json_impl::from_str(&body).unwrap_or_default())},
+                    #[cfg(feature = "simd_json")]
+                    Some(Body::Text(body)) => {LambdaResponse::PassThrough(aws_lambda_json_impl::from_string(body).unwrap_or_default())},
                     // binary body and other cases return Value::Null
-                    _ => LambdaResponse::PassThrough(serde_json::Value::Null),
+                    #[cfg(not(feature = "simd_json"))]
+                    _ => LambdaResponse::PassThrough(aws_lambda_json_impl::Value::Null),
+                    #[cfg(feature = "simd_json")]
+                    _ => LambdaResponse::PassThrough(aws_lambda_json_impl::Value::Static(aws_lambda_json_impl::StaticNode::Null)),
                 }
             }
             #[cfg(not(any(
@@ -195,14 +201,14 @@ impl IntoResponse for Vec<u8> {
     }
 }
 
-impl IntoResponse for serde_json::Value {
+impl IntoResponse for aws_lambda_json_impl::Value {
     fn into_response(self) -> ResponseFuture {
         Box::pin(async move {
             Response::builder()
                 .header(CONTENT_TYPE, "application/json")
                 .body(
-                    serde_json::to_string(&self)
-                        .expect("unable to serialize serde_json::Value")
+                    aws_lambda_json_impl::to_string(&self)
+                        .expect("unable to serialize aws_lambda_json_impl::Value")
                         .into(),
                 )
                 .expect("unable to build http::Response")
@@ -258,7 +264,7 @@ impl IntoResponse for (StatusCode, Vec<u8>) {
     }
 }
 
-impl IntoResponse for (StatusCode, serde_json::Value) {
+impl IntoResponse for (StatusCode, aws_lambda_json_impl::Value) {
     fn into_response(self) -> ResponseFuture {
         let (status, body) = self;
         Box::pin(async move {
@@ -266,8 +272,8 @@ impl IntoResponse for (StatusCode, serde_json::Value) {
                 .status(status)
                 .header(CONTENT_TYPE, "application/json")
                 .body(
-                    serde_json::to_string(&body)
-                        .expect("unable to serialize serde_json::Value")
+                    aws_lambda_json_impl::to_string(&body)
+                        .expect("unable to serialize aws_lambda_json_impl::Value")
                         .into(),
                 )
                 .expect("unable to build http::Response")
@@ -373,12 +379,12 @@ pub type BodyFuture = Pin<Box<dyn Future<Output = Body> + Send>>;
 #[cfg(test)]
 mod tests {
     use super::{Body, IntoResponse, LambdaResponse, RequestOrigin, X_LAMBDA_HTTP_CONTENT_ENCODING};
+    use aws_lambda_json_impl::json;
     use http::{
         header::{CONTENT_ENCODING, CONTENT_TYPE},
         Response, StatusCode,
     };
     use lambda_runtime_api_client::body::Body as HyperBody;
-    use serde_json::{self, json};
 
     const SVG_LOGO: &str = include_str!("../tests/data/svg_logo.svg");
 
@@ -475,7 +481,7 @@ mod tests {
         let response = response.into_response().await;
         let response = LambdaResponse::from_response(&RequestOrigin::ApiGatewayV2, response);
 
-        let json = serde_json::to_string(&response).expect("failed to serialize to json");
+        let json = aws_lambda_json_impl::to_string(&response).expect("failed to serialize to json");
         assert_eq!(
             json,
             r#"{"statusCode":200,"headers":{"content-encoding":"gzip"},"multiValueHeaders":{},"body":"MDAwMDAw","isBase64Encoded":true,"cookies":[]}"#
@@ -493,7 +499,7 @@ mod tests {
         let response = response.into_response().await;
         let response = LambdaResponse::from_response(&RequestOrigin::ApiGatewayV2, response);
 
-        let json = serde_json::to_string(&response).expect("failed to serialize to json");
+        let json = aws_lambda_json_impl::to_string(&response).expect("failed to serialize to json");
         assert_eq!(
             json,
             r#"{"statusCode":200,"headers":{"content-type":"application/json"},"multiValueHeaders":{},"body":"000000","isBase64Encoded":false,"cookies":[]}"#
@@ -511,7 +517,7 @@ mod tests {
         let response = response.into_response().await;
         let response = LambdaResponse::from_response(&RequestOrigin::ApiGatewayV2, response);
 
-        let json = serde_json::to_string(&response).expect("failed to serialize to json");
+        let json = aws_lambda_json_impl::to_string(&response).expect("failed to serialize to json");
         assert_eq!(
             json,
             r#"{"statusCode":200,"headers":{"content-type":"application/json; charset=utf-16"},"multiValueHeaders":{},"body":"〰〰〰","isBase64Encoded":false,"cookies":[]}"#
@@ -529,7 +535,7 @@ mod tests {
         let response = response.into_response().await;
         let response = LambdaResponse::from_response(&RequestOrigin::ApiGatewayV2, response);
 
-        let json = serde_json::to_string(&response).expect("failed to serialize to json");
+        let json = aws_lambda_json_impl::to_string(&response).expect("failed to serialize to json");
         assert_eq!(
             json,
             r#"{"statusCode":200,"headers":{"content-type":"application/graphql-response+json; charset=utf-16"},"multiValueHeaders":{},"body":"〰〰〰","isBase64Encoded":false,"cookies":[]}"#
@@ -546,7 +552,7 @@ mod tests {
         let response = response.into_response().await;
         let response = LambdaResponse::from_response(&RequestOrigin::ApiGatewayV2, response);
 
-        let json = serde_json::to_string(&response).expect("failed to serialize to json");
+        let json = aws_lambda_json_impl::to_string(&response).expect("failed to serialize to json");
         assert_eq!(
             json,
             r#"{"statusCode":200,"headers":{},"multiValueHeaders":{},"body":"000000","isBase64Encoded":false,"cookies":[]}"#
@@ -563,7 +569,7 @@ mod tests {
                 .body(Body::from(()))
                 .expect("failed to create response"),
         );
-        let json = serde_json::to_string(&res).expect("failed to serialize to json");
+        let json = aws_lambda_json_impl::to_string(&res).expect("failed to serialize to json");
         assert_eq!(
             json,
             r#"{"statusCode":200,"headers":{},"multiValueHeaders":{"multi":["a","b"]},"isBase64Encoded":false}"#
@@ -580,7 +586,7 @@ mod tests {
                 .body(Body::from(()))
                 .expect("failed to create response"),
         );
-        let json = serde_json::to_string(&res).expect("failed to serialize to json");
+        let json = aws_lambda_json_impl::to_string(&res).expect("failed to serialize to json");
         assert_eq!(
             "{\"statusCode\":200,\"headers\":{},\"multiValueHeaders\":{},\"isBase64Encoded\":false,\"cookies\":[\"cookie1=a\",\"cookie2=b\"]}",
             json

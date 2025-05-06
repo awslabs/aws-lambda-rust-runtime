@@ -145,13 +145,13 @@ mod tests {
             #[serde(deserialize_with = "deserialize_headers", default)]
             pub headers: HeaderMap,
         }
-        let data = serde_json::json!({
+        let data = aws_lambda_json_impl::json!({
             "not_headers": {}
         });
 
         let expected = HeaderMap::new();
 
-        let decoded: Test = serde_json::from_value(data).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_value(data).unwrap();
         assert_eq!(expected, decoded.headers);
     }
 
@@ -163,16 +163,16 @@ mod tests {
             #[serde(serialize_with = "serialize_multi_value_headers")]
             headers: HeaderMap,
         }
-        let data = serde_json::json!({
+        let data = aws_lambda_json_impl::json!({
             "headers": {
                 "Accept": ["*/*"]
             }
         });
-        let decoded: Test = serde_json::from_value(data).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_value(data).unwrap();
         assert_eq!(&"*/*", decoded.headers.get("Accept").unwrap());
 
-        let recoded = serde_json::to_value(decoded).unwrap();
-        let decoded: Test = serde_json::from_value(recoded).unwrap();
+        let recoded = aws_lambda_json_impl::to_value(decoded).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_value(recoded).unwrap();
         assert_eq!(&"*/*", decoded.headers.get("Accept").unwrap());
     }
 
@@ -183,9 +183,9 @@ mod tests {
             #[serde(deserialize_with = "deserialize_headers")]
             headers: HeaderMap,
         }
-        let data = serde_json::json!({ "headers": null });
+        let data = aws_lambda_json_impl::json!({ "headers": null });
 
-        let decoded: Test = serde_json::from_value(data).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_value(data).unwrap();
         assert!(decoded.headers.is_empty());
     }
 
@@ -203,7 +203,7 @@ mod tests {
 
         let content_disposition =
             "inline; filename=\"Schillers schönste Szenenanweisungen -Kabale und Liebe.mp4.avif\"";
-        let data = serde_json::json!({
+        let data = aws_lambda_json_impl::json!({
             "headers": {
                 "Content-Disposition": content_disposition
             },
@@ -211,15 +211,15 @@ mod tests {
                 "Content-Disposition": content_disposition
             }
         });
-        let decoded: Test = serde_json::from_value(data).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_value(data).unwrap();
         assert_eq!(content_disposition, decoded.headers.get("Content-Disposition").unwrap());
         assert_eq!(
             content_disposition,
             decoded.multi_value_headers.get("Content-Disposition").unwrap()
         );
 
-        let recoded = serde_json::to_value(decoded).unwrap();
-        let decoded: Test = serde_json::from_value(recoded).unwrap();
+        let recoded = aws_lambda_json_impl::to_value(decoded).unwrap();
+        let decoded: Test = aws_lambda_json_impl::from_value(recoded).unwrap();
         assert_eq!(content_disposition, decoded.headers.get("Content-Disposition").unwrap());
         assert_eq!(
             content_disposition,

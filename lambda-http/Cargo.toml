@@ -27,6 +27,7 @@ opentelemetry = ["lambda_runtime/opentelemetry"] # enables access to the OpenTel
 anyhow = ["lambda_runtime/anyhow"] # enables From<T> for Diagnostic for anyhow error types, see README.md for more info
 eyre = ["lambda_runtime/eyre"] # enables From<T> for Diagnostic for eyre error types, see README.md for more info
 miette = ["lambda_runtime/miette"] # enables From<T> for Diagnostic for miette error types, see README.md for more info
+simd_json = [ "aws_lambda_json_impl/simd", "aws_lambda_events/simd_json", "lambda_runtime/simd_json" ]
 
 [dependencies]
 base64 = { workspace = true }
@@ -43,10 +44,11 @@ mime = "0.3"
 percent-encoding = "2.2"
 pin-project-lite = { workspace = true }
 serde = { version = "1.0", features = ["derive"] }
-serde_json = { version = "1.0", features = ["raw_value"] }
+aws_lambda_json_impl = { path = "../json-impl" }
 serde_urlencoded = "0.7"
 tokio-stream = "0.1.2"
 url = "2.2"
+tracing = "0"
 
 [dependencies.aws_lambda_events]
 path = "../lambda-events"

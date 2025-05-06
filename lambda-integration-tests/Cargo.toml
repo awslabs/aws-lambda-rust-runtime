@@ -3,6 +3,7 @@ name = "aws_lambda_rust_integration_tests"
 version = "0.1.0"
 authors = ["Maxime David"]
 edition = "2021"
+rust-version = "1.81.0"
 description = "AWS Lambda Runtime integration tests"
 license = "Apache-2.0"
 repository = "https://github.com/awslabs/aws-lambda-rust-runtime"

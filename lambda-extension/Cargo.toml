@@ -2,6 +2,7 @@
 name = "lambda-extension"
 version = "0.11.0"
 edition = "2021"
+rust-version = "1.81.0"
 authors = [
     "David Calavera <dcalaver@amazon.com>",
     "Harold Sun <sunhua@amazon.com>",

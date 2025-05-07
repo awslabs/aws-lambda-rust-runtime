@@ -126,6 +126,52 @@ async fn handler(_event: LambdaEvent<Request>) -> Result<(), Diagnostic> {
 
 You can see more examples on how to use these error crates in our [example repository](https://github.com/awslabs/aws-lambda-rust-runtime/tree/main/examples/basic-error-error-crates-integration). 
 
+### Graceful shutdown
+
+`lambda_runtime` offers a helper to simplify configuring graceful shutdown signal handling, `spawn_graceful_shutdown_handler()`. This requires the `graceful-shutdown` feature flag and only supports Unix systems.
+
+You can use it by passing a `FnOnce` closure that returns an async block. That async block will be executed
+when the function receives a `SIGTERM` or `SIGKILL`.
+
+Note that this helper is opinionated in a number of ways. Most notably:
+1. It spawns a task to drive your signal handlers
+2. It registers a 'no-op' extension in order to enable graceful shutdown signals
+3. It panics on unrecoverable errors
+
+If you prefer to fine-tune the behavior, refer to the implementation of `spawn_graceful_shutdown_handler()` as a starting point for your own.
+
+For more information on graceful shutdown handling in AWS Lambda, see: [aws-samples/graceful-shutdown-with-aws-lambda](https://github.com/aws-samples/graceful-shutdown-with-aws-lambda).
+
+Complete example (cleaning up a non-blocking tracing writer):
+
+```rust,no_run
+use lambda_runtime::{service_fn, LambdaEvent, Error};
+use serde_json::{json, Value};
+
+#[tokio::main]
+async fn main() -> Result<(), Error> {
+    let func = service_fn(func);
+
+    let (writer, log_guard) = tracing_appender::non_blocking(std::io::stdout());
+    lambda_runtime::tracing::init_default_subscriber_with_writer(writer);
+
+    let shutdown_hook = || async move {
+      std::mem::drop(log_guard);
+    };
+    lambda_runtime::spawn_graceful_shutdown_handler(shutdown_hook);
+
+    lambda_runtime::run(func).await?;
+    Ok(())
+}
+
+async fn func(event: LambdaEvent<Value>) -> Result<Value, Error> {
+    let (event, _context) = event.into_parts();
+    let first_name = event["firstName"].as_str().unwrap_or("world");
+
+    Ok(json!({ "message": format!("Hello, {}!", first_name) }))
+}
+```
+
 ## Building and deploying your Lambda functions
 
 If you already have Cargo Lambda installed in your machine, run the next command to build your function:

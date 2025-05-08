@@ -18,6 +18,8 @@ jobs:
             repo: cargo-lambda/cargo-lambda
             platform: linux
             arch: x86_64
+            # TODO: unpin once https://github.com/cargo-lambda/cargo-lambda/issues/856 is fixed
+            tag: v1.8.1
         - name: install Zig toolchain
           uses: korandoru/setup-zig@v1
           with:

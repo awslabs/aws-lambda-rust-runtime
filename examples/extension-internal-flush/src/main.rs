@@ -101,6 +101,8 @@ async fn main() -> Result<(), Error> {
 
     let handler = Arc::new(EventHandler::new(request_done_sender));
 
+    // TODO: add biased! to always poll the handler future first, once supported:
+    // https://github.com/tokio-rs/tokio/issues/7304
     tokio::try_join!(
         lambda_runtime::run(service_fn(|event| {
             let handler = handler.clone();

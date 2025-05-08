@@ -1,0 +1,37 @@
+name: Build integration tests
+
+on:
+  push:
+    paths:
+      - 'lambda-runtime-api-client/**'
+      - 'lambda-runtime/**'
+      - 'lambda-http/**'
+      - 'lambda-extension/**'
+      - 'Cargo.toml'
+
+  pull_request:
+    paths:
+      - 'lambda-runtime-api-client/**'
+      - 'lambda-runtime/**'
+      - 'lambda-http/**'
+      - 'lambda-extension/**'
+      - 'Cargo.toml'
+
+jobs:
+  build-runtime:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        toolchain:
+          - "1.81.0" # Current MSRV
+          - stable
+    env:
+      RUST_BACKTRACE: 1
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Integration tests
+        uses: ./.github/actions/rust-build
+        with:
+          package: lambda_integration_tests
+          toolchain: ${{ matrix.toolchain}}

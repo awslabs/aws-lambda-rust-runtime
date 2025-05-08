@@ -22,6 +22,7 @@ pub use error::*;
 pub mod body;
 
 #[cfg(feature = "tracing")]
+#[cfg_attr(docsrs, doc(cfg(feature = "tracing")))]
 pub mod tracing;
 
 /// API client to interact with the AWS Lambda Runtime API.

@@ -131,7 +131,7 @@ where
 ///
 /// You can use this future to execute cleanup or flush related logic prior to runtime shutdown.
 ///
-/// This function must be called prior to [lambda_runtime::run()].
+/// This function's returned future must be resolved prior to [lambda_runtime::run()].
 ///
 /// Note that this implicitly also registers and drives a no-op internal extension that subscribes to no events.
 /// This extension will be named `_lambda-rust-runtime-no-op-graceful-shutdown-helper`. This extension name
@@ -166,7 +166,7 @@ where
 ///     let shutdown_hook = || async move {
 ///         std::mem::drop(log_guard);
 ///     };
-///     lambda_runtime::spawn_graceful_shutdown_handler(shutdown_hook);
+///     lambda_runtime::spawn_graceful_shutdown_handler(shutdown_hook).await;
 ///
 ///     lambda_runtime::run(func).await?;
 ///     Ok(())
@@ -178,29 +178,29 @@ where
 /// ```
 #[cfg(all(unix, feature = "graceful-shutdown"))]
 #[cfg_attr(docsrs, doc(cfg(all(unix, feature = "tokio-rt"))))]
-pub fn spawn_graceful_shutdown_handler<Fut>(shutdown_hook: impl FnOnce() -> Fut + Send + 'static)
+pub async fn spawn_graceful_shutdown_handler<Fut>(shutdown_hook: impl FnOnce() -> Fut + Send + 'static)
 where
     Fut: Future<Output = ()> + Send + 'static,
 {
-    tokio::task::spawn(async move {
-        // You need an extension registered with the Lambda orchestrator in order for your process
-        // to receive a SIGTERM for graceful shutdown.
-        //
-        // We accomplish this here by registering a no-op internal extension, which does not subscribe to any events.
-        //
-        // This extension is cheap to run since after it connects to the lambda orchestration, the connection
-        // will just wait forever for data to come, which never comes, so it won't cause wakes.
-        let extension = lambda_extension::Extension::new()
-            // Don't subscribe to any event types
-            .with_events(&[])
-            // Internal extension names MUST be unique within a given Lambda function.
-            .with_extension_name("_lambda-rust-runtime-no-op-graceful-shutdown-helper")
-            // Extensions MUST be registered before calling lambda_runtime::run(), which ends the Init
-            // phase and begins the Invoke phase.
-            .register()
-            .await
-            .expect("could not register no-op extension for graceful shutdown");
+    // You need an extension registered with the Lambda orchestrator in order for your process
+    // to receive a SIGTERM for graceful shutdown.
+    //
+    // We accomplish this here by registering a no-op internal extension, which does not subscribe to any events.
+    //
+    // This extension is cheap to run since after it connects to the lambda orchestration, the connection
+    // will just wait forever for data to come, which never comes, so it won't cause wakes.
+    let extension = lambda_extension::Extension::new()
+        // Don't subscribe to any event types
+        .with_events(&[])
+        // Internal extension names MUST be unique within a given Lambda function.
+        .with_extension_name("_lambda-rust-runtime-no-op-graceful-shutdown-helper")
+        // Extensions MUST be registered before calling lambda_runtime::run(), which ends the Init
+        // phase and begins the Invoke phase.
+        .register()
+        .await
+        .expect("could not register no-op extension for graceful shutdown");
 
+    tokio::task::spawn(async move {
         let graceful_shutdown_future = async move {
             let mut sigint = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::interrupt()).unwrap();
             let mut sigterm = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate()).unwrap();

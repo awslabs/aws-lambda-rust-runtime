@@ -1,5 +1,5 @@
 [package]
-name = "aws_lambda_rust_integration_tests"
+name = "lambda-integration-tests"
 version = "0.1.0"
 authors = ["Maxime David"]
 edition = "2021"

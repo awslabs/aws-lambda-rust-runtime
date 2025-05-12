@@ -33,5 +33,5 @@ jobs:
       - name: Build Integration tests
         uses: ./.github/actions/rust-build
         with:
-          package: lambda_integration_tests
+          package: lambda-integration-tests
           toolchain: ${{ matrix.toolchain}}

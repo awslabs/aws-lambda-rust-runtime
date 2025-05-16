@@ -85,7 +85,7 @@ where
         #[cfg(debug_assertions)]
         if req.parts.status.is_server_error() {
             error!("Lambda Runtime server returned an unexpected error");
-            return RuntimeApiResponseFuture::Ready(Some(Err(req.parts.status.to_string().into())));
+            return RuntimeApiResponseFuture::Ready(Box::new(Some(Err(req.parts.status.to_string().into()))));
         }
 
         // Utility closure to propagate potential error from conditionally executed trace
@@ -98,22 +98,23 @@ where
         };
         if let Err(err) = trace_fn() {
             error!(error = ?err, "Failed to parse raw JSON event received from Lambda. The handler will not be called. Log at TRACE level to see the payload.");
-            return RuntimeApiResponseFuture::Ready(Some(Err(err)));
+            return RuntimeApiResponseFuture::Ready(Box::new(Some(Err(err))));
         };
 
         let request_id = req.context.request_id.clone();
         let lambda_event = match deserializer::deserialize::<EventPayload>(&req.body, req.context) {
             Ok(lambda_event) => lambda_event,
             Err(err) => match build_event_error_request(&request_id, err) {
-                Ok(request) => return RuntimeApiResponseFuture::Ready(Some(Ok(request))),
+                Ok(request) => return RuntimeApiResponseFuture::Ready(Box::new(Some(Ok(request)))),
                 Err(err) => {
                     error!(error = ?err, "failed to build error response for Lambda Runtime API");
-                    return RuntimeApiResponseFuture::Ready(Some(Err(err)));
+                    return RuntimeApiResponseFuture::Ready(Box::new(Some(Err(err))));
                 }
             },
         };
 
-        // Once the handler input has been generated successfully, the
+        // Once the handler input has been generated successfully, pass it through to inner services
+        // allowing processing both before reaching the handler function and after the handler completes.
         let fut = self.inner.call(lambda_event);
         RuntimeApiResponseFuture::Future(fut, request_id, PhantomData)
     }
@@ -141,7 +142,10 @@ pub enum RuntimeApiResponseFuture<F, Response, BufferedResponse, StreamingRespon
             StreamError,
         )>,
     ),
-    Ready(Option<Result<http::Request<Body>, BoxError>>),
+    /// This variant is used in case the invocation fails to be processed into an event.
+    /// We box it to avoid bloating the size of the more likely variant, which is
+    /// the future that drives event processing.
+    Ready(Box<Option<Result<http::Request<Body>, BoxError>>>),
 }
 
 impl<F, Response, BufferedResponse, StreamingResponse, StreamItem, StreamError> Future

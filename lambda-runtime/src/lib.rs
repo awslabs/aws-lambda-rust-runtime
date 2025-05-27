@@ -1,6 +1,7 @@
 #![deny(clippy::all, clippy::cargo)]
 #![allow(clippy::multiple_crate_versions)]
 #![warn(missing_docs, nonstandard_style, rust_2018_idioms)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 //! The mechanism available for defining a Lambda function is as follows:
 //!

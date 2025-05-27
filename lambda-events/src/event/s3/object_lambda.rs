@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use crate::custom_serde::{deserialize_headers, serialize_headers};
 
 /// `S3ObjectLambdaEvent` contains data coming from S3 object lambdas
-/// See: https://docs.aws.amazon.com/AmazonS3/latest/userguide/olap-writing-lambda.html
+/// See: <https://docs.aws.amazon.com/AmazonS3/latest/userguide/olap-writing-lambda.html>
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct S3ObjectLambdaEvent<P = Value>

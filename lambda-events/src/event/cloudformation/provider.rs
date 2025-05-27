@@ -2,7 +2,7 @@
 //!
 //! Note that they are similar (but not the same) as the events in the `super` module.
 //!
-//! See https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.custom_resources-readme.html for details.
+//! See <https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.custom_resources-readme.html> for details.
 
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;

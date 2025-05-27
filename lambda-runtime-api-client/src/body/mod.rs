@@ -1,5 +1,5 @@
 //! HTTP body utilities. Extracted from Axum under MIT license.
-//! https://github.com/tokio-rs/axum/blob/main/axum/LICENSE
+//! <https://github.com/tokio-rs/axum/blob/main/axum/LICENSE>
 
 use crate::{BoxError, Error};
 use bytes::Bytes;

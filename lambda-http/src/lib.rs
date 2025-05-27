@@ -189,7 +189,7 @@ where
 /// Runtime APIs](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html).
 ///
 /// This takes care of transforming the LambdaEvent into a [`Request`] and then
-/// converting the result into a [`LambdaResponse`].
+/// converting the result into a `LambdaResponse`.
 pub async fn run<'a, R, S, E>(handler: S) -> Result<(), Error>
 where
     S: Service<Request, Response = R, Error = E>,

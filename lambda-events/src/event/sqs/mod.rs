@@ -126,7 +126,7 @@ pub struct SqsApiEvent {
     pub messages: Vec<SqsApiMessage>,
 }
 
-/// Alternative to SqsApiEvent to be used alongside SqsApiMessageObj<T> when you need to
+/// Alternative to SqsApiEvent to be used alongside `SqsApiMessageObj<T>` when you need to
 /// deserialize a nested object into a struct of type T within the SQS Message rather
 /// than just using the raw SQS Message string
 #[serde_with::serde_as]

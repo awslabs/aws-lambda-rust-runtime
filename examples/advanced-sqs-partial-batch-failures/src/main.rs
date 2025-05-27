@@ -44,7 +44,7 @@ async fn main() -> Result<(), Error> {
 /// Important note: your lambda sqs trigger *needs* to be configured with partial batch response support
 /// with the ` ReportBatchItemFailures` flag set to true, otherwise failed message will be dropped,
 /// for more details see:
-/// https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-batchfailurereporting
+/// <https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-batchfailurereporting>
 ///
 ///
 /// Note that if you are looking for parallel processing (multithread) instead of concurrent processing,

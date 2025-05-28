@@ -158,7 +158,7 @@ async fn main() -> Result<(), Error> {
     let shutdown_hook = || async move {
       std::mem::drop(log_guard);
     };
-    lambda_runtime::spawn_graceful_shutdown_handler(shutdown_hook);
+    lambda_runtime::spawn_graceful_shutdown_handler(shutdown_hook).await;
 
     lambda_runtime::run(func).await?;
     Ok(())

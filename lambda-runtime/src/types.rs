@@ -176,7 +176,7 @@ impl<T> LambdaEvent<T> {
 }
 
 /// Metadata prelude for a stream response.
-#[derive(Debug, Default, Serialize)]
+#[derive(Debug, Default, Serialize, Deserialize, Clone, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct MetadataPrelude {
     #[serde(with = "http_serde::status_code")]
@@ -477,5 +477,23 @@ mod test {
         headers.insert("lambda-runtime-trace-id", HeaderValue::from_static("arn::myarn"));
 
         let _ = invoke_request_id(&headers);
+    }
+
+    #[test]
+    fn serde_metadata_prelude() {
+        let metadata_prelude = MetadataPrelude {
+            status_code: StatusCode::OK,
+            headers: {
+                let mut headers = HeaderMap::new();
+                headers.insert("key", "val".parse().unwrap());
+                headers
+            },
+            cookies: vec!["cookie".to_string()],
+        };
+
+        let serialized = serde_json::to_string(&metadata_prelude).unwrap();
+        let deserialized: MetadataPrelude = serde_json::from_str(&serialized).unwrap();
+
+        assert_eq!(metadata_prelude, deserialized);
     }
 }

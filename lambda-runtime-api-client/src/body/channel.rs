@@ -1,5 +1,5 @@
 //! Body::channel utilities. Extracted from Hyper under MIT license.
-//! https://github.com/hyperium/hyper/blob/master/LICENSE
+//! <https://github.com/hyperium/hyper/blob/master/LICENSE>
 
 use std::{
     pin::Pin,
@@ -31,7 +31,7 @@ impl DecodedLength {
         }
     }
 
-    /// Converts to an Option<u64> representing a Known or Unknown length.
+    /// Converts to an `Option<u64>` representing a Known or Unknown length.
     pub(crate) fn into_opt(self) -> Option<u64> {
         match self {
             DecodedLength::CHUNKED | DecodedLength::CLOSE_DELIMITED => None,

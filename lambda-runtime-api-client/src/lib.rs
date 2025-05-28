@@ -1,6 +1,7 @@
 #![deny(clippy::all, clippy::cargo)]
 #![warn(missing_docs, nonstandard_style, rust_2018_idioms)]
 #![allow(clippy::multiple_crate_versions)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 //! This crate includes a base HTTP client to interact with
 //! the AWS Lambda Runtime API.

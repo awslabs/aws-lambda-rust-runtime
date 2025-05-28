@@ -5,7 +5,7 @@ use serde::{
 };
 use std::{borrow::Cow, fmt};
 
-/// Serialize a http::HeaderMap into a serde str => Vec<str> map
+/// Serialize a http::HeaderMap into a serde str => `Vec<str>` map
 pub(crate) fn serialize_multi_value_headers<S>(headers: &HeaderMap, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,

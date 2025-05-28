@@ -1,5 +1,5 @@
 //! Body::channel utilities. Extracted from Hyper under MIT license.
-//! https://github.com/hyperium/hyper/blob/master/LICENSE
+//! <https://github.com/hyperium/hyper/blob/master/LICENSE>
 
 use crate::Error;
 use std::task::{Context, Poll};

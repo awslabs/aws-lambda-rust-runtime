@@ -1,6 +1,7 @@
 #![deny(clippy::all, clippy::cargo)]
 #![allow(clippy::multiple_crate_versions)]
 #![warn(missing_docs, nonstandard_style, rust_2018_idioms)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 //! The mechanism available for defining a Lambda function is as follows:
 //!
@@ -131,7 +132,7 @@ where
 ///
 /// You can use this future to execute cleanup or flush related logic prior to runtime shutdown.
 ///
-/// This function's returned future must be resolved prior to [lambda_runtime::run()].
+/// This function's returned future must be resolved prior to `lambda_runtime::run()`.
 ///
 /// Note that this implicitly also registers and drives a no-op internal extension that subscribes to no events.
 /// This extension will be named `_lambda-rust-runtime-no-op-graceful-shutdown-helper`. This extension name
@@ -141,12 +142,12 @@ where
 /// registered already, you might prefer to manually construct your own graceful shutdown handling without the dummy extension.
 ///
 /// For more information on general AWS Lambda graceful shutdown handling, see:
-/// https://github.com/aws-samples/graceful-shutdown-with-aws-lambda
+/// <https://github.com/aws-samples/graceful-shutdown-with-aws-lambda>
 ///
 /// # Panics
 ///
 /// This function panics if:
-/// - this function is called after [lambda_runtime::run()]
+/// - this function is called after `lambda_runtime::run()`
 /// - this function is called outside of a context that has access to the tokio i/o
 /// - the no-op extension cannot be registered
 /// - either signal listener panics [tokio::signal::unix](https://docs.rs/tokio/latest/tokio/signal/unix/fn.signal.html#errors)

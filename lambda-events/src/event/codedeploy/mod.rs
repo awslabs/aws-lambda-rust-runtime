@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 pub type CodeDeployDeploymentState = String;
 
 /// `CodeDeployEvent` is documented at:
-/// https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/EventTypes.html#acd_event_types
+/// <https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/EventTypes.html#acd_event_types>
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodeDeployEvent {

@@ -153,7 +153,7 @@ impl LambdaResponse {
 ///
 /// Types that implement this trait can be used as return types for handler functions.
 pub trait IntoResponse {
-    /// Transform into a Response<Body> Future
+    /// Transform into a `Response<Body>` Future
     fn into_response(self) -> ResponseFuture;
 }
 

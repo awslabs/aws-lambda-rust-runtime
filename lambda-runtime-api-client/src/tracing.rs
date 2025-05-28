@@ -42,7 +42,7 @@ pub fn init_default_subscriber() {
 ///
 /// You might want to avoid writing to STDOUT in the local context via [`init_default_subscriber()`], if you have a high-throughput Lambdas that involve
 /// a lot of async concurrency. Since, writing to STDOUT can briefly block your tokio runtime - ref [tracing #2653](https://github.com/tokio-rs/tracing/issues/2653).
-/// In that case, you might prefer to use [tracing_appender::NonBlocking] instead - particularly if your Lambda is fairly long-running and stays warm.
+/// In that case, you might prefer to use [tracing_appender::NonBlocking](https://docs.rs/tracing-appender/latest/tracing_appender/non_blocking/struct.NonBlocking.html) instead - particularly if your Lambda is fairly long-running and stays warm.
 /// Though, note that you are then responsible
 /// for ensuring gracefuls shutdown. See [`examples/graceful-shutdown`] for a complete example.
 ///

@@ -57,7 +57,6 @@ where
 struct SecondsFloatTimestampVisitor;
 
 /// Serialize a UTC datetime into an float number of seconds since the epoch
-/// ```
 pub fn serialize<S>(dt: &DateTime<Utc>, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: ser::Serializer,

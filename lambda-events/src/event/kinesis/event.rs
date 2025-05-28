@@ -12,7 +12,7 @@ pub struct KinesisEvent {
 }
 
 /// `KinesisTimeWindowEvent` represents an Amazon Dynamodb event when using time windows
-/// ref. https://docs.aws.amazon.com/lambda/latest/dg/with-kinesis.html#services-kinesis-windows
+/// ref. <https://docs.aws.amazon.com/lambda/latest/dg/with-kinesis.html#services-kinesis-windows>
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct KinesisTimeWindowEvent {

@@ -12,7 +12,7 @@ use tracing::{error, trace};
 use crate::{Error, ExtensionError};
 
 /// Payload received from the Lambda Logs API
-/// See: https://docs.aws.amazon.com/lambda/latest/dg/runtimes-logs-api.html#runtimes-logs-api-msg
+/// See: <https://docs.aws.amazon.com/lambda/latest/dg/runtimes-logs-api.html#runtimes-logs-api-msg>
 #[derive(Clone, Debug, Deserialize, PartialEq)]
 pub struct LambdaLog {
     /// Time when the log was generated

@@ -11,7 +11,7 @@ pub type CodeBuildPhaseStatus = String;
 pub type CodeBuildPhaseType = String;
 
 /// `CodeBuildEvent` is documented at:
-/// https://docs.aws.amazon.com/codebuild/latest/userguide/sample-build-notifications.html#sample-build-notifications-ref
+/// <https://docs.aws.amazon.com/codebuild/latest/userguide/sample-build-notifications.html#sample-build-notifications-ref>
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodeBuildEvent {

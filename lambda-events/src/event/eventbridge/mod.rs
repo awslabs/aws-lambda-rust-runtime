@@ -5,7 +5,7 @@ use serde_json::Value;
 /// Parse EventBridge events.
 /// Deserialize the event detail into a structure that's `DeserializeOwned`.
 ///
-/// See https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-events-structure.html for structure details.
+/// See <https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-events-structure.html> for structure details.
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(bound(deserialize = "T1: DeserializeOwned"))]
 #[serde(rename_all = "kebab-case")]

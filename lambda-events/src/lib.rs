@@ -1,4 +1,5 @@
 #![deny(rust_2018_idioms)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #[cfg(feature = "http")]
 pub use http;
 #[cfg(feature = "query_map")]

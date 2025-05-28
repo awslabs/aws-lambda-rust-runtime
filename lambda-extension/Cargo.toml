@@ -38,3 +38,6 @@ tokio = { version = "1.0", features = [
 tokio-stream = "0.1.2"
 tower = { workspace = true, features = ["make", "util"] }
 tracing = { version = "0.1", features = ["log"] }
+
+[package.metadata.docs.rs]
+all-features = true

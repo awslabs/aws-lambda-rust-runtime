@@ -37,3 +37,6 @@ tower-service = { workspace = true }
 tokio = { version = "1.0", features = ["io-util"] }
 tracing = { version = "0.1", features = ["log"], optional = true }
 tracing-subscriber = { version = "0.3", default-features = false, features = ["fmt", "json", "env-filter"], optional = true }
+
+[package.metadata.docs.rs]
+all-features = true

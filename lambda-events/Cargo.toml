@@ -124,3 +124,6 @@ sqs = ["serde_with"]
 streams = []
 documentdb = []
 eventbridge = ["chrono", "serde_with"]
+
+[package.metadata.docs.rs]
+all-features = true

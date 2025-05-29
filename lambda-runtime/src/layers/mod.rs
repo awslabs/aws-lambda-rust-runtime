@@ -14,4 +14,5 @@ pub use trace::TracingLayer;
 #[cfg(feature = "opentelemetry")]
 mod otel;
 #[cfg(feature = "opentelemetry")]
+#[cfg_attr(docsrs, doc(cfg(feature = "opentelemetry")))]
 pub use otel::{OpenTelemetryFaasTrigger, OpenTelemetryLayer};

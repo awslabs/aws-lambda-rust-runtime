@@ -8,6 +8,7 @@ use std::collections::HashMap;
 #[cfg(feature = "codebuild")]
 pub(crate) mod codebuild_time;
 #[cfg(feature = "codebuild")]
+#[cfg_attr(docsrs, doc(cfg(feature = "codebuild")))]
 pub type CodeBuildNumber = f32;
 
 #[cfg(any(

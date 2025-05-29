@@ -178,7 +178,7 @@ where
 /// }
 /// ```
 #[cfg(all(unix, feature = "graceful-shutdown"))]
-#[cfg_attr(docsrs, doc(cfg(all(unix, feature = "tokio-rt"))))]
+#[cfg_attr(docsrs, doc(cfg(all(unix, feature = "graceful-shutdown"))))]
 pub async fn spawn_graceful_shutdown_handler<Fut>(shutdown_hook: impl FnOnce() -> Fut + Send + 'static)
 where
     Fut: Future<Output = ()> + Send + 'static,

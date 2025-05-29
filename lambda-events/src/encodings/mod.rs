@@ -6,10 +6,12 @@ mod time;
 use crate::custom_serde::{deserialize_base64, serialize_base64};
 
 #[cfg(feature = "chrono")]
+#[cfg_attr(docsrs, doc(cfg(feature = "chrono")))]
 pub use self::time::*;
 #[cfg(feature = "http")]
 mod http;
 #[cfg(feature = "http")]
+#[cfg_attr(docsrs, doc(cfg(feature = "http")))]
 pub use self::http::*;
 
 pub type Error = Box<dyn std::error::Error + Send + Sync>;

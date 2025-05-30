@@ -80,3 +80,6 @@ idna_adapter = "=1.2.0"
 lambda_runtime = { path = ".", features = ["tracing", "graceful-shutdown"] }
 pin-project-lite = { workspace = true }
 tracing-appender = "0.2"
+
+[package.metadata.docs.rs]
+all-features = true

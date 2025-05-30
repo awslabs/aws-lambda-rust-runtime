@@ -62,3 +62,6 @@ lambda_runtime_api_client = { version = "0.12.0", path = "../lambda-runtime-api-
 log = "^0.4"
 maplit = "1.0"
 tokio = { version = "1.0", features = ["macros"] }
+
+[package.metadata.docs.rs]
+all-features = true

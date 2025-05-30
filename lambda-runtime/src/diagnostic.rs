@@ -119,6 +119,7 @@ impl From<std::io::Error> for Diagnostic {
 }
 
 #[cfg(feature = "anyhow")]
+#[cfg_attr(docsrs, doc(cfg(feature = "anyhow")))]
 impl From<anyhow::Error> for Diagnostic {
     fn from(value: anyhow::Error) -> Diagnostic {
         Diagnostic {
@@ -129,6 +130,7 @@ impl From<anyhow::Error> for Diagnostic {
 }
 
 #[cfg(feature = "eyre")]
+#[cfg_attr(docsrs, doc(cfg(feature = "eyre")))]
 impl From<eyre::Report> for Diagnostic {
     fn from(value: eyre::Report) -> Diagnostic {
         Diagnostic {
@@ -139,6 +141,7 @@ impl From<eyre::Report> for Diagnostic {
 }
 
 #[cfg(feature = "miette")]
+#[cfg_attr(docsrs, doc(cfg(feature = "miette")))]
 impl From<miette::Report> for Diagnostic {
     fn from(value: miette::Report) -> Diagnostic {
         Diagnostic {

@@ -75,7 +75,7 @@ hyper-util = { workspace = true, features = [
 ] }
 # pin back to pre-1.2.1 to avoid breaking rust MSRV of 1.81:
 # https://github.com/hsivonen/idna_adapter/commit/f948802e3a2ae936eec51886eefbd7d536a28791
-idna_adapter = "=1.2.0"
+idna_adapter = "=1.2.1"
 # Self dependency to enable the graceful-shutdown feature for tests
 lambda_runtime = { path = ".", features = ["tracing", "graceful-shutdown"] }
 pin-project-lite = { workspace = true }

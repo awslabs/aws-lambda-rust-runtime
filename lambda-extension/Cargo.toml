@@ -1,6 +1,6 @@
 [package]
 name = "lambda-extension"
-version = "0.12.0"
+version = "0.12.1"
 edition = "2021"
 rust-version = "1.81.0"
 authors = [

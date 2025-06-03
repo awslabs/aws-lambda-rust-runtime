@@ -39,7 +39,7 @@ http = { workspace = true }
 http-body = { workspace = true }
 http-body-util = { workspace = true }
 hyper = { workspace = true }
-lambda_runtime = { version = "0.14.1", path = "../lambda-runtime" }
+lambda_runtime = { version = "0.14.2", path = "../lambda-runtime" }
 mime = "0.3"
 percent-encoding = "2.2"
 pin-project-lite = { workspace = true }

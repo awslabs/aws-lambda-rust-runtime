@@ -1,4 +1,4 @@
-name: Check Lambda Runtime
+name: Check Lambda Extension
 
 on:
   push:
@@ -28,16 +28,31 @@ jobs:
       RUST_BACKTRACE: 1
     steps:
       - uses: actions/checkout@v3
-
       - name: Build Runtime API Client
         uses: ./.github/actions/rust-build
         with:
           package: lambda_runtime_api_client
           toolchain: ${{ matrix.toolchain}}
-
-
       - name: Build Extensions runtime
         uses: ./.github/actions/rust-build
         with:
           package: lambda-extension
           toolchain: ${{ matrix.toolchain}}
+  semver:
+    name: semver
+    needs: build-runtime
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check `lambda-extension` semver with only default features
+        uses: obi1kenobi/cargo-semver-checks-action@v2
+        with:
+          rust-toolchain: stable
+          package: lambda-extension
+          feature-group: default-features
+      - name: Check `lambda-extension` semver with all features
+        uses: obi1kenobi/cargo-semver-checks-action@v2
+        with:
+          rust-toolchain: stable
+          package: lambda-extension
+          feature-group: all-features

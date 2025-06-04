@@ -22,7 +22,6 @@ jobs:
       RUST_BACKTRACE: 1
     steps:
       - uses: actions/checkout@v3
-
       - name: Build events
         uses: ./.github/actions/rust-build
         with:
@@ -34,6 +33,23 @@ jobs:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-
       - name: Test individual event features
         run: make check-event-features
+  semver:
+    name: semver
+    needs: [build, check-event-features]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check `aws_lambda_events` semver with only default features
+        uses: obi1kenobi/cargo-semver-checks-action@v2
+        with:
+          rust-toolchain: stable
+          package: aws_lambda_events
+          feature-group: default-features
+      - name: Check `aws_lambda_events` semver with all features
+        uses: obi1kenobi/cargo-semver-checks-action@v2
+        with:
+          rust-toolchain: stable
+          package: aws_lambda_events
+          feature-group: all-features

@@ -27,21 +27,36 @@ jobs:
       RUST_BACKTRACE: 1
     steps:
       - uses: actions/checkout@v3
-
       - name: Build Runtime API Client
         uses: ./.github/actions/rust-build
         with:
           package: lambda_runtime_api_client
           toolchain: ${{ matrix.toolchain}}
-
       - name: Build Functions runtime
         uses: ./.github/actions/rust-build
         with:
           package: lambda_runtime
           toolchain: ${{ matrix.toolchain}}
-
       - name: Build HTTP layer
         uses: ./.github/actions/rust-build
         with:
           package: lambda_http
           toolchain: ${{ matrix.toolchain}}
+  semver:
+    name: semver
+    needs: build-runtime
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check `lambda_runtime_api_client`, `lambda_runtime`, lambda_http` semver with only default features
+        uses: obi1kenobi/cargo-semver-checks-action@v2
+        with:
+          rust-toolchain: stable
+          package: lambda_runtime_api_client, lambda_runtime, lambda_http
+          feature-group: default-features
+      - name: Check `lambda_runtime_api_client`, `lambda_runtime`, lambda_http` semver with all features
+        uses: obi1kenobi/cargo-semver-checks-action@v2
+        with:
+          rust-toolchain: stable
+          package: lambda_runtime_api_client, lambda_runtime, lambda_http
+          feature-group: all-features

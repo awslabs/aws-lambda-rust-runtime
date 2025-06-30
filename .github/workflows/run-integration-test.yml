@@ -21,9 +21,9 @@ jobs:
             # TODO: unpin once https://github.com/cargo-lambda/cargo-lambda/issues/856 is fixed
             tag: v1.8.1
         - name: install Zig toolchain
-          uses: korandoru/setup-zig@v1
+          uses: mlugg/setup-zig@v2
           with:
-            zig-version: 0.10.0
+            version: 0.10.0
         - name: install SAM
           uses: aws-actions/setup-sam@v2
           with:

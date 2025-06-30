@@ -14,13 +14,13 @@ impl Visitor<'_> for TimeVisitor {
     type Value = DateTime<Utc>;
 
     fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(formatter, "valid codebuild time: {}", CODEBUILD_TIME_FORMAT)
+        write!(formatter, "valid codebuild time: {CODEBUILD_TIME_FORMAT}")
     }
 
     fn visit_str<E: DeError>(self, val: &str) -> Result<Self::Value, E> {
         NaiveDateTime::parse_from_str(val, CODEBUILD_TIME_FORMAT)
             .map(|naive| naive.and_utc())
-            .map_err(|e| DeError::custom(format!("Parse error {} for {}", e, val)))
+            .map_err(|e| DeError::custom(format!("Parse error {e} for {val}")))
     }
 }
 

@@ -224,7 +224,7 @@ impl Serialize for CloudWatchAlarmStateReasonData {
             Self::Composite(m) => serde_json::to_string(m),
             Self::Generic(m) => serde_json::to_string(m),
         };
-        let s = r.map_err(|e| SerError::custom(format!("failed to serialize struct as string {}", e)))?;
+        let s = r.map_err(|e| SerError::custom(format!("failed to serialize struct as string {e}")))?;
 
         serializer.serialize_str(&s)
     }

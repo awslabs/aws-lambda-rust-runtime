@@ -259,7 +259,7 @@ where
                     let io = TokioIo::new(tcp);
                     tokio::task::spawn(async move {
                         if let Err(err) = http1::Builder::new().serve_connection(io, make_service).await {
-                            println!("Error serving connection: {:?}", err);
+                            println!("Error serving connection: {err:?}");
                         }
                     });
                 }
@@ -305,7 +305,7 @@ where
                     let io = TokioIo::new(tcp);
                     tokio::task::spawn(async move {
                         if let Err(err) = http1::Builder::new().serve_connection(io, make_service).await {
-                            println!("Error serving connection: {:?}", err);
+                            println!("Error serving connection: {err:?}");
                         }
                     });
                 }

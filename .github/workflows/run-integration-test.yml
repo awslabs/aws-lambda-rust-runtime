@@ -40,9 +40,11 @@ jobs:
             platform: linux
             arch: x86_64
         - name: install Zig toolchain
-          uses: jlizen/setup-zig@v2
+          uses: mlugg/setup-zig@v2
           with:
             version: 0.10.0
+            use-cache: false
+            use-tool-cache: false
         - name: install SAM
           uses: aws-actions/setup-sam@v2
           with:

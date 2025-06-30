@@ -40,7 +40,7 @@ jobs:
             platform: linux
             arch: x86_64
         - name: install Zig toolchain
-          uses: mlugg/setup-zig@v2
+          uses: jlizen/setup-zig@v2
           with:
             version: 0.10.0
         - name: install SAM

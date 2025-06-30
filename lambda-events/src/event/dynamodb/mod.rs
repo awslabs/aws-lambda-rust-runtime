@@ -27,7 +27,7 @@ impl fmt::Display for StreamViewType {
             StreamViewType::NewAndOldImages => "NEW_AND_OLD_IMAGES",
             StreamViewType::KeysOnly => "KEYS_ONLY",
         };
-        write!(f, "{}", val)
+        write!(f, "{val}")
     }
 }
 
@@ -48,7 +48,7 @@ impl fmt::Display for StreamStatus {
             StreamStatus::Disabling => "DISABLING",
             StreamStatus::Disabled => "DISABLED",
         };
-        write!(f, "{}", val)
+        write!(f, "{val}")
     }
 }
 
@@ -69,7 +69,7 @@ impl fmt::Display for SharedIteratorType {
             SharedIteratorType::AtSequenceNumber => "AT_SEQUENCE_NUMBER",
             SharedIteratorType::AfterSequenceNumber => "AFTER_SEQUENCE_NUMBER",
         };
-        write!(f, "{}", val)
+        write!(f, "{val}")
     }
 }
 
@@ -88,7 +88,7 @@ impl fmt::Display for OperationType {
             OperationType::Modify => "MODIFY",
             OperationType::Remove => "REMOVE",
         };
-        write!(f, "{}", val)
+        write!(f, "{val}")
     }
 }
 
@@ -105,7 +105,7 @@ impl fmt::Display for KeyType {
             KeyType::Hash => "HASH",
             KeyType::Range => "RANGE",
         };
-        write!(f, "{}", val)
+        write!(f, "{val}")
     }
 }
 

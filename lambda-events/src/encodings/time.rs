@@ -125,7 +125,7 @@ where
     let whole_seconds = seconds + (milliseconds as i64 / 1000);
     let subsec_millis = milliseconds % 1000;
     if milliseconds > 0 {
-        let combined = format!("{}.{:03}", whole_seconds, subsec_millis);
+        let combined = format!("{whole_seconds}.{subsec_millis:03}");
         serializer.serialize_str(&combined)
     } else {
         serializer.serialize_str(&whole_seconds.to_string())
@@ -159,7 +159,7 @@ where
 {
     let seconds = f64::deserialize(deserializer)?;
     TimeDelta::try_seconds(seconds as i64)
-        .ok_or_else(|| D::Error::custom(format!("invalid time delta seconds `{}`", seconds)))
+        .ok_or_else(|| D::Error::custom(format!("invalid time delta seconds `{seconds}`")))
 }
 
 fn serialize_duration_minutes<S>(duration: &TimeDelta, serializer: S) -> Result<S::Ok, S::Error>
@@ -177,7 +177,7 @@ where
 {
     let minutes = f64::deserialize(deserializer)?;
     TimeDelta::try_minutes(minutes as i64)
-        .ok_or_else(|| D::Error::custom(format!("invalid time delta minutes `{}`", minutes)))
+        .ok_or_else(|| D::Error::custom(format!("invalid time delta minutes `{minutes}`")))
 }
 
 fn normalize_timestamp<'de, D>(deserializer: D) -> Result<(u64, u64), D::Error>
@@ -199,7 +199,7 @@ where
     };
 
     // We need to do this due to floating point issues.
-    let input_as_string = format!("{}", input);
+    let input_as_string = input.to_string();
     let parts: Result<Vec<u64>, _> = input_as_string
         .split('.')
         .map(|x| x.parse::<u64>().map_err(DeError::custom))

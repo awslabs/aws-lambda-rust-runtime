@@ -223,9 +223,11 @@ where
             }
         };
 
-        // TODO: add biased! to always poll the signal handling future first, once supported:
-        // https://github.com/tokio-rs/tokio/issues/7304
-        let _: (_, ()) = tokio::join!(graceful_shutdown_future, async {
+        let _: (_, ()) = tokio::join!(
+            // we always poll the graceful shutdown future first,
+            // which results in a smaller future due to lack of bookkeeping of which was last polled
+            biased;
+            graceful_shutdown_future, async {
             // we suppress extension errors because we don't actually mind if it crashes,
             // all we need to do is kick off the run so that lambda exits the init phase
             let _ = extension.run().await;

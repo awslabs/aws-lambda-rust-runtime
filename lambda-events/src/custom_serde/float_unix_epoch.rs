@@ -14,7 +14,7 @@ fn ne_timestamp<T: fmt::Display>(ts: T) -> SerdeError<T, u8> {
 
 impl<V: fmt::Display, D: fmt::Display> fmt::Debug for SerdeError<V, D> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "ChronoSerdeError({})", self)
+        write!(f, "ChronoSerdeError({self})")
     }
 }
 
@@ -22,7 +22,7 @@ impl<V: fmt::Display, D: fmt::Display> fmt::Display for SerdeError<V, D> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             SerdeError::NonExistent { ref timestamp } => {
-                write!(f, "value is not a legal timestamp: {}", timestamp)
+                write!(f, "value is not a legal timestamp: {timestamp}")
             }
             SerdeError::Ambiguous {
                 ref timestamp,
@@ -30,8 +30,7 @@ impl<V: fmt::Display, D: fmt::Display> fmt::Display for SerdeError<V, D> {
                 ref max,
             } => write!(
                 f,
-                "value is an ambiguous timestamp: {}, could be either of {}, {}",
-                timestamp, min, max
+                "value is an ambiguous timestamp: {timestamp}, could be either of {min}, {max}",
             ),
         }
     }
@@ -57,7 +56,6 @@ where
 struct SecondsFloatTimestampVisitor;
 
 /// Serialize a UTC datetime into an float number of seconds since the epoch
-/// ```
 pub fn serialize<S>(dt: &DateTime<Utc>, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: ser::Serializer,

@@ -1,11 +1,12 @@
 [package]
 name = "lambda_http"
-version = "0.14.0"
+version = "0.15.1"
 authors = [
     "David Calavera <dcalaver@amazon.com>",
     "Harold Sun <sunhua@amazon.com>",
 ]
 edition = "2021"
+rust-version = "1.81.0"
 description = "Application Load Balancer and API Gateway event types for AWS Lambda"
 keywords = ["AWS", "Lambda", "APIGateway", "ALB", "API"]
 license = "Apache-2.0"
@@ -35,7 +36,8 @@ futures-util = { workspace = true }
 http = { workspace = true }
 http-body = { workspace = true }
 http-body-util = { workspace = true }
-lambda_runtime = { version = "0.13.0", path = "../lambda-runtime" }
+hyper = { workspace = true }
+lambda_runtime = { version = "0.14.2", path = "../lambda-runtime" }
 mime = "0.3"
 percent-encoding = "2.3"
 pin-project-lite = { workspace = true }
@@ -54,6 +56,10 @@ features = ["alb", "apigw"]
 [dev-dependencies]
 axum-core = "0.5.0"
 axum-extra = { version = "0.10.0", features = ["query"] }
-lambda_runtime_api_client = { version = "0.11.1", path = "../lambda-runtime-api-client" }
+lambda_runtime_api_client = { version = "0.12.1", path = "../lambda-runtime-api-client" }
 maplit = "1.0"
 tokio = { version = "1.43", features = ["macros"] }
+log = "^0.4"
+
+[package.metadata.docs.rs]
+all-features = true

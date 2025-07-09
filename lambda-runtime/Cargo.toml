@@ -1,12 +1,13 @@
 [package]
 name = "lambda_runtime"
-version = "0.13.0"
+version = "0.14.2"
 authors = [
     "David Calavera <dcalaver@amazon.com>",
     "Harold Sun <sunhua@amazon.com>",
 ]
 description = "AWS Lambda Runtime"
 edition = "2021"
+rust-version = "1.81.0"
 license = "Apache-2.0"
 repository = "https://github.com/awslabs/aws-lambda-rust-runtime"
 categories = ["web-programming::http-server"]
@@ -20,6 +21,10 @@ opentelemetry = ["opentelemetry-semantic-conventions"] # enables access to the O
 anyhow = ["dep:anyhow"] # enables From<T> for Diagnostic for anyhow error types, see README.md for more info
 eyre = ["dep:eyre"] # enables From<T> for Diagnostic for eyre error types, see README.md for more info
 miette = ["dep:miette"] # enables From<T> for Diagnostic for miette error types, see README.md for more info
+# TODO: remove tokio/rt and rt-multi-thread from non-feature-flagged dependencies in new breaking version, since they are unused:
+# as well as default features
+# https://github.com/awslabs/aws-lambda-rust-runtime/issues/984
+graceful-shutdown = ["tokio/rt", "tokio/signal", "dep:lambda-extension"]
 
 [dependencies]
 anyhow = { version = "1.0.95", optional = true }
@@ -32,14 +37,16 @@ http = { workspace = true }
 http-body-util = { workspace = true }
 http-serde = { workspace = true }
 hyper = { workspace = true, features = ["http1", "client"] }
-lambda_runtime_api_client = { version = "0.11.1", path = "../lambda-runtime-api-client", default-features = false }
+
+lambda-extension = { version = "0.12.1", path = "../lambda-extension", default-features = false, optional = true }
+lambda_runtime_api_client = { version = "0.12.2", path = "../lambda-runtime-api-client", default-features = false }
 miette = { version = "7.4.0", optional = true }
-opentelemetry-semantic-conventions = { version = "0.27", optional = true, features = ["semconv_experimental"] }
+opentelemetry-semantic-conventions = { version = "0.29", optional = true, features = ["semconv_experimental"] }
 pin-project = "1"
 serde = { version = "1", features = ["derive", "rc"] }
 serde_json = "^1"
 serde_path_to_error = "0.1.16"
-tokio = { version = "1.43", features = [
+tokio = { version = "1.46", features = [
     "macros",
     "io-util",
     "sync",
@@ -51,3 +58,21 @@ tracing = { version = "0.1", features = ["log"] }
 
 [dev-dependencies]
 httpmock = "0.7.0"
+hyper-util = { workspace = true, features = [
+    "client",
+    "client-legacy",
+    "http1",
+    "server",
+    "server-auto",
+    "tokio",
+] }
+# pin back to pre-1.2.1 to avoid breaking rust MSRV of 1.81:
+# https://github.com/hsivonen/idna_adapter/commit/f948802e3a2ae936eec51886eefbd7d536a28791
+idna_adapter = "=1.2.0"
+# Self dependency to enable the graceful-shutdown feature for tests
+lambda_runtime = { path = ".", features = ["tracing", "graceful-shutdown"] }
+pin-project-lite = { workspace = true }
+tracing-appender = "0.2"
+
+[package.metadata.docs.rs]
+all-features = true

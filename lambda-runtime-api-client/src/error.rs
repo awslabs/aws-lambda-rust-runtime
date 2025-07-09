@@ -1,5 +1,5 @@
 //! Extracted from Axum under MIT license.
-//! https://github.com/tokio-rs/axum/blob/main/axum/LICENSE
+//! <https://github.com/tokio-rs/axum/blob/main/axum/LICENSE>
 use std::{error::Error as StdError, fmt};
 pub use tower::BoxError;
 /// Errors that can happen when using axum.

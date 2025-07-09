@@ -1,0 +1,40 @@
+name: Build integration tests
+
+on:
+  push:
+    paths:
+      - 'lambda-runtime-api-client/**'
+      - 'lambda-runtime/**'
+      - 'lambda-http/**'
+      - 'lambda-extension/**'
+      - 'Cargo.toml'
+
+  pull_request:
+    paths:
+      - 'lambda-runtime-api-client/**'
+      - 'lambda-runtime/**'
+      - 'lambda-http/**'
+      - 'lambda-extension/**'
+      - 'Cargo.toml'
+
+jobs:
+  build-runtime:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        toolchain:
+          - "1.81.0" # Current MSRV
+          - stable
+    env:
+      RUST_BACKTRACE: 1
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Integration tests
+        uses: ./.github/actions/rust-build
+        with:
+          package: lambda-integration-tests
+          toolchain: ${{ matrix.toolchain}}
+          # the tests will generally fail in ci since they make a network call to a real endpoint,
+          # this step is just designed to make sure they build successfully
+          run-tests: false

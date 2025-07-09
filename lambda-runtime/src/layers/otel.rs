@@ -1,7 +1,7 @@
 use std::{fmt::Display, future::Future, pin::Pin, task};
 
 use crate::LambdaInvocation;
-use opentelemetry_semantic_conventions::trace as traceconv;
+use opentelemetry_semantic_conventions::attribute;
 use pin_project::pin_project;
 use tower::{Layer, Service};
 use tracing::{field, instrument::Instrumented, Instrument};
@@ -76,9 +76,9 @@ where
             "Lambda function invocation",
             "otel.name" = req.context.env_config.function_name,
             "otel.kind" = field::Empty,
-            { traceconv::FAAS_TRIGGER } = &self.otel_attribute_trigger,
-            { traceconv::FAAS_INVOCATION_ID } = req.context.request_id,
-            { traceconv::FAAS_COLDSTART } = self.coldstart
+            { attribute::FAAS_TRIGGER } = &self.otel_attribute_trigger,
+            { attribute::FAAS_INVOCATION_ID } = req.context.request_id,
+            { attribute::FAAS_COLDSTART } = self.coldstart
         );
 
         // After the first execution, we can set 'coldstart' to false
@@ -131,7 +131,7 @@ where
 }
 
 /// Represent the possible values for the OpenTelemetry `faas.trigger` attribute.
-/// See https://opentelemetry.io/docs/specs/semconv/attributes-registry/faas/ for more details.
+/// See <https://opentelemetry.io/docs/specs/semconv/attributes-registry/faas/> for more details.
 #[derive(Default, Clone, Copy)]
 #[non_exhaustive]
 pub enum OpenTelemetryFaasTrigger {

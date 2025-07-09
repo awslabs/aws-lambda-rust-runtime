@@ -8,7 +8,7 @@ pub type CodePipelineState = String;
 pub type CodePipelineActionState = String;
 
 /// CodePipelineEvent is documented at:
-/// https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/EventTypes.html#codepipeline_event_type
+/// <https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/EventTypes.html#codepipeline_event_type>
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodePipelineCloudWatchEvent {

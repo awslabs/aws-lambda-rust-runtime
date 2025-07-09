@@ -3,7 +3,7 @@ use http::HeaderMap;
 use serde::{Deserialize, Serialize};
 
 /// `IoTCoreCustomAuthorizerRequest` represents the request to an IoT Core custom authorizer.
-/// See https://docs.aws.amazon.com/iot/latest/developerguide/config-custom-auth.html
+/// See <https://docs.aws.amazon.com/iot/latest/developerguide/config-custom-auth.html>
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IoTCoreCustomAuthorizerRequest {
@@ -58,7 +58,7 @@ pub struct IoTCoreConnectionMetadata {
 }
 
 /// `IoTCoreCustomAuthorizerResponse` represents the response from an IoT Core custom authorizer.
-/// See https://docs.aws.amazon.com/iot/latest/developerguide/config-custom-auth.html
+/// See <https://docs.aws.amazon.com/iot/latest/developerguide/config-custom-auth.html>
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IoTCoreCustomAuthorizerResponse {

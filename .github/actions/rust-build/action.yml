@@ -7,6 +7,10 @@ inputs:
   toolchain:
     required: true
     description: "the Rust toolchain to use"
+  run-tests:
+    required: true
+    default: true
+    description: "whether to run tests in addition to building"
 
 runs:
   using: "composite"
@@ -22,5 +26,6 @@ runs:
       run: cargo build --all-features --verbose --package ${{ inputs.package }}
 
     - name: Run tests
+      if: ${{ inputs.run-tests == 'true' }}
       shell: bash
       run: cargo test --all-features --verbose --package ${{ inputs.package }}

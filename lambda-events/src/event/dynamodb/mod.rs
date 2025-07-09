@@ -27,7 +27,7 @@ impl fmt::Display for StreamViewType {
             StreamViewType::NewAndOldImages => "NEW_AND_OLD_IMAGES",
             StreamViewType::KeysOnly => "KEYS_ONLY",
         };
-        write!(f, "{}", val)
+        write!(f, "{val}")
     }
 }
 
@@ -48,7 +48,7 @@ impl fmt::Display for StreamStatus {
             StreamStatus::Disabling => "DISABLING",
             StreamStatus::Disabled => "DISABLED",
         };
-        write!(f, "{}", val)
+        write!(f, "{val}")
     }
 }
 
@@ -69,7 +69,7 @@ impl fmt::Display for SharedIteratorType {
             SharedIteratorType::AtSequenceNumber => "AT_SEQUENCE_NUMBER",
             SharedIteratorType::AfterSequenceNumber => "AFTER_SEQUENCE_NUMBER",
         };
-        write!(f, "{}", val)
+        write!(f, "{val}")
     }
 }
 
@@ -88,7 +88,7 @@ impl fmt::Display for OperationType {
             OperationType::Modify => "MODIFY",
             OperationType::Remove => "REMOVE",
         };
-        write!(f, "{}", val)
+        write!(f, "{val}")
     }
 }
 
@@ -105,12 +105,12 @@ impl fmt::Display for KeyType {
             KeyType::Hash => "HASH",
             KeyType::Range => "RANGE",
         };
-        write!(f, "{}", val)
+        write!(f, "{val}")
     }
 }
 
 /// The `Event` stream event handled to Lambda
-/// http://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-ddb-update
+/// <http://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-ddb-update>
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct Event {
     #[serde(rename = "Records")]
@@ -118,7 +118,7 @@ pub struct Event {
 }
 
 /// `TimeWindowEvent` represents an Amazon Dynamodb event when using time windows
-/// ref. https://docs.aws.amazon.com/lambda/latest/dg/with-ddb.html#services-ddb-windows
+/// ref. <https://docs.aws.amazon.com/lambda/latest/dg/with-ddb.html#services-ddb-windows>
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TimeWindowEvent {
@@ -215,8 +215,8 @@ pub struct UserIdentity {
 #[serde(rename_all = "camelCase")]
 pub struct StreamRecord {
     /// The approximate date and time when the stream record was created, in UNIX
-    /// epoch time (http://www.epochconverter.com/) format. Might not be present in
-    /// the record: https://github.com/awslabs/aws-lambda-rust-runtime/issues/889
+    /// epoch time (<http://www.epochconverter.com/>) format. Might not be present in
+    /// the record: <https://github.com/awslabs/aws-lambda-rust-runtime/issues/889>
     #[serde(rename = "ApproximateCreationDateTime")]
     #[serde(with = "float_unix_epoch")]
     #[serde(default)]

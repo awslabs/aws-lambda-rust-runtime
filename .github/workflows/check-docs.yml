@@ -1,0 +1,39 @@
+name: Check rustdocs
+# this is its own workflow since we to to use unstable
+# to have the docs.rs display of feature flags
+
+on:
+  push:
+    paths:
+      - 'lambda-runtime/**'
+      - 'lambda-runtime-api-client/**'
+      - 'lambda-http/**'
+      - 'lambda-events/**'
+      - 'lambda-extension/**'
+      - 'Cargo.toml'
+
+  pull_request:
+    paths:
+      - 'lambda-runtime/**'
+      - 'lambda-runtime-api-client/**'
+      - 'lambda-http/**'
+      - 'lambda-events/**'
+      - 'lambda-extension/**'
+      - 'Cargo.toml'
+
+jobs:
+  build-runtime:
+    runs-on: ubuntu-latest
+
+    env:
+      RUST_BACKTRACE: 1
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@nightly
+
+      - name: Check documentation
+        shell: bash
+        env:
+            RUSTFLAGS: --cfg docsrs 
+            RUSTDOCFLAGS: --cfg docsrs -Dwarnings
+        run: cargo doc --no-deps --document-private-items --all-features

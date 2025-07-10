@@ -14,7 +14,7 @@ exclude = ["examples"]
 [workspace.dependencies]
 base64 = "0.22"
 bytes = "1"
-chrono = { version = "0.4.39", default-features = false, features = [
+chrono = { version = "0.4.35", default-features = false, features = [
     "clock",
     "serde",
     "std",
@@ -22,12 +22,12 @@ chrono = { version = "0.4.39", default-features = false, features = [
 futures = "0.3"
 futures-channel = "0.3"
 futures-util = "0.3"
-http = "1.2"
+http = "1.0"
 http-body = "1.0"
 http-body-util = "0.1"
-http-serde = "2.1"
-hyper = "1.5"
-hyper-util = "0.1.10"
+http-serde = "2.0"
+hyper = "1.0"
+hyper-util = "0.1.1"
 pin-project-lite = "0.2"
 tower = "0.5"
 tower-layer = "0.3"

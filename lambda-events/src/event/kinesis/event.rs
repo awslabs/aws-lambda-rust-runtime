@@ -13,7 +13,7 @@ pub struct KinesisEvent {
 
 /// `KinesisTimeWindowEvent` represents an Amazon Dynamodb event when using time windows
 /// ref. <https://docs.aws.amazon.com/lambda/latest/dg/with-kinesis.html#services-kinesis-windows>
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct KinesisTimeWindowEvent {
     #[serde(rename = "KinesisEvent")]
@@ -34,7 +34,7 @@ pub struct KinesisTimeWindowEventResponse {
     // pub batch_item_failures: Vec<KinesisBatchItemFailure>,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct KinesisEventRecord {
     /// nolint: stylecheck
@@ -59,7 +59,7 @@ pub struct KinesisEventRecord {
     pub kinesis: KinesisRecord,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct KinesisRecord {
     pub approximate_arrival_timestamp: SecondTimestamp,
@@ -110,10 +110,16 @@ mod test {
         assert_eq!(parsed, reparsed);
     }
 
+    /// `cargo lambda init` autogenerates code that relies on `Default` being implemented for event structs.
+    ///
+    /// This test validates that `Default` is implemented for each KinesisEvent struct.
     #[test]
     #[cfg(feature = "kinesis")]
-    fn default_kinesis_event() {
-        let event = KinesisEvent::default();
-        assert_eq!(event.records, vec![]);
+    fn test_ensure_default_implemented_for_structs() {
+        let _kinesis_event = KinesisEvent::default();
+        let _kinesis_time_window_event = KinesisTimeWindowEvent::default();
+        let _kinesis_event_record = KinesisEventRecord::default();
+        let _kinesis_record = KinesisRecord::default();
+        let _kinesis_encryption_type = KinesisEncryptionType::default();
     }
 }

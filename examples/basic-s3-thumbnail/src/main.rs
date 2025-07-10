@@ -173,9 +173,7 @@ mod tests {
             .returning(|_1, _2| Ok("IMAGE".into()));
 
         mock.expect_put_file()
-            .withf(|bu, ke, by| {
-                bu.eq("test-bucket-thumbs") && ke.eq(key) && by.eq("THUMBNAIL".as_bytes())
-            })
+            .withf(|bu, ke, by| bu.eq("test-bucket-thumbs") && ke.eq(key) && by.eq("THUMBNAIL".as_bytes()))
             .return_const(Ok("Done".to_string()));
 
         let payload = get_s3_event("ObjectCreated", bucket, key);

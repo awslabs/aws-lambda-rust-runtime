@@ -38,9 +38,7 @@ async fn generate_rds_iam_token(db_hostname: &str, port: u16, db_username: &str)
         .settings(signing_settings)
         .build()?;
 
-    let url = format!(
-        "https://{db_hostname}:{port}/?Action=connect&DBUser={db_username}"
-    );
+    let url = format!("https://{db_hostname}:{port}/?Action=connect&DBUser={db_username}");
 
     let signable_request =
         SignableRequest::new("GET", &url, std::iter::empty(), SignableBody::Bytes(&[])).expect("signable request");

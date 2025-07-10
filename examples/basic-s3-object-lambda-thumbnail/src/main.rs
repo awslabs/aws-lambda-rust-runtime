@@ -113,9 +113,7 @@ mod tests {
             .returning(|_1| Ok("IMAGE".into()));
 
         mock.expect_send_file()
-            .withf(|r, t, by| {
-                r.eq("O_ROUTE") && t.eq("O_TOKEN") && by == "THUMBNAIL".as_bytes()
-            })
+            .withf(|r, t, by| r.eq("O_ROUTE") && t.eq("O_TOKEN") && by == "THUMBNAIL".as_bytes())
             .returning(|_1, _2, _3| Ok("File sent.".to_string()));
 
         let payload = get_s3_event();

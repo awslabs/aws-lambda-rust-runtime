@@ -39,13 +39,13 @@ http-body-util = { workspace = true }
 hyper = { workspace = true }
 lambda_runtime = { version = "0.14.2", path = "../lambda-runtime" }
 mime = "0.3"
-percent-encoding = "2.3"
+percent-encoding = "2.2"
 pin-project-lite = { workspace = true }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0", features = ["raw_value"] }
 serde_urlencoded = "0.7"
-tokio-stream = "0.1.17"
-url = "2.5"
+tokio-stream = "0.1.2"
+url = "2.2"
 
 [dependencies.aws_lambda_events]
 path = "../lambda-events"
@@ -57,9 +57,9 @@ features = ["alb", "apigw"]
 axum-core = "0.5.0"
 axum-extra = { version = "0.10.0", features = ["query"] }
 lambda_runtime_api_client = { version = "0.12.1", path = "../lambda-runtime-api-client" }
-maplit = "1.0"
-tokio = { version = "1.43", features = ["macros"] }
 log = "^0.4"
+maplit = "1.0"
+tokio = { version = "1.0", features = ["macros"] }
 
 [package.metadata.docs.rs]
 all-features = true

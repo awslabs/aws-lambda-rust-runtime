@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 #aws dependencies
-aws_lambda_events = { version = "0.16.1", features = ["sqs"], default-features = false }
+aws_lambda_events = { path = "../../../lambda-events", features = ["sqs"], default-features = false }
 
 #lambda runtime
 lambda_runtime = { path = "../../../lambda-runtime" }

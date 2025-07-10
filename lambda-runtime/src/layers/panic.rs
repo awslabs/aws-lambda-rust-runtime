@@ -99,6 +99,8 @@ impl<F> CatchPanicFuture<'_, F> {
     fn build_panic_diagnostic(err: &Box<dyn Any + Send>) -> Diagnostic {
         let error_message = if let Some(msg) = err.downcast_ref::<&str>() {
             format!("Lambda panicked: {msg}")
+        } else if let Some(msg) = err.downcast_ref::<String>() {
+            format!("Lambda panicked: {msg}")
         } else {
             "Lambda panicked".to_string()
         };

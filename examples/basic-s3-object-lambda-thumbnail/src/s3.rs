@@ -19,12 +19,17 @@ impl GetFile for S3Client {
     fn get_file(&self, url: String) -> Result<Vec<u8>, Box<dyn error::Error>> {
         tracing::info!("get file url {}", url);
 
-        let resp = ureq::get(&url).call()?;
-        let len: usize = resp.header("Content-Length").unwrap().parse()?;
+        let mut res = ureq::get(&url).call()?;
+        let len: usize = res
+            .headers()
+            .get("Content-Length")
+            .and_then(|h| h.to_str().ok())
+            .and_then(|s| s.parse().ok())
+            .unwrap();
 
         let mut bytes: Vec<u8> = Vec::with_capacity(len);
 
-        std::io::Read::take(resp.into_reader(), 10_000_000).read_to_end(&mut bytes)?;
+        std::io::Read::take(res.body_mut().as_reader(), 10_000_000).read_to_end(&mut bytes)?;
 
         tracing::info!("got {} bytes", bytes.len());
 

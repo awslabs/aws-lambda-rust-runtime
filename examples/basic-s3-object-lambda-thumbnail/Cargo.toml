@@ -23,7 +23,7 @@ aws-sdk-s3 = "1.96.0"
 thumbnailer = "0.5.1"
 mime = "0.3.17"
 async-trait = "0.1.88"
-ureq = "2.12.1"
+ureq = "3.0.12"
 
 [dev-dependencies]
 serde_json = "1.0.140"

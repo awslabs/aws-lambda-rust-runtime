@@ -4,7 +4,7 @@ use lambda_runtime::{
     LambdaEvent, Runtime,
 };
 use opentelemetry::trace::TracerProvider;
-use opentelemetry_sdk::{runtime, trace};
+use opentelemetry_sdk::trace;
 use tower::{service_fn, BoxError};
 use tracing_subscriber::prelude::*;
 
@@ -18,8 +18,8 @@ async fn echo(event: LambdaEvent<serde_json::Value>) -> Result<serde_json::Value
 async fn main() -> Result<(), BoxError> {
     // Set up OpenTelemetry tracer provider that writes spans to stdout for debugging purposes
     let exporter = opentelemetry_stdout::SpanExporter::default();
-    let tracer_provider = trace::TracerProvider::builder()
-        .with_batch_exporter(exporter, runtime::Tokio)
+    let tracer_provider = trace::SdkTracerProvider::builder()
+        .with_batch_exporter(exporter)
         .build();
 
     // Set up link between OpenTelemetry and tracing crate
@@ -34,7 +34,9 @@ async fn main() -> Result<(), BoxError> {
         // Create a tracing span for each Lambda invocation
         OtelLayer::new(|| {
             // Make sure that the trace is exported before the Lambda runtime is frozen
-            tracer_provider.force_flush();
+            if let Err(err) = tracer_provider.force_flush() {
+                eprintln!("Error flushing traces: {err:#?}");
+            }
         })
         // Set the "faas.trigger" attribute of the span to "pubsub"
         .with_trigger(OpenTelemetryFaasTrigger::PubSub),

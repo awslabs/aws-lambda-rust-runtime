@@ -4,7 +4,7 @@ use crate::{
 };
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct KinesisEvent {
     #[serde(rename = "Records")]
@@ -108,5 +108,12 @@ mod test {
         let output: String = serde_json::to_string(&parsed).unwrap();
         let reparsed: KinesisEvent = serde_json::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
+    }
+
+    #[test]
+    #[cfg(feature = "kinesis")]
+    fn default_kinesis_event() {
+        let event = KinesisEvent::default();
+        assert_eq!(event.records, vec![]);
     }
 }

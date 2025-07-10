@@ -84,30 +84,25 @@ fn get_thumbnail(vec: Vec<u8>, _size: u32) -> Vec<u8> {
 mod tests {
     use super::*;
     use async_trait::async_trait;
-    use aws_lambda_events::s3::object_lambda::Configuration;
-    use aws_lambda_events::s3::object_lambda::HeadObjectContext;
-    use aws_lambda_events::s3::object_lambda::ListObjectsContext;
-    use aws_lambda_events::s3::object_lambda::ListObjectsV2Context;
-    use aws_lambda_events::s3::object_lambda::UserIdentity;
-    use aws_lambda_events::s3::object_lambda::UserRequest;
-    use aws_lambda_events::serde_json::json;
+    use aws_lambda_events::s3::object_lambda::{
+        Configuration, HeadObjectContext, ListObjectsContext, ListObjectsV2Context, UserIdentity, UserRequest,
+    };
     use lambda_runtime::{Context, LambdaEvent};
     use mockall::mock;
-    use s3::GetFile;
-    use s3::SendFile;
+    use s3::{GetFile, SendFile};
+    use serde_json::json;
 
     #[tokio::test]
     async fn response_is_good() {
         mock! {
             FakeS3Client {}
 
-            #[async_trait]
             impl GetFile for FakeS3Client {
-                pub fn get_file(&self, url: String) -> Result<Vec<u8>, Box<dyn error::Error>>;
+                fn get_file(&self, url: String) -> Result<Vec<u8>, Box<dyn error::Error>>;
             }
             #[async_trait]
             impl SendFile for FakeS3Client {
-                pub async fn send_file(&self, route: String, token: String, vec: Vec<u8>) -> Result<String, Box<dyn error::Error>>;
+                async fn send_file(&self, route: String, token: String, vec: Vec<u8>) -> Result<String, Box<dyn error::Error>>;
             }
         }
 
@@ -118,9 +113,7 @@ mod tests {
             .returning(|_1| Ok("IMAGE".into()));
 
         mock.expect_send_file()
-            .withf(|r, t, by| {
-                return r.eq("O_ROUTE") && t.eq("O_TOKEN") && by == "THUMBNAIL".as_bytes();
-            })
+            .withf(|r, t, by| r.eq("O_ROUTE") && t.eq("O_TOKEN") && by == "THUMBNAIL".as_bytes())
             .returning(|_1, _2, _3| Ok("File sent.".to_string()));
 
         let payload = get_s3_event();
@@ -133,7 +126,7 @@ mod tests {
     }
 
     fn get_s3_event() -> S3ObjectLambdaEvent {
-        return S3ObjectLambdaEvent {
+        S3ObjectLambdaEvent {
             x_amz_request_id: ("ID".to_string()),
             head_object_context: (Some(HeadObjectContext::default())),
             list_objects_context: (Some(ListObjectsContext::default())),
@@ -151,6 +144,6 @@ mod tests {
                 supporting_access_point_arn: ("SAPRN".to_string()),
                 payload: (json!(null)),
             }),
-        };
+        }
     }
 }

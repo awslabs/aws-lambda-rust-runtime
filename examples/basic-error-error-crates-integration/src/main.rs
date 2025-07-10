@@ -28,7 +28,7 @@ fn miette_error() -> miette::Result<()> {
 
 /// Transform an anyhow::Error, eyre::Report, or miette::Report into a lambda_runtime::Diagnostic.
 /// It does it by enabling the feature `anyhow`, `eyre` or `miette` in the runtime dependency.
-/// Those features enable the implementation of `From<T> for Diagnostic` 
+/// Those features enable the implementation of `From<T> for Diagnostic`
 /// for `anyhow::Error`, `eyre::Report`, and `miette::Report`.
 async fn function_handler(event: LambdaEvent<Request>) -> Result<(), Diagnostic> {
     match event.payload.error_type {

@@ -2,8 +2,10 @@ use anyhow::anyhow;
 use aws_lambda_events::sqs::{SqsBatchResponse, SqsEventObj};
 use lambda_extension::{service_fn, tracing, Error, Extension, NextEvent};
 use serde::{Deserialize, Serialize};
-use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender};
-use tokio::sync::Mutex;
+use tokio::sync::{
+    mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender},
+    Mutex,
+};
 
 use std::sync::Arc;
 

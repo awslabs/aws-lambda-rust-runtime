@@ -53,7 +53,7 @@ fn main() -> Result<(), io::Error> {
     my_runtime(move || future::block_on(app_runtime_task(lambda_rx.clone(), shutdown_tx.clone())));
 
     // Block the main thread until a shutdown signal is received.
-    future::block_on(shutdown_rx.recv()).map_err(|err| io::Error::new(io::ErrorKind::Other, format!("{:?}", err)))
+    future::block_on(shutdown_rx.recv()).map_err(|err| io::Error::other(format!("{err:?}")))
 }
 
 pub(crate) async fn my_handler(event: LambdaEvent<Request>) -> Result<Response, Error> {
@@ -63,7 +63,7 @@ pub(crate) async fn my_handler(event: LambdaEvent<Request>) -> Result<Response, 
     // prepare the response
     let resp = Response {
         req_id: event.context.request_id,
-        msg: format!("Command {} executed.", command),
+        msg: format!("Command {command} executed."),
     };
 
     // return `Response` (it will be serialized to JSON automatically by the runtime)

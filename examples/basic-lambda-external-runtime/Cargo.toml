@@ -4,11 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-async-channel = "1.8.0"
-futures-lite = "1.13.0"
+async-channel = "2.5.0"
+futures-lite = "2.6.0"
 lambda_runtime = { path = "../../lambda-runtime" }
-serde = "1.0.163"
-tokio = "1.28.2"
-
-[dev-dependencies]
-tokio-test = "0.4.2"
+serde = "1.0.219"
+tokio = "1.46.1"

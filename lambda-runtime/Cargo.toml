@@ -34,16 +34,9 @@ bytes = { workspace = true }
 eyre = { version = "0.6.12", optional = true }
 futures = { workspace = true }
 http = { workspace = true }
-http-body = { workspace = true }
 http-body-util = { workspace = true }
 http-serde = { workspace = true }
 hyper = { workspace = true, features = ["http1", "client"] }
-hyper-util = { workspace = true, features = [
-    "client",
-    "client-legacy",
-    "http1",
-    "tokio",
-] }
 lambda-extension = { version = "0.12.1", path = "../lambda-extension", default-features = false, optional = true }
 lambda_runtime_api_client = { version = "0.12.2", path = "../lambda-runtime-api-client", default-features = false }
 miette = { version = "7.2.0", optional = true }
@@ -60,7 +53,6 @@ tokio = { version = "1.46", features = [
 ] }
 tokio-stream = "0.1.2"
 tower = { workspace = true, features = ["util"] }
-tower-layer = { workspace = true }
 tracing = { version = "0.1", features = ["log"] }
 
 [dev-dependencies]

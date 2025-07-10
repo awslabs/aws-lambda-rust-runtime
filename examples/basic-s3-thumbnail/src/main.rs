@@ -139,16 +139,11 @@ mod tests {
     use super::*;
     use async_trait::async_trait;
     //use aws_lambda_events::chrono::DateTime;
-    use aws_lambda_events::s3::S3Bucket;
-    use aws_lambda_events::s3::S3Entity;
-    use aws_lambda_events::s3::S3Object;
-    use aws_lambda_events::s3::S3RequestParameters;
-    use aws_lambda_events::s3::S3UserIdentity;
+    use aws_lambda_events::s3::{S3Bucket, S3Entity, S3Object, S3RequestParameters, S3UserIdentity};
     use aws_sdk_s3::operation::get_object::GetObjectError;
     use lambda_runtime::{Context, LambdaEvent};
     use mockall::mock;
-    use s3::GetFile;
-    use s3::PutFile;
+    use s3::{GetFile, PutFile};
 
     #[tokio::test]
     async fn response_is_good() {
@@ -163,11 +158,11 @@ mod tests {
 
             #[async_trait]
             impl GetFile for FakeS3Client {
-                pub async fn get_file(&self, bucket: &str, key: &str) -> Result<Vec<u8>, GetObjectError>;
+                async fn get_file(&self, bucket: &str, key: &str) -> Result<Vec<u8>, GetObjectError>;
             }
             #[async_trait]
             impl PutFile for FakeS3Client {
-                pub async fn put_file(&self, bucket: &str, key: &str, bytes: Vec<u8>) -> Result<String, String>;
+                async fn put_file(&self, bucket: &str, key: &str, bytes: Vec<u8>) -> Result<String, String>;
             }
         }
 
@@ -178,23 +173,21 @@ mod tests {
             .returning(|_1, _2| Ok("IMAGE".into()));
 
         mock.expect_put_file()
-            .withf(|bu, ke, by| {
-                return bu.eq("test-bucket-thumbs") && ke.eq(key) && by.eq("THUMBNAIL".as_bytes());
-            })
+            .withf(|bu, ke, by| bu.eq("test-bucket-thumbs") && ke.eq(key) && by.eq("THUMBNAIL".as_bytes()))
             .return_const(Ok("Done".to_string()));
 
         let payload = get_s3_event("ObjectCreated", bucket, key);
         let event = LambdaEvent { payload, context };
 
-        let result = function_handler(event, 10, &mock).await.unwrap();
+        function_handler(event, 10, &mock).await.unwrap();
 
-        assert_eq!((), result);
+        assert_eq!((), ());
     }
 
     fn get_s3_event(event_name: &str, bucket_name: &str, object_key: &str) -> S3Event {
-        return S3Event {
+        S3Event {
             records: (vec![get_s3_event_record(event_name, bucket_name, object_key)]),
-        };
+        }
     }
 
     fn get_s3_event_record(event_name: &str, bucket_name: &str, object_key: &str) -> S3EventRecord {
@@ -218,7 +211,7 @@ mod tests {
             }),
         };
 
-        return S3EventRecord {
+        S3EventRecord {
             event_version: (Some(String::default())),
             event_source: (Some(String::default())),
             aws_region: (Some(String::default())),
@@ -232,6 +225,6 @@ mod tests {
             }),
             response_elements: (HashMap::new()),
             s3: (s3_entity),
-        };
+        }
     }
 }

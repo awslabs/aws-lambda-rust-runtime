@@ -1,6 +1,8 @@
 use async_trait::async_trait;
-use aws_sdk_s3::{operation::write_get_object_response::WriteGetObjectResponseError, Client as S3Client};
-use aws_smithy_http::{byte_stream::ByteStream, result::SdkError};
+use aws_sdk_s3::{
+    error::SdkError, operation::write_get_object_response::WriteGetObjectResponseError, primitives::ByteStream,
+    Client as S3Client,
+};
 use lambda_runtime::tracing;
 use std::{error, io::Read};
 
@@ -17,12 +19,17 @@ impl GetFile for S3Client {
     fn get_file(&self, url: String) -> Result<Vec<u8>, Box<dyn error::Error>> {
         tracing::info!("get file url {}", url);
 
-        let resp = ureq::get(&url).call()?;
-        let len: usize = resp.header("Content-Length").unwrap().parse()?;
+        let mut res = ureq::get(&url).call()?;
+        let len: usize = res
+            .headers()
+            .get("Content-Length")
+            .and_then(|h| h.to_str().ok())
+            .and_then(|s| s.parse().ok())
+            .unwrap();
 
         let mut bytes: Vec<u8> = Vec::with_capacity(len);
 
-        std::io::Read::take(resp.into_reader(), 10_000_000).read_to_end(&mut bytes)?;
+        std::io::Read::take(res.body_mut().as_reader(), 10_000_000).read_to_end(&mut bytes)?;
 
         tracing::info!("got {} bytes", bytes.len());
 
@@ -46,9 +53,8 @@ impl SendFile for S3Client {
             .send()
             .await;
 
-        if write.is_err() {
-            let sdk_error = write.err().unwrap();
-            check_error(sdk_error);
+        if let Err(err) = write {
+            check_error(err);
             Err("WriteGetObjectResponse creation error".into())
         } else {
             Ok("File sent.".to_string())
@@ -65,16 +71,16 @@ fn check_error(error: SdkError<WriteGetObjectResponseError>) {
             tracing::info!("DispatchFailure");
             if err.is_io() {
                 tracing::info!("IO error");
-            };
+            }
             if err.is_timeout() {
                 tracing::info!("Timeout error");
-            };
+            }
             if err.is_user() {
                 tracing::info!("User error");
-            };
-            if err.is_other().is_some() {
+            }
+            if err.is_other() {
                 tracing::info!("Other error");
-            };
+            }
         }
         SdkError::ResponseError(_err) => tracing::info!("ResponseError"),
         SdkError::TimeoutError(_err) => tracing::info!("TimeoutError"),

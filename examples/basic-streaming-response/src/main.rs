@@ -7,7 +7,7 @@ use serde_json::Value;
 use std::{thread, time::Duration};
 
 async fn func(_event: LambdaEvent<Value>) -> Result<Response<Body>, Error> {
-    let messages = vec!["Hello", "world", "from", "Lambda!"];
+    let messages = ["Hello", "world", "from", "Lambda!"];
 
     let (mut tx, rx) = channel();
 

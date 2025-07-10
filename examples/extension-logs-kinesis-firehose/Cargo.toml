@@ -5,6 +5,6 @@ edition = "2021"
 
 [dependencies]
 lambda-extension = { path = "../../lambda-extension" }
-tokio = { version = "1.17.0", features = ["full"] }
-aws-config = "0.13.0"
-aws-sdk-firehose = "0.13.0"
+tokio = { version = "1.46.1", features = ["full"] }
+aws-config = { version = "1.8.1", features = ["behavior-version-latest"] }
+aws-sdk-firehose = "1.82.0"

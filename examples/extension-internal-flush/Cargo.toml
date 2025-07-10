@@ -8,5 +8,5 @@ anyhow = "1"
 aws_lambda_events = { path = "../../lambda-events" }
 lambda-extension = { path = "../../lambda-extension" }
 lambda_runtime = { path = "../../lambda-runtime" }
-serde = "1.0.136"
+serde = "1.0.219"
 tokio = { version = "1.46", features = ["macros", "sync"] }

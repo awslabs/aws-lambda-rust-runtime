@@ -1,4 +1,4 @@
-use aws_sdk_firehose::{model::Record, types::Blob, Client};
+use aws_sdk_firehose::{primitives::Blob, types::Record, Client};
 use lambda_extension::{tracing, Error, Extension, LambdaLog, LambdaLogRecord, Service, SharedService};
 use std::{future::Future, pin::Pin, task::Poll};
 
@@ -31,7 +31,12 @@ impl Service<Vec<LambdaLog>> for FirehoseLogsProcessor {
         for log in logs {
             match log.record {
                 LambdaLogRecord::Function(record) => {
-                    records.push(Record::builder().data(Blob::new(record.as_bytes())).build())
+                    match Record::builder().data(Blob::new(record.as_bytes())).build() {
+                        Ok(rec) => records.push(rec),
+                        Err(e) => {
+                            return Box::pin(async move { Err(e.into()) });
+                        }
+                    }
                 }
                 _ => unreachable!(),
             }

@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use aws_sdk_s3::{output::ListObjectsV2Output, Client as S3Client};
+use aws_sdk_s3::{operation::list_objects_v2::ListObjectsV2Output, Client as S3Client};
 use lambda_runtime::{service_fn, tracing, Error, LambdaEvent};
 use serde::{Deserialize, Serialize};
 
@@ -52,8 +52,7 @@ async fn my_handler<T: ListObjects>(event: LambdaEvent<Request>, client: &T) -> 
     let objects_rsp = client.list_objects(&bucket).await?;
     let objects: Vec<_> = objects_rsp
         .contents()
-        .ok_or("missing objects in list-objects-v2 response")?
-        .into_iter()
+        .iter()
         .filter_map(|o| o.key().map(|k| k.to_string()))
         .collect();
 
@@ -71,7 +70,7 @@ async fn my_handler<T: ListObjects>(event: LambdaEvent<Request>, client: &T) -> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use aws_sdk_s3::model::Object;
+    use aws_sdk_s3::types::Object;
     use lambda_runtime::{Context, LambdaEvent};
     use mockall::predicate::eq;
 

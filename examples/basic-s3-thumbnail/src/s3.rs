@@ -1,7 +1,5 @@
 use async_trait::async_trait;
-use aws_sdk_s3::operation::get_object::GetObjectError;
-use aws_sdk_s3::Client as S3Client;
-use aws_smithy_http::byte_stream::ByteStream;
+use aws_sdk_s3::{operation::get_object::GetObjectError, primitives::ByteStream, Client as S3Client};
 use lambda_runtime::tracing;
 
 #[async_trait]
@@ -45,7 +43,7 @@ impl PutFile for S3Client {
         let result = self.put_object().bucket(bucket).key(key).body(bytes).send().await;
 
         match result {
-            Ok(_) => Ok(format!("Uploaded a file with key {} into {}", key, bucket)),
+            Ok(_) => Ok(format!("Uploaded a file with key {key} into {bucket}")),
             Err(err) => Err(err.into_service_error().meta().message().unwrap().to_string()),
         }
     }

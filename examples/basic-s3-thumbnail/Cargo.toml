@@ -18,11 +18,11 @@ edition = "2021"
 aws_lambda_events = { path = "../../lambda-events" }
 lambda_runtime = { path = "../../lambda-runtime" }
 tokio = { version = "1", features = ["macros"] }
-aws-config = { version = "1.5.14", features = ["behavior-version-latest"] }
-aws-sdk-s3 = "1.69.0"
+aws-config = { version = "1.8.1", features = ["behavior-version-latest"] }
+aws-sdk-s3 = "1.96.0"
 thumbnailer = "0.5.1"
 mime = "0.3.17"
-async-trait = "0.1.85"
+async-trait = "0.1.88"
 
 [dev-dependencies]
 mockall = "0.13.1"

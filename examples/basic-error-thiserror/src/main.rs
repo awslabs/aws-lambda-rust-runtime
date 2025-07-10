@@ -1,6 +1,5 @@
 use lambda_runtime::{service_fn, Diagnostic, Error, LambdaEvent};
 use serde::Deserialize;
-use thiserror;
 
 #[derive(Deserialize)]
 struct Request {}
@@ -21,7 +20,7 @@ impl From<ExecutionError> for Diagnostic {
         };
         Diagnostic {
             error_type: error_type.into(),
-            error_message: error_message.into(),
+            error_message,
         }
     }
 }

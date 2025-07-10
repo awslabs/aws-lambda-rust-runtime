@@ -114,7 +114,7 @@ mod tests {
 
         mock.expect_send_file()
             .withf(|r, t, by| {
-                return r.eq("O_ROUTE") && t.eq("O_TOKEN") && by == "THUMBNAIL".as_bytes();
+                r.eq("O_ROUTE") && t.eq("O_TOKEN") && by == "THUMBNAIL".as_bytes()
             })
             .returning(|_1, _2, _3| Ok("File sent.".to_string()));
 
@@ -128,7 +128,7 @@ mod tests {
     }
 
     fn get_s3_event() -> S3ObjectLambdaEvent {
-        return S3ObjectLambdaEvent {
+        S3ObjectLambdaEvent {
             x_amz_request_id: ("ID".to_string()),
             head_object_context: (Some(HeadObjectContext::default())),
             list_objects_context: (Some(ListObjectsContext::default())),
@@ -146,6 +146,6 @@ mod tests {
                 supporting_access_point_arn: ("SAPRN".to_string()),
                 payload: (json!(null)),
             }),
-        };
+        }
     }
 }

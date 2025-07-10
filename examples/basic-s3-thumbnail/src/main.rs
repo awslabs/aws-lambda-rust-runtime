@@ -174,22 +174,22 @@ mod tests {
 
         mock.expect_put_file()
             .withf(|bu, ke, by| {
-                return bu.eq("test-bucket-thumbs") && ke.eq(key) && by.eq("THUMBNAIL".as_bytes());
+                bu.eq("test-bucket-thumbs") && ke.eq(key) && by.eq("THUMBNAIL".as_bytes())
             })
             .return_const(Ok("Done".to_string()));
 
         let payload = get_s3_event("ObjectCreated", bucket, key);
         let event = LambdaEvent { payload, context };
 
-        let result = function_handler(event, 10, &mock).await.unwrap();
+        function_handler(event, 10, &mock).await.unwrap();
 
-        assert_eq!((), result);
+        assert_eq!((), ());
     }
 
     fn get_s3_event(event_name: &str, bucket_name: &str, object_key: &str) -> S3Event {
-        return S3Event {
+        S3Event {
             records: (vec![get_s3_event_record(event_name, bucket_name, object_key)]),
-        };
+        }
     }
 
     fn get_s3_event_record(event_name: &str, bucket_name: &str, object_key: &str) -> S3EventRecord {
@@ -213,7 +213,7 @@ mod tests {
             }),
         };
 
-        return S3EventRecord {
+        S3EventRecord {
             event_version: (Some(String::default())),
             event_source: (Some(String::default())),
             aws_region: (Some(String::default())),
@@ -227,6 +227,6 @@ mod tests {
             }),
             response_elements: (HashMap::new()),
             s3: (s3_entity),
-        };
+        }
     }
 }

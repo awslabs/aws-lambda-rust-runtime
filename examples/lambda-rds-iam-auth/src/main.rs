@@ -39,10 +39,7 @@ async fn generate_rds_iam_token(db_hostname: &str, port: u16, db_username: &str)
         .build()?;
 
     let url = format!(
-        "https://{db_hostname}:{port}/?Action=connect&DBUser={db_user}",
-        db_hostname = db_hostname,
-        port = port,
-        db_user = db_username
+        "https://{db_hostname}:{port}/?Action=connect&DBUser={db_username}"
     );
 
     let signable_request =
@@ -52,7 +49,7 @@ async fn generate_rds_iam_token(db_hostname: &str, port: u16, db_username: &str)
 
     let mut url = url::Url::parse(&url).unwrap();
     for (name, value) in signing_instructions.params() {
-        url.query_pairs_mut().append_pair(name, &value);
+        url.query_pairs_mut().append_pair(name, value);
     }
 
     let response = url.to_string().split_off("https://".len());
@@ -93,7 +90,7 @@ async fn handler(_event: LambdaEvent<Value>) -> Result<Value, Error> {
         .fetch_one(&pool)
         .await?;
 
-    println!("Result: {:?}", result);
+    println!("Result: {result:?}");
 
     Ok(json!({
         "statusCode": 200,

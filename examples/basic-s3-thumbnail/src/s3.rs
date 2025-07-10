@@ -43,7 +43,7 @@ impl PutFile for S3Client {
         let result = self.put_object().bucket(bucket).key(key).body(bytes).send().await;
 
         match result {
-            Ok(_) => Ok(format!("Uploaded a file with key {} into {}", key, bucket)),
+            Ok(_) => Ok(format!("Uploaded a file with key {key} into {bucket}")),
             Err(err) => Err(err.into_service_error().meta().message().unwrap().to_string()),
         }
     }

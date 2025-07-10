@@ -52,7 +52,7 @@ async fn my_handler<T: ListObjects>(event: LambdaEvent<Request>, client: &T) -> 
     let objects_rsp = client.list_objects(&bucket).await?;
     let objects: Vec<_> = objects_rsp
         .contents()
-        .into_iter()
+        .iter()
         .filter_map(|o| o.key().map(|k| k.to_string()))
         .collect();
 

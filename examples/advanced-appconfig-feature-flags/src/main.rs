@@ -35,9 +35,9 @@ async fn function_handler<T: ConfigurationFetcher + Send + Sync>(
 
     // Use the feature flag
     let msg = if config.spanish_response {
-        format!("{}, in spanish.", quote)
+        format!("{quote}, in spanish.")
     } else {
-        format!("{}.", quote)
+        format!("{quote}.")
     };
 
     // Return `Response` (it will be serialized to JSON automatically by the runtime)

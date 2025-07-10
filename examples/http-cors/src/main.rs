@@ -28,7 +28,7 @@ async fn func(event: Request) -> Result<Response<Body>, Error> {
             .query_string_parameters_ref()
             .and_then(|params| params.first("first_name"))
         {
-            Some(first_name) => format!("Hello, {}!", first_name).into_response().await,
+            Some(first_name) => format!("Hello, {first_name}!").into_response().await,
             None => Response::builder()
                 .status(400)
                 .body("Empty first name".into())

@@ -43,7 +43,7 @@ impl std::fmt::Display for CustomError {
     /// Display the error struct as a JSON string
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let err_as_json = json!(self).to_string();
-        write!(f, "{}", err_as_json)
+        write!(f, "{err_as_json}")
     }
 }
 
@@ -66,7 +66,7 @@ pub(crate) async fn func(event: LambdaEvent<Request>) -> Result<Response, Error>
     match event.event_type {
         EventType::SimpleError => {
             // generate a simple text message error using `simple_error` crate
-            return Err(Box::new(simple_error::SimpleError::new("A simple error as requested!")));
+            Err(Box::new(simple_error::SimpleError::new("A simple error as requested!")))
         }
         EventType::CustomError => {
             // generate a custom error using our own structure
@@ -75,7 +75,7 @@ pub(crate) async fn func(event: LambdaEvent<Request>) -> Result<Response, Error>
                 req_id: ctx.request_id,
                 msg: "A custom error as requested!".into(),
             };
-            return Err(Box::new(cust_err));
+            Err(Box::new(cust_err))
         }
         EventType::ExternalError => {
             // try to open a non-existent file to get an error and propagate it with `?`
@@ -94,7 +94,7 @@ pub(crate) async fn func(event: LambdaEvent<Request>) -> Result<Response, Error>
                 msg: "OK".into(),
             };
 
-            return Ok(resp);
+            Ok(resp)
         }
     }
 }

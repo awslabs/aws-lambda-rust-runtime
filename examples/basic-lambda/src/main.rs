@@ -39,7 +39,7 @@ pub(crate) async fn my_handler(event: LambdaEvent<Request>) -> Result<Response, 
     // prepare the response
     let resp = Response {
         req_id: event.context.request_id,
-        msg: format!("Command {} executed.", command),
+        msg: format!("Command {command} executed."),
     };
 
     // return `Response` (it will be serialized to JSON automatically by the runtime)

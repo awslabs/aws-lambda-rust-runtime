@@ -29,7 +29,7 @@ impl DerefMut for MillisecondTimestamp {
 }
 
 /// Timestamp with second precision.
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct SecondTimestamp(
     #[serde(deserialize_with = "deserialize_seconds")]
     #[serde(serialize_with = "serialize_seconds")]

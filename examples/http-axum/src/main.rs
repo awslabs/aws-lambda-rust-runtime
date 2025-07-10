@@ -6,10 +6,9 @@
 //! implementation to the Lambda runtime to run as a Lambda function.  By using Axum instead
 //! of a basic `tower::Service` you get web framework niceties like routing, request component
 //! extraction, validation, etc.
-use axum::extract::Query;
-use axum::http::StatusCode;
 use axum::{
-    extract::Path,
+    extract::{Path, Query},
+    http::StatusCode,
     response::Json,
     routing::{get, post},
     Router,

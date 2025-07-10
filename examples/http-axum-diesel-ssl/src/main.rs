@@ -4,14 +4,12 @@ use axum::{
     routing::get,
     Router,
 };
-use diesel::prelude::*;
-use diesel::{ConnectionError, ConnectionResult};
+use diesel::{prelude::*, ConnectionError, ConnectionResult};
 use diesel_async::{
     pooled_connection::{bb8::Pool, AsyncDieselConnectionManager, ManagerConfig},
     AsyncPgConnection, RunQueryDsl,
 };
-use futures_util::future::BoxFuture;
-use futures_util::FutureExt;
+use futures_util::{future::BoxFuture, FutureExt};
 use lambda_http::{http::StatusCode, run, tracing, Error};
 use serde::{Deserialize, Serialize};
 use std::time::Duration;

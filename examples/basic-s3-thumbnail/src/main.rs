@@ -139,16 +139,11 @@ mod tests {
     use super::*;
     use async_trait::async_trait;
     //use aws_lambda_events::chrono::DateTime;
-    use aws_lambda_events::s3::S3Bucket;
-    use aws_lambda_events::s3::S3Entity;
-    use aws_lambda_events::s3::S3Object;
-    use aws_lambda_events::s3::S3RequestParameters;
-    use aws_lambda_events::s3::S3UserIdentity;
+    use aws_lambda_events::s3::{S3Bucket, S3Entity, S3Object, S3RequestParameters, S3UserIdentity};
     use aws_sdk_s3::operation::get_object::GetObjectError;
     use lambda_runtime::{Context, LambdaEvent};
     use mockall::mock;
-    use s3::GetFile;
-    use s3::PutFile;
+    use s3::{GetFile, PutFile};
 
     #[tokio::test]
     async fn response_is_good() {

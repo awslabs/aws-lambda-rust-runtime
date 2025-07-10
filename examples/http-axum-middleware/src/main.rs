@@ -10,8 +10,7 @@
 //! ```
 
 use axum::{response::Json, routing::post, Router};
-use lambda_http::request::RequestContext::ApiGatewayV1;
-use lambda_http::{run, tracing, Error};
+use lambda_http::{request::RequestContext::ApiGatewayV1, run, tracing, Error};
 use serde_json::{json, Value};
 
 // Sample middleware that logs the request id

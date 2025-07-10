@@ -84,16 +84,12 @@ fn get_thumbnail(vec: Vec<u8>, _size: u32) -> Vec<u8> {
 mod tests {
     use super::*;
     use async_trait::async_trait;
-    use aws_lambda_events::s3::object_lambda::Configuration;
-    use aws_lambda_events::s3::object_lambda::HeadObjectContext;
-    use aws_lambda_events::s3::object_lambda::ListObjectsContext;
-    use aws_lambda_events::s3::object_lambda::ListObjectsV2Context;
-    use aws_lambda_events::s3::object_lambda::UserIdentity;
-    use aws_lambda_events::s3::object_lambda::UserRequest;
+    use aws_lambda_events::s3::object_lambda::{
+        Configuration, HeadObjectContext, ListObjectsContext, ListObjectsV2Context, UserIdentity, UserRequest,
+    };
     use lambda_runtime::{Context, LambdaEvent};
     use mockall::mock;
-    use s3::GetFile;
-    use s3::SendFile;
+    use s3::{GetFile, SendFile};
     use serde_json::json;
 
     #[tokio::test]

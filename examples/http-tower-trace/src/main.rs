@@ -1,6 +1,9 @@
-use lambda_http::tracing::{self, Level};
-use lambda_http::{run, tower::ServiceBuilder, Error};
-use lambda_http::{Request, Response};
+use lambda_http::{
+    run,
+    tower::ServiceBuilder,
+    tracing::{self, Level},
+    Error, Request, Response,
+};
 use tower_http::trace::{DefaultOnRequest, DefaultOnResponse, TraceLayer};
 
 async fn handler(_req: Request) -> Result<Response<String>, Error> {

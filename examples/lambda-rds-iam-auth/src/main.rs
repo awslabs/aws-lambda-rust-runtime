@@ -7,8 +7,10 @@ use aws_sigv4::{
 use lambda_runtime::{run, service_fn, Error, LambdaEvent};
 use serde_json::{json, Value};
 use sqlx::postgres::PgConnectOptions;
-use std::env;
-use std::time::{Duration, SystemTime};
+use std::{
+    env,
+    time::{Duration, SystemTime},
+};
 
 const RDS_CERTS: &[u8] = include_bytes!("global-bundle.pem");
 

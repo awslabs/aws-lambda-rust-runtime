@@ -117,7 +117,7 @@ where
     pub ttl_override: Option<i64>,
 }
 
-/// `AppSyncResolverEvent` represents the default payload structure sent by AWS AppSync
+/// `AppSyncDirectResolverEvent` represents the default payload structure sent by AWS AppSync
 /// when using **Direct Lambda Resolvers** (i.e., when both request and response mapping
 /// templates are disabled).
 ///

@@ -3,7 +3,12 @@ use bytes::Bytes;
 pub use http::{self, Response};
 use http_body::Body;
 use lambda_runtime::Diagnostic;
-pub use lambda_runtime::{self, tower::ServiceExt, Error, LambdaEvent, MetadataPrelude, Service, StreamResponse};
+pub use lambda_runtime::{
+    self,
+    tower::util::{MapRequest, MapResponse},
+    tower::ServiceExt,
+    Error, LambdaEvent, MetadataPrelude, Service, StreamResponse,
+};
 use std::{
     fmt::Debug,
     pin::Pin,
@@ -11,12 +16,20 @@ use std::{
 };
 use tokio_stream::Stream;
 
-/// Starts the Lambda Rust runtime and stream response back [Configure Lambda
-/// Streaming Response](https://docs.aws.amazon.com/lambda/latest/dg/configuration-response-streaming.html).
+/// Converts a handler into a streaming-compatible service for use with AWS
+/// Lambda.
 ///
-/// This takes care of transforming the LambdaEvent into a [`Request`] and
-/// accepts [`http::Response<http_body::Body>`] as response.
-pub async fn run_with_streaming_response<'a, S, B, E>(handler: S) -> Result<(), Error>
+/// This function wraps a `Service` implementation, transforming its input and
+/// output to be compatible with AWS Lambda's streaming response feature. It
+/// provides the necessary middleware to handle `LambdaEvent` requests and
+/// converts the `http::Response` into a `StreamResponse` containing a metadata
+/// prelude and body stream.
+pub fn into_streaming_response<'a, S, B, E>(
+    handler: S,
+) -> MapResponse<
+    MapRequest<S, impl FnMut(LambdaEvent<LambdaRequest>) -> Request>,
+    impl FnOnce(Response<B>) -> StreamResponse<BodyStream<B>> + Clone,
+>
 where
     S: Service<Request, Response = Response<B>, Error = E>,
     S::Future: Send + 'a,
@@ -25,13 +38,13 @@ where
     B::Data: Into<Bytes> + Send,
     B::Error: Into<Error> + Send + Debug,
 {
-    let svc = ServiceBuilder::new()
+    ServiceBuilder::new()
         .map_request(|req: LambdaEvent<LambdaRequest>| {
             let event: Request = req.payload.into();
             event.with_lambda_context(req.context)
         })
         .service(handler)
-        .map_response(|res| {
+        .map_response(|res: Response<B>| {
             let (parts, body) = res.into_parts();
 
             let mut prelude_headers = parts.headers;
@@ -54,8 +67,25 @@ where
                 metadata_prelude,
                 stream: BodyStream { body },
             }
-        });
+        })
+}
 
+/// Starts the Lambda Rust runtime and stream response back [Configure Lambda
+/// Streaming
+/// Response](https://docs.aws.amazon.com/lambda/latest/dg/configuration-response-streaming.html).
+///
+/// This takes care of transforming the LambdaEvent into a [`Request`] and
+/// accepts [`http::Response<http_body::Body>`] as response.
+pub async fn run_with_streaming_response<'a, S, B, E>(handler: S) -> Result<(), Error>
+where
+    S: Service<Request, Response = Response<B>, Error = E>,
+    S::Future: Send + 'a,
+    E: Debug + Into<Diagnostic>,
+    B: Body + Unpin + Send + 'static,
+    B::Data: Into<Bytes> + Send,
+    B::Error: Into<Error> + Send + Debug,
+{
+    let svc = into_streaming_response(handler);
     lambda_runtime::run(svc).await
 }
 

@@ -26,6 +26,7 @@ use tokio_stream::Stream;
 /// provides the necessary middleware to handle `LambdaEvent` requests and
 /// converts the `http::Response` into a `StreamResponse` containing a metadata
 /// prelude and body stream.
+#[allow(clippy::type_complexity)]
 pub fn into_streaming_response<'a, S, B, E>(
     handler: S,
 ) -> MapResponse<

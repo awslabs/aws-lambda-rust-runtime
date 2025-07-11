@@ -130,7 +130,7 @@ where
 /// See also:
 /// - [AppSync resolver mapping template context reference](https://docs.aws.amazon.com/appsync/latest/devguide/resolver-context-reference.html)
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
-pub struct AppSyncResolverEvent<TArguments = Value, TSource = Value, TStash = Value>
+pub struct AppSyncDirectResolverEvent<TArguments = Value, TSource = Value, TStash = Value>
 where
     TArguments: Serialize + DeserializeOwned,
     TSource: Serialize + DeserializeOwned,
@@ -269,11 +269,11 @@ mod test {
 
     #[test]
     #[cfg(feature = "appsync")]
-    fn example_appsync_vtl_resolver() {
-        let data = include_bytes!("../../fixtures/example-appsync-vtl-resolver.json");
-        let parsed: AppSyncResolverEvent = serde_json::from_slice(data).unwrap();
+    fn example_appsync_direct_resolver() {
+        let data = include_bytes!("../../fixtures/example-appsync-direct-resolver.json");
+        let parsed: AppSyncDirectResolverEvent = serde_json::from_slice(data).unwrap();
         let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: AppSyncResolverEvent = serde_json::from_slice(output.as_bytes()).unwrap();
+        let reparsed: AppSyncDirectResolverEvent = serde_json::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

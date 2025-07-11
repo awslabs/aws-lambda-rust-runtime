@@ -1,0 +1,64 @@
+{
+    "arguments": {
+        "input": "foo"
+    },
+    "identity": {
+        "sourceIp": [
+            "x.x.x.x"
+        ],
+        "userArn": "arn:aws:iam::123456789012:user/appsync",
+        "accountId": "666666666666",
+        "user": "AIDAAAAAAAAAAAAAAAAAA"
+    },
+    "info": {
+        "fieldName": "greet",
+        "parentTypeName": "Query",
+        "selectionSetGraphQL": "",
+        "selectionSetList": [],
+        "variables": {
+            "inputVar": "foo"
+        }
+    },
+    "prev": null,
+    "request": {
+        "domainName": null,
+        "headers": {
+            "accept": "application/json, text/plain, */*",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "en-US,en;q=0.9,ja;q=0.8,en-GB;q=0.7",
+            "cloudfront-forwarded-proto": "https",
+            "cloudfront-is-desktop-viewer": "true",
+            "cloudfront-is-mobile-viewer": "false",
+            "cloudfront-is-smarttv-viewer": "false",
+            "cloudfront-is-tablet-viewer": "false",
+            "cloudfront-viewer-asn": "17676",
+            "cloudfront-viewer-country": "JP",
+            "content-length": "40",
+            "content-type": "application/json",
+            "host": "2ojpkjk2ejb57l7stgad5o4qiq.appsync-api.ap-northeast-1.amazonaws.com",
+            "origin": "https://ap-northeast-1.console.aws.amazon.com",
+            "priority": "u=1, i",
+            "referer": "https://ap-northeast-1.console.aws.amazon.com/",
+            "sec-ch-ua": "\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\", \"Microsoft Edge\";v=\"138\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 Edg/138.0.0.0",
+            "via": "2.0 ee337d4db5c7ebfdc8ec0798a1ede776.cloudfront.net (CloudFront)",
+            "x-amz-cf-id": "O3ZflUCq6_TzxjouyYB3zg7-kl7Ze-gXbniM2jJ3hAOfDFpPMGRu3Q==",
+            "x-amz-user-agent": "AWS-Console-AppSync/",
+            "x-amzn-appsync-is-vpce-request": "false",
+            "x-amzn-remote-ip": "x.x.x.x",
+            "x-amzn-requestid": "7ada8740-bbf4-49e8-bf45-f10b3d67159b",
+            "x-amzn-trace-id": "Root=1-68713e21-7a03739120ad60703e794b22",
+            "x-api-key": "***",
+            "x-forwarded-for": "***",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https"
+        }
+    },
+    "source": null,
+    "stash": {}
+}

@@ -5,8 +5,10 @@ use http_body::Body;
 use lambda_runtime::Diagnostic;
 pub use lambda_runtime::{
     self,
-    tower::util::{MapRequest, MapResponse},
-    tower::ServiceExt,
+    tower::{
+        util::{MapRequest, MapResponse},
+        ServiceExt,
+    },
     Error, LambdaEvent, MetadataPrelude, Service, StreamResponse,
 };
 use std::{

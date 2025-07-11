@@ -61,8 +61,6 @@ where
     pub source_ip: Vec<String>,
     #[serde(default)]
     pub default_auth_strategy: Option<String>,
-    #[serde(default)]
-    pub groups: Option<Vec<String>>,
 }
 
 pub type AppSyncOperation = String;

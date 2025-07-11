@@ -117,6 +117,112 @@ where
     pub ttl_override: Option<i64>,
 }
 
+/// `AppSyncDirectResolverEvent` represents the default payload structure sent by AWS AppSync
+/// when using **Direct Lambda Resolvers** (i.e., when both request and response mapping
+/// templates are disabled).
+///
+/// This structure includes the full AppSync **Context object**, as described in the
+/// [AppSync Direct Lambda resolver reference](https://docs.aws.amazon.com/appsync/latest/devguide/direct-lambda-reference.html).
+///
+/// It is recommended when working without VTL templates and relying on the standard
+/// AppSync-to-Lambda event format.
+///
+/// See also:
+/// - [AppSync resolver mapping template context reference](https://docs.aws.amazon.com/appsync/latest/devguide/resolver-context-reference.html)
+#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+pub struct AppSyncDirectResolverEvent<TArguments = Value, TSource = Value, TStash = Value>
+where
+    TArguments: Serialize + DeserializeOwned,
+    TSource: Serialize + DeserializeOwned,
+    TStash: Serialize + DeserializeOwned,
+{
+    #[serde(bound = "")]
+    pub arguments: Option<TArguments>,
+    pub identity: Option<AppSyncIdentity>,
+    #[serde(bound = "")]
+    pub source: Option<TSource>,
+    pub request: AppSyncRequest,
+    pub info: AppSyncInfo,
+    #[serde(default)]
+    pub prev: Option<AppSyncPrevResult>,
+    #[serde(bound = "")]
+    pub stash: TStash,
+}
+
+/// `AppSyncRequest` contains request-related metadata for a resolver invocation,
+/// including client-sent headers and optional custom domain name.
+#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AppSyncRequest {
+    #[serde(deserialize_with = "deserialize_lambda_map")]
+    #[serde(default)]
+    #[serde(bound = "")]
+    pub headers: HashMap<String, Option<String>>,
+    #[serde(default)]
+    pub domain_name: Option<String>,
+}
+
+/// `AppSyncInfo` contains metadata about the current GraphQL field being resolved.
+#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AppSyncInfo<T = Value>
+where
+    T: Serialize + DeserializeOwned,
+{
+    #[serde(default)]
+    pub selection_set_list: Vec<String>,
+    #[serde(rename = "selectionSetGraphQL")]
+    pub selection_set_graphql: String,
+    pub parent_type_name: String,
+    pub field_name: String,
+    #[serde(bound = "")]
+    pub variables: T,
+}
+
+/// `AppSyncPrevResult` contains the result of the previous step in a pipeline resolver.
+#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+pub struct AppSyncPrevResult<T = Value>
+where
+    T: Serialize + DeserializeOwned,
+{
+    #[serde(bound = "")]
+    pub result: T,
+}
+
+/// `AppSyncIdentity` represents the identity of the caller as determined by the
+/// configured AppSync authorization mechanism (IAM, Cognito, OIDC, or Lambda).
+#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[serde(untagged, rename_all = "camelCase")]
+pub enum AppSyncIdentity {
+    IAM(AppSyncIamIdentity),
+    Cognito(AppSyncCognitoIdentity),
+    OIDC(AppSyncIdentityOIDC),
+    Lambda(AppSyncIdentityLambda),
+}
+
+/// `AppSyncIdentityOIDC` represents identity information when using OIDC-based authorization.
+#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+pub struct AppSyncIdentityOIDC<T = Value>
+where
+    T: Serialize + DeserializeOwned,
+{
+    #[serde(bound = "")]
+    pub claims: T,
+    pub issuer: String,
+    pub sub: String,
+}
+
+/// `AppSyncIdentityLambda` represents identity information when using AWS Lambda
+#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AppSyncIdentityLambda<T = Value>
+where
+    T: Serialize + DeserializeOwned,
+{
+    #[serde(bound = "")]
+    pub resolver_context: T,
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -158,6 +264,16 @@ mod test {
         let parsed: AppSyncLambdaAuthorizerResponse = serde_json::from_slice(data).unwrap();
         let output: String = serde_json::to_string(&parsed).unwrap();
         let reparsed: AppSyncLambdaAuthorizerResponse = serde_json::from_slice(output.as_bytes()).unwrap();
+        assert_eq!(parsed, reparsed);
+    }
+
+    #[test]
+    #[cfg(feature = "appsync")]
+    fn example_appsync_direct_resolver() {
+        let data = include_bytes!("../../fixtures/example-appsync-direct-resolver.json");
+        let parsed: AppSyncDirectResolverEvent = serde_json::from_slice(data).unwrap();
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: AppSyncDirectResolverEvent = serde_json::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }
 }

@@ -130,15 +130,23 @@ where
 /// See also:
 /// - [AppSync resolver mapping template context reference](https://docs.aws.amazon.com/appsync/latest/devguide/resolver-context-reference.html)
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
-pub struct AppSyncResolverEvent<TArguments = Option<Value>, TSource = Option<Value>> {
-    pub arguments: TArguments,
+pub struct AppSyncResolverEvent<TArguments = Value, TSource = Value, TStash = Value>
+where
+    TArguments: Serialize + DeserializeOwned,
+    TSource: Serialize + DeserializeOwned,
+    TStash: Serialize + DeserializeOwned,
+{
+    #[serde(bound = "")]
+    pub arguments: Option<TArguments>,
     pub identity: Option<AppSyncIdentity>,
-    pub source: TSource,
+    #[serde(bound = "")]
+    pub source: Option<TSource>,
     pub request: AppSyncRequest,
     pub info: AppSyncInfo,
     #[serde(default)]
     pub prev: Option<AppSyncPrevResult>,
-    pub stash: HashMap<String, Value>,
+    #[serde(bound = "")]
+    pub stash: TStash,
 }
 
 /// `AppSyncRequest` contains request-related metadata for a resolver invocation,
@@ -146,7 +154,9 @@ pub struct AppSyncResolverEvent<TArguments = Option<Value>, TSource = Option<Val
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AppSyncRequest {
+    #[serde(deserialize_with = "deserialize_lambda_map")]
     #[serde(default)]
+    #[serde(bound = "")]
     pub headers: HashMap<String, Option<String>>,
     #[serde(default)]
     pub domain_name: Option<String>,
@@ -155,22 +165,28 @@ pub struct AppSyncRequest {
 /// `AppSyncInfo` contains metadata about the current GraphQL field being resolved.
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AppSyncInfo {
+pub struct AppSyncInfo<T = Value>
+where
+    T: Serialize + DeserializeOwned,
+{
     #[serde(default)]
     pub selection_set_list: Vec<String>,
     #[serde(rename = "selectionSetGraphQL")]
     pub selection_set_graphql: String,
     pub parent_type_name: String,
     pub field_name: String,
-    #[serde(default)]
-    pub variables: HashMap<String, Value>,
+    #[serde(bound = "")]
+    pub variables: T,
 }
 
 /// `AppSyncPrevResult` contains the result of the previous step in a pipeline resolver.
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
-pub struct AppSyncPrevResult {
-    #[serde(default)]
-    pub result: HashMap<String, Value>,
+pub struct AppSyncPrevResult<T = Value>
+where
+    T: Serialize + DeserializeOwned,
+{
+    #[serde(bound = "")]
+    pub result: T,
 }
 
 /// `AppSyncIdentity` represents the identity of the caller as determined by the
@@ -186,8 +202,12 @@ pub enum AppSyncIdentity {
 
 /// `AppSyncIdentityOIDC` represents identity information when using OIDC-based authorization.
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
-pub struct AppSyncIdentityOIDC {
-    pub claims: Value,
+pub struct AppSyncIdentityOIDC<T = Value>
+where
+    T: Serialize + DeserializeOwned,
+{
+    #[serde(bound = "")]
+    pub claims: T,
     pub issuer: String,
     pub sub: String,
 }
@@ -195,8 +215,12 @@ pub struct AppSyncIdentityOIDC {
 /// `AppSyncIdentityLambda` represents identity information when using AWS Lambda
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AppSyncIdentityLambda {
-    pub resolver_context: Value,
+pub struct AppSyncIdentityLambda<T = Value>
+where
+    T: Serialize + DeserializeOwned,
+{
+    #[serde(bound = "")]
+    pub resolver_context: T,
 }
 
 #[cfg(test)]

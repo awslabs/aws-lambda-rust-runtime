@@ -1,4 +1,8 @@
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "catch-all-fields")]
+use serde_json::Value;
+#[cfg(feature = "catch-all-fields")]
+use std::collections::HashMap;
 
 /// `CodePipelineJobEvent` contains data from an event sent from AWS CodePipeline
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
@@ -6,6 +10,12 @@ use serde::{Deserialize, Serialize};
 pub struct CodePipelineJobEvent {
     #[serde(rename = "CodePipeline.job")]
     pub code_pipeline_job: CodePipelineJob,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CodePipelineJob` represents a job from an AWS CodePipeline event
@@ -17,6 +27,12 @@ pub struct CodePipelineJob {
     #[serde(default)]
     pub account_id: Option<String>,
     pub data: CodePipelineData,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CodePipelineData` represents a job from an AWS CodePipeline event
@@ -30,6 +46,12 @@ pub struct CodePipelineData {
     pub artifact_credentials: CodePipelineArtifactCredentials,
     #[serde(default)]
     pub continuation_token: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CodePipelineActionConfiguration` represents an Action Configuration
@@ -37,6 +59,12 @@ pub struct CodePipelineData {
 #[serde(rename_all = "camelCase")]
 pub struct CodePipelineActionConfiguration {
     pub configuration: CodePipelineConfiguration,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CodePipelineConfiguration` represents a configuration for an Action Configuration
@@ -49,6 +77,12 @@ pub struct CodePipelineConfiguration {
     #[serde(default)]
     #[serde(rename = "UserParameters")]
     pub user_parameters: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CodePipelineInputArtifact` represents an input artifact
@@ -59,6 +93,12 @@ pub struct CodePipelineInputArtifact {
     pub revision: Option<String>,
     #[serde(default)]
     pub name: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CodePipelineInputLocation` represents a input location
@@ -69,6 +109,12 @@ pub struct CodePipelineInputLocation {
     #[serde(default)]
     #[serde(rename = "type")]
     pub location_type: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CodePipelineS3Location` represents an s3 input location
@@ -79,6 +125,12 @@ pub struct CodePipelineS3Location {
     pub bucket_name: Option<String>,
     #[serde(default)]
     pub object_key: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CodePipelineOutputArtifact` represents an output artifact
@@ -89,6 +141,12 @@ pub struct CodePipelineOutputArtifact {
     pub revision: Option<String>,
     #[serde(default)]
     pub name: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CodePipelineOutputLocation` represents a output location
@@ -99,6 +157,12 @@ pub struct CodePipelineOutputLocation {
     #[serde(default)]
     #[serde(rename = "type")]
     pub location_type: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CodePipelineArtifactCredentials` represents CodePipeline artifact credentials
@@ -111,6 +175,12 @@ pub struct CodePipelineArtifactCredentials {
     pub session_token: Option<String>,
     #[serde(default)]
     pub access_key_id: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[cfg(test)]

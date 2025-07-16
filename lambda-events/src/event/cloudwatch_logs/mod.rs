@@ -3,6 +3,10 @@ use serde::{
     ser::{Error as SeError, SerializeStruct},
     Deserialize, Deserializer, Serialize, Serializer,
 };
+#[cfg(feature = "catch-all-fields")]
+use serde_json::Value;
+#[cfg(feature = "catch-all-fields")]
+use std::collections::HashMap;
 use std::{fmt, io::BufReader};
 
 /// `LogsEvent` represents the raw event sent by CloudWatch
@@ -11,6 +15,12 @@ pub struct LogsEvent {
     /// `aws_logs` is gzipped and base64 encoded, it needs a custom deserializer
     #[serde(rename = "awslogs")]
     pub aws_logs: AwsLogs,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `AwsLogs` is an unmarshaled, ungzipped, CloudWatch logs event
@@ -36,6 +46,12 @@ pub struct LogData {
     pub message_type: String,
     /// Entries in the log batch
     pub log_events: Vec<LogEntry>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `LogEntry` represents a log entry from cloudwatch logs
@@ -47,6 +63,12 @@ pub struct LogEntry {
     pub timestamp: i64,
     /// Message published in the application log
     pub message: String,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 impl<'de> Deserialize<'de> for AwsLogs {

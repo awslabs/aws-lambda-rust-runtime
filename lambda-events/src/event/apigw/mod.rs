@@ -47,6 +47,12 @@ pub struct ApiGatewayProxyRequest {
     pub body: Option<String>,
     #[serde(default, deserialize_with = "deserialize_nullish_boolean")]
     pub is_base64_encoded: bool,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ApiGatewayProxyResponse` configures the response to be returned by API Gateway for the request
@@ -64,6 +70,12 @@ pub struct ApiGatewayProxyResponse {
     pub body: Option<Body>,
     #[serde(default, deserialize_with = "deserialize_nullish_boolean")]
     pub is_base64_encoded: bool,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ApiGatewayProxyRequestContext` contains the information to identify the AWS account and resources invoking the
@@ -110,6 +122,12 @@ pub struct ApiGatewayProxyRequestContext {
     #[serde(default)]
     #[serde(rename = "apiId")]
     pub apiid: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ApiGatewayV2httpRequest` contains data coming from the new HTTP API Gateway
@@ -160,6 +178,12 @@ pub struct ApiGatewayV2httpRequest {
     pub body: Option<String>,
     #[serde(default)]
     pub is_base64_encoded: bool,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ApiGatewayV2httpRequestContext` contains the information to identify the AWS account and resources invoking the Lambda function.
@@ -192,6 +216,12 @@ pub struct ApiGatewayV2httpRequestContext {
     pub http: ApiGatewayV2httpRequestContextHttpDescription,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub authentication: Option<ApiGatewayV2httpRequestContextAuthentication>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ApiGatewayRequestAuthorizer` contains authorizer information for the request context.
@@ -209,6 +239,12 @@ pub struct ApiGatewayRequestAuthorizer {
     pub fields: HashMap<String, Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub iam: Option<ApiGatewayRequestAuthorizerIamDescription>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ApiGatewayRequestAuthorizerJwtDescription` contains JWT authorizer information for the request context.
@@ -220,6 +256,12 @@ pub struct ApiGatewayRequestAuthorizerJwtDescription {
     pub claims: HashMap<String, String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub scopes: Option<Vec<String>>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ApiGatewayRequestAuthorizerIamDescription` contains IAM information for the request context.
@@ -240,6 +282,12 @@ pub struct ApiGatewayRequestAuthorizerIamDescription {
     pub user_arn: Option<String>,
     #[serde(default)]
     pub user_id: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ApiGatewayRequestAuthorizerCognitoIdentity` contains Cognito identity information for the request context.
@@ -251,6 +299,12 @@ pub struct ApiGatewayRequestAuthorizerCognitoIdentity {
     pub identity_id: Option<String>,
     #[serde(default)]
     pub identity_pool_id: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ApiGatewayV2httpRequestContextHttpDescription` contains HTTP information for the request context.
@@ -267,6 +321,12 @@ pub struct ApiGatewayV2httpRequestContextHttpDescription {
     pub source_ip: Option<String>,
     #[serde(default)]
     pub user_agent: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ApiGatewayV2httpResponse` configures the response to be returned by API Gateway V2 for the request
@@ -285,6 +345,12 @@ pub struct ApiGatewayV2httpResponse {
     #[serde(default, deserialize_with = "deserialize_nullish_boolean")]
     pub is_base64_encoded: bool,
     pub cookies: Vec<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ApiGatewayRequestIdentity` contains identity information for the request caller.
@@ -318,6 +384,12 @@ pub struct ApiGatewayRequestIdentity {
     pub user_agent: Option<String>,
     #[serde(default)]
     pub user: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ApiGatewayWebsocketProxyRequest` contains data coming from the API Gateway proxy
@@ -357,6 +429,12 @@ pub struct ApiGatewayWebsocketProxyRequest {
     pub body: Option<String>,
     #[serde(default, deserialize_with = "deserialize_nullish_boolean")]
     pub is_base64_encoded: bool,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ApiGatewayWebsocketProxyRequestContext` contains the information to identify
@@ -421,6 +499,12 @@ pub struct ApiGatewayWebsocketProxyRequestContext {
     pub disconnect_status_code: Option<i64>,
     #[serde(default)]
     pub disconnect_reason: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ApiGatewayCustomAuthorizerRequestTypeRequestIdentity` contains identity information for the request caller including certificate information if using mTLS.
@@ -435,6 +519,12 @@ pub struct ApiGatewayCustomAuthorizerRequestTypeRequestIdentity {
     pub source_ip: Option<String>,
     #[serde(default)]
     pub client_cert: Option<ApiGatewayCustomAuthorizerRequestTypeRequestIdentityClientCert>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ApiGatewayCustomAuthorizerRequestTypeRequestIdentityClientCert` contains certificate information for the request caller if using mTLS.
@@ -452,6 +542,12 @@ pub struct ApiGatewayCustomAuthorizerRequestTypeRequestIdentityClientCert {
     #[serde(rename = "subjectDN")]
     pub subject_dn: Option<String>,
     pub validity: ApiGatewayCustomAuthorizerRequestTypeRequestIdentityClientCertValidity,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ApiGatewayCustomAuthorizerRequestTypeRequestIdentityClientCertValidity` contains certificate validity information for the request caller if using mTLS.
@@ -462,6 +558,12 @@ pub struct ApiGatewayCustomAuthorizerRequestTypeRequestIdentityClientCertValidit
     pub not_after: Option<String>,
     #[serde(default)]
     pub not_before: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ApiGatewayV2httpRequestContextAuthentication` contains authentication context information for the request caller including client certificate information if using mTLS.
@@ -470,6 +572,12 @@ pub struct ApiGatewayCustomAuthorizerRequestTypeRequestIdentityClientCertValidit
 pub struct ApiGatewayV2httpRequestContextAuthentication {
     #[serde(default)]
     pub client_cert: Option<ApiGatewayV2httpRequestContextAuthenticationClientCert>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ApiGatewayV2httpRequestContextAuthenticationClientCert` contains client certificate information for the request caller if using mTLS.
@@ -487,6 +595,12 @@ pub struct ApiGatewayV2httpRequestContextAuthenticationClientCert {
     #[serde(rename = "subjectDN")]
     pub subject_dn: Option<String>,
     pub validity: ApiGatewayV2httpRequestContextAuthenticationClientCertValidity,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ApiGatewayV2httpRequestContextAuthenticationClientCertValidity` contains client certificate validity information for the request caller if using mTLS.
@@ -497,6 +611,12 @@ pub struct ApiGatewayV2httpRequestContextAuthenticationClientCertValidity {
     pub not_after: Option<String>,
     #[serde(default)]
     pub not_before: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -520,6 +640,12 @@ pub struct ApiGatewayV2CustomAuthorizerV1RequestTypeRequestContext {
     #[serde(default)]
     #[serde(rename = "apiId")]
     pub apiid: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -555,6 +681,12 @@ pub struct ApiGatewayV2CustomAuthorizerV1Request {
     #[serde(default)]
     pub stage_variables: HashMap<String, String>,
     pub request_context: ApiGatewayV2CustomAuthorizerV1RequestTypeRequestContext,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -590,6 +722,12 @@ pub struct ApiGatewayV2CustomAuthorizerV2Request {
     #[serde(deserialize_with = "deserialize_lambda_map")]
     #[serde(default)]
     pub stage_variables: HashMap<String, String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ApiGatewayCustomAuthorizerContext` represents the expected format of an API Gateway custom authorizer response.
@@ -602,6 +740,12 @@ pub struct ApiGatewayCustomAuthorizerContext {
     pub num_key: Option<i64>,
     #[serde(default, deserialize_with = "deserialize_nullish_boolean")]
     pub bool_key: bool,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ApiGatewayCustomAuthorizerRequestTypeRequestContext` represents the expected format of an API Gateway custom authorizer response.
@@ -630,6 +774,12 @@ pub struct ApiGatewayCustomAuthorizerRequestTypeRequestContext {
     #[serde(default)]
     #[serde(rename = "apiId")]
     pub apiid: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ApiGatewayCustomAuthorizerRequest` contains data coming in to a custom API Gateway authorizer function.
@@ -643,6 +793,12 @@ pub struct ApiGatewayCustomAuthorizerRequest {
     /// nolint: stylecheck
     #[serde(default)]
     pub method_arn: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ApiGatewayCustomAuthorizerRequestTypeRequest` contains data coming in to a custom API Gateway authorizer function.
@@ -680,6 +836,12 @@ pub struct ApiGatewayCustomAuthorizerRequestTypeRequest {
     #[serde(default)]
     pub stage_variables: HashMap<String, String>,
     pub request_context: ApiGatewayCustomAuthorizerRequestTypeRequestContext,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ApiGatewayCustomAuthorizerResponse` represents the expected format of an API Gateway authorization response.
@@ -696,6 +858,12 @@ where
     #[serde(bound = "", default)]
     pub context: T1,
     pub usage_identifier_key: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ApiGatewayV2CustomAuthorizerSimpleResponse` represents the simple format of an API Gateway V2 authorization response.
@@ -709,6 +877,12 @@ where
     pub is_authorized: bool,
     #[serde(bound = "", default)]
     pub context: T1,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -723,6 +897,12 @@ where
     pub policy_document: ApiGatewayCustomAuthorizerPolicy,
     #[serde(bound = "", default)]
     pub context: T1,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ApiGatewayCustomAuthorizerPolicy` represents an IAM policy
@@ -732,6 +912,12 @@ pub struct ApiGatewayCustomAuthorizerPolicy {
     #[serde(default)]
     pub version: Option<String>,
     pub statement: Vec<IamPolicyStatement>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 fn default_http_method() -> Method {
@@ -874,6 +1060,24 @@ mod test {
         assert!(output.contains(r#""queryStringParameters":{"name":"me"}"#));
         assert!(output.contains(r#""headername":["headerValue","headerValue2"]"#));
         assert!(output.contains(r#""headername":"headerValue2""#));
+    }
+
+    #[test]
+    #[cfg(all(feature = "apigw", feature = "catch-all-fields"))]
+    fn example_apigw_request_catch_all() {
+        use serde_json::json;
+
+        let data = include_bytes!("../../fixtures/example-apigw-request-catch-all.json");
+        let parsed: ApiGatewayProxyRequest = serde_json::from_slice(data).unwrap();
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: ApiGatewayProxyRequest = serde_json::from_slice(output.as_bytes()).unwrap();
+        assert_eq!(parsed, reparsed);
+
+        assert_eq!(parsed.other.get("otherField"), Some(&json!("foobar")));
+        assert_eq!(
+            parsed.request_context.identity.other.get("otherField"),
+            Some(&json!(2345))
+        );
     }
 
     #[test]

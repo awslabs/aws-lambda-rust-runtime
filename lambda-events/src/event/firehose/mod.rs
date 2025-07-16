@@ -3,6 +3,8 @@ use crate::{
     encodings::{Base64Data, MillisecondTimestamp},
 };
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "catch-all-fields")]
+use serde_json::Value;
 use std::collections::HashMap;
 
 /// `KinesisFirehoseEvent` represents the input event from Amazon Kinesis Firehose. It is used as the input parameter.
@@ -20,6 +22,12 @@ pub struct KinesisFirehoseEvent {
     #[serde(default)]
     pub region: Option<String>,
     pub records: Vec<KinesisFirehoseEventRecord>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
@@ -31,12 +39,24 @@ pub struct KinesisFirehoseEventRecord {
     pub data: Base64Data,
     #[serde(rename = "kinesisRecordMetadata")]
     pub kinesis_firehose_record_metadata: Option<KinesisFirehoseRecordMetadata>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct KinesisFirehoseResponse {
     pub records: Vec<KinesisFirehoseResponseRecord>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
@@ -49,6 +69,12 @@ pub struct KinesisFirehoseResponseRecord {
     pub result: Option<String>,
     pub data: Base64Data,
     pub metadata: KinesisFirehoseResponseRecordMetadata,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
@@ -57,6 +83,12 @@ pub struct KinesisFirehoseResponseRecordMetadata {
     #[serde(deserialize_with = "deserialize_lambda_map")]
     #[serde(default)]
     pub partition_keys: HashMap<String, String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
@@ -70,6 +102,12 @@ pub struct KinesisFirehoseRecordMetadata {
     pub sequence_number: Option<String>,
     pub subsequence_number: i64,
     pub approximate_arrival_timestamp: MillisecondTimestamp,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[cfg(test)]

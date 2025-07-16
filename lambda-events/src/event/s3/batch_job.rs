@@ -1,4 +1,8 @@
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "catch-all-fields")]
+use serde_json::Value;
+#[cfg(feature = "catch-all-fields")]
+use std::collections::HashMap;
 
 /// `S3BatchJobEvent` encapsulates the detail of a s3 batch job
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -10,6 +14,12 @@ pub struct S3BatchJobEvent {
     pub invocation_id: Option<String>,
     pub job: S3BatchJob,
     pub tasks: Vec<S3BatchJobTask>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `S3BatchJob` whichs have the job id
@@ -18,6 +28,12 @@ pub struct S3BatchJobEvent {
 pub struct S3BatchJob {
     #[serde(default)]
     pub id: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `S3BatchJobTask` represents one task in the s3 batch job and have all task details
@@ -32,6 +48,12 @@ pub struct S3BatchJobTask {
     pub s3_version_id: Option<String>,
     #[serde(default)]
     pub s3_bucket_arn: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `S3BatchJobResponse` is the response of a iven s3 batch job with the results
@@ -45,6 +67,12 @@ pub struct S3BatchJobResponse {
     #[serde(default)]
     pub invocation_id: Option<String>,
     pub results: Vec<S3BatchJobResult>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `S3BatchJobResult` represents the result of a given task
@@ -57,4 +85,10 @@ pub struct S3BatchJobResult {
     pub result_code: Option<String>,
     #[serde(default)]
     pub result_string: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }

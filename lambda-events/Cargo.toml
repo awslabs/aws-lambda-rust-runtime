@@ -125,5 +125,7 @@ streams = []
 documentdb = []
 eventbridge = ["chrono", "serde_with"]
 
+catch-all-fields = []
+
 [package.metadata.docs.rs]
 all-features = true

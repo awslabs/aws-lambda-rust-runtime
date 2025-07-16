@@ -1,5 +1,7 @@
 use chrono::{DateTime, Utc};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
+#[cfg(feature = "catch-all-fields")]
+use serde_json::Value;
 use std::collections::HashMap;
 
 use crate::custom_serde::{deserialize_lambda_map, deserialize_nullish_boolean};
@@ -11,6 +13,13 @@ use crate::custom_serde::{deserialize_lambda_map, deserialize_nullish_boolean};
 #[serde(rename_all = "PascalCase")]
 pub struct SnsEvent {
     pub records: Vec<SnsRecord>,
+
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// SnsRecord stores information about each record of a SNS event
@@ -28,6 +37,13 @@ pub struct SnsRecord {
 
     /// An SNS object representing the SNS message.
     pub sns: SnsMessage,
+
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// SnsMessage stores information about each record of a SNS event
@@ -76,6 +92,13 @@ pub struct SnsMessage {
     #[serde(deserialize_with = "deserialize_lambda_map")]
     #[serde(default)]
     pub message_attributes: HashMap<String, MessageAttribute>,
+
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// An alternate `Event` notification event to use alongside `SnsRecordObj<T>` and `SnsMessageObj<T>` if you want to deserialize an object inside your SNS messages rather than getting an `Option<String>` message
@@ -86,6 +109,13 @@ pub struct SnsMessage {
 #[serde(bound(deserialize = "T: DeserializeOwned"))]
 pub struct SnsEventObj<T: Serialize> {
     pub records: Vec<SnsRecordObj<T>>,
+
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// Alternative to `SnsRecord`, used alongside `SnsEventObj<T>` and `SnsMessageObj<T>` when deserializing nested objects from within SNS messages)
@@ -104,6 +134,13 @@ pub struct SnsRecordObj<T: Serialize> {
 
     /// An SNS object representing the SNS message.
     pub sns: SnsMessageObj<T>,
+
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// Alternate version of `SnsMessage` to use in conjunction with `SnsEventObj<T>` and `SnsRecordObj<T>` for deserializing the message into a struct of type `T`
@@ -156,6 +193,13 @@ pub struct SnsMessageObj<T: Serialize> {
     #[serde(deserialize_with = "deserialize_lambda_map")]
     #[serde(default)]
     pub message_attributes: HashMap<String, MessageAttribute>,
+
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// Structured metadata items (such as timestamps, geospatial data, signatures, and identifiers) about the message.
@@ -172,6 +216,13 @@ pub struct MessageAttribute {
     /// The user-specified message attribute value.
     #[serde(rename = "Value")]
     pub value: String,
+
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
@@ -188,6 +239,12 @@ pub struct CloudWatchAlarmPayload {
     pub alarm_arn: String,
     pub old_state_value: String,
     pub trigger: CloudWatchAlarmTrigger,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
@@ -208,6 +265,12 @@ pub struct CloudWatchAlarmTrigger {
     pub unit: Option<String>,
     #[serde(default)]
     pub dimensions: Vec<CloudWatchDimension>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
@@ -220,6 +283,12 @@ pub struct CloudWatchMetricDataQuery {
     pub period: Option<i64>,
     #[serde(default, deserialize_with = "deserialize_nullish_boolean")]
     pub return_data: bool,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
@@ -229,6 +298,12 @@ pub struct CloudWatchMetricStat {
     pub period: i64,
     pub stat: String,
     pub unit: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
@@ -238,12 +313,24 @@ pub struct CloudWatchMetric {
     pub dimensions: Vec<CloudWatchDimension>,
     pub metric_name: Option<String>,
     pub namespace: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct CloudWatchDimension {
     pub name: String,
     pub value: String,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[cfg(test)]

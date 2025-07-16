@@ -21,6 +21,9 @@ serde = { version = "1.0.204", features = ["derive"] }
 [dev-dependencies]
 reqwest = { version = "0.12.5", features = ["blocking"] }
 
+[features]
+catch-all-fields = ["aws_lambda_events/catch-all-fields"]
+
 [[bin]]
 name = "helloworld"
 path = "src/helloworld.rs"

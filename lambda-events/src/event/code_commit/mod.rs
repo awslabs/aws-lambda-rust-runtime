@@ -1,5 +1,9 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "catch-all-fields")]
+use serde_json::Value;
+#[cfg(feature = "catch-all-fields")]
+use std::collections::HashMap;
 
 use crate::custom_serde::deserialize_nullish_boolean;
 
@@ -9,6 +13,12 @@ use crate::custom_serde::deserialize_nullish_boolean;
 pub struct CodeCommitEvent {
     #[serde(rename = "Records")]
     pub records: Vec<CodeCommitRecord>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 pub type CodeCommitEventTime = DateTime<Utc>;
@@ -44,6 +54,12 @@ pub struct CodeCommitRecord {
     pub aws_region: Option<String>,
     pub event_total_parts: u64,
     pub custom_data: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CodeCommitCodeCommit` represents a CodeCommit object in a record
@@ -51,6 +67,15 @@ pub struct CodeCommitRecord {
 #[serde(rename_all = "camelCase")]
 pub struct CodeCommitCodeCommit {
     pub references: Vec<CodeCommitReference>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CodeCommitReference` represents a Reference object in a CodeCommit object
@@ -63,6 +88,12 @@ pub struct CodeCommitReference {
     pub ref_: Option<String>,
     #[serde(default, deserialize_with = "deserialize_nullish_boolean")]
     pub created: bool,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[cfg(test)]

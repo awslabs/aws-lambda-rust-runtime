@@ -1,5 +1,9 @@
 use crate::iot::*;
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "catch-all-fields")]
+use serde_json::Value;
+#[cfg(feature = "catch-all-fields")]
+use std::collections::HashMap;
 
 /// `IoTCustomAuthorizerRequest` contains data coming in to a custom IoT device gateway authorizer function.
 /// Deprecated: Use IoTCoreCustomAuthorizerRequest instead. `IoTCustomAuthorizerRequest` does not correctly model the request schema
@@ -14,6 +18,12 @@ pub struct IoTCustomAuthorizerRequest {
     pub authorization_token: Option<String>,
     #[serde(default)]
     pub token_signature: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 pub type IoTHttpContext = IoTCoreHttpContext;
@@ -33,4 +43,10 @@ pub struct IoTCustomAuthorizerResponse {
     pub disconnect_after_in_seconds: i32,
     pub refresh_after_in_seconds: i32,
     pub policy_documents: Vec<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }

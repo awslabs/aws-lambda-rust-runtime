@@ -22,6 +22,12 @@ pub struct CognitoEvent {
     #[serde(default)]
     pub region: Option<String>,
     pub version: i64,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CognitoDatasetRecord` represents a record from an AWS Cognito Sync event
@@ -34,6 +40,12 @@ pub struct CognitoDatasetRecord {
     pub old_value: Option<String>,
     #[serde(default)]
     pub op: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CognitoEventUserPoolsPreSignup` is sent by AWS Cognito User Pools when a user attempts to register
@@ -46,6 +58,12 @@ pub struct CognitoEventUserPoolsPreSignup {
     pub cognito_event_user_pools_header: CognitoEventUserPoolsHeader<CognitoEventUserPoolsPreSignupTriggerSource>,
     pub request: CognitoEventUserPoolsPreSignupRequest,
     pub response: CognitoEventUserPoolsPreSignupResponse,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
@@ -70,6 +88,12 @@ pub struct CognitoEventUserPoolsPreAuthentication {
         CognitoEventUserPoolsHeader<CognitoEventUserPoolsPreAuthenticationTriggerSource>,
     pub request: CognitoEventUserPoolsPreAuthenticationRequest,
     pub response: CognitoEventUserPoolsPreAuthenticationResponse,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
@@ -95,6 +119,12 @@ where
     pub request: CognitoEventUserPoolsPostConfirmationRequest,
     #[serde(bound = "")]
     pub response: T,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
@@ -116,6 +146,12 @@ pub struct CognitoEventUserPoolsPreTokenGen {
     pub cognito_event_user_pools_header: CognitoEventUserPoolsHeader<CognitoEventUserPoolsPreTokenGenTriggerSource>,
     pub request: CognitoEventUserPoolsPreTokenGenRequest,
     pub response: CognitoEventUserPoolsPreTokenGenResponse,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
@@ -144,6 +180,12 @@ pub struct CognitoEventUserPoolsPostAuthentication {
         CognitoEventUserPoolsHeader<CognitoEventUserPoolsPostAuthenticationTriggerSource>,
     pub request: CognitoEventUserPoolsPostAuthenticationRequest,
     pub response: CognitoEventUserPoolsPostAuthenticationResponse,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
@@ -165,6 +207,12 @@ pub struct CognitoEventUserPoolsMigrateUser {
     pub cognito_event_user_pools_migrate_user_request: CognitoEventUserPoolsMigrateUserRequest,
     #[serde(rename = "response")]
     pub cognito_event_user_pools_migrate_user_response: CognitoEventUserPoolsMigrateUserResponse,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
@@ -185,6 +233,12 @@ pub struct CognitoEventUserPoolsCallerContext {
     pub awssdk_version: Option<String>,
     #[serde(default)]
     pub client_id: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CognitoEventUserPoolsHeader` contains common data from events sent by AWS Cognito User Pools
@@ -202,6 +256,9 @@ pub struct CognitoEventUserPoolsHeader<T> {
     pub caller_context: CognitoEventUserPoolsCallerContext,
     #[serde(default)]
     pub user_name: Option<String>,
+    // no `other` catch-all, because this struct is itself #[serde(flatten)]-ed
+    // into a different struct that contains an `other` catch-all, so any
+    // additional fields will be caught there instead
 }
 
 /// `CognitoEventUserPoolsPreSignupRequest` contains the request portion of a PreSignup event
@@ -217,6 +274,12 @@ pub struct CognitoEventUserPoolsPreSignupRequest {
     #[serde(deserialize_with = "deserialize_lambda_map")]
     #[serde(default)]
     pub client_metadata: HashMap<String, String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CognitoEventUserPoolsPreSignupResponse` contains the response portion of a PreSignup event
@@ -226,6 +289,12 @@ pub struct CognitoEventUserPoolsPreSignupResponse {
     pub auto_confirm_user: bool,
     pub auto_verify_email: bool,
     pub auto_verify_phone: bool,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CognitoEventUserPoolsPreAuthenticationRequest` contains the request portion of a PreAuthentication event
@@ -238,11 +307,24 @@ pub struct CognitoEventUserPoolsPreAuthenticationRequest {
     #[serde(deserialize_with = "deserialize_lambda_map")]
     #[serde(default)]
     pub validation_data: HashMap<String, String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CognitoEventUserPoolsPreAuthenticationResponse` contains the response portion of a PreAuthentication event
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
-pub struct CognitoEventUserPoolsPreAuthenticationResponse {}
+pub struct CognitoEventUserPoolsPreAuthenticationResponse {
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
+}
 /// `CognitoEventUserPoolsPostConfirmationRequest` contains the request portion of a PostConfirmation event
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -253,11 +335,24 @@ pub struct CognitoEventUserPoolsPostConfirmationRequest {
     #[serde(deserialize_with = "deserialize_lambda_map")]
     #[serde(default)]
     pub client_metadata: HashMap<String, String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CognitoEventUserPoolsPostConfirmationResponse` contains the response portion of a PostConfirmation event
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
-pub struct CognitoEventUserPoolsPostConfirmationResponse {}
+pub struct CognitoEventUserPoolsPostConfirmationResponse {
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
+}
 
 /// `CognitoEventUserPoolsPreTokenGenRequest` contains request portion of PreTokenGen event
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -270,6 +365,12 @@ pub struct CognitoEventUserPoolsPreTokenGenRequest {
     #[serde(deserialize_with = "deserialize_lambda_map")]
     #[serde(default)]
     pub client_metadata: HashMap<String, String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CognitoEventUserPoolsPreTokenGenResponse` contains the response portion of  a PreTokenGen event
@@ -277,6 +378,12 @@ pub struct CognitoEventUserPoolsPreTokenGenRequest {
 #[serde(rename_all = "camelCase")]
 pub struct CognitoEventUserPoolsPreTokenGenResponse {
     pub claims_override_details: Option<ClaimsOverrideDetails>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CognitoEventUserPoolsPreTokenGenV2` is sent by AWS Cognito User Pools when a user attempts to retrieve
@@ -289,6 +396,12 @@ pub struct CognitoEventUserPoolsPreTokenGenV2 {
     pub cognito_event_user_pools_header: CognitoEventUserPoolsHeader<CognitoEventUserPoolsPreTokenGenTriggerSource>,
     pub request: CognitoEventUserPoolsPreTokenGenRequestV2,
     pub response: CognitoEventUserPoolsPreTokenGenResponseV2,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CognitoEventUserPoolsPreTokenGenRequestV2` contains request portion of PreTokenGenV2 event
@@ -303,12 +416,24 @@ pub struct CognitoEventUserPoolsPreTokenGenRequestV2 {
     #[serde(default)]
     pub client_metadata: HashMap<String, String>,
     pub scopes: Vec<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CognitoEventUserPoolsPreTokenGenResponseV2 {
     pub claims_and_scope_override_details: Option<ClaimsAndScopeOverrideDetailsV2>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ClaimsAndScopeOverrideDetailsV2` allows lambda to add, suppress or override claims in the token
@@ -318,6 +443,12 @@ pub struct ClaimsAndScopeOverrideDetailsV2 {
     pub group_override_details: GroupConfiguration,
     pub id_token_generation: Option<CognitoIdTokenGenerationV2>,
     pub access_token_generation: Option<CognitoAccessTokenGenerationV2>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CognitoIdTokenGenerationV2` allows lambda to customize the ID Token before generation
@@ -326,6 +457,12 @@ pub struct ClaimsAndScopeOverrideDetailsV2 {
 pub struct CognitoIdTokenGenerationV2 {
     pub claims_to_add_or_override: HashMap<String, String>,
     pub claims_to_suppress: Vec<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CognitoAccessTokenGenerationV2` allows lambda to customize the Access Token before generation
@@ -336,6 +473,12 @@ pub struct CognitoAccessTokenGenerationV2 {
     pub claims_to_suppress: Vec<String>,
     pub scopes_to_add: Vec<String>,
     pub scopes_to_suppress: Vec<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CognitoEventUserPoolsPostAuthenticationRequest` contains the request portion of a PostAuthentication event
@@ -349,11 +492,24 @@ pub struct CognitoEventUserPoolsPostAuthenticationRequest {
     #[serde(deserialize_with = "deserialize_lambda_map")]
     #[serde(default)]
     pub client_metadata: HashMap<String, String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CognitoEventUserPoolsPostAuthenticationResponse` contains the response portion of a PostAuthentication event
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
-pub struct CognitoEventUserPoolsPostAuthenticationResponse {}
+pub struct CognitoEventUserPoolsPostAuthenticationResponse {
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
+}
 /// `CognitoEventUserPoolsMigrateUserRequest` contains the request portion of a MigrateUser event
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -366,6 +522,12 @@ pub struct CognitoEventUserPoolsMigrateUserRequest {
     #[serde(deserialize_with = "deserialize_lambda_map")]
     #[serde(default)]
     pub client_metadata: HashMap<String, String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CognitoEventUserPoolsMigrateUserResponse` contains the response portion of a MigrateUser event
@@ -383,6 +545,12 @@ pub struct CognitoEventUserPoolsMigrateUserResponse {
     pub desired_delivery_mediums: Option<Vec<String>>,
     #[serde(default, deserialize_with = "deserialize_nullish_boolean")]
     pub force_alias_creation: bool,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ClaimsOverrideDetails` allows lambda to add, suppress or override claims in the token
@@ -394,6 +562,12 @@ pub struct ClaimsOverrideDetails {
     #[serde(default)]
     pub claims_to_add_or_override: HashMap<String, String>,
     pub claims_to_suppress: Vec<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `GroupConfiguration` allows lambda to override groups, roles and set a preferred role
@@ -403,6 +577,12 @@ pub struct GroupConfiguration {
     pub groups_to_override: Vec<String>,
     pub iam_roles_to_override: Vec<String>,
     pub preferred_role: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CognitoEventUserPoolsChallengeResult` represents a challenge that is presented to the user in the authentication
@@ -415,6 +595,12 @@ pub struct CognitoEventUserPoolsChallengeResult {
     pub challenge_result: bool,
     #[serde(default)]
     pub challenge_metadata: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CognitoEventUserPoolsDefineAuthChallengeRequest` defines auth challenge request parameters
@@ -430,6 +616,12 @@ pub struct CognitoEventUserPoolsDefineAuthChallengeRequest {
     pub client_metadata: HashMap<String, String>,
     #[serde(default)]
     pub user_not_found: bool,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CognitoEventUserPoolsDefineAuthChallengeResponse` defines auth challenge response parameters
@@ -442,6 +634,12 @@ pub struct CognitoEventUserPoolsDefineAuthChallengeResponse {
     pub issue_tokens: bool,
     #[serde(default, deserialize_with = "deserialize_nullish_boolean")]
     pub fail_authentication: bool,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CognitoEventUserPoolsDefineAuthChallenge` sent by AWS Cognito User Pools to initiate custom authentication flow
@@ -454,6 +652,12 @@ pub struct CognitoEventUserPoolsDefineAuthChallenge {
         CognitoEventUserPoolsHeader<CognitoEventUserPoolsDefineAuthChallengeTriggerSource>,
     pub request: CognitoEventUserPoolsDefineAuthChallengeRequest,
     pub response: CognitoEventUserPoolsDefineAuthChallengeResponse,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
@@ -478,6 +682,12 @@ pub struct CognitoEventUserPoolsCreateAuthChallengeRequest {
     pub client_metadata: HashMap<String, String>,
     #[serde(default)]
     pub user_not_found: bool,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CognitoEventUserPoolsCreateAuthChallengeResponse` defines create auth challenge response parameters
@@ -492,6 +702,12 @@ pub struct CognitoEventUserPoolsCreateAuthChallengeResponse {
     pub private_challenge_parameters: HashMap<String, String>,
     #[serde(default)]
     pub challenge_metadata: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CognitoEventUserPoolsCreateAuthChallenge` sent by AWS Cognito User Pools to create a challenge to present to the user
@@ -504,6 +720,12 @@ pub struct CognitoEventUserPoolsCreateAuthChallenge {
         CognitoEventUserPoolsHeader<CognitoEventUserPoolsCreateAuthChallengeTriggerSource>,
     pub request: CognitoEventUserPoolsCreateAuthChallengeRequest,
     pub response: CognitoEventUserPoolsCreateAuthChallengeResponse,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
@@ -534,6 +756,12 @@ where
     pub client_metadata: HashMap<String, String>,
     #[serde(default)]
     pub user_not_found: bool,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CognitoEventUserPoolsVerifyAuthChallengeResponse` defines verify auth challenge response parameters
@@ -542,6 +770,12 @@ where
 pub struct CognitoEventUserPoolsVerifyAuthChallengeResponse {
     #[serde(default, deserialize_with = "deserialize_nullish_boolean")]
     pub answer_correct: bool,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CognitoEventUserPoolsVerifyAuthChallenge` sent by AWS Cognito User Pools to verify if the response from the end user
@@ -555,6 +789,12 @@ pub struct CognitoEventUserPoolsVerifyAuthChallenge {
         CognitoEventUserPoolsHeader<CognitoEventUserPoolsVerifyAuthChallengeTriggerSource>,
     pub request: CognitoEventUserPoolsVerifyAuthChallengeRequest,
     pub response: CognitoEventUserPoolsVerifyAuthChallengeResponse,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
@@ -574,6 +814,12 @@ pub struct CognitoEventUserPoolsCustomMessage {
     pub cognito_event_user_pools_header: CognitoEventUserPoolsHeader<CognitoEventUserPoolsCustomMessageTriggerSource>,
     pub request: CognitoEventUserPoolsCustomMessageRequest,
     pub response: CognitoEventUserPoolsCustomMessageResponse,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
@@ -614,6 +860,12 @@ where
     #[serde(deserialize_with = "deserialize_lambda_map")]
     #[serde(default)]
     pub client_metadata: HashMap<String, String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `CognitoEventUserPoolsCustomMessageResponse` contains the response portion of a CustomMessage event
@@ -626,6 +878,12 @@ pub struct CognitoEventUserPoolsCustomMessageResponse {
     pub email_message: Option<String>,
     #[serde(default)]
     pub email_subject: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[cfg(test)]
@@ -855,7 +1113,8 @@ mod test {
 
         assert!(parsed.request.user_not_found);
 
-        let output: String = serde_json::to_string(&parsed).unwrap();
+        let output: String = serde_json::to_string_pretty(&parsed).unwrap();
+        println!("output is: {output}");
         let reparsed: CognitoEventUserPoolsVerifyAuthChallenge = serde_json::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
     }

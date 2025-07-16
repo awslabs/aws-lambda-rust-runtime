@@ -7,6 +7,10 @@ use crate::{
 use http::{HeaderMap, Method};
 use query_map::QueryMap;
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "catch-all-fields")]
+use serde_json::Value;
+#[cfg(feature = "catch-all-fields")]
+use std::collections::HashMap;
 
 /// `AlbTargetGroupRequest` contains data originating from the ALB Lambda target group integration
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
@@ -30,6 +34,12 @@ pub struct AlbTargetGroupRequest {
     #[serde(default, deserialize_with = "deserialize_nullish_boolean")]
     pub is_base64_encoded: bool,
     pub body: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `AlbTargetGroupRequestContext` contains the information to identify the load balancer invoking the lambda
@@ -37,6 +47,12 @@ pub struct AlbTargetGroupRequest {
 #[serde(rename_all = "camelCase")]
 pub struct AlbTargetGroupRequestContext {
     pub elb: ElbContext,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `ElbContext` contains the information to identify the ARN invoking the lambda
@@ -46,6 +62,12 @@ pub struct ElbContext {
     /// nolint: stylecheck
     #[serde(default)]
     pub target_group_arn: Option<String>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `AlbTargetGroupResponse` configures the response to be returned by the ALB Lambda target group for the request
@@ -65,6 +87,12 @@ pub struct AlbTargetGroupResponse {
     pub body: Option<Body>,
     #[serde(default, deserialize_with = "deserialize_nullish_boolean")]
     pub is_base64_encoded: bool,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 #[cfg(test)]

@@ -23,6 +23,7 @@ apigw_http = []
 apigw_websockets = []
 alb = []
 pass_through = []
+catch-all-fields = ["aws_lambda_events/catch-all-fields"]
 tracing = ["lambda_runtime/tracing"] # enables access to the Tracing utilities
 opentelemetry = ["lambda_runtime/opentelemetry"] # enables access to the OpenTelemetry layers and utilities
 anyhow = ["lambda_runtime/anyhow"] # enables From<T> for Diagnostic for anyhow error types, see README.md for more info

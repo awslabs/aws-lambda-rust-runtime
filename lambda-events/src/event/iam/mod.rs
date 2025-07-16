@@ -1,3 +1,5 @@
+#[cfg(feature = "catch-all-fields")]
+use serde_json::Value;
 use std::{borrow::Cow, collections::HashMap, fmt};
 
 use serde::{
@@ -12,6 +14,12 @@ pub struct IamPolicyDocument {
     #[serde(default)]
     pub version: Option<String>,
     pub statement: Vec<IamPolicyStatement>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 /// `IamPolicyStatement` represents one statement from IAM policy with action, effect and resource
@@ -27,6 +35,12 @@ pub struct IamPolicyStatement {
     #[serde(default, deserialize_with = "deserialize_policy_condition")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub condition: Option<IamPolicyCondition>,
+    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[serde(flatten)]
+    pub other: HashMap<String, Value>,
 }
 
 pub type IamPolicyCondition = HashMap<String, HashMap<String, Vec<String>>>;
@@ -178,6 +192,8 @@ mod tests {
             effect: IamPolicyEffect::Allow,
             resource: vec!["some:resource".into()],
             condition: None,
+            #[cfg(feature = "catch-all-fields")]
+            other: Default::default(),
         };
         let policy_ser = serde_json::to_value(policy).unwrap();
 

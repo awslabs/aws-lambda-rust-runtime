@@ -26,6 +26,7 @@ pub struct KinesisFirehoseEvent {
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
     #[serde(flatten)]
     pub other: serde_json::Map<String, Value>,
 }
@@ -43,6 +44,7 @@ pub struct KinesisFirehoseEventRecord {
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
     #[serde(flatten)]
     pub other: serde_json::Map<String, Value>,
 }
@@ -55,6 +57,7 @@ pub struct KinesisFirehoseResponse {
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
     #[serde(flatten)]
     pub other: serde_json::Map<String, Value>,
 }
@@ -73,6 +76,7 @@ pub struct KinesisFirehoseResponseRecord {
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
     #[serde(flatten)]
     pub other: serde_json::Map<String, Value>,
 }
@@ -87,6 +91,7 @@ pub struct KinesisFirehoseResponseRecordMetadata {
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
     #[serde(flatten)]
     pub other: serde_json::Map<String, Value>,
 }
@@ -106,6 +111,7 @@ pub struct KinesisFirehoseRecordMetadata {
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
     #[serde(flatten)]
     pub other: serde_json::Map<String, Value>,
 }

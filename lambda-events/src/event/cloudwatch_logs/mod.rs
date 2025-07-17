@@ -4,6 +4,7 @@ use serde::{
     Deserialize, Deserializer, Serialize, Serializer,
 };
 #[cfg(feature = "catch-all-fields")]
+#[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
 use serde_json::Value;
 
 use std::{fmt, io::BufReader};
@@ -18,6 +19,7 @@ pub struct LogsEvent {
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
     #[serde(flatten)]
     pub other: serde_json::Map<String, Value>,
 }
@@ -49,6 +51,7 @@ pub struct LogData {
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
     #[serde(flatten)]
     pub other: serde_json::Map<String, Value>,
 }
@@ -66,6 +69,7 @@ pub struct LogEntry {
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
     #[serde(flatten)]
     pub other: serde_json::Map<String, Value>,
 }

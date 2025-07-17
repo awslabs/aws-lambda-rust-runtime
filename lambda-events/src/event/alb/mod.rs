@@ -9,8 +9,6 @@ use query_map::QueryMap;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "catch-all-fields")]
 use serde_json::Value;
-#[cfg(feature = "catch-all-fields")]
-use std::collections::HashMap;
 
 /// `AlbTargetGroupRequest` contains data originating from the ALB Lambda target group integration
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
@@ -39,7 +37,7 @@ pub struct AlbTargetGroupRequest {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `AlbTargetGroupRequestContext` contains the information to identify the load balancer invoking the lambda
@@ -52,7 +50,7 @@ pub struct AlbTargetGroupRequestContext {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `ElbContext` contains the information to identify the ARN invoking the lambda
@@ -67,7 +65,7 @@ pub struct ElbContext {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `AlbTargetGroupResponse` configures the response to be returned by the ALB Lambda target group for the request
@@ -92,7 +90,7 @@ pub struct AlbTargetGroupResponse {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[cfg(test)]

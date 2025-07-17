@@ -19,7 +19,7 @@ pub struct Event {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -32,7 +32,7 @@ pub struct EventDescription {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -45,5 +45,5 @@ pub struct Entity {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }

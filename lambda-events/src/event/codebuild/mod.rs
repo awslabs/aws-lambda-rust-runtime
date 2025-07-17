@@ -5,8 +5,6 @@ use crate::{
 use chrono::{DateTime, Utc};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
-#[cfg(feature = "catch-all-fields")]
-use std::collections::HashMap;
 
 pub type CodeBuildPhaseStatus = String;
 
@@ -51,7 +49,7 @@ pub struct CodeBuildEvent {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CodeBuildEventDetail` represents the all details related to the code build event
@@ -97,7 +95,7 @@ pub struct CodeBuildEventDetail {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CodeBuildEventAdditionalInformation` represents additional information to the code build event
@@ -128,7 +126,7 @@ pub struct CodeBuildEventAdditionalInformation {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CodeBuildArtifact` represents the artifact provided to build
@@ -148,7 +146,7 @@ pub struct CodeBuildArtifact {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CodeBuildEnvironment` represents the environment for a build
@@ -171,7 +169,7 @@ pub struct CodeBuildEnvironment {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CodeBuildEnvironmentVariable` encapsulate environment variables for the code build
@@ -192,7 +190,7 @@ pub struct CodeBuildEnvironmentVariable {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CodeBuildSource` represent the code source will be build
@@ -208,7 +206,7 @@ pub struct CodeBuildSource {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CodeBuildLogs` gives the log details of a code build
@@ -229,7 +227,7 @@ pub struct CodeBuildLogs {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CodeBuildPhase` represents the phase of a build and its details
@@ -261,7 +259,7 @@ where
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 pub type CodeBuildTime = DateTime<Utc>;

@@ -1,8 +1,6 @@
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "catch-all-fields")]
 use serde_json::Value;
-#[cfg(feature = "catch-all-fields")]
-use std::collections::HashMap;
 
 use crate::custom_serde::deserialize_nullish_boolean;
 
@@ -18,7 +16,7 @@ pub struct MatchmakingSearching {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -32,7 +30,7 @@ pub struct Ticket {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -48,7 +46,7 @@ pub struct Player {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -60,7 +58,7 @@ pub struct GameSessionInfo {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -78,7 +76,7 @@ pub struct PotentialMatchCreated {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -92,7 +90,7 @@ pub struct RuleEvaluationMetric {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -107,7 +105,7 @@ pub struct AcceptMatch {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -123,7 +121,7 @@ pub struct AcceptMatchCompleted {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -138,7 +136,7 @@ pub struct MatchmakingSucceeded {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -155,7 +153,7 @@ pub struct MatchmakingTimedOut {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -172,7 +170,7 @@ pub struct MatchmakingCancelled {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -190,5 +188,5 @@ pub struct MatchmakingFailed {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }

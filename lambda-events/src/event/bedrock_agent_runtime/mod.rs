@@ -36,7 +36,7 @@ pub struct AgentEvent {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -49,7 +49,7 @@ pub struct RequestBody {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -62,7 +62,7 @@ pub struct Content {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -79,7 +79,7 @@ pub struct Property {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -96,7 +96,7 @@ pub struct Parameter {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -115,7 +115,7 @@ pub struct Agent {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[cfg(test)]

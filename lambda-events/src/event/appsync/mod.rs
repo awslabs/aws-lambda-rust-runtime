@@ -22,7 +22,7 @@ where
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `AppSyncIamIdentity` contains information about the caller authed via IAM.
@@ -49,7 +49,7 @@ pub struct AppSyncIamIdentity {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `AppSyncCognitoIdentity` contains information about the caller authed via Cognito.
@@ -78,7 +78,7 @@ where
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 pub type AppSyncOperation = String;
@@ -95,7 +95,7 @@ pub struct AppSyncLambdaAuthorizerRequest {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `AppSyncLambdaAuthorizerRequestContext` contains the parameters of the AppSync invocation which triggered
@@ -127,7 +127,7 @@ where
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `AppSyncLambdaAuthorizerResponse` represents the expected format of an authorization response to AppSync.
@@ -150,7 +150,7 @@ where
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `AppSyncDirectResolverEvent` represents the default payload structure sent by AWS AppSync
@@ -188,7 +188,7 @@ where
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `AppSyncRequest` contains request-related metadata for a resolver invocation,
@@ -207,7 +207,7 @@ pub struct AppSyncRequest {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `AppSyncInfo` contains metadata about the current GraphQL field being resolved.
@@ -230,7 +230,7 @@ where
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `AppSyncPrevResult` contains the result of the previous step in a pipeline resolver.
@@ -246,7 +246,7 @@ where
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `AppSyncIdentity` represents the identity of the caller as determined by the
@@ -275,7 +275,7 @@ where
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `AppSyncIdentityLambda` represents identity information when using AWS Lambda
@@ -292,7 +292,7 @@ where
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[cfg(test)]

@@ -1,8 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
-#[cfg(feature = "catch-all-fields")]
-use std::collections::HashMap;
 
 pub mod cloudtrail;
 pub mod codedeploy;
@@ -53,5 +51,5 @@ where
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }

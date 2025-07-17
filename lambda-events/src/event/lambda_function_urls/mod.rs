@@ -32,7 +32,7 @@ pub struct LambdaFunctionUrlRequest {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `LambdaFunctionUrlRequestContext` contains the information to identify the AWS account and resources invoking the Lambda function.
@@ -63,7 +63,7 @@ pub struct LambdaFunctionUrlRequestContext {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `LambdaFunctionUrlRequestContextAuthorizerDescription` contains authorizer information for the request context.
@@ -76,7 +76,7 @@ pub struct LambdaFunctionUrlRequestContextAuthorizerDescription {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `LambdaFunctionUrlRequestContextAuthorizerIamDescription` contains IAM information for the request context.
@@ -98,7 +98,7 @@ pub struct LambdaFunctionUrlRequestContextAuthorizerIamDescription {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `LambdaFunctionUrlRequestContextHttpDescription` contains HTTP information for the request context.
@@ -120,7 +120,7 @@ pub struct LambdaFunctionUrlRequestContextHttpDescription {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `LambdaFunctionUrlResponse` configures the HTTP response to be returned by Lambda Function URL for the request.
@@ -140,5 +140,5 @@ pub struct LambdaFunctionUrlResponse {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }

@@ -2,8 +2,6 @@ use crate::iot::*;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "catch-all-fields")]
 use serde_json::Value;
-#[cfg(feature = "catch-all-fields")]
-use std::collections::HashMap;
 
 /// `IoTCustomAuthorizerRequest` contains data coming in to a custom IoT device gateway authorizer function.
 /// Deprecated: Use IoTCoreCustomAuthorizerRequest instead. `IoTCustomAuthorizerRequest` does not correctly model the request schema
@@ -23,7 +21,7 @@ pub struct IoTCustomAuthorizerRequest {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 pub type IoTHttpContext = IoTCoreHttpContext;
@@ -48,5 +46,5 @@ pub struct IoTCustomAuthorizerResponse {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }

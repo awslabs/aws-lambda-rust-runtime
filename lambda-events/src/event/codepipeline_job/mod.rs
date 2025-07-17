@@ -1,8 +1,6 @@
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "catch-all-fields")]
 use serde_json::Value;
-#[cfg(feature = "catch-all-fields")]
-use std::collections::HashMap;
 
 /// `CodePipelineJobEvent` contains data from an event sent from AWS CodePipeline
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
@@ -15,7 +13,7 @@ pub struct CodePipelineJobEvent {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CodePipelineJob` represents a job from an AWS CodePipeline event
@@ -32,7 +30,7 @@ pub struct CodePipelineJob {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CodePipelineData` represents a job from an AWS CodePipeline event
@@ -51,7 +49,7 @@ pub struct CodePipelineData {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CodePipelineActionConfiguration` represents an Action Configuration
@@ -64,7 +62,7 @@ pub struct CodePipelineActionConfiguration {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CodePipelineConfiguration` represents a configuration for an Action Configuration
@@ -82,7 +80,7 @@ pub struct CodePipelineConfiguration {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CodePipelineInputArtifact` represents an input artifact
@@ -98,7 +96,7 @@ pub struct CodePipelineInputArtifact {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CodePipelineInputLocation` represents a input location
@@ -114,7 +112,7 @@ pub struct CodePipelineInputLocation {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CodePipelineS3Location` represents an s3 input location
@@ -130,7 +128,7 @@ pub struct CodePipelineS3Location {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CodePipelineOutputArtifact` represents an output artifact
@@ -146,7 +144,7 @@ pub struct CodePipelineOutputArtifact {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CodePipelineOutputLocation` represents a output location
@@ -162,7 +160,7 @@ pub struct CodePipelineOutputLocation {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CodePipelineArtifactCredentials` represents CodePipeline artifact credentials
@@ -180,7 +178,7 @@ pub struct CodePipelineArtifactCredentials {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[cfg(test)]

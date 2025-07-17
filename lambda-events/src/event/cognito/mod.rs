@@ -27,7 +27,7 @@ pub struct CognitoEvent {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CognitoDatasetRecord` represents a record from an AWS Cognito Sync event
@@ -45,7 +45,7 @@ pub struct CognitoDatasetRecord {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CognitoEventUserPoolsPreSignup` is sent by AWS Cognito User Pools when a user attempts to register
@@ -63,7 +63,7 @@ pub struct CognitoEventUserPoolsPreSignup {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
@@ -93,7 +93,7 @@ pub struct CognitoEventUserPoolsPreAuthentication {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
@@ -124,7 +124,7 @@ where
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
@@ -151,7 +151,7 @@ pub struct CognitoEventUserPoolsPreTokenGen {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
@@ -185,7 +185,7 @@ pub struct CognitoEventUserPoolsPostAuthentication {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
@@ -212,7 +212,7 @@ pub struct CognitoEventUserPoolsMigrateUser {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
@@ -238,7 +238,7 @@ pub struct CognitoEventUserPoolsCallerContext {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CognitoEventUserPoolsHeader` contains common data from events sent by AWS Cognito User Pools
@@ -279,7 +279,7 @@ pub struct CognitoEventUserPoolsPreSignupRequest {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CognitoEventUserPoolsPreSignupResponse` contains the response portion of a PreSignup event
@@ -294,7 +294,7 @@ pub struct CognitoEventUserPoolsPreSignupResponse {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CognitoEventUserPoolsPreAuthenticationRequest` contains the request portion of a PreAuthentication event
@@ -312,7 +312,7 @@ pub struct CognitoEventUserPoolsPreAuthenticationRequest {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CognitoEventUserPoolsPreAuthenticationResponse` contains the response portion of a PreAuthentication event
@@ -323,7 +323,7 @@ pub struct CognitoEventUserPoolsPreAuthenticationResponse {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 /// `CognitoEventUserPoolsPostConfirmationRequest` contains the request portion of a PostConfirmation event
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -340,7 +340,7 @@ pub struct CognitoEventUserPoolsPostConfirmationRequest {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CognitoEventUserPoolsPostConfirmationResponse` contains the response portion of a PostConfirmation event
@@ -351,7 +351,7 @@ pub struct CognitoEventUserPoolsPostConfirmationResponse {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CognitoEventUserPoolsPreTokenGenRequest` contains request portion of PreTokenGen event
@@ -370,7 +370,7 @@ pub struct CognitoEventUserPoolsPreTokenGenRequest {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CognitoEventUserPoolsPreTokenGenResponse` contains the response portion of  a PreTokenGen event
@@ -383,7 +383,7 @@ pub struct CognitoEventUserPoolsPreTokenGenResponse {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CognitoEventUserPoolsPreTokenGenV2` is sent by AWS Cognito User Pools when a user attempts to retrieve
@@ -401,7 +401,7 @@ pub struct CognitoEventUserPoolsPreTokenGenV2 {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CognitoEventUserPoolsPreTokenGenRequestV2` contains request portion of PreTokenGenV2 event
@@ -421,7 +421,7 @@ pub struct CognitoEventUserPoolsPreTokenGenRequestV2 {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -433,7 +433,7 @@ pub struct CognitoEventUserPoolsPreTokenGenResponseV2 {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `ClaimsAndScopeOverrideDetailsV2` allows lambda to add, suppress or override claims in the token
@@ -448,7 +448,7 @@ pub struct ClaimsAndScopeOverrideDetailsV2 {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CognitoIdTokenGenerationV2` allows lambda to customize the ID Token before generation
@@ -462,7 +462,7 @@ pub struct CognitoIdTokenGenerationV2 {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CognitoAccessTokenGenerationV2` allows lambda to customize the Access Token before generation
@@ -478,7 +478,7 @@ pub struct CognitoAccessTokenGenerationV2 {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CognitoEventUserPoolsPostAuthenticationRequest` contains the request portion of a PostAuthentication event
@@ -497,7 +497,7 @@ pub struct CognitoEventUserPoolsPostAuthenticationRequest {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CognitoEventUserPoolsPostAuthenticationResponse` contains the response portion of a PostAuthentication event
@@ -508,7 +508,7 @@ pub struct CognitoEventUserPoolsPostAuthenticationResponse {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 /// `CognitoEventUserPoolsMigrateUserRequest` contains the request portion of a MigrateUser event
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -527,7 +527,7 @@ pub struct CognitoEventUserPoolsMigrateUserRequest {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CognitoEventUserPoolsMigrateUserResponse` contains the response portion of a MigrateUser event
@@ -550,7 +550,7 @@ pub struct CognitoEventUserPoolsMigrateUserResponse {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `ClaimsOverrideDetails` allows lambda to add, suppress or override claims in the token
@@ -567,7 +567,7 @@ pub struct ClaimsOverrideDetails {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `GroupConfiguration` allows lambda to override groups, roles and set a preferred role
@@ -582,7 +582,7 @@ pub struct GroupConfiguration {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CognitoEventUserPoolsChallengeResult` represents a challenge that is presented to the user in the authentication
@@ -600,7 +600,7 @@ pub struct CognitoEventUserPoolsChallengeResult {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CognitoEventUserPoolsDefineAuthChallengeRequest` defines auth challenge request parameters
@@ -621,7 +621,7 @@ pub struct CognitoEventUserPoolsDefineAuthChallengeRequest {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CognitoEventUserPoolsDefineAuthChallengeResponse` defines auth challenge response parameters
@@ -639,7 +639,7 @@ pub struct CognitoEventUserPoolsDefineAuthChallengeResponse {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CognitoEventUserPoolsDefineAuthChallenge` sent by AWS Cognito User Pools to initiate custom authentication flow
@@ -657,7 +657,7 @@ pub struct CognitoEventUserPoolsDefineAuthChallenge {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
@@ -687,7 +687,7 @@ pub struct CognitoEventUserPoolsCreateAuthChallengeRequest {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CognitoEventUserPoolsCreateAuthChallengeResponse` defines create auth challenge response parameters
@@ -707,7 +707,7 @@ pub struct CognitoEventUserPoolsCreateAuthChallengeResponse {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CognitoEventUserPoolsCreateAuthChallenge` sent by AWS Cognito User Pools to create a challenge to present to the user
@@ -725,7 +725,7 @@ pub struct CognitoEventUserPoolsCreateAuthChallenge {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
@@ -761,7 +761,7 @@ where
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CognitoEventUserPoolsVerifyAuthChallengeResponse` defines verify auth challenge response parameters
@@ -775,7 +775,7 @@ pub struct CognitoEventUserPoolsVerifyAuthChallengeResponse {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CognitoEventUserPoolsVerifyAuthChallenge` sent by AWS Cognito User Pools to verify if the response from the end user
@@ -794,7 +794,7 @@ pub struct CognitoEventUserPoolsVerifyAuthChallenge {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
@@ -819,7 +819,7 @@ pub struct CognitoEventUserPoolsCustomMessage {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, Default)]
@@ -865,7 +865,7 @@ where
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `CognitoEventUserPoolsCustomMessageResponse` contains the response portion of a CustomMessage event
@@ -883,7 +883,7 @@ pub struct CognitoEventUserPoolsCustomMessageResponse {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[cfg(test)]

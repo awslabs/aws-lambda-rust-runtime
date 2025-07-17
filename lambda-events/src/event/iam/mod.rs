@@ -19,7 +19,7 @@ pub struct IamPolicyDocument {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `IamPolicyStatement` represents one statement from IAM policy with action, effect and resource
@@ -40,7 +40,7 @@ pub struct IamPolicyStatement {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 pub type IamPolicyCondition = HashMap<String, HashMap<String, Vec<String>>>;

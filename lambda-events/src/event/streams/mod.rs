@@ -1,8 +1,6 @@
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "catch-all-fields")]
 use serde_json::Value;
-#[cfg(feature = "catch-all-fields")]
-use std::collections::HashMap;
 
 /// `KinesisEventResponse` is the outer structure to report batch item failures for KinesisEvent.
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
@@ -14,7 +12,7 @@ pub struct KinesisEventResponse {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `KinesisBatchItemFailure` is the individual record which failed processing.
@@ -28,7 +26,7 @@ pub struct KinesisBatchItemFailure {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `DynamoDbEventResponse` is the outer structure to report batch item failures for DynamoDBEvent.
@@ -41,7 +39,7 @@ pub struct DynamoDbEventResponse {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `DynamoDbBatchItemFailure` is the individual record which failed processing.
@@ -55,7 +53,7 @@ pub struct DynamoDbBatchItemFailure {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `SqsEventResponse` is the outer structure to report batch item failures for SQSEvent.
@@ -68,7 +66,7 @@ pub struct SqsEventResponse {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `SqsBatchItemFailure` is the individual record which failed processing.
@@ -82,5 +80,5 @@ pub struct SqsBatchItemFailure {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }

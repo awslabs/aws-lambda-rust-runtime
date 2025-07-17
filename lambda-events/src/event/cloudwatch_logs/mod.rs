@@ -5,8 +5,7 @@ use serde::{
 };
 #[cfg(feature = "catch-all-fields")]
 use serde_json::Value;
-#[cfg(feature = "catch-all-fields")]
-use std::collections::HashMap;
+
 use std::{fmt, io::BufReader};
 
 /// `LogsEvent` represents the raw event sent by CloudWatch
@@ -20,7 +19,7 @@ pub struct LogsEvent {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `AwsLogs` is an unmarshaled, ungzipped, CloudWatch logs event
@@ -51,7 +50,7 @@ pub struct LogData {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `LogEntry` represents a log entry from cloudwatch logs
@@ -68,7 +67,7 @@ pub struct LogEntry {
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
     #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub other: serde_json::Map<String, Value>,
 }
 
 impl<'de> Deserialize<'de> for AwsLogs {

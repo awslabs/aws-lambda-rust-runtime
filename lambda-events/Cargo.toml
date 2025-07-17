@@ -1,6 +1,6 @@
 [package]
 name = "aws_lambda_events"
-version = "0.16.1"
+version = "0.17.0"
 rust-version = "1.81.0"
 description = "AWS Lambda event definitions"
 authors = [
@@ -124,6 +124,8 @@ sqs = ["serde_with"]
 streams = []
 documentdb = []
 eventbridge = ["chrono", "serde_with"]
+
+catch-all-fields = []
 
 [package.metadata.docs.rs]
 all-features = true

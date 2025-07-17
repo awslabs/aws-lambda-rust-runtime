@@ -26,6 +26,7 @@ pub mod requests;
 
 /// Utilities to initialize and use `tracing` and `tracing-subscriber` in Lambda Functions.
 #[cfg(feature = "tracing")]
+#[cfg_attr(docsrs, doc(cfg(feature = "tracing")))]
 pub use lambda_runtime_api_client::tracing;
 
 /// Execute the given events processor

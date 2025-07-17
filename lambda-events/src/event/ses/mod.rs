@@ -9,7 +9,7 @@ use serde_json::Value;
 pub struct SimpleEmailEvent {
     #[serde(rename = "Records")]
     pub records: Vec<SimpleEmailRecord>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -26,7 +26,7 @@ pub struct SimpleEmailRecord {
     #[serde(default)]
     pub event_source: Option<String>,
     pub ses: SimpleEmailService,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -41,7 +41,7 @@ pub struct SimpleEmailService {
     pub mail: SimpleEmailMessage,
     pub receipt: SimpleEmailReceipt,
     pub content: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -62,7 +62,7 @@ pub struct SimpleEmailMessage {
     pub headers_truncated: bool,
     #[serde(default)]
     pub message_id: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -85,7 +85,7 @@ pub struct SimpleEmailReceipt {
     pub virus_verdict: SimpleEmailVerdict,
     pub action: SimpleEmailReceiptAction,
     pub processing_time_millis: i64,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -101,7 +101,7 @@ pub struct SimpleEmailHeader {
     pub name: Option<String>,
     #[serde(default)]
     pub value: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -123,7 +123,7 @@ pub struct SimpleEmailCommonHeaders {
     pub date: Option<String>,
     #[serde(default)]
     pub subject: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -151,7 +151,7 @@ pub struct SimpleEmailReceiptAction {
     pub invocation_type: Option<String>,
     pub function_arn: Option<String>,
     pub organization_arn: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -165,7 +165,7 @@ pub struct SimpleEmailReceiptAction {
 pub struct SimpleEmailVerdict {
     #[serde(default)]
     pub status: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -181,7 +181,7 @@ pub type SimpleEmailDispositionValue = String;
 #[serde(rename_all = "camelCase")]
 pub struct SimpleEmailDisposition {
     pub disposition: SimpleEmailDispositionValue,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]

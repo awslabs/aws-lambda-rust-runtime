@@ -9,7 +9,7 @@ use super::commom_types::{AnyDocument, DatabaseCollection, DocumentId, DocumentK
 pub struct UpdateTruncate {
     field: String,
     new_size: usize,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -24,7 +24,7 @@ pub struct UpdateDescription {
     removed_fields: Vec<String>,
     truncated_arrays: Vec<UpdateTruncate>,
     updated_fields: AnyDocument,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -49,7 +49,7 @@ pub struct ChangeUpdateEvent {
     update_description: UpdateDescription,
     #[serde(default)]
     txn_number: Option<AnyDocument>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]

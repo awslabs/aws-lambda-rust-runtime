@@ -7,7 +7,7 @@ use serde_json::Value;
 #[serde(rename_all = "camelCase")]
 pub struct KinesisEventResponse {
     pub batch_item_failures: Vec<KinesisBatchItemFailure>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -22,7 +22,7 @@ pub struct KinesisEventResponse {
 pub struct KinesisBatchItemFailure {
     #[serde(default)]
     pub item_identifier: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -36,7 +36,7 @@ pub struct KinesisBatchItemFailure {
 #[serde(rename_all = "camelCase")]
 pub struct DynamoDbEventResponse {
     pub batch_item_failures: Vec<DynamoDbBatchItemFailure>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -51,7 +51,7 @@ pub struct DynamoDbEventResponse {
 pub struct DynamoDbBatchItemFailure {
     #[serde(default)]
     pub item_identifier: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -65,7 +65,7 @@ pub struct DynamoDbBatchItemFailure {
 #[serde(rename_all = "camelCase")]
 pub struct SqsEventResponse {
     pub batch_item_failures: Vec<SqsBatchItemFailure>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -80,7 +80,7 @@ pub struct SqsEventResponse {
 pub struct SqsBatchItemFailure {
     #[serde(default)]
     pub item_identifier: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]

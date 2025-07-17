@@ -22,7 +22,7 @@ pub struct LexEvent {
     pub alternative_intents: Option<Vec<LexAlternativeIntents>>,
     /// Deprecated: the DialogAction field is never populated by Lex events
     pub dialog_action: Option<LexDialogAction>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -37,7 +37,7 @@ pub struct LexBot {
     pub name: Option<String>,
     pub alias: Option<String>,
     pub version: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -56,7 +56,7 @@ pub struct LexCurrentIntent {
     #[serde(default)]
     pub slot_details: HashMap<String, SlotDetail>,
     pub confirmation_status: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -75,7 +75,7 @@ pub struct LexAlternativeIntents {
     #[serde(default)]
     pub slot_details: HashMap<String, SlotDetail>,
     pub confirmation_status: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -89,7 +89,7 @@ pub struct LexAlternativeIntents {
 pub struct SlotDetail {
     pub resolutions: Option<Vec<HashMap<String, String>>>,
     pub original_value: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -110,7 +110,7 @@ pub struct LexDialogAction {
     pub slots: Option<Slots>,
     pub slot_to_elicit: Option<String>,
     pub response_card: Option<LexResponseCard>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -128,7 +128,7 @@ pub type Slots = HashMap<String, Option<String>>;
 pub struct LexResponse {
     pub session_attributes: SessionAttributes,
     pub dialog_action: Option<LexDialogAction>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -143,7 +143,7 @@ pub struct LexResponseCard {
     pub version: Option<i64>,
     pub content_type: Option<String>,
     pub generic_attachments: Option<Vec<Attachment>>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -160,7 +160,7 @@ pub struct Attachment {
     pub image_url: Option<String>,
     pub attachment_link_url: Option<String>,
     pub buttons: Option<Vec<HashMap<String, String>>>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]

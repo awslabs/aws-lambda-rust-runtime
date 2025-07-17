@@ -33,7 +33,7 @@ where
 
     #[serde(default, bound = "")]
     pub alarm_data: CloudWatchAlarmData<C, R>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -66,7 +66,7 @@ where
     pub previous_state: Option<CloudWatchAlarmState<R>>,
     #[serde(bound = "")]
     pub configuration: C,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -90,7 +90,7 @@ where
     pub timestamp: DateTime<Utc>,
     pub actions_suppressed_by: Option<String>,
     pub actions_suppressed_reason: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -106,7 +106,7 @@ pub struct CloudWatchMetricAlarmConfiguration {
     pub description: Option<String>,
     #[serde(default)]
     pub metrics: Vec<CloudWatchMetricDefinition>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -122,7 +122,7 @@ pub struct CloudWatchMetricDefinition {
     #[serde(default)]
     pub return_data: bool,
     pub metric_stat: CloudWatchMetricStatDefinition,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -140,7 +140,7 @@ pub struct CloudWatchMetricStatDefinition {
     pub stat: Option<String>,
     pub period: u16,
     pub metric: CloudWatchMetricStatMetricDefinition,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -156,7 +156,7 @@ pub struct CloudWatchMetricStatMetricDefinition {
     pub namespace: Option<String>,
     pub name: String,
     pub dimensions: HashMap<String, String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -172,7 +172,7 @@ pub struct CloudWatchCompositeAlarmConfiguration {
     pub actions_suppressor: String,
     pub actions_suppressor_wait_period: u16,
     pub actions_suppressor_extension_period: u16,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -225,7 +225,7 @@ pub struct CloudWatchAlarmStateReasonDataMetric {
     pub threshold: f64,
     #[serde(default)]
     pub evaluated_datapoints: Vec<CloudWatchAlarmStateEvaluatedDatapoint>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -244,7 +244,7 @@ pub struct CloudWatchAlarmStateEvaluatedDatapoint {
     pub value: Option<f64>,
     #[serde(default)]
     pub threshold: Option<f64>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -258,7 +258,7 @@ pub struct CloudWatchAlarmStateEvaluatedDatapoint {
 pub struct ClodWatchAlarmStateReasonDataComposite {
     #[serde(default)]
     pub triggering_alarms: Vec<CloudWatchAlarmStateTriggeringAlarm>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -272,7 +272,7 @@ pub struct ClodWatchAlarmStateReasonDataComposite {
 pub struct CloudWatchAlarmStateTriggeringAlarm {
     pub arn: String,
     pub state: CloudWatchAlarmStateTriggeringAlarmState,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -287,7 +287,7 @@ pub struct CloudWatchAlarmStateTriggeringAlarmState {
     pub timestamp: DateTime<Utc>,
     #[serde(default)]
     pub value: CloudWatchAlarmStateValue,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]

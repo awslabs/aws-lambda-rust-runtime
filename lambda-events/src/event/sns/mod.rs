@@ -14,7 +14,7 @@ use crate::custom_serde::{deserialize_lambda_map, deserialize_nullish_boolean};
 pub struct SnsEvent {
     pub records: Vec<SnsRecord>,
 
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -39,7 +39,7 @@ pub struct SnsRecord {
     /// An SNS object representing the SNS message.
     pub sns: SnsMessage,
 
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -95,7 +95,7 @@ pub struct SnsMessage {
     #[serde(default)]
     pub message_attributes: HashMap<String, MessageAttribute>,
 
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -113,7 +113,7 @@ pub struct SnsMessage {
 pub struct SnsEventObj<T: Serialize> {
     pub records: Vec<SnsRecordObj<T>>,
 
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -139,7 +139,7 @@ pub struct SnsRecordObj<T: Serialize> {
     /// An SNS object representing the SNS message.
     pub sns: SnsMessageObj<T>,
 
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -199,7 +199,7 @@ pub struct SnsMessageObj<T: Serialize> {
     #[serde(default)]
     pub message_attributes: HashMap<String, MessageAttribute>,
 
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -223,7 +223,7 @@ pub struct MessageAttribute {
     #[serde(rename = "Value")]
     pub value: String,
 
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -246,7 +246,7 @@ pub struct CloudWatchAlarmPayload {
     pub alarm_arn: String,
     pub old_state_value: String,
     pub trigger: CloudWatchAlarmTrigger,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -273,7 +273,7 @@ pub struct CloudWatchAlarmTrigger {
     pub unit: Option<String>,
     #[serde(default)]
     pub dimensions: Vec<CloudWatchDimension>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -292,7 +292,7 @@ pub struct CloudWatchMetricDataQuery {
     pub period: Option<i64>,
     #[serde(default, deserialize_with = "deserialize_nullish_boolean")]
     pub return_data: bool,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -308,7 +308,7 @@ pub struct CloudWatchMetricStat {
     pub period: i64,
     pub stat: String,
     pub unit: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -324,7 +324,7 @@ pub struct CloudWatchMetric {
     pub dimensions: Vec<CloudWatchDimension>,
     pub metric_name: Option<String>,
     pub namespace: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -337,7 +337,7 @@ pub struct CloudWatchMetric {
 pub struct CloudWatchDimension {
     pub name: String,
     pub value: String,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]

@@ -22,7 +22,7 @@ pub struct EcrScanEvent {
     #[serde(default)]
     pub account: Option<String>,
     pub detail: EcrScanEventDetailType,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -47,7 +47,7 @@ pub struct EcrScanEventDetailType {
     pub image_digest: Option<String>,
     #[serde(rename = "image-tags")]
     pub image_tags: Vec<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -77,7 +77,7 @@ pub struct EcrScanEventFindingSeverityCounts {
     #[serde(default)]
     #[serde(rename = "UNDEFINED")]
     pub undefined: Option<i64>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]

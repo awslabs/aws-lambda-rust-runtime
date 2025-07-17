@@ -40,7 +40,7 @@ pub struct CodeDeployEvent {
     pub resources: Vec<String>,
     /// Detail contains information specific to a deployment event.
     pub detail: CodeDeployEventDetail,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -72,7 +72,7 @@ pub struct CodeDeployEventDetail {
     /// DeploymentGroup is the name of the deployment group.
     #[serde(default)]
     pub deployment_group: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -86,7 +86,7 @@ pub struct CodeDeployEventDetail {
 pub struct CodeDeployLifecycleEvent {
     pub deployment_id: String,
     pub lifecycle_event_hook_execution_id: String,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]

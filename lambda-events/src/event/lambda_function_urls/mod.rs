@@ -27,7 +27,7 @@ pub struct LambdaFunctionUrlRequest {
     pub request_context: LambdaFunctionUrlRequestContext,
     pub body: Option<String>,
     pub is_base64_encoded: bool,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -59,7 +59,7 @@ pub struct LambdaFunctionUrlRequestContext {
     pub time: Option<String>,
     pub time_epoch: i64,
     pub http: LambdaFunctionUrlRequestContextHttpDescription,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -73,7 +73,7 @@ pub struct LambdaFunctionUrlRequestContext {
 #[serde(rename_all = "camelCase")]
 pub struct LambdaFunctionUrlRequestContextAuthorizerDescription {
     pub iam: Option<LambdaFunctionUrlRequestContextAuthorizerIamDescription>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -96,7 +96,7 @@ pub struct LambdaFunctionUrlRequestContextAuthorizerIamDescription {
     pub user_arn: Option<String>,
     #[serde(default)]
     pub user_id: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -119,7 +119,7 @@ pub struct LambdaFunctionUrlRequestContextHttpDescription {
     pub source_ip: Option<String>,
     #[serde(default)]
     pub user_agent: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -140,7 +140,7 @@ pub struct LambdaFunctionUrlResponse {
     pub body: Option<String>,
     pub is_base64_encoded: bool,
     pub cookies: Vec<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]

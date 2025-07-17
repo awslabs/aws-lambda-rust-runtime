@@ -117,7 +117,7 @@ impl fmt::Display for KeyType {
 pub struct Event {
     #[serde(rename = "Records")]
     pub records: Vec<EventRecord>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -137,7 +137,7 @@ pub struct TimeWindowEvent {
     #[serde(rename = "TimeWindowProperties")]
     #[serde(flatten)]
     pub time_window_properties: TimeWindowProperties,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -154,7 +154,7 @@ pub struct TimeWindowEventResponse {
     #[serde(flatten)]
     pub time_window_event_response_properties: TimeWindowEventResponseProperties,
     pub batch_item_failures: Vec<DynamoDbBatchItemFailure>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -221,7 +221,7 @@ pub struct EventRecord {
     /// The DynamoDB table that this event was recorded for.
     #[serde(default)]
     pub table_name: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -237,7 +237,7 @@ pub struct UserIdentity {
     pub type_: String,
     #[serde(default)]
     pub principal_id: String,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -285,7 +285,7 @@ pub struct StreamRecord {
     #[serde(default)]
     #[serde(rename = "StreamViewType")]
     pub stream_view_type: Option<StreamViewType>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]

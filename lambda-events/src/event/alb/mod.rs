@@ -32,7 +32,7 @@ pub struct AlbTargetGroupRequest {
     #[serde(default, deserialize_with = "deserialize_nullish_boolean")]
     pub is_base64_encoded: bool,
     pub body: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -46,7 +46,7 @@ pub struct AlbTargetGroupRequest {
 #[serde(rename_all = "camelCase")]
 pub struct AlbTargetGroupRequestContext {
     pub elb: ElbContext,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -62,7 +62,7 @@ pub struct ElbContext {
     /// nolint: stylecheck
     #[serde(default)]
     pub target_group_arn: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -88,7 +88,7 @@ pub struct AlbTargetGroupResponse {
     pub body: Option<Body>,
     #[serde(default, deserialize_with = "deserialize_nullish_boolean")]
     pub is_base64_encoded: bool,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]

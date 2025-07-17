@@ -11,7 +11,7 @@ pub struct KinesisAnalyticsOutputDeliveryEvent {
     #[serde(default)]
     pub application_arn: Option<String>,
     pub records: Vec<KinesisAnalyticsOutputDeliveryEventRecord>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -26,7 +26,7 @@ pub struct KinesisAnalyticsOutputDeliveryEventRecord {
     #[serde(default)]
     pub record_id: Option<String>,
     pub data: Base64Data,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -39,7 +39,7 @@ pub struct KinesisAnalyticsOutputDeliveryEventRecord {
 #[serde(rename_all = "camelCase")]
 pub struct KinesisAnalyticsOutputDeliveryResponse {
     pub records: Vec<KinesisAnalyticsOutputDeliveryResponseRecord>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -56,7 +56,7 @@ pub struct KinesisAnalyticsOutputDeliveryResponseRecord {
     /// possible values include Ok and DeliveryFailed
     #[serde(default)]
     pub result: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]

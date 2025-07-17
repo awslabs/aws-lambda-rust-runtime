@@ -44,7 +44,7 @@ pub struct CodeBuildEvent {
     /// Detail contains information specific to a build state-change or
     /// build phase-change event.
     pub detail: CodeBuildEventDetail,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -91,7 +91,7 @@ pub struct CodeBuildEventDetail {
     #[serde(default)]
     #[serde(with = "codebuild_time::optional_time")]
     pub completed_phase_end: Option<CodeBuildTime>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -123,7 +123,7 @@ pub struct CodeBuildEventAdditionalInformation {
     pub source_version: Option<String>,
     pub logs: CodeBuildLogs,
     pub phases: Vec<CodeBuildPhase>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -144,7 +144,7 @@ pub struct CodeBuildArtifact {
     pub sha256_sum: Option<String>,
     #[serde(default)]
     pub location: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -168,7 +168,7 @@ pub struct CodeBuildEnvironment {
     pub type_: Option<String>,
     #[serde(rename = "environment-variables")]
     pub environment_variables: Vec<CodeBuildEnvironmentVariable>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -190,7 +190,7 @@ pub struct CodeBuildEnvironmentVariable {
     /// Value is the value of the environment variable.
     #[serde(default)]
     pub value: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -207,7 +207,7 @@ pub struct CodeBuildSource {
     pub location: Option<String>,
     #[serde(default)]
     pub type_: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -229,7 +229,7 @@ pub struct CodeBuildLogs {
     #[serde(default)]
     #[serde(rename = "deep-link")]
     pub deep_link: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -262,7 +262,7 @@ where
     pub phase_type: CodeBuildPhaseType,
     #[serde(rename = "phase-status")]
     pub phase_status: Option<CodeBuildPhaseStatus>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]

@@ -14,7 +14,7 @@ pub struct IamPolicyDocument {
     #[serde(default)]
     pub version: Option<String>,
     pub statement: Vec<IamPolicyStatement>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -36,7 +36,7 @@ pub struct IamPolicyStatement {
     #[serde(default, deserialize_with = "deserialize_policy_condition")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub condition: Option<IamPolicyCondition>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]

@@ -13,7 +13,7 @@ pub struct ActiveMqEvent {
     #[serde(default)]
     pub event_source_arn: Option<String>,
     pub messages: Vec<ActiveMqMessage>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -50,7 +50,7 @@ pub struct ActiveMqMessage {
     #[serde(deserialize_with = "deserialize_lambda_map")]
     #[serde(default)]
     pub properties: HashMap<String, String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -64,7 +64,7 @@ pub struct ActiveMqMessage {
 pub struct ActiveMqDestination {
     #[serde(default)]
     pub physical_name: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]

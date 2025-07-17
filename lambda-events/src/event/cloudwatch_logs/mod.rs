@@ -15,7 +15,7 @@ pub struct LogsEvent {
     /// `aws_logs` is gzipped and base64 encoded, it needs a custom deserializer
     #[serde(rename = "awslogs")]
     pub aws_logs: AwsLogs,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -47,7 +47,7 @@ pub struct LogData {
     pub message_type: String,
     /// Entries in the log batch
     pub log_events: Vec<LogEntry>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -65,7 +65,7 @@ pub struct LogEntry {
     pub timestamp: i64,
     /// Message published in the application log
     pub message: String,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]

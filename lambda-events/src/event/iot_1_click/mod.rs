@@ -13,7 +13,7 @@ pub struct IoTOneClickEvent {
     pub device_event: IoTOneClickDeviceEvent,
     pub device_info: IoTOneClickDeviceInfo,
     pub placement_info: IoTOneClickPlacementInfo,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -26,7 +26,7 @@ pub struct IoTOneClickEvent {
 #[serde(rename_all = "camelCase")]
 pub struct IoTOneClickDeviceEvent {
     pub button_clicked: IoTOneClickButtonClicked,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -42,7 +42,7 @@ pub struct IoTOneClickButtonClicked {
     pub click_type: Option<String>,
     #[serde(default)]
     pub reported_time: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -62,7 +62,7 @@ pub struct IoTOneClickDeviceInfo {
     #[serde(default)]
     pub device_id: Option<String>,
     pub remaining_life: f64,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -84,7 +84,7 @@ pub struct IoTOneClickPlacementInfo {
     #[serde(deserialize_with = "deserialize_lambda_map")]
     #[serde(default)]
     pub devices: HashMap<String, String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]

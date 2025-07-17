@@ -47,7 +47,7 @@ pub struct ApiGatewayProxyRequest {
     pub body: Option<String>,
     #[serde(default, deserialize_with = "deserialize_nullish_boolean")]
     pub is_base64_encoded: bool,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -71,7 +71,7 @@ pub struct ApiGatewayProxyResponse {
     pub body: Option<Body>,
     #[serde(default, deserialize_with = "deserialize_nullish_boolean")]
     pub is_base64_encoded: bool,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -124,7 +124,7 @@ pub struct ApiGatewayProxyRequestContext {
     #[serde(default)]
     #[serde(rename = "apiId")]
     pub apiid: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -181,7 +181,7 @@ pub struct ApiGatewayV2httpRequest {
     pub body: Option<String>,
     #[serde(default)]
     pub is_base64_encoded: bool,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -220,7 +220,7 @@ pub struct ApiGatewayV2httpRequestContext {
     pub http: ApiGatewayV2httpRequestContextHttpDescription,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub authentication: Option<ApiGatewayV2httpRequestContextAuthentication>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -244,7 +244,7 @@ pub struct ApiGatewayRequestAuthorizer {
     pub fields: HashMap<String, Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub iam: Option<ApiGatewayRequestAuthorizerIamDescription>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -262,7 +262,7 @@ pub struct ApiGatewayRequestAuthorizerJwtDescription {
     pub claims: HashMap<String, String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub scopes: Option<Vec<String>>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -289,7 +289,7 @@ pub struct ApiGatewayRequestAuthorizerIamDescription {
     pub user_arn: Option<String>,
     #[serde(default)]
     pub user_id: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -307,7 +307,7 @@ pub struct ApiGatewayRequestAuthorizerCognitoIdentity {
     pub identity_id: Option<String>,
     #[serde(default)]
     pub identity_pool_id: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -330,7 +330,7 @@ pub struct ApiGatewayV2httpRequestContextHttpDescription {
     pub source_ip: Option<String>,
     #[serde(default)]
     pub user_agent: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -355,7 +355,7 @@ pub struct ApiGatewayV2httpResponse {
     #[serde(default, deserialize_with = "deserialize_nullish_boolean")]
     pub is_base64_encoded: bool,
     pub cookies: Vec<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -395,7 +395,7 @@ pub struct ApiGatewayRequestIdentity {
     pub user_agent: Option<String>,
     #[serde(default)]
     pub user: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -441,7 +441,7 @@ pub struct ApiGatewayWebsocketProxyRequest {
     pub body: Option<String>,
     #[serde(default, deserialize_with = "deserialize_nullish_boolean")]
     pub is_base64_encoded: bool,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -512,7 +512,7 @@ pub struct ApiGatewayWebsocketProxyRequestContext {
     pub disconnect_status_code: Option<i64>,
     #[serde(default)]
     pub disconnect_reason: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -533,7 +533,7 @@ pub struct ApiGatewayCustomAuthorizerRequestTypeRequestIdentity {
     pub source_ip: Option<String>,
     #[serde(default)]
     pub client_cert: Option<ApiGatewayCustomAuthorizerRequestTypeRequestIdentityClientCert>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -557,7 +557,7 @@ pub struct ApiGatewayCustomAuthorizerRequestTypeRequestIdentityClientCert {
     #[serde(rename = "subjectDN")]
     pub subject_dn: Option<String>,
     pub validity: ApiGatewayCustomAuthorizerRequestTypeRequestIdentityClientCertValidity,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -574,7 +574,7 @@ pub struct ApiGatewayCustomAuthorizerRequestTypeRequestIdentityClientCertValidit
     pub not_after: Option<String>,
     #[serde(default)]
     pub not_before: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -589,7 +589,7 @@ pub struct ApiGatewayCustomAuthorizerRequestTypeRequestIdentityClientCertValidit
 pub struct ApiGatewayV2httpRequestContextAuthentication {
     #[serde(default)]
     pub client_cert: Option<ApiGatewayV2httpRequestContextAuthenticationClientCert>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -613,7 +613,7 @@ pub struct ApiGatewayV2httpRequestContextAuthenticationClientCert {
     #[serde(rename = "subjectDN")]
     pub subject_dn: Option<String>,
     pub validity: ApiGatewayV2httpRequestContextAuthenticationClientCertValidity,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -630,7 +630,7 @@ pub struct ApiGatewayV2httpRequestContextAuthenticationClientCertValidity {
     pub not_after: Option<String>,
     #[serde(default)]
     pub not_before: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -660,7 +660,7 @@ pub struct ApiGatewayV2CustomAuthorizerV1RequestTypeRequestContext {
     #[serde(default)]
     #[serde(rename = "apiId")]
     pub apiid: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -702,7 +702,7 @@ pub struct ApiGatewayV2CustomAuthorizerV1Request {
     #[serde(default)]
     pub stage_variables: HashMap<String, String>,
     pub request_context: ApiGatewayV2CustomAuthorizerV1RequestTypeRequestContext,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -744,7 +744,7 @@ pub struct ApiGatewayV2CustomAuthorizerV2Request {
     #[serde(deserialize_with = "deserialize_lambda_map")]
     #[serde(default)]
     pub stage_variables: HashMap<String, String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -763,7 +763,7 @@ pub struct ApiGatewayCustomAuthorizerContext {
     pub num_key: Option<i64>,
     #[serde(default, deserialize_with = "deserialize_nullish_boolean")]
     pub bool_key: bool,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -798,7 +798,7 @@ pub struct ApiGatewayCustomAuthorizerRequestTypeRequestContext {
     #[serde(default)]
     #[serde(rename = "apiId")]
     pub apiid: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -818,7 +818,7 @@ pub struct ApiGatewayCustomAuthorizerRequest {
     /// nolint: stylecheck
     #[serde(default)]
     pub method_arn: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -862,7 +862,7 @@ pub struct ApiGatewayCustomAuthorizerRequestTypeRequest {
     #[serde(default)]
     pub stage_variables: HashMap<String, String>,
     pub request_context: ApiGatewayCustomAuthorizerRequestTypeRequestContext,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -885,7 +885,7 @@ where
     #[serde(bound = "", default)]
     pub context: T1,
     pub usage_identifier_key: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -905,7 +905,7 @@ where
     pub is_authorized: bool,
     #[serde(bound = "", default)]
     pub context: T1,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -926,7 +926,7 @@ where
     pub policy_document: ApiGatewayCustomAuthorizerPolicy,
     #[serde(bound = "", default)]
     pub context: T1,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -942,7 +942,7 @@ pub struct ApiGatewayCustomAuthorizerPolicy {
     #[serde(default)]
     pub version: Option<String>,
     pub statement: Vec<IamPolicyStatement>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]

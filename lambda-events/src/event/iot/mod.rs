@@ -15,7 +15,7 @@ pub struct IoTCoreCustomAuthorizerRequest {
     pub protocols: Vec<String>,
     pub protocol_data: Option<IoTCoreProtocolData>,
     pub connection_metadata: Option<IoTCoreConnectionMetadata>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -30,7 +30,7 @@ pub struct IoTCoreProtocolData {
     pub tls: Option<IoTCoreTlsContext>,
     pub http: Option<IoTCoreHttpContext>,
     pub mqtt: Option<IoTCoreMqttContext>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -44,7 +44,7 @@ pub struct IoTCoreProtocolData {
 pub struct IoTCoreTlsContext {
     #[serde(default)]
     pub server_name: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -61,7 +61,7 @@ pub struct IoTCoreHttpContext {
     pub headers: HeaderMap,
     #[serde(default)]
     pub query_string: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -78,7 +78,7 @@ pub struct IoTCoreMqttContext {
     pub password: Base64Data,
     #[serde(default)]
     pub username: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -92,7 +92,7 @@ pub struct IoTCoreMqttContext {
 pub struct IoTCoreConnectionMetadata {
     #[serde(default)]
     pub id: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -112,7 +112,7 @@ pub struct IoTCoreCustomAuthorizerResponse {
     pub disconnect_after_in_seconds: u32,
     pub refresh_after_in_seconds: u32,
     pub policy_documents: Vec<Option<IamPolicyDocument>>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]

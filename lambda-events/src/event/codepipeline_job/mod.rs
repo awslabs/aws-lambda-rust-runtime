@@ -8,7 +8,7 @@ use serde_json::Value;
 pub struct CodePipelineJobEvent {
     #[serde(rename = "CodePipeline.job")]
     pub code_pipeline_job: CodePipelineJob,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -26,7 +26,7 @@ pub struct CodePipelineJob {
     #[serde(default)]
     pub account_id: Option<String>,
     pub data: CodePipelineData,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -46,7 +46,7 @@ pub struct CodePipelineData {
     pub artifact_credentials: CodePipelineArtifactCredentials,
     #[serde(default)]
     pub continuation_token: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -60,7 +60,7 @@ pub struct CodePipelineData {
 #[serde(rename_all = "camelCase")]
 pub struct CodePipelineActionConfiguration {
     pub configuration: CodePipelineConfiguration,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -79,7 +79,7 @@ pub struct CodePipelineConfiguration {
     #[serde(default)]
     #[serde(rename = "UserParameters")]
     pub user_parameters: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -96,7 +96,7 @@ pub struct CodePipelineInputArtifact {
     pub revision: Option<String>,
     #[serde(default)]
     pub name: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -113,7 +113,7 @@ pub struct CodePipelineInputLocation {
     #[serde(default)]
     #[serde(rename = "type")]
     pub location_type: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -130,7 +130,7 @@ pub struct CodePipelineS3Location {
     pub bucket_name: Option<String>,
     #[serde(default)]
     pub object_key: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -147,7 +147,7 @@ pub struct CodePipelineOutputArtifact {
     pub revision: Option<String>,
     #[serde(default)]
     pub name: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -164,7 +164,7 @@ pub struct CodePipelineOutputLocation {
     #[serde(default)]
     #[serde(rename = "type")]
     pub location_type: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -183,7 +183,7 @@ pub struct CodePipelineArtifactCredentials {
     pub session_token: Option<String>,
     #[serde(default)]
     pub access_key_id: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]

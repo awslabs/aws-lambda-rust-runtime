@@ -15,7 +15,7 @@ pub struct RabbitMqEvent {
     #[serde(default)]
     #[serde(rename = "rmqMessagesByQueue")]
     pub messages_by_queue: HashMap<String, Vec<RabbitMqMessage>>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -31,7 +31,7 @@ pub struct RabbitMqMessage {
     #[serde(default)]
     pub data: Option<String>,
     pub redelivered: bool,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -70,7 +70,7 @@ where
     pub app_id: Option<String>,
     pub cluster_id: Option<String>,
     pub body_size: u64,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]

@@ -12,7 +12,7 @@ pub struct S3BatchJobEvent {
     pub invocation_id: Option<String>,
     pub job: S3BatchJob,
     pub tasks: Vec<S3BatchJobTask>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -27,7 +27,7 @@ pub struct S3BatchJobEvent {
 pub struct S3BatchJob {
     #[serde(default)]
     pub id: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -48,7 +48,7 @@ pub struct S3BatchJobTask {
     pub s3_version_id: Option<String>,
     #[serde(default)]
     pub s3_bucket_arn: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -68,7 +68,7 @@ pub struct S3BatchJobResponse {
     #[serde(default)]
     pub invocation_id: Option<String>,
     pub results: Vec<S3BatchJobResult>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]
@@ -87,7 +87,7 @@ pub struct S3BatchJobResult {
     pub result_code: Option<String>,
     #[serde(default)]
     pub result_string: Option<String>,
-    /// Catchall to catch any additional fields that were present but not expected by this struct.
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.
     /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
     #[cfg(feature = "catch-all-fields")]

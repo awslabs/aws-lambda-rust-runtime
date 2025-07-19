@@ -19,8 +19,7 @@ where
     Delete(DeleteRequest<P2>),
 }
 
-impl Default for CloudFormationCustomResourceRequest
-{
+impl Default for CloudFormationCustomResourceRequest {
     fn default() -> Self {
         CloudFormationCustomResourceRequest::Create(CreateRequest::default())
     }

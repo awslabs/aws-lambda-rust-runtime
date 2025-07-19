@@ -6,7 +6,7 @@ use serde_json::Value;
 use crate::custom_serde::deserialize_nullish_boolean;
 
 /// `CodeCommitEvent` represents a CodeCommit event
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodeCommitEvent {
     #[serde(rename = "Records")]

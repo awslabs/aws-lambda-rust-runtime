@@ -19,7 +19,13 @@ where
     Delete(DeleteRequest<P2>),
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+impl Default for CloudFormationCustomResourceRequest {
+    fn default() -> Self {
+        CloudFormationCustomResourceRequest::Create(CreateRequest::default())
+    }
+}
+
+#[derive(Clone, Default, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct CreateRequest<P2 = Value>
 where
@@ -99,7 +105,7 @@ where
     pub other: serde_json::Map<String, Value>,
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Default, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct CloudFormationCustomResourceResponse {
     pub status: CloudFormationCustomResourceResponseStatus,
@@ -119,9 +125,10 @@ pub struct CloudFormationCustomResourceResponse {
     pub other: serde_json::Map<String, Value>,
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Default, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum CloudFormationCustomResourceResponseStatus {
+    #[default]
     Success,
     Failed,
 }

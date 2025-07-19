@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 #[cfg(feature = "catch-all-fields")]
 use serde_json::Value;
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EcrScanEvent {
     #[serde(default)]
@@ -31,7 +31,7 @@ pub struct EcrScanEvent {
     pub other: serde_json::Map<String, Value>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EcrScanEventDetailType {
     #[serde(default)]
@@ -56,7 +56,7 @@ pub struct EcrScanEventDetailType {
     pub other: serde_json::Map<String, Value>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EcrScanEventFindingSeverityCounts {
     #[serde(default)]

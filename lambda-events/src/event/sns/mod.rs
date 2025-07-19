@@ -9,7 +9,7 @@ use crate::custom_serde::{deserialize_lambda_map, deserialize_nullish_boolean};
 /// The `Event` notification event handled by Lambda
 ///
 /// [https://docs.aws.amazon.com/lambda/latest/dg/with-sns.html](https://docs.aws.amazon.com/lambda/latest/dg/with-sns.html)
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct SnsEvent {
     pub records: Vec<SnsRecord>,
@@ -24,7 +24,7 @@ pub struct SnsEvent {
 }
 
 /// SnsRecord stores information about each record of a SNS event
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct SnsRecord {
     /// A string containing the event source.
@@ -49,7 +49,7 @@ pub struct SnsRecord {
 }
 
 /// SnsMessage stores information about each record of a SNS event
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct SnsMessage {
     /// The type of SNS message. For a lambda event, this should always be **Notification**

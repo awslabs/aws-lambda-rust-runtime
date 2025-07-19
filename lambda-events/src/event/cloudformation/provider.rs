@@ -22,7 +22,13 @@ where
     Delete(DeleteRequest<P2>),
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+impl Default for CloudFormationCustomResourceRequest {
+    fn default() -> Self {
+        CloudFormationCustomResourceRequest::Create(CreateRequest::default())
+    }
+}
+
+#[derive(Clone, Default, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct CreateRequest<P2 = Value>
 where
@@ -63,7 +69,7 @@ where
     // No `other` catch-all here; any additional fields will be caught in `common.other` instead
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Default, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct CommonRequestParams<P2 = Value>
 where
@@ -84,7 +90,7 @@ where
     pub other: serde_json::Map<String, Value>,
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize, Default)]
+#[derive(Clone, Default, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct CloudFormationCustomResourceResponse<D = Value>
 where

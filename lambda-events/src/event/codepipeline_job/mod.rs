@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 /// `CodePipelineJobEvent` contains data from an event sent from AWS CodePipeline
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodePipelineJobEvent {
     #[serde(rename = "CodePipeline.job")]
@@ -18,7 +18,7 @@ pub struct CodePipelineJobEvent {
 }
 
 /// `CodePipelineJob` represents a job from an AWS CodePipeline event
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodePipelineJob {
     #[serde(default)]
@@ -36,7 +36,7 @@ pub struct CodePipelineJob {
 }
 
 /// `CodePipelineData` represents a job from an AWS CodePipeline event
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodePipelineData {
     pub action_configuration: CodePipelineActionConfiguration,
@@ -56,7 +56,7 @@ pub struct CodePipelineData {
 }
 
 /// `CodePipelineActionConfiguration` represents an Action Configuration
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodePipelineActionConfiguration {
     pub configuration: CodePipelineConfiguration,
@@ -70,7 +70,7 @@ pub struct CodePipelineActionConfiguration {
 }
 
 /// `CodePipelineConfiguration` represents a configuration for an Action Configuration
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodePipelineConfiguration {
     #[serde(default)]
@@ -89,7 +89,7 @@ pub struct CodePipelineConfiguration {
 }
 
 /// `CodePipelineInputArtifact` represents an input artifact
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodePipelineInputArtifact {
     pub location: CodePipelineInputLocation,
@@ -106,7 +106,7 @@ pub struct CodePipelineInputArtifact {
 }
 
 /// `CodePipelineInputLocation` represents a input location
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodePipelineInputLocation {
     pub s3_location: CodePipelineS3Location,
@@ -123,7 +123,7 @@ pub struct CodePipelineInputLocation {
 }
 
 /// `CodePipelineS3Location` represents an s3 input location
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodePipelineS3Location {
     #[serde(default)]
@@ -140,7 +140,7 @@ pub struct CodePipelineS3Location {
 }
 
 /// `CodePipelineOutputArtifact` represents an output artifact
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodePipelineOutputArtifact {
     pub location: CodePipelineInputLocation,
@@ -157,7 +157,7 @@ pub struct CodePipelineOutputArtifact {
 }
 
 /// `CodePipelineOutputLocation` represents a output location
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodePipelineOutputLocation {
     pub s3_location: CodePipelineS3Location,
@@ -174,7 +174,7 @@ pub struct CodePipelineOutputLocation {
 }
 
 /// `CodePipelineArtifactCredentials` represents CodePipeline artifact credentials
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodePipelineArtifactCredentials {
     #[serde(default)]

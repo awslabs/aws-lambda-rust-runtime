@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 use crate::custom_serde::deserialize_lambda_map;
 
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LexEvent {
     pub message_version: Option<String>,
@@ -46,7 +46,7 @@ pub struct LexBot {
     pub other: serde_json::Map<String, Value>,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LexCurrentIntent {
     pub name: Option<String>,
@@ -65,7 +65,7 @@ pub struct LexCurrentIntent {
     pub other: serde_json::Map<String, Value>,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LexAlternativeIntents {
     pub name: Option<String>,
@@ -98,7 +98,7 @@ pub struct SlotDetail {
     pub other: serde_json::Map<String, Value>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LexDialogAction {
     pub type_: Option<String>,
@@ -137,7 +137,7 @@ pub struct LexResponse {
     pub other: serde_json::Map<String, Value>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LexResponseCard {
     pub version: Option<i64>,

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EcrScanEvent {
     #[serde(default)]
@@ -22,7 +22,7 @@ pub struct EcrScanEvent {
     pub detail: EcrScanEventDetailType,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EcrScanEventDetailType {
     #[serde(default)]
@@ -40,7 +40,7 @@ pub struct EcrScanEventDetailType {
     pub image_tags: Vec<String>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EcrScanEventFindingSeverityCounts {
     #[serde(default)]

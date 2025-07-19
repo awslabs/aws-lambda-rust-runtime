@@ -111,7 +111,7 @@ impl fmt::Display for KeyType {
 
 /// The `Event` stream event handled to Lambda
 /// <http://docs.aws.amazon.com/lambda/latest/dg/eventsources.html#eventsources-ddb-update>
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 pub struct Event {
     #[serde(rename = "Records")]
     pub records: Vec<EventRecord>,
@@ -141,7 +141,7 @@ pub struct TimeWindowEventResponse {
 }
 
 /// EventRecord stores information about each record of a DynamoDb stream event
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EventRecord {
     /// The region in which the GetRecords request was received.
@@ -211,7 +211,7 @@ pub struct UserIdentity {
 
 /// `DynamoDbStreamRecord` represents a description of a single data modification that was performed on an item
 /// in a DynamoDB table.
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StreamRecord {
     /// The approximate date and time when the stream record was created, in UNIX

@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 use crate::custom_serde::deserialize_lambda_map;
 
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LexEvent {
     pub message_version: Option<String>,
@@ -30,7 +30,7 @@ pub struct LexBot {
     pub version: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LexCurrentIntent {
     pub name: Option<String>,
@@ -42,7 +42,7 @@ pub struct LexCurrentIntent {
     pub confirmation_status: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LexAlternativeIntents {
     pub name: Option<String>,
@@ -61,7 +61,7 @@ pub struct SlotDetail {
     pub original_value: Option<String>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LexDialogAction {
     pub type_: Option<String>,
@@ -86,7 +86,7 @@ pub struct LexResponse {
     pub dialog_action: Option<LexDialogAction>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LexResponseCard {
     pub version: Option<i64>,

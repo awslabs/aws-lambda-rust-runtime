@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ChimeBotEvent {
     #[serde(rename = "Sender")]
@@ -19,7 +19,7 @@ pub struct ChimeBotEvent {
     pub message: Option<String>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ChimeBotEventSender {
     #[serde(default)]
@@ -30,7 +30,7 @@ pub struct ChimeBotEventSender {
     pub sender_id_type: Option<String>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ChimeBotEventDiscussion {
     #[serde(default)]
@@ -41,7 +41,7 @@ pub struct ChimeBotEventDiscussion {
     pub discussion_type: Option<String>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ChimeBotEventInboundHttpsEndpoint {
     #[serde(default)]

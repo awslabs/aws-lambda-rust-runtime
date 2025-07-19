@@ -2,7 +2,7 @@ use crate::{custom_serde::deserialize_lambda_map, encodings::MillisecondTimestam
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct KafkaEvent {
     #[serde(default)]
@@ -16,7 +16,7 @@ pub struct KafkaEvent {
     pub bootstrap_servers: Option<String>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct KafkaRecord {
     #[serde(default)]

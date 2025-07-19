@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 /// `ConfigEvent` contains data from an event sent from AWS Config
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ConfigEvent {
     /// The ID of the AWS account that owns the rule

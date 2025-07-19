@@ -5,7 +5,7 @@ use crate::custom_serde::deserialize_lambda_map;
 
 /// `IoTOneClickEvent` represents a click event published by clicking button type
 /// device.
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IoTOneClickEvent {
     pub device_event: IoTOneClickDeviceEvent,
@@ -13,13 +13,13 @@ pub struct IoTOneClickEvent {
     pub placement_info: IoTOneClickPlacementInfo,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IoTOneClickDeviceEvent {
     pub button_clicked: IoTOneClickButtonClicked,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IoTOneClickButtonClicked {
     #[serde(default)]
@@ -28,7 +28,7 @@ pub struct IoTOneClickButtonClicked {
     pub reported_time: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IoTOneClickDeviceInfo {
     #[serde(deserialize_with = "deserialize_lambda_map")]
@@ -41,7 +41,7 @@ pub struct IoTOneClickDeviceInfo {
     pub remaining_life: f64,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IoTOneClickPlacementInfo {
     #[serde(default)]

@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use crate::custom_serde::deserialize_lambda_map;
 
 /// `ConnectEvent` contains the data structure for a Connect event.
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ConnectEvent {
     #[serde(rename = "Details")]
@@ -25,7 +25,7 @@ pub struct ConnectEvent {
 }
 
 /// `ConnectDetails` holds the details of a Connect event
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ConnectDetails {
     #[serde(rename = "ContactData")]
@@ -45,7 +45,7 @@ pub struct ConnectDetails {
 }
 
 /// `ConnectContactData` holds all of the contact information for the user that invoked the Connect event.
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ConnectContactData {
     /// The custom attributes from Connect that the Lambda function was invoked with.
@@ -88,7 +88,7 @@ pub struct ConnectContactData {
 }
 
 /// `ConnectEndpoint` represents routing information.
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ConnectEndpoint {
     #[serde(default)]
@@ -107,7 +107,7 @@ pub struct ConnectEndpoint {
 }
 
 /// `ConnectQueue` represents a queue object.
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ConnectQueue {
     #[serde(default)]

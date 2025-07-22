@@ -12,7 +12,7 @@ pub type CodeBuildPhaseType = String;
 
 /// `CodeBuildEvent` is documented at:
 /// <https://docs.aws.amazon.com/codebuild/latest/userguide/sample-build-notifications.html#sample-build-notifications-ref>
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodeBuildEvent {
     /// AccountID is the id of the AWS account from which the event originated.
@@ -54,7 +54,7 @@ pub struct CodeBuildEvent {
 }
 
 /// `CodeBuildEventDetail` represents the all details related to the code build event
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodeBuildEventDetail {
     #[serde(rename = "build-status")]
@@ -101,7 +101,7 @@ pub struct CodeBuildEventDetail {
 }
 
 /// `CodeBuildEventAdditionalInformation` represents additional information to the code build event
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodeBuildEventAdditionalInformation {
     pub artifact: CodeBuildArtifact,
@@ -133,7 +133,7 @@ pub struct CodeBuildEventAdditionalInformation {
 }
 
 /// `CodeBuildArtifact` represents the artifact provided to build
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodeBuildArtifact {
     #[serde(default)]
@@ -154,7 +154,7 @@ pub struct CodeBuildArtifact {
 }
 
 /// `CodeBuildEnvironment` represents the environment for a build
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodeBuildEnvironment {
     #[serde(default)]
@@ -200,7 +200,7 @@ pub struct CodeBuildEnvironmentVariable {
 }
 
 /// `CodeBuildSource` represent the code source will be build
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodeBuildSource {
     #[serde(default)]
@@ -217,7 +217,7 @@ pub struct CodeBuildSource {
 }
 
 /// `CodeBuildLogs` gives the log details of a code build
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodeBuildLogs {
     #[serde(default)]

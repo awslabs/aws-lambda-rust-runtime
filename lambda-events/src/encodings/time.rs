@@ -7,7 +7,7 @@ use serde::{
 use std::ops::{Deref, DerefMut};
 
 /// Timestamp with millisecond precision.
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Default, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct MillisecondTimestamp(
     #[serde(deserialize_with = "deserialize_milliseconds")]
     #[serde(serialize_with = "serialize_milliseconds")]
@@ -73,7 +73,7 @@ impl DerefMut for SecondDuration {
 }
 
 /// Duration with minute precision.
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Default, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct MinuteDuration(
     #[serde(deserialize_with = "deserialize_duration_minutes")]
     #[serde(serialize_with = "serialize_duration_minutes")]

@@ -18,8 +18,6 @@ jobs:
             repo: cargo-lambda/cargo-lambda
             platform: linux
             arch: x86_64
-            # TODO: unpin once https://github.com/awslabs/aws-lambda-rust-runtime/issues/1006 is fixed
-            tag: v1.8.1
         - name: install Zig toolchain
           uses: mlugg/setup-zig@v2
           with:

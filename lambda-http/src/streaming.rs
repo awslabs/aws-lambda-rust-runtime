@@ -2,7 +2,6 @@ use crate::{http::header::SET_COOKIE, request::LambdaRequest, tower::ServiceBuil
 use bytes::Bytes;
 pub use http::{self, Response};
 use http_body::Body;
-use lambda_runtime::Diagnostic;
 pub use lambda_runtime::{
     self,
     tower::{
@@ -11,6 +10,7 @@ pub use lambda_runtime::{
     },
     Error, LambdaEvent, MetadataPrelude, Service, StreamResponse,
 };
+use lambda_runtime::{tower::util::BoxService, Diagnostic};
 use std::{
     fmt::Debug,
     pin::Pin,
@@ -18,16 +18,24 @@ use std::{
 };
 use tokio_stream::Stream;
 
-/// Converts a handler into a streaming-compatible service for use with AWS
-/// Lambda.
-///
-/// This function wraps a `Service` implementation, transforming its input and
-/// output to be compatible with AWS Lambda's streaming response feature. It
-/// provides the necessary middleware to handle `LambdaEvent` requests and
-/// converts the `http::Response` into a `StreamResponse` containing a metadata
-/// prelude and body stream.
-#[allow(clippy::type_complexity)]
+/// Runs the Lambda runtime with a handler that returns **streaming** HTTP
+/// responses.
 pub fn into_streaming_response<'a, S, B, E>(
+    handler: S,
+) -> BoxService<LambdaEvent<LambdaRequest>, StreamResponse<BodyStream<B>>, E>
+where
+    S: Service<Request, Response = Response<B>, Error = E> + Send + 'static,
+    S::Future: Send + 'a,
+    E: Debug + Into<Diagnostic> + 'static,
+    B: Body + Unpin + Send + 'static,
+    B::Data: Into<Bytes> + Send,
+    B::Error: Into<Error> + Send + Debug,
+{
+    into_streaming_response_inner::<S, B, E>(handler).boxed()
+}
+
+#[allow(clippy::type_complexity)]
+fn into_streaming_response_inner<'a, S, B, E>(
     handler: S,
 ) -> MapResponse<
     MapRequest<S, impl FnMut(LambdaEvent<LambdaRequest>) -> Request>,
@@ -73,12 +81,13 @@ where
         })
 }
 
-/// Starts the Lambda Rust runtime and stream response back [Configure Lambda
-/// Streaming
-/// Response](https://docs.aws.amazon.com/lambda/latest/dg/configuration-response-streaming.html).
+/// Runs the Lambda runtime with a handler that returns **streaming** HTTP
+/// responses.
 ///
-/// This takes care of transforming the LambdaEvent into a [`Request`] and
-/// accepts [`http::Response<http_body::Body>`] as response.
+/// See the [AWS docs for response streaming].
+///
+/// [AWS docs for response streaming]:
+///     https://docs.aws.amazon.com/lambda/latest/dg/configuration-response-streaming.html
 pub async fn run_with_streaming_response<'a, S, B, E>(handler: S) -> Result<(), Error>
 where
     S: Service<Request, Response = Response<B>, Error = E>,
@@ -88,7 +97,7 @@ where
     B::Data: Into<Bytes> + Send,
     B::Error: Into<Error> + Send + Debug,
 {
-    let svc = into_streaming_response(handler);
+    let svc = into_streaming_response_inner(handler);
     lambda_runtime::run(svc).await
 }
 

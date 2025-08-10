@@ -22,7 +22,13 @@ where
     Delete(DeleteRequest<P2>),
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+impl Default for CloudFormationCustomResourceRequest {
+    fn default() -> Self {
+        CloudFormationCustomResourceRequest::Create(CreateRequest::default())
+    }
+}
+
+#[derive(Clone, Default, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct CreateRequest<P2 = Value>
 where
@@ -30,6 +36,7 @@ where
 {
     #[serde(flatten, bound = "")]
     pub common: CommonRequestParams<P2>,
+    // No `other` catch-all here; any additional fields will be caught in `common.other` instead
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
@@ -46,6 +53,7 @@ where
 
     #[serde(flatten, bound = "")]
     pub common: CommonRequestParams<P2>,
+    // No `other` catch-all here; any additional fields will be caught in `common.other` instead
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
@@ -58,9 +66,10 @@ where
 
     #[serde(flatten, bound = "")]
     pub common: CommonRequestParams<P2>,
+    // No `other` catch-all here; any additional fields will be caught in `common.other` instead
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Default, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct CommonRequestParams<P2 = Value>
 where
@@ -72,9 +81,16 @@ where
     pub resource_type: String,
     pub request_id: String,
     pub stack_id: String,
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
+    #[serde(flatten)]
+    pub other: serde_json::Map<String, Value>,
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize, Default)]
+#[derive(Clone, Default, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct CloudFormationCustomResourceResponse<D = Value>
 where
@@ -84,6 +100,13 @@ where
     #[serde(bound = "")]
     pub data: D,
     pub no_echo: bool,
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
+    #[serde(flatten)]
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[cfg(test)]

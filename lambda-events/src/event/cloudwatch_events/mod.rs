@@ -21,7 +21,7 @@ pub mod trustedadvisor;
 
 /// `CloudWatchEvent` is the outer structure of an event sent via CloudWatch Events.
 /// For examples of events that come via CloudWatch Events, see <https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/EventTypes.html>
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Default, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CloudWatchEvent<T1 = Value>
 where
@@ -46,4 +46,11 @@ where
     pub resources: Vec<String>,
     #[serde(bound = "")]
     pub detail: Option<T1>,
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
+    #[serde(flatten)]
+    pub other: serde_json::Map<String, Value>,
 }

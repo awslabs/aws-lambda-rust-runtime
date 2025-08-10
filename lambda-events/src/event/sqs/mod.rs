@@ -1,5 +1,7 @@
 use crate::{custom_serde::deserialize_lambda_map, encodings::Base64Data};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
+#[cfg(feature = "catch-all-fields")]
+use serde_json::Value;
 use std::collections::HashMap;
 
 /// The Event sent to Lambda from SQS. Contains 1 or more individual SQS Messages
@@ -8,6 +10,13 @@ use std::collections::HashMap;
 pub struct SqsEvent {
     #[serde(rename = "Records")]
     pub records: Vec<SqsMessage>,
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
+    #[serde(flatten)]
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// An individual SQS Message, its metadata, and Message Attributes
@@ -38,6 +47,13 @@ pub struct SqsMessage {
     pub event_source: Option<String>,
     #[serde(default)]
     pub aws_region: Option<String>,
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
+    #[serde(flatten)]
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// Alternative to `SqsEvent` to be used alongside `SqsMessageObj<T>` when you need to deserialize a nested object into a struct of type `T` within the SQS Message rather than just using the raw SQS Message string
@@ -48,6 +64,13 @@ pub struct SqsEventObj<T: Serialize> {
     #[serde(rename = "Records")]
     #[serde(bound(deserialize = "T: DeserializeOwned"))]
     pub records: Vec<SqsMessageObj<T>>,
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
+    #[serde(flatten)]
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// Alternative to `SqsMessage` to be used alongside `SqsEventObj<T>` when you need to deserialize a nested object into a struct of type `T` within the SQS Message rather than just using the raw SQS Message string
@@ -83,6 +106,13 @@ pub struct SqsMessageObj<T: Serialize> {
     pub event_source: Option<String>,
     #[serde(default)]
     pub aws_region: Option<String>,
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
+    #[serde(flatten)]
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
@@ -96,18 +126,39 @@ pub struct SqsMessageAttribute {
     pub binary_list_values: Vec<Base64Data>,
     #[serde(default)]
     pub data_type: Option<String>,
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
+    #[serde(flatten)]
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SqsBatchResponse {
     pub batch_item_failures: Vec<BatchItemFailure>,
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
+    #[serde(flatten)]
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BatchItemFailure {
     pub item_identifier: String,
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
+    #[serde(flatten)]
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// The Event sent to Lambda from the SQS API. Contains 1 or more individual SQS Messages
@@ -117,6 +168,13 @@ pub struct BatchItemFailure {
 pub struct SqsApiEventObj<T: Serialize> {
     #[serde(bound(deserialize = "T: DeserializeOwned"))]
     pub messages: Vec<SqsApiMessageObj<T>>,
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
+    #[serde(flatten)]
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// The Event sent to Lambda from SQS API. Contains 1 or more individual SQS Messages
@@ -124,6 +182,13 @@ pub struct SqsApiEventObj<T: Serialize> {
 #[serde(rename_all = "camelCase")]
 pub struct SqsApiEvent {
     pub messages: Vec<SqsApiMessage>,
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
+    #[serde(flatten)]
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// Alternative to SqsApiEvent to be used alongside `SqsApiMessageObj<T>` when you need to
@@ -153,6 +218,13 @@ pub struct SqsApiMessageObj<T: Serialize> {
     #[serde(deserialize_with = "deserialize_lambda_map")]
     #[serde(default)]
     pub message_attributes: HashMap<String, SqsMessageAttribute>,
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
+    #[serde(flatten)]
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// An individual SQS API Message, its metadata, and Message Attributes
@@ -176,6 +248,13 @@ pub struct SqsApiMessage {
     #[serde(deserialize_with = "deserialize_lambda_map")]
     #[serde(default)]
     pub message_attributes: HashMap<String, SqsMessageAttribute>,
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
+    #[serde(flatten)]
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[cfg(test)]

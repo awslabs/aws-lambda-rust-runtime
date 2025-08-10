@@ -1,6 +1,8 @@
 use crate::{custom_serde::serialize_headers, encodings::Base64Data, iam::IamPolicyDocument};
 use http::HeaderMap;
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "catch-all-fields")]
+use serde_json::Value;
 
 /// `IoTCoreCustomAuthorizerRequest` represents the request to an IoT Core custom authorizer.
 /// See <https://docs.aws.amazon.com/iot/latest/developerguide/config-custom-auth.html>
@@ -13,6 +15,13 @@ pub struct IoTCoreCustomAuthorizerRequest {
     pub protocols: Vec<String>,
     pub protocol_data: Option<IoTCoreProtocolData>,
     pub connection_metadata: Option<IoTCoreConnectionMetadata>,
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
+    #[serde(flatten)]
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
@@ -21,6 +30,13 @@ pub struct IoTCoreProtocolData {
     pub tls: Option<IoTCoreTlsContext>,
     pub http: Option<IoTCoreHttpContext>,
     pub mqtt: Option<IoTCoreMqttContext>,
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
+    #[serde(flatten)]
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
@@ -28,6 +44,13 @@ pub struct IoTCoreProtocolData {
 pub struct IoTCoreTlsContext {
     #[serde(default)]
     pub server_name: Option<String>,
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
+    #[serde(flatten)]
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
@@ -38,6 +61,13 @@ pub struct IoTCoreHttpContext {
     pub headers: HeaderMap,
     #[serde(default)]
     pub query_string: Option<String>,
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
+    #[serde(flatten)]
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
@@ -48,6 +78,13 @@ pub struct IoTCoreMqttContext {
     pub password: Base64Data,
     #[serde(default)]
     pub username: Option<String>,
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
+    #[serde(flatten)]
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
@@ -55,6 +92,13 @@ pub struct IoTCoreMqttContext {
 pub struct IoTCoreConnectionMetadata {
     #[serde(default)]
     pub id: Option<String>,
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
+    #[serde(flatten)]
+    pub other: serde_json::Map<String, Value>,
 }
 
 /// `IoTCoreCustomAuthorizerResponse` represents the response from an IoT Core custom authorizer.
@@ -68,6 +112,13 @@ pub struct IoTCoreCustomAuthorizerResponse {
     pub disconnect_after_in_seconds: u32,
     pub refresh_after_in_seconds: u32,
     pub policy_documents: Vec<Option<IamPolicyDocument>>,
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
+    #[serde(flatten)]
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[cfg(test)]

@@ -77,6 +77,9 @@ impl LambdaResponse {
                 // "multi_value_headers" fields together resulting in duplicate response headers.
                 headers: HeaderMap::new(),
                 multi_value_headers: headers,
+                // Today, this implementation doesn't provide any additional fields
+                #[cfg(feature = "catch-all-fields")]
+                other: Default::default(),
             }),
             #[cfg(feature = "apigw_http")]
             RequestOrigin::ApiGatewayV2 => {
@@ -101,6 +104,9 @@ impl LambdaResponse {
                     // are combined with commas and included in the headers field.
                     headers,
                     multi_value_headers: HeaderMap::new(),
+                    // Today, this implementation doesn't provide any additional fields
+                    #[cfg(feature = "catch-all-fields")]
+                    other: Default::default(),
                 })
             }
             #[cfg(feature = "alb")]
@@ -118,6 +124,9 @@ impl LambdaResponse {
                     status_code,
                     parts.status.canonical_reason().unwrap_or_default()
                 )),
+                // Today, this implementation doesn't provide any additional fields
+                #[cfg(feature = "catch-all-fields")]
+                other: Default::default(),
             }),
             #[cfg(feature = "apigw_websockets")]
             RequestOrigin::WebSocket => LambdaResponse::ApiGatewayV1(ApiGatewayProxyResponse {
@@ -128,6 +137,9 @@ impl LambdaResponse {
                 // "multi_value_headers" fields together resulting in duplicate response headers.
                 headers: HeaderMap::new(),
                 multi_value_headers: headers,
+                // Today, this implementation doesn't provide any additional fields
+                #[cfg(feature = "catch-all-fields")]
+                other: Default::default(),
             }),
             #[cfg(feature = "pass_through")]
             RequestOrigin::PassThrough => {

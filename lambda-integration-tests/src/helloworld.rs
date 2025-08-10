@@ -22,6 +22,8 @@ async fn func(_event: LambdaEvent<ApiGatewayProxyRequest>) -> Result<ApiGatewayP
         is_base64_encoded: false,
         body: Some("Hello world!".into()),
         headers,
+        #[cfg(feature = "catch-all-fields")]
+        other: Default::default(),
     };
     Ok(resp)
 }

@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use crate::custom_serde::deserialize_lambda_map;
 
 /// `AutoScalingEvent` struct is used to parse the json for auto scaling event types //
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AutoScalingEvent<T1 = Value>
 where
@@ -41,6 +41,13 @@ where
     #[serde(default)]
     #[serde(bound = "")]
     pub detail: HashMap<String, T1>,
+    /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
+    /// Enabled with Cargo feature `catch-all-fields`.
+    /// If `catch-all-fields` is disabled, any additional fields that are present will be ignored.
+    #[cfg(feature = "catch-all-fields")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "catch-all-fields")))]
+    #[serde(flatten)]
+    pub other: serde_json::Map<String, Value>,
 }
 
 #[cfg(test)]

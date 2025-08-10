@@ -39,15 +39,21 @@ fn allow(method_arn: &str) -> ApiGatewayCustomAuthorizerResponse {
         resource: vec![method_arn.to_owned()],
         effect: aws_lambda_events::iam::IamPolicyEffect::Allow,
         condition: None,
+        #[cfg(feature = "catch-all-fields")]
+        other: Default::default(),
     };
     let policy = ApiGatewayCustomAuthorizerPolicy {
         version: Some("2012-10-17".to_string()),
         statement: vec![stmt],
+        #[cfg(feature = "catch-all-fields")]
+        other: Default::default(),
     };
     ApiGatewayCustomAuthorizerResponse {
         principal_id: Some("user".to_owned()),
         policy_document: policy,
         context: json!({ "hello": "world" }),
         usage_identifier_key: None,
+        #[cfg(feature = "catch-all-fields")]
+        other: Default::default(),
     }
 }

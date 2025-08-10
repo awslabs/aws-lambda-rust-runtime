@@ -52,8 +52,8 @@ where
 
             let mut prelude_headers = parts.headers;
 
-            let cookies = prelude_headers.get_all(SET_COOKIE);
-            let cookies = cookies
+            let cookies = prelude_headers
+                .get_all(SET_COOKIE)
                 .iter()
                 .map(|c| String::from_utf8_lossy(c.as_bytes()).to_string())
                 .collect::<Vec<String>>();

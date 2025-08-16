@@ -6,12 +6,12 @@ use core::{
     pin::Pin,
     task::{Context, Poll},
 };
+use futures_util::Stream;
 pub use http::{self, Response};
 use http_body::Body;
 use lambda_runtime::Diagnostic;
 pub use lambda_runtime::{Error, LambdaEvent, MetadataPrelude, Service, StreamResponse};
 use std::marker::PhantomData;
-use tokio_stream::Stream;
 
 /// An adapter that lifts a standard [`Service<Request>`] into a
 /// [`Service<LambdaEvent<LambdaRequest>>`] which produces streaming Lambda HTTP

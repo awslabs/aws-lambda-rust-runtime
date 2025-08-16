@@ -1,46 +1,27 @@
-use crate::{http::header::SET_COOKIE, request::LambdaRequest, tower::ServiceBuilder, Request, RequestExt};
+use crate::{http::header::SET_COOKIE, request::LambdaRequest, Request, RequestExt};
 use bytes::Bytes;
-pub use http::{self, Response};
-use http_body::Body;
-pub use lambda_runtime::{
-    self,
-    tower::{
-        util::{MapRequest, MapResponse},
-        ServiceExt,
-    },
-    Error, LambdaEvent, MetadataPrelude, Service, StreamResponse,
-};
-use lambda_runtime::{tower::util::BoxService, Diagnostic};
-use std::{
+use core::{
     fmt::Debug,
+    future::Future,
     pin::Pin,
     task::{Context, Poll},
 };
+pub use http::{self, Response};
+use http_body::Body;
+use lambda_runtime::Diagnostic;
+pub use lambda_runtime::{Error, LambdaEvent, MetadataPrelude, Service, StreamResponse};
+use std::marker::PhantomData;
 use tokio_stream::Stream;
 
-/// Runs the Lambda runtime with a handler that returns **streaming** HTTP
+/// An adapter that lifts a standard [`Service<Request>`] into a
+/// [`Service<LambdaEvent<LambdaRequest>>`] which produces streaming Lambda HTTP
 /// responses.
-pub fn into_streaming_response<'a, S, B, E>(
-    handler: S,
-) -> BoxService<LambdaEvent<LambdaRequest>, StreamResponse<BodyStream<B>>, E>
-where
-    S: Service<Request, Response = Response<B>, Error = E> + Send + 'static,
-    S::Future: Send + 'a,
-    E: Debug + Into<Diagnostic> + 'static,
-    B: Body + Unpin + Send + 'static,
-    B::Data: Into<Bytes> + Send,
-    B::Error: Into<Error> + Send + Debug,
-{
-    into_streaming_response_inner::<S, B, E>(handler).boxed()
+pub struct StreamAdapter<'a, S, B> {
+    service: S,
+    _phantom_data: PhantomData<&'a B>,
 }
 
-#[allow(clippy::type_complexity)]
-fn into_streaming_response_inner<'a, S, B, E>(
-    handler: S,
-) -> MapResponse<
-    MapRequest<S, impl FnMut(LambdaEvent<LambdaRequest>) -> Request>,
-    impl FnOnce(Response<B>) -> StreamResponse<BodyStream<B>> + Clone,
->
+impl<'a, S, B, E> From<S> for StreamAdapter<'a, S, B>
 where
     S: Service<Request, Response = Response<B>, Error = E>,
     S::Future: Send + 'a,
@@ -49,36 +30,56 @@ where
     B::Data: Into<Bytes> + Send,
     B::Error: Into<Error> + Send + Debug,
 {
-    ServiceBuilder::new()
-        .map_request(|req: LambdaEvent<LambdaRequest>| {
-            let event: Request = req.payload.into();
-            event.with_lambda_context(req.context)
-        })
-        .service(handler)
-        .map_response(|res: Response<B>| {
+    fn from(service: S) -> Self {
+        StreamAdapter {
+            service,
+            _phantom_data: PhantomData,
+        }
+    }
+}
+
+impl<'a, S, B, E> Service<LambdaEvent<LambdaRequest>> for StreamAdapter<'a, S, B>
+where
+    S: Service<Request, Response = Response<B>, Error = E>,
+    S::Future: Send + 'a,
+    B: Body + Send + 'static,
+    B::Data: Into<Bytes> + Send,
+    B::Error: Into<Error> + Send + Debug,
+    E: Debug + Into<Diagnostic>,
+{
+    type Response = StreamResponse<BodyStream<B>>;
+    type Error = E;
+    type Future = Pin<Box<dyn Future<Output = Result<Self::Response, E>> + Send + 'a>>;
+
+    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+        self.service.poll_ready(cx)
+    }
+
+    fn call(&mut self, req: LambdaEvent<LambdaRequest>) -> Self::Future {
+        let event: Request = req.payload.into();
+        let fut = self.service.call(event.with_lambda_context(req.context));
+        Box::pin(async move {
+            let res = fut.await?;
             let (parts, body) = res.into_parts();
 
-            let mut prelude_headers = parts.headers;
-
-            let cookies = prelude_headers
+            let mut headers = parts.headers;
+            let cookies = headers
                 .get_all(SET_COOKIE)
                 .iter()
                 .map(|c| String::from_utf8_lossy(c.as_bytes()).to_string())
-                .collect::<Vec<String>>();
+                .collect::<Vec<_>>();
+            headers.remove(SET_COOKIE);
 
-            prelude_headers.remove(SET_COOKIE);
-
-            let metadata_prelude = MetadataPrelude {
-                headers: prelude_headers,
-                status_code: parts.status,
-                cookies,
-            };
-
-            StreamResponse {
-                metadata_prelude,
+            Ok(StreamResponse {
+                metadata_prelude: MetadataPrelude {
+                    headers,
+                    status_code: parts.status,
+                    cookies,
+                },
                 stream: BodyStream { body },
-            }
+            })
         })
+    }
 }
 
 /// Runs the Lambda runtime with a handler that returns **streaming** HTTP
@@ -97,8 +98,7 @@ where
     B::Data: Into<Bytes> + Send,
     B::Error: Into<Error> + Send + Debug,
 {
-    let svc = into_streaming_response_inner(handler);
-    lambda_runtime::run(svc).await
+    lambda_runtime::run(StreamAdapter::from(handler)).await
 }
 
 pin_project_lite::pin_project! {

@@ -1,0 +1,15 @@
+[package]
+name = "http-axum-streaming"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = "0.8"
+bytes = "1"
+futures-util = "0.3"
+lambda_http = { path = "../../lambda-http", default-features = false, features = [
+  "apigw_rest", "apigw_http", "tracing"
+] }
+thiserror = "2.0"
+tokio = { version = "1", features = ["macros"] }
+tokio-stream = "0.1.2"

@@ -68,33 +68,6 @@ where
     }
 }
 
-/// Converts an `http::Response<B>` into a streaming Lambda response.
-fn into_stream_response<B>(res: Response<B>) -> StreamResponse<BodyStream<B>>
-where
-    B: Body + Unpin + Send + 'static,
-    B::Data: Into<Bytes> + Send,
-    B::Error: Into<Error> + Send + Debug,
-{
-    let (parts, body) = res.into_parts();
-
-    let mut headers = parts.headers;
-    let cookies = headers
-        .get_all(SET_COOKIE)
-        .iter()
-        .map(|c| String::from_utf8_lossy(c.as_bytes()).to_string())
-        .collect::<Vec<_>>();
-    headers.remove(SET_COOKIE);
-
-    StreamResponse {
-        metadata_prelude: MetadataPrelude {
-            headers,
-            status_code: parts.status,
-            cookies,
-        },
-        stream: BodyStream { body },
-    }
-}
-
 /// Builds a streaming-aware Tower service from a `Service<Request>` **without**
 /// boxing its future (no heap allocation / vtable).
 ///
@@ -125,6 +98,33 @@ where
         })
         .service(handler)
         .map_response(into_stream_response)
+}
+
+/// Converts an `http::Response<B>` into a streaming Lambda response.
+fn into_stream_response<B>(res: Response<B>) -> StreamResponse<BodyStream<B>>
+where
+    B: Body + Unpin + Send + 'static,
+    B::Data: Into<Bytes> + Send,
+    B::Error: Into<Error> + Send + Debug,
+{
+    let (parts, body) = res.into_parts();
+
+    let mut headers = parts.headers;
+    let cookies = headers
+        .get_all(SET_COOKIE)
+        .iter()
+        .map(|c| String::from_utf8_lossy(c.as_bytes()).to_string())
+        .collect::<Vec<_>>();
+    headers.remove(SET_COOKIE);
+
+    StreamResponse {
+        metadata_prelude: MetadataPrelude {
+            headers,
+            status_code: parts.status,
+            cookies,
+        },
+        stream: BodyStream { body },
+    }
 }
 
 /// Runs the Lambda runtime with a handler that returns **streaming** HTTP

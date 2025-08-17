@@ -177,10 +177,7 @@ where
 mod test_stream_adapter {
     use super::*;
 
-    use crate::{
-        tower::{ServiceBuilder, ServiceExt},
-        Body, Request, StreamAdapter,
-    };
+    use crate::Body;
     use http::StatusCode;
 
     // A middleware that logs requests before forwarding them to another service

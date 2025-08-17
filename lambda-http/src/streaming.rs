@@ -77,7 +77,7 @@ where
 /// Used internally by [`run_with_streaming_response`]; not part of the public
 /// API.
 #[allow(clippy::type_complexity)]
-fn into_streaming_response<'a, S, B, E>(
+fn into_stream_service<'a, S, B, E>(
     handler: S,
 ) -> MapResponse<
     MapRequest<S, impl FnMut(LambdaEvent<LambdaRequest>) -> Request>,
@@ -143,7 +143,7 @@ where
     B::Data: Into<Bytes> + Send,
     B::Error: Into<Error> + Send + Debug,
 {
-    lambda_runtime::run(into_streaming_response(handler)).await
+    lambda_runtime::run(into_stream_service(handler)).await
 }
 
 pin_project_lite::pin_project! {

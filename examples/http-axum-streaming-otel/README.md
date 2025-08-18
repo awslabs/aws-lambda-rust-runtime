@@ -1,7 +1,12 @@
 # AWS Lambda Function example
 
-This example demonstrates building a **streaming** HTTP response with Axum,
-deployed on AWS Lambda using a custom runtime.
+This example shows how to build a **streaming HTTP response** with `Axum` and
+run it on AWS Lambda using a custom runtime with OpenTelemetry (OTel) support.
+
+Tracing data is exported as console log entries visible in CloudWatch. Note that
+CloudWatch assigns a `Timestamp` to each log entry based on when it receives the
+data (batch exported). To see when work actually occurred, look at the span's
+event attributes, which include the precise local timestamps of those events.
 
 ## Build & Deploy
 

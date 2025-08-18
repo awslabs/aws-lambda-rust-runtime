@@ -80,8 +80,6 @@ async fn stream_words() -> Result<Response, AppError> {
         .body(body)?)
 }
 
-// Creates a dynamic router based on the environment variable. Demonstrating how
-// you can type-erase a service
 fn create_svc() -> BoxService<Request<lambda_http::Body>, Response<Body>, Infallible> {
     if std::env::var("USE_NUMBERS").as_deref() == Ok("1") {
         BoxService::new(Router::new().route("/", get(stream_numbers)))

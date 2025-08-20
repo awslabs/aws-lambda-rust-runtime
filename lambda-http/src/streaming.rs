@@ -198,26 +198,27 @@ mod test_stream_adapter {
         }
 
         fn call(&mut self, event: LambdaEvent<LambdaRequest>) -> Self::Future {
-            // Log the request
             println!("Lambda event: {event:#?}");
-
             self.inner.call(event)
         }
     }
 
-    /// This tests that `StreamAdapter` can be used in a `tower::Service` where
-    /// the user may require additional middleware between `lambda_runtime::run`
-    /// and where the `LambdaEvent` is converted into a `Request`.
+    /// Works with a concrete service stack (no boxing)
     #[test]
-    fn stream_adapter_is_boxable() {
+    fn stream_adapter_with_concrete_stack() {
         let _svc = ServiceBuilder::new()
-            .layer_fn(|service| {
-                // This could be any middleware that logs, inspects, or
-                // manipulates the `LambdaEvent` before it's converted to a
-                // `Request` by `Adapter`.
+            .layer_fn(|service| LogService { inner: service })
+            .layer_fn(StreamAdapter::from)
+            .service_fn(
+                |_req: Request| async move { http::Response::builder().status(StatusCode::OK).body(Body::Empty) },
+            );
+    }
 
-                LogService { inner: service }
-            })
+    /// Also works when the stack is boxed (type-erased)
+    #[test]
+    fn stream_adapter_with_boxed_stack() {
+        let _svc = ServiceBuilder::new()
+            .layer_fn(|service| LogService { inner: service })
             .layer_fn(StreamAdapter::from)
             .service_fn(
                 |_req: Request| async move { http::Response::builder().status(StatusCode::OK).body(Body::Empty) },

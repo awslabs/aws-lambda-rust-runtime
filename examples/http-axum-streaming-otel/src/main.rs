@@ -13,7 +13,6 @@
 
 use axum::{
     body::Body,
-    extract::Request,
     http::{
         self,
         header::{CACHE_CONTROL, CONTENT_TYPE},
@@ -31,7 +30,6 @@ use lambda_http::{
         tracing::Instrument,
         Runtime,
     },
-    tower::util::BoxService,
     tracing, Error, StreamAdapter,
 };
 use opentelemetry::trace::TracerProvider;
@@ -51,32 +49,6 @@ impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()).into_response()
     }
-}
-
-#[tracing::instrument(skip_all)]
-async fn stream_numbers() -> Result<Response, AppError> {
-    let (tx, rx) = mpsc::channel::<Result<Bytes, Infallible>>(8);
-    let body = Body::from_stream(ReceiverStream::new(rx));
-
-    tokio::spawn(
-        async move {
-            for (idx, i) in (1..=4).enumerate() {
-                tokio::time::sleep(Duration::from_millis(500)).await;
-                let line = format!("number: {i}\n");
-                tracing::info!(chunk.idx = idx, bytes = line.len(), "emit");
-                if tx.send(Ok(Bytes::from(line))).await.is_err() {
-                    break;
-                }
-            }
-        }
-        .instrument(tracing::info_span!("producer.stream_numbers")),
-    );
-
-    Ok(Response::builder()
-        .status(StatusCode::OK)
-        .header(CONTENT_TYPE, "text/plain; charset=utf-8")
-        .header(CACHE_CONTROL, "no-cache")
-        .body(body)?)
 }
 
 #[tracing::instrument(skip_all)]
@@ -105,14 +77,6 @@ async fn stream_words() -> Result<Response, AppError> {
         .body(body)?)
 }
 
-fn create_svc() -> BoxService<Request<lambda_http::Body>, Response<Body>, Infallible> {
-    if std::env::var("USE_NUMBERS").as_deref() == Ok("1") {
-        BoxService::new(Router::new().route("/", get(stream_numbers)))
-    } else {
-        BoxService::new(Router::new().route("/", get(stream_words)))
-    }
-}
-
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     // Set up OpenTelemetry tracer provider that writes spans to stdout for
@@ -129,7 +93,7 @@ async fn main() -> Result<(), Error> {
         ))
         .init();
 
-    let svc = create_svc();
+    let svc = Router::new().route("/", get(stream_words));
 
     // Initialize the Lambda runtime and add OpenTelemetry tracing
     let runtime = Runtime::new(StreamAdapter::from(svc)).layer(

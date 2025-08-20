@@ -13,7 +13,6 @@
 
 use axum::{
     body::Body,
-    extract::Request,
     http::{
         self,
         header::{CACHE_CONTROL, CONTENT_TYPE},
@@ -25,7 +24,7 @@ use axum::{
 };
 use bytes::Bytes;
 use core::{convert::Infallible, time::Duration};
-use lambda_http::{run_with_streaming_response, tower::util::BoxService, tracing, Error};
+use lambda_http::{run_with_streaming_response, tracing, Error};
 use thiserror::Error;
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
@@ -40,24 +39,6 @@ impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()).into_response()
     }
-}
-
-async fn stream_numbers() -> Result<Response, AppError> {
-    let (tx, rx) = mpsc::channel::<Result<Bytes, Infallible>>(8);
-    let body = Body::from_stream(ReceiverStream::new(rx));
-
-    tokio::spawn(async move {
-        for i in 1..=4 {
-            tokio::time::sleep(Duration::from_millis(500)).await;
-            let _ = tx.send(Ok(Bytes::from(format!("number: {i}\n")))).await;
-        }
-    });
-
-    Ok(Response::builder()
-        .status(StatusCode::OK)
-        .header(CONTENT_TYPE, "text/plain; charset=utf-8")
-        .header(CACHE_CONTROL, "no-cache")
-        .body(body)?)
 }
 
 async fn stream_words() -> Result<Response, AppError> {
@@ -80,19 +61,11 @@ async fn stream_words() -> Result<Response, AppError> {
         .body(body)?)
 }
 
-fn create_svc() -> BoxService<Request<lambda_http::Body>, Response<Body>, Infallible> {
-    if std::env::var("USE_NUMBERS").as_deref() == Ok("1") {
-        BoxService::new(Router::new().route("/", get(stream_numbers)))
-    } else {
-        BoxService::new(Router::new().route("/", get(stream_words)))
-    }
-}
-
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     tracing::init_default_subscriber();
 
-    let svc = create_svc();
+    let svc = Router::new().route("/", get(stream_words));
 
     // Automatically convert the service into a streaming response with a
     // default runtime.

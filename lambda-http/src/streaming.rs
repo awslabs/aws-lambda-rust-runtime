@@ -203,26 +203,16 @@ mod test_stream_adapter {
         }
     }
 
-    /// Works with a concrete service stack (no boxing)
     #[test]
-    fn stream_adapter_with_concrete_stack() {
-        let _svc = ServiceBuilder::new()
+    fn stream_adapter_is_boxable() {
+        // Works with a concrete service stack (no boxing)
+        let svc = ServiceBuilder::new()
             .layer_fn(|service| LogService { inner: service })
             .layer_fn(StreamAdapter::from)
             .service_fn(
                 |_req: Request| async move { http::Response::builder().status(StatusCode::OK).body(Body::Empty) },
             );
-    }
-
-    /// Also works when the stack is boxed (type-erased)
-    #[test]
-    fn stream_adapter_with_boxed_stack() {
-        let _svc = ServiceBuilder::new()
-            .layer_fn(|service| LogService { inner: service })
-            .layer_fn(StreamAdapter::from)
-            .service_fn(
-                |_req: Request| async move { http::Response::builder().status(StatusCode::OK).body(Body::Empty) },
-            )
-            .boxed();
+        // Also works when the stack is boxed (type-erased)
+        let _boxed_svc = svc.boxed();
     }
 }

@@ -4,9 +4,6 @@
 //! running in AWS Lambda using a **custom** `lambda_runtime::Runtime` with
 //! OpenTelemetry (OTel) support.
 //!
-//! - Streams numbers if `USE_NUMBERS` is set, otherwise streams words.
-//! - Uses `BoxService` to erase the router's concrete type so different routers
-//!   can be selected at runtime.
 //! - Runs with a custom `Runtime` + `StreamAdapter`, which convert Axum
 //!   responses into streaming bodies delivered as data is produced (unlike the
 //!   default `run_with_streaming_response` helper).

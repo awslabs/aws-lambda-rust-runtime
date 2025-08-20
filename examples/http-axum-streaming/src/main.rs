@@ -3,9 +3,6 @@
 //! Demonstrates serving **incremental streaming responses** from Axum handlers
 //! running in AWS Lambda.
 //!
-//! - Streams numbers if `USE_NUMBERS` is set, otherwise streams words.
-//! - Uses `BoxService` to erase the router's concrete type so different routers
-//!   can be selected at runtime.
 //! - Runs with `run_with_streaming_response`, which uses the **default Lambda
 //!   runtime** to convert Axum responses into streaming bodies delivered as
 //!   data is produced (unlike the OTel example, which used a custom `Runtime` +

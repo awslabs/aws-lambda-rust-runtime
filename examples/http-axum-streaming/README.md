@@ -9,10 +9,7 @@ deployed on AWS Lambda using a custom runtime.
    [cargo-lambda](https://github.com/cargo-lambda/cargo-lambda#installation)
 2. Build the function with `cargo lambda build --release`
 3. Deploy the function to AWS Lambda with:
-   - `cargo lambda deploy --enable-function-url --iam-role YOUR_ROLE --env-var
-USE_NUMBERS=0` to stream words
-   - `cargo lambda deploy --enable-function-url --iam-role YOUR_ROLE --env-var
-USE_NUMBERS=1` to stream numbers.
+   - `cargo lambda deploy --enable-function-url --iam-role YOUR_ROLE` to stream words
 4. Enable Lambda streaming response on Lambda console: change the function url's
    invoke mode to `RESPONSE_STREAM`
 5. Verify the function works: `curl -N <function-url>`. The results should be

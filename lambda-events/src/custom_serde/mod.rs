@@ -34,6 +34,11 @@ pub(crate) mod float_unix_epoch;
 #[cfg(any(feature = "alb", feature = "apigw"))]
 pub(crate) mod http_method;
 
+#[cfg(feature = "alb")]
+mod query_string_parameters;
+#[cfg(feature = "alb")]
+pub(crate) use self::query_string_parameters::*;
+
 pub(crate) fn deserialize_base64<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
 where
     D: Deserializer<'de>,

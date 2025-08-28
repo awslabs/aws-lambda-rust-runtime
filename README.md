@@ -392,6 +392,31 @@ curl -v -X POST \
 
 You can read more about how [cargo lambda watch](https://www.cargo-lambda.info/commands/watch.html) and [cargo lambda invoke](https://www.cargo-lambda.info/commands/invoke.html) work on the project's [documentation page](https://www.cargo-lambda.info).
 
+### Local testing with Runtime Interface Emulator (RIE)
+
+For testing with the official AWS Lambda Runtime Interface Emulator, use the provided RIE testing infrastructure:
+
+```bash
+make test-rie
+```
+
+By default, this uses the `basic-lambda` example. To test a different example:
+
+```bash
+make test-rie EXAMPLE=basic-sqs
+make test-rie EXAMPLE=http-basic-lambda
+```
+
+This command will:
+1. Build a Docker image with Rust toolchain and RIE
+2. Compile the specified example inside the Linux container
+3. Start the RIE container on port 9000
+4. Display the appropriate curl command for testing
+
+Different examples expect different payload formats. Check the example's source code in `examples/EXAMPLE_NAME/src/main.rs`
+
+This provides automated testing with Docker and RIE, ensuring your Lambda functions work in a Linux environment identical to AWS Lambda.
+
 ### Lambda Debug Proxy
 
 Lambdas can be run and debugged locally using a special [Lambda debug proxy](https://github.com/rimutaka/lambda-debug-proxy) (a non-AWS repo maintained by @rimutaka), which is a Lambda function that forwards incoming requests to one AWS SQS queue and reads responses from another queue. A local proxy running on your development computer reads the queue, calls your Lambda locally and sends back the response. This approach allows debugging of Lambda functions locally while being part of your AWS workflow. The Lambda handler code does not need to be modified between the local and AWS versions.

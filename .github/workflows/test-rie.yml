@@ -1,0 +1,50 @@
+name: Test with RIE
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  test-rie:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        example: [basic-lambda, basic-sqs]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Build and test ${{ matrix.example }} with RIE
+      run: |
+        docker build -f Dockerfile.rie --build-arg EXAMPLE=${{ matrix.example }} -t rust-lambda-rie-test-${{ matrix.example }} .
+        
+        # Start container in background
+        docker run -d -p 9000:8080 --name rie-test-${{ matrix.example }} rust-lambda-rie-test-${{ matrix.example }}
+        
+        # Wait for container to be ready
+        sleep 5
+        
+        # Test the function based on example type
+        if [ "${{ matrix.example }}" = "basic-lambda" ]; then
+          PAYLOAD='{"command": "test from CI"}'
+        elif [ "${{ matrix.example }}" = "basic-sqs" ]; then
+          PAYLOAD='{"Records": [{"body": "{\"id\": \"123\", \"text\": \"hello from SQS\"}", "messageId": "test-id", "receiptHandle": "test-handle", "attributes": {}, "messageAttributes": {}, "md5OfBody": "test-md5", "eventSource": "aws:sqs", "eventSourceARN": "arn:aws:sqs:us-east-1:123456789012:test-queue", "awsRegion": "us-east-1"}]}'
+        fi
+        
+        # Make request and verify response
+        RESPONSE=$(curl -s -XPOST 'http://localhost:9000/2015-03-31/functions/function/invocations' \
+          -d "$PAYLOAD" \
+          -H 'Content-Type: application/json')
+        
+        echo "Response: $RESPONSE"
+        
+        # Basic validation that we got a response (not empty)
+        if [ -z "$RESPONSE" ]; then
+          echo "Error: Empty response"
+          exit 1
+        fi
+        
+        # Stop container
+        docker stop rie-test-${{ matrix.example }}

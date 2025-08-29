@@ -1,4 +1,5 @@
 use crate::custom_serde::{deserialize_headers, serialize_headers};
+use crate::encodings::Body;
 use http::HeaderMap;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "catch-all-fields")]
@@ -30,7 +31,7 @@ pub struct VpcLatticeResponse {
 
     /// The response body
     #[serde(default)]
-    pub body: Option<String>,
+    pub body: Option<Body>,
 
     /// Catchall to catch any additional fields that were present but not explicitly defined by this struct.
     /// Enabled with Cargo feature `catch-all-fields`.

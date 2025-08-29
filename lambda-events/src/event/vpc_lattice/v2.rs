@@ -154,23 +154,23 @@ mod test {
         assert_eq!("GET", parsed.method);
         assert_eq!(
             "curl/7.68.0",
-            parsed.headers.get_all("user-agent").iter().nth(0).unwrap()
+            parsed.headers.get_all("user-agent").iter().next().unwrap()
         );
 
         // headers including testing multi-values
         let header_multi = parsed.headers.get_all("multi");
-        assert_eq!("x", header_multi.iter().nth(0).unwrap());
+        assert_eq!("x", header_multi.iter().next().unwrap());
         assert_eq!("y", header_multi.iter().nth(1).unwrap());
 
         // query string including testing multi-values
         assert_eq!("prod", parsed.query_string_parameters.first("state").unwrap());
         let query_multi = parsed.query_string_parameters.all("multi").unwrap();
-        assert_eq!(&"a", query_multi.iter().nth(0).unwrap());
-        assert_eq!(&"DEF", query_multi.iter().nth(1).unwrap());
-        assert_eq!(&"g", query_multi.iter().nth(2).unwrap());
+        assert_eq!(&"a", query_multi.first().unwrap());
+        assert_eq!(&"DEF", query_multi.get(1).unwrap());
+        assert_eq!(&"g", query_multi.get(2).unwrap());
 
         assert!(parsed.body.is_none());
-        assert_eq!(false, parsed.is_base64_encoded);
+        assert!(!parsed.is_base64_encoded);
 
         // nested structure testing
         assert_eq!(

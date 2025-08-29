@@ -61,11 +61,11 @@ mod test {
         assert_eq!("POST", parsed.method);
         assert_eq!(
             "curl/7.68.0",
-            parsed.headers.get_all("user-agent").iter().nth(0).unwrap()
+            parsed.headers.get_all("user-agent").iter().next().unwrap()
         );
         assert_eq!("electronics", parsed.query_string_parameters.first("category").unwrap());
         assert_eq!("{\"id\": 5, \"description\": \"TV\"}", parsed.body.unwrap());
-        assert_eq!(false, parsed.is_base64_encoded);
+        assert!(!parsed.is_base64_encoded);
     }
 
     #[test]
@@ -74,7 +74,7 @@ mod test {
         let data = include_bytes!("../../fixtures/example-vpc-lattice-v1-request.json");
         let parsed: VpcLatticeRequestV1 = serde_json::from_slice(data).unwrap();
 
-        assert_eq!("abcd", parsed.headers.get_all("multi").iter().nth(0).unwrap());
+        assert_eq!("abcd", parsed.headers.get_all("multi").iter().next().unwrap());
         assert_eq!("DEF", parsed.headers.get_all("multi").iter().nth(1).unwrap());
     }
 

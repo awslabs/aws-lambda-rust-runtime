@@ -185,8 +185,8 @@ mod tests {
         let r: RequestWithHeaders =
             serde_json::from_str("{ \"headers\": {\"x-foo\": \"z\", \"x-multi\": \"abcd, DEF, w\" }}").unwrap();
 
-        assert_eq!("z", r.headers.get_all("x-foo").iter().nth(0).unwrap());
-        assert_eq!("abcd", r.headers.get_all("x-multi").iter().nth(0).unwrap());
+        assert_eq!("z", r.headers.get_all("x-foo").iter().next().unwrap());
+        assert_eq!("abcd", r.headers.get_all("x-multi").iter().next().unwrap());
         assert_eq!("DEF", r.headers.get_all("x-multi").iter().nth(1).unwrap());
         assert_eq!("w", r.headers.get_all("x-multi").iter().nth(2).unwrap());
     }

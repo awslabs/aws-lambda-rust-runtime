@@ -44,7 +44,7 @@ pub fn init_default_subscriber() {
 /// a lot of async concurrency. Since, writing to STDOUT can briefly block your tokio runtime - ref [tracing #2653](https://github.com/tokio-rs/tracing/issues/2653).
 /// In that case, you might prefer to use [tracing_appender::NonBlocking](https://docs.rs/tracing-appender/latest/tracing_appender/non_blocking/struct.NonBlocking.html) instead - particularly if your Lambda is fairly long-running and stays warm.
 /// Though, note that you are then responsible
-/// for ensuring gracefuls shutdown. See [`examples/graceful-shutdown`] for a complete example.
+/// for ensuring gracefuls shutdown. See [aws-samples/graceful-shutdown-with-aws-lambda](https://github.com/aws-samples/graceful-shutdown-with-aws-lambda) for a complete example.
 ///
 /// This function uses environment variables set with [Lambda's advanced logging controls](https://aws.amazon.com/blogs/compute/introducing-advanced-logging-controls-for-aws-lambda-functions/)
 /// if they're configured for your function.

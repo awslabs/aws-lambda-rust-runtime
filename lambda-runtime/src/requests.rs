@@ -24,20 +24,6 @@ impl IntoRequest for NextEventRequest {
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
-pub struct NextEventResponse<'a> {
-    // lambda-runtime-aws-request-id
-    pub request_id: &'a str,
-    // lambda-runtime-deadline-ms
-    pub deadline: u64,
-    // lambda-runtime-invoked-function-arn
-    pub arn: &'a str,
-    // lambda-runtime-trace-id
-    pub trace_id: &'a str,
-    // the actual body,
-    pub body: Vec<u8>,
-}
-
 // /runtime/invocation/{AwsRequestId}/response
 pub(crate) struct EventCompletionRequest<'a, R, B, S, D, E>
 where

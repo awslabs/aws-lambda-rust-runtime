@@ -1,6 +1,7 @@
 use crate::{
     custom_serde::{
-        deserialize_headers, deserialize_nullish_boolean, http_method, serialize_headers, serialize_multi_value_headers,
+        deserialize_headers, deserialize_nullish_boolean, http_method, serialize_headers,
+        serialize_multi_value_headers, serialize_query_string_parameters,
     },
     encodings::Body,
 };
@@ -19,6 +20,7 @@ pub struct AlbTargetGroupRequest {
     #[serde(default)]
     pub path: Option<String>,
     #[serde(default)]
+    #[serde(serialize_with = "serialize_query_string_parameters")]
     pub query_string_parameters: QueryMap,
     #[serde(default)]
     pub multi_value_query_string_parameters: QueryMap,
@@ -100,6 +102,7 @@ pub struct AlbTargetGroupResponse {
 #[cfg(test)]
 mod test {
     use super::*;
+    use serde_json::Value;
 
     #[test]
     #[cfg(feature = "alb")]
@@ -119,6 +122,19 @@ mod test {
         let output: String = serde_json::to_string(&parsed).unwrap();
         let reparsed: AlbTargetGroupRequest = serde_json::from_slice(output.as_bytes()).unwrap();
         assert_eq!(parsed, reparsed);
+    }
+
+    #[test]
+    #[cfg(feature = "alb")]
+    fn ensure_alb_lambda_target_request_query_string_parameter_value_is_string() {
+        let data = include_bytes!("../../fixtures/example-alb-lambda-target-request-headers-only.json");
+        let parsed: AlbTargetGroupRequest = serde_json::from_slice(data).unwrap();
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: Value = serde_json::from_slice(output.as_bytes()).unwrap();
+        assert_eq!(
+            reparsed["queryStringParameters"]["key"],
+            Value::String("hello".to_string())
+        );
     }
 
     #[test]

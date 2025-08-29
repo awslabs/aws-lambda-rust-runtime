@@ -41,3 +41,18 @@ pub struct VpcLatticeResponse {
     #[serde(flatten)]
     pub other: serde_json::Map<String, Value>,
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    #[cfg(feature = "vpc_lattice")]
+    fn example_alb_lambda_target_response() {
+        let data = include_bytes!("../../fixtures/example-vpc-lattice-response.json");
+        let parsed: VpcLatticeResponse = serde_json::from_slice(data).unwrap();
+        let output: String = serde_json::to_string(&parsed).unwrap();
+        let reparsed: VpcLatticeResponse = serde_json::from_slice(output.as_bytes()).unwrap();
+        assert_eq!(parsed, reparsed);
+    }
+}

@@ -1,11 +1,11 @@
 use http::{header::HeaderName, HeaderMap, HeaderValue};
 use serde::{
     de::{self, Deserializer, Error as DeError, MapAccess, Unexpected, Visitor},
-    ser::{Error as SerError, SerializeMap, Serializer},
+    ser::{SerializeMap, Serializer},
 };
 use std::{borrow::Cow, fmt};
 
-/// Implementation detail.
+/// Deserialize (potentially) comma separated headers into a HeaderMap
 pub(crate) fn deserialize_comma_separated_headers<'de, D>(de: D) -> Result<HeaderMap, D::Error>
 where
     D: Deserializer<'de>,
@@ -13,6 +13,33 @@ where
     let is_human_readable = de.is_human_readable();
     de.deserialize_option(HeaderMapVisitor { is_human_readable })
 }
+
+/// Serialize a HeaderMap with multiple values per header combined as comma-separated strings
+pub(crate) fn serialize_comma_separated_headers<S>(headers: &HeaderMap, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    let mut map = serializer.serialize_map(Some(headers.keys_len()))?;
+
+    // Group headers by name and combine values
+    for key in headers.keys() {
+        let values: Vec<&str> = headers
+            .get_all(key)
+            .iter()
+            .filter_map(|v| v.to_str().ok()) // Skip invalid UTF-8 values
+            .collect();
+
+        if !values.is_empty() {
+            let combined_value = values.join(", ");
+            map.serialize_entry(key.as_str(), &combined_value)?;
+        }
+    }
+
+    map.end()
+}
+
+// extension/duplicate of existing code from custom_serde/headers.rs
+// could possibly be refactored back into common code
 
 #[derive(serde::Deserialize)]
 #[serde(untagged)]
@@ -34,13 +61,6 @@ impl<'de> Visitor<'de> for HeaderMapVisitor {
         formatter.write_str("lots of things can go wrong with HeaderMap")
     }
 
-    fn visit_unit<E>(self) -> Result<Self::Value, E>
-    where
-        E: DeError,
-    {
-        Ok(HeaderMap::default())
-    }
-
     fn visit_none<E>(self) -> Result<Self::Value, E>
     where
         E: DeError,
@@ -53,6 +73,13 @@ impl<'de> Visitor<'de> for HeaderMapVisitor {
         D: Deserializer<'de>,
     {
         deserializer.deserialize_map(self)
+    }
+
+    fn visit_unit<E>(self) -> Result<Self::Value, E>
+    where
+        E: DeError,
+    {
+        Ok(HeaderMap::default())
     }
 
     fn visit_map<M>(self, mut access: M) -> Result<Self::Value, M::Error>
@@ -122,14 +149,15 @@ fn split_and_append_header<E>(
     map: &mut HeaderMap,
     key: &HeaderName,
     value: &str,
-    visitor: &HeaderMapVisitor
+    visitor: &HeaderMapVisitor,
 ) -> Result<(), E>
 where
     E: DeError,
 {
     for split_val in value.split(',') {
         let trimmed_val = split_val.trim();
-        if !trimmed_val.is_empty() { // Skip empty values from trailing commas
+        if !trimmed_val.is_empty() {
+            // Skip empty values from trailing commas
             let header_val = trimmed_val
                 .parse()
                 .map_err(|_| de::Error::invalid_value(Unexpected::Str(trimmed_val), visitor))?;
@@ -139,35 +167,66 @@ where
     Ok(())
 }
 
-#[derive(Debug)]
-pub struct FixedString(String);
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use http::{HeaderMap, HeaderValue};
+    use serde_json;
+    use serde_with::serde_derive::Deserialize;
+    use serde_with::serde_derive::Serialize;
 
-impl<'de> Deserialize<'de> for FixedString {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        deserializer.deserialize_string(FixedStringVisitor)
-    }
-}
-
-struct FixedStringVisitor;
-
-impl<'de> Visitor<'de> for FixedStringVisitor {
-    type Value = FixedString;
-
-    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter.write_str("a fixed string \"2.0\"")
-    }
-
-    fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
-    where
-        E: serde::de::Error,
-    {
-        if value == "2.0" {
-            Ok(FixedString(value.to_owned()))
-        } else {
-            Err(E::custom(format!("unexpected string value: {}", value)))
+    #[test]
+    fn test_function_deserializer() {
+        #[derive(Deserialize)]
+        struct RequestWithHeaders {
+            #[serde(deserialize_with = "deserialize_comma_separated_headers")]
+            headers: HeaderMap,
         }
+
+        let r: RequestWithHeaders =
+            serde_json::from_str("{ \"headers\": {\"x-foo\": \"z\", \"x-multi\": \"abcd, DEF, w\" }}").unwrap();
+
+        assert_eq!("z", r.headers.get_all("x-foo").iter().nth(0).unwrap());
+        assert_eq!("abcd", r.headers.get_all("x-multi").iter().nth(0).unwrap());
+        assert_eq!("DEF", r.headers.get_all("x-multi").iter().nth(1).unwrap());
+        assert_eq!("w", r.headers.get_all("x-multi").iter().nth(2).unwrap());
+    }
+
+    fn create_test_headermap() -> HeaderMap {
+        let mut headers = HeaderMap::new();
+
+        // Single value header
+        headers.insert("content-type", HeaderValue::from_static("application/json"));
+
+        // Multiple value header
+        headers.append("accept", HeaderValue::from_static("text/html"));
+        headers.append("accept", HeaderValue::from_static("application/json"));
+        headers.append("accept", HeaderValue::from_static("*/*"));
+
+        // Another multiple value header
+        headers.append("cache-control", HeaderValue::from_static("no-cache"));
+        headers.append("cache-control", HeaderValue::from_static("must-revalidate"));
+
+        headers
+    }
+
+    #[test]
+    fn test_function_serializer() {
+        #[derive(Serialize)]
+        struct RequestWithHeaders {
+            #[serde(serialize_with = "serialize_comma_separated_headers")]
+            headers: HeaderMap,
+            body: String,
+        }
+
+        let request = RequestWithHeaders {
+            headers: create_test_headermap(),
+            body: "test body".to_string(),
+        };
+
+        let json = serde_json::to_string_pretty(&request).unwrap();
+
+        let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();
+        assert!(parsed["headers"]["accept"].as_str().unwrap().contains(", "));
     }
 }

@@ -1,14 +1,13 @@
-use crate::custom_serde::{deserialize_headers, deserialize_nullish_boolean, http_method, serialize_headers};
+use crate::custom_serde::{deserialize_headers, deserialize_nullish_boolean, http_method, serialize_multi_value_headers};
 use http::{HeaderMap, Method};
 use query_map::QueryMap;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "catch-all-fields")]
 use serde_json::Value;
 
-// field ordering and types matched to example in
-// https://docs.aws.amazon.com/vpc-lattice/latest/ug/lambda-functions.html#receive-event-from-service
-
 /// `VpcLatticeRequestV2` contains data coming from VPC Lattice service (V2 format)
+/// see: https://docs.aws.amazon.com/vpc-lattice/latest/ug/lambda-functions.html#receive-event-from-service
+/// for field definitions.
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct VpcLatticeRequestV2 {
@@ -26,16 +25,11 @@ pub struct VpcLatticeRequestV2 {
 
     /// HTTP headers of the request (VPC Lattice V2 uses arrays for multi-values)
     #[serde(default, deserialize_with = "deserialize_headers")]
-    #[serde(serialize_with = "serialize_headers")]
+    #[serde(serialize_with = "serialize_multi_value_headers")]
     pub headers: HeaderMap,
 
     /// HTTP query string parameters (VPC Lattice V2 uses arrays for multi-values)
-    #[serde(
-        default,
-        deserialize_with = "query_map::serde::aws_api_gateway_v2::deserialize_empty"
-    )]
-    #[serde(skip_serializing_if = "QueryMap::is_empty")]
-    #[serde(serialize_with = "query_map::serde::aws_api_gateway_v2::serialize_query_string_parameters")]
+    #[serde(default)]
     pub query_string_parameters: QueryMap,
 
     /// The request body
@@ -161,10 +155,12 @@ mod test {
             parsed.headers.get_all("user-agent").iter().nth(0).unwrap()
         );
 
+        // headers including testing multi-values
         let header_multi = parsed.headers.get_all("multi");
         assert_eq!("x", header_multi.iter().nth(0).unwrap());
         assert_eq!("y", header_multi.iter().nth(1).unwrap());
 
+        // query string including testing multi-values
         assert_eq!("prod", parsed.query_string_parameters.first("state").unwrap());
         let query_multi = parsed.query_string_parameters.all("multi").unwrap();
         assert_eq!(&"a", query_multi.iter().nth(0).unwrap());
@@ -174,6 +170,7 @@ mod test {
         assert!(parsed.body.is_none());
         assert_eq!(false, parsed.is_base64_encoded);
 
+        // nested structure testing
         assert_eq!(
             "arn:aws:vpc-lattice:ap-southeast-2:123456789012:service/svc-0a40eebed65f8d69c",
             parsed.request_context.service_arn.unwrap()
@@ -187,16 +184,40 @@ mod test {
             parsed.request_context.target_group_arn.unwrap()
         );
         assert_eq!(
-            "arn:aws:ec2:ap-southeast-2:123456789012:vpc/vpc-0b8276c84697e7339",
-            parsed.request_context.identity.unwrap().source_vpc_arn.unwrap()
+            "ap-southeast-2",
+            parsed.request_context.region.unwrap()
         );
-        //assert_eq!("", parsed.request_context.service_arn.unwrap());
-        //assert_eq!("", parsed.request_context.service_arn.unwrap());
+        assert_eq!(
+            "1724875399456789",
+            parsed.request_context.time_epoch.unwrap()
+        );
+
+        let context = parsed.request_context.identity.as_ref().unwrap();
+
+        // identity
+        assert_eq!(
+            "arn:aws:ec2:ap-southeast-2:123456789012:vpc/vpc-0b8276c84697e7339",
+            context.clone().source_vpc_arn.unwrap()
+        );
+        assert_eq!(
+            "AWS_IAM",
+            context.clone().identity_type.unwrap()
+        );
+        assert_eq!(
+            "arn:aws:iam::123456789012:role/service-role/HealthChecker",
+            context.clone().principal.unwrap()
+        );
+        assert_eq!(
+            "o-50dc6c495c0c9188",
+            context.clone().principal_org_id.unwrap()
+        );
     }
 
     #[test]
     #[cfg(feature = "vpc_lattice")]
-    fn example_vpc_lattice_v2_serde_round_trip_basic() {
+    fn example_vpc_lattice_v2_serde_round_trip() {
+        // our basic example has instances of multi-value headers and multi-value parameters
+        // so this test covers both those serialization edge cases
         let data = include_bytes!("../../fixtures/example-vpc-lattice-v2-request.json");
         let parsed: VpcLatticeRequestV2 = serde_json::from_slice(data).unwrap();
         let output: String = serde_json::to_string(&parsed).unwrap();
@@ -208,16 +229,6 @@ mod test {
     #[cfg(feature = "vpc_lattice")]
     fn example_vpc_lattice_v2_serde_round_trip_base64_body() {
         let data = include_bytes!("../../fixtures/example-vpc-lattice-v2-request-base64.json");
-        let parsed: VpcLatticeRequestV2 = serde_json::from_slice(data).unwrap();
-        let output: String = serde_json::to_string(&parsed).unwrap();
-        let reparsed: VpcLatticeRequestV2 = serde_json::from_slice(output.as_bytes()).unwrap();
-        assert_eq!(parsed, reparsed);
-    }
-
-    #[test]
-    #[cfg(feature = "vpc_lattice")]
-    fn example_vpc_lattice_v2_serde_round_trip_multi_value_headers() {
-        let data = include_bytes!("../../fixtures/example-vpc-lattice-v2-request-multi-value-headers.json");
         let parsed: VpcLatticeRequestV2 = serde_json::from_slice(data).unwrap();
         let output: String = serde_json::to_string(&parsed).unwrap();
         let reparsed: VpcLatticeRequestV2 = serde_json::from_slice(output.as_bytes()).unwrap();

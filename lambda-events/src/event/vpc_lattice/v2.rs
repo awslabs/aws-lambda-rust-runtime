@@ -1,4 +1,6 @@
-use crate::custom_serde::{deserialize_headers, deserialize_nullish_boolean, http_method, serialize_multi_value_headers};
+use crate::custom_serde::{
+    deserialize_headers, deserialize_nullish_boolean, http_method, serialize_multi_value_headers,
+};
 use http::{HeaderMap, Method};
 use query_map::QueryMap;
 use serde::{Deserialize, Serialize};
@@ -183,14 +185,8 @@ mod test {
             "arn:aws:vpc-lattice:ap-southeast-2:123456789012:targetgroup/tg-6d0ecf831eec9f09",
             parsed.request_context.target_group_arn.unwrap()
         );
-        assert_eq!(
-            "ap-southeast-2",
-            parsed.request_context.region.unwrap()
-        );
-        assert_eq!(
-            "1724875399456789",
-            parsed.request_context.time_epoch.unwrap()
-        );
+        assert_eq!("ap-southeast-2", parsed.request_context.region.unwrap());
+        assert_eq!("1724875399456789", parsed.request_context.time_epoch.unwrap());
 
         let context = parsed.request_context.identity.as_ref().unwrap();
 
@@ -199,18 +195,12 @@ mod test {
             "arn:aws:ec2:ap-southeast-2:123456789012:vpc/vpc-0b8276c84697e7339",
             context.clone().source_vpc_arn.unwrap()
         );
-        assert_eq!(
-            "AWS_IAM",
-            context.clone().identity_type.unwrap()
-        );
+        assert_eq!("AWS_IAM", context.clone().identity_type.unwrap());
         assert_eq!(
             "arn:aws:iam::123456789012:role/service-role/HealthChecker",
             context.clone().principal.unwrap()
         );
-        assert_eq!(
-            "o-50dc6c495c0c9188",
-            context.clone().principal_org_id.unwrap()
-        );
+        assert_eq!("o-50dc6c495c0c9188", context.clone().principal_org_id.unwrap());
     }
 
     #[test]

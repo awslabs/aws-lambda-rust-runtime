@@ -172,8 +172,7 @@ mod tests {
     use super::*;
     use http::{HeaderMap, HeaderValue};
     use serde_json;
-    use serde_with::serde_derive::Deserialize;
-    use serde_with::serde_derive::Serialize;
+    use serde_with::serde_derive::{Deserialize, Serialize};
 
     #[test]
     fn test_function_deserializer() {

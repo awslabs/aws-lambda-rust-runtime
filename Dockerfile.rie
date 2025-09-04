@@ -9,7 +9,7 @@ RUN chmod +x /usr/local/bin/aws-lambda-rie
 
 ARG EXAMPLE=basic-lambda
 
-COPY Cargo.toml Cargo.lock /build/
+COPY Cargo.* /build/
 COPY lambda-runtime /build/lambda-runtime
 COPY lambda-runtime-api-client /build/lambda-runtime-api-client
 COPY lambda-events /build/lambda-events

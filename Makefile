@@ -110,3 +110,6 @@ check-event-features:
 
 fmt:
 	cargo +nightly fmt --all
+
+test-rie:
+	./scripts/test-rie.sh $(EXAMPLE)

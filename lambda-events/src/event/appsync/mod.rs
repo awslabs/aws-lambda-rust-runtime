@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use crate::custom_serde::deserialize_lambda_map;
 
 /// Deprecated: `AppSyncResolverTemplate` does not represent resolver events sent by AppSync. Instead directly model your input schema, or use `map[string]string`, `json.RawMessage`,` interface{}`, etc..
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AppSyncResolverTemplate<T1 = Value>
 where
@@ -27,7 +27,7 @@ where
 }
 
 /// `AppSyncIamIdentity` contains information about the caller authed via IAM.
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AppSyncIamIdentity {
     #[serde(default)]
@@ -55,7 +55,7 @@ pub struct AppSyncIamIdentity {
 }
 
 /// `AppSyncCognitoIdentity` contains information about the caller authed via Cognito.
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AppSyncCognitoIdentity<T1 = Value>
 where
@@ -87,7 +87,7 @@ where
 pub type AppSyncOperation = String;
 
 /// `AppSyncLambdaAuthorizerRequest` contains an authorization request from AppSync.
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AppSyncLambdaAuthorizerRequest {
     #[serde(default)]
@@ -104,7 +104,7 @@ pub struct AppSyncLambdaAuthorizerRequest {
 
 /// `AppSyncLambdaAuthorizerRequestContext` contains the parameters of the AppSync invocation which triggered
 /// this authorization request.
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AppSyncLambdaAuthorizerRequestContext<T1 = Value>
 where
@@ -136,7 +136,7 @@ where
 }
 
 /// `AppSyncLambdaAuthorizerResponse` represents the expected format of an authorization response to AppSync.
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AppSyncLambdaAuthorizerResponse<T1 = Value>
 where
@@ -171,7 +171,7 @@ where
 ///
 /// See also:
 /// - [AppSync resolver mapping template context reference](https://docs.aws.amazon.com/appsync/latest/devguide/resolver-context-reference.html)
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 pub struct AppSyncDirectResolverEvent<TArguments = Value, TSource = Value, TStash = Value>
 where
     TArguments: Serialize + DeserializeOwned,
@@ -200,7 +200,7 @@ where
 
 /// `AppSyncRequest` contains request-related metadata for a resolver invocation,
 /// including client-sent headers and optional custom domain name.
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AppSyncRequest {
     #[serde(deserialize_with = "deserialize_lambda_map")]
@@ -219,7 +219,7 @@ pub struct AppSyncRequest {
 }
 
 /// `AppSyncInfo` contains metadata about the current GraphQL field being resolved.
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AppSyncInfo<T = Value>
 where
@@ -243,7 +243,7 @@ where
 }
 
 /// `AppSyncPrevResult` contains the result of the previous step in a pipeline resolver.
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 pub struct AppSyncPrevResult<T = Value>
 where
     T: Serialize + DeserializeOwned,
@@ -270,8 +270,14 @@ pub enum AppSyncIdentity {
     Lambda(AppSyncIdentityLambda),
 }
 
+impl Default for AppSyncIdentity {
+    fn default() -> Self {
+        AppSyncIdentity::IAM(AppSyncIamIdentity::default())
+    }
+}
+
 /// `AppSyncIdentityOIDC` represents identity information when using OIDC-based authorization.
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 pub struct AppSyncIdentityOIDC<T = Value>
 where
     T: Serialize + DeserializeOwned,
@@ -290,7 +296,7 @@ where
 }
 
 /// `AppSyncIdentityLambda` represents identity information when using AWS Lambda
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AppSyncIdentityLambda<T = Value>
 where

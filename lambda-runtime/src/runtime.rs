@@ -369,7 +369,7 @@ mod endpoint_tests {
         });
         let next_response = server.mock(|when, then| {
             when.method(POST)
-                .path(format!("/2018-06-01/runtime/invocation/{}/response", request_id))
+                .path(format!("/2018-06-01/runtime/invocation/{request_id}/response"))
                 .body("{}");
             then.status(200).body("");
         });
@@ -440,7 +440,7 @@ mod endpoint_tests {
 
         let next_response = server.mock(|when, then| {
             when.method(POST)
-                .path(format!("/2018-06-01/runtime/invocation/{}/error", request_id))
+                .path(format!("/2018-06-01/runtime/invocation/{request_id}/error"))
                 .header("lambda-runtime-function-error-type", "unhandled");
             then.status(200).body("");
         });

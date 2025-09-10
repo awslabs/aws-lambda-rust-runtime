@@ -39,7 +39,7 @@ where
     // No `other` catch-all here; any additional fields will be caught in `common.other` instead
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Default, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct UpdateRequest<P1 = Value, P2 = Value>
 where
@@ -56,7 +56,7 @@ where
     // No `other` catch-all here; any additional fields will be caught in `common.other` instead
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Default, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct DeleteRequest<P2 = Value>
 where

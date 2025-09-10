@@ -123,7 +123,7 @@ pub struct SnsEventObj<T: Serialize> {
 }
 
 /// Alternative to `SnsRecord`, used alongside `SnsEventObj<T>` and `SnsMessageObj<T>` when deserializing nested objects from within SNS messages)
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "PascalCase")]
 #[serde(bound(deserialize = "T: DeserializeOwned"))]
 pub struct SnsRecordObj<T: Serialize> {
@@ -150,7 +150,7 @@ pub struct SnsRecordObj<T: Serialize> {
 
 /// Alternate version of `SnsMessage` to use in conjunction with `SnsEventObj<T>` and `SnsRecordObj<T>` for deserializing the message into a struct of type `T`
 #[serde_with::serde_as]
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "PascalCase")]
 #[serde(bound(deserialize = "T: DeserializeOwned"))]
 pub struct SnsMessageObj<T: Serialize> {
@@ -412,7 +412,7 @@ mod test {
         }
 
         let parsed: SnsEventObj<CustStruct> = serde_json::from_slice(data).unwrap();
-        println!("{:?}", parsed);
+        println!("{parsed:?}");
 
         assert_eq!(parsed.records[0].sns.message.foo, "Hello world!");
         assert_eq!(parsed.records[0].sns.message.bar, 123);

@@ -24,7 +24,7 @@ pub struct RabbitMqEvent {
     pub other: serde_json::Map<String, Value>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RabbitMqMessage {
     pub basic_properties: RabbitMqBasicProperties,
@@ -40,7 +40,7 @@ pub struct RabbitMqMessage {
     pub other: serde_json::Map<String, Value>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RabbitMqBasicProperties<T1 = Value>
 where

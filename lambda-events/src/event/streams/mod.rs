@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 /// `KinesisEventResponse` is the outer structure to report batch item failures for KinesisEvent.
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct KinesisEventResponse {
     pub batch_item_failures: Vec<KinesisBatchItemFailure>,
@@ -17,7 +17,7 @@ pub struct KinesisEventResponse {
 }
 
 /// `KinesisBatchItemFailure` is the individual record which failed processing.
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct KinesisBatchItemFailure {
     #[serde(default)]
@@ -32,7 +32,7 @@ pub struct KinesisBatchItemFailure {
 }
 
 /// `DynamoDbEventResponse` is the outer structure to report batch item failures for DynamoDBEvent.
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DynamoDbEventResponse {
     pub batch_item_failures: Vec<DynamoDbBatchItemFailure>,
@@ -46,7 +46,7 @@ pub struct DynamoDbEventResponse {
 }
 
 /// `DynamoDbBatchItemFailure` is the individual record which failed processing.
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DynamoDbBatchItemFailure {
     #[serde(default)]
@@ -61,7 +61,7 @@ pub struct DynamoDbBatchItemFailure {
 }
 
 /// `SqsEventResponse` is the outer structure to report batch item failures for SQSEvent.
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SqsEventResponse {
     pub batch_item_failures: Vec<SqsBatchItemFailure>,
@@ -75,7 +75,7 @@ pub struct SqsEventResponse {
 }
 
 /// `SqsBatchItemFailure` is the individual record which failed processing.
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SqsBatchItemFailure {
     #[serde(default)]

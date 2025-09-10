@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use crate::custom_serde::{deserialize_lambda_map, serialize_headers};
 
 /// `LambdaFunctionUrlRequest` contains data coming from the HTTP request to a Lambda Function URL.
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LambdaFunctionUrlRequest {
     /// Version is expected to be `"2.0"`
@@ -37,7 +37,7 @@ pub struct LambdaFunctionUrlRequest {
 }
 
 /// `LambdaFunctionUrlRequestContext` contains the information to identify the AWS account and resources invoking the Lambda function.
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LambdaFunctionUrlRequestContext {
     #[serde(default)]
@@ -69,7 +69,7 @@ pub struct LambdaFunctionUrlRequestContext {
 }
 
 /// `LambdaFunctionUrlRequestContextAuthorizerDescription` contains authorizer information for the request context.
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LambdaFunctionUrlRequestContextAuthorizerDescription {
     pub iam: Option<LambdaFunctionUrlRequestContextAuthorizerIamDescription>,
@@ -83,7 +83,7 @@ pub struct LambdaFunctionUrlRequestContextAuthorizerDescription {
 }
 
 /// `LambdaFunctionUrlRequestContextAuthorizerIamDescription` contains IAM information for the request context.
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LambdaFunctionUrlRequestContextAuthorizerIamDescription {
     #[serde(default)]
@@ -106,7 +106,7 @@ pub struct LambdaFunctionUrlRequestContextAuthorizerIamDescription {
 }
 
 /// `LambdaFunctionUrlRequestContextHttpDescription` contains HTTP information for the request context.
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LambdaFunctionUrlRequestContextHttpDescription {
     #[serde(default)]
@@ -129,7 +129,7 @@ pub struct LambdaFunctionUrlRequestContextHttpDescription {
 }
 
 /// `LambdaFunctionUrlResponse` configures the HTTP response to be returned by Lambda Function URL for the request.
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LambdaFunctionUrlResponse {
     pub status_code: i64,

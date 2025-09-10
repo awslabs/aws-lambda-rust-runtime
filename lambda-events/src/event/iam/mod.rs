@@ -8,7 +8,7 @@ use serde::{
 };
 
 /// `IamPolicyDocument` represents an IAM policy document.
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct IamPolicyDocument {
     #[serde(default)]

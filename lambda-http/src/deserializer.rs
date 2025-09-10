@@ -61,7 +61,7 @@ mod tests {
             LambdaRequest::ApiGatewayV1(req) => {
                 assert_eq!("12345678912", req.request_context.account_id.unwrap());
             }
-            other => panic!("unexpected request variant: {:?}", other),
+            other => panic!("unexpected request variant: {other:?}"),
         }
     }
 
@@ -74,7 +74,7 @@ mod tests {
             LambdaRequest::ApiGatewayV2(req) => {
                 assert_eq!("123456789012", req.request_context.account_id.unwrap());
             }
-            other => panic!("unexpected request variant: {:?}", other),
+            other => panic!("unexpected request variant: {other:?}"),
         }
     }
 
@@ -87,7 +87,7 @@ mod tests {
             LambdaRequest::ApiGatewayV1(req) => {
                 assert_eq!("123456789012", req.request_context.account_id.unwrap());
             }
-            other => panic!("unexpected request variant: {:?}", other),
+            other => panic!("unexpected request variant: {other:?}"),
         }
     }
 
@@ -100,7 +100,7 @@ mod tests {
             LambdaRequest::ApiGatewayV2(req) => {
                 assert_eq!("123456789012", req.request_context.account_id.unwrap());
             }
-            other => panic!("unexpected request variant: {:?}", other),
+            other => panic!("unexpected request variant: {other:?}"),
         }
     }
 
@@ -118,7 +118,7 @@ mod tests {
                     req.request_context.elb.target_group_arn.unwrap()
                 );
             }
-            other => panic!("unexpected request variant: {:?}", other),
+            other => panic!("unexpected request variant: {other:?}"),
         }
     }
 
@@ -132,7 +132,7 @@ mod tests {
             LambdaRequest::WebSocket(req) => {
                 assert_eq!("CONNECT", req.request_context.event_type.unwrap());
             }
-            other => panic!("unexpected request variant: {:?}", other),
+            other => panic!("unexpected request variant: {other:?}"),
         }
     }
 

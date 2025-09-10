@@ -12,12 +12,13 @@ use std::fmt;
 #[cfg(test)]
 mod attributes;
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum StreamViewType {
     NewImage,
     OldImage,
     NewAndOldImages,
+    #[default]
     KeysOnly,
 }
 
@@ -33,12 +34,13 @@ impl fmt::Display for StreamViewType {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum StreamStatus {
     Enabling,
     Enabled,
     Disabling,
+    #[default]
     Disabled,
 }
 
@@ -54,10 +56,11 @@ impl fmt::Display for StreamStatus {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum SharedIteratorType {
     TrimHorizon,
+    #[default]
     Latest,
     AtSequenceNumber,
     AfterSequenceNumber,
@@ -75,9 +78,10 @@ impl fmt::Display for SharedIteratorType {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum OperationType {
+    #[default]
     Insert,
     Modify,
     Remove,
@@ -94,9 +98,10 @@ impl fmt::Display for OperationType {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Default, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum KeyType {
+    #[default]
     Hash,
     Range,
 }
@@ -128,7 +133,7 @@ pub struct Event {
 
 /// `TimeWindowEvent` represents an Amazon Dynamodb event when using time windows
 /// ref. <https://docs.aws.amazon.com/lambda/latest/dg/with-ddb.html#services-ddb-windows>
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TimeWindowEvent {
     #[serde(rename = "DynamoDBEvent")]

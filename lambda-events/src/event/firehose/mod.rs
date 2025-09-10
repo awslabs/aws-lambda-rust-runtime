@@ -49,7 +49,7 @@ pub struct KinesisFirehoseEventRecord {
     pub other: serde_json::Map<String, Value>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct KinesisFirehoseResponse {
     pub records: Vec<KinesisFirehoseResponseRecord>,
@@ -62,7 +62,7 @@ pub struct KinesisFirehoseResponse {
     pub other: serde_json::Map<String, Value>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct KinesisFirehoseResponseRecord {
     #[serde(default)]
@@ -81,7 +81,7 @@ pub struct KinesisFirehoseResponseRecord {
     pub other: serde_json::Map<String, Value>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct KinesisFirehoseResponseRecordMetadata {
     #[serde(deserialize_with = "deserialize_lambda_map")]
@@ -96,7 +96,7 @@ pub struct KinesisFirehoseResponseRecordMetadata {
     pub other: serde_json::Map<String, Value>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct KinesisFirehoseRecordMetadata {
     #[serde(default)]

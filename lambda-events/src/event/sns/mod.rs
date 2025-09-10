@@ -412,7 +412,7 @@ mod test {
         }
 
         let parsed: SnsEventObj<CustStruct> = serde_json::from_slice(data).unwrap();
-        println!("{:?}", parsed);
+        println!("{parsed:?}");
 
         assert_eq!(parsed.records[0].sns.message.foo, "Hello world!");
         assert_eq!(parsed.records[0].sns.message.bar, 123);

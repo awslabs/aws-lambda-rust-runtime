@@ -15,7 +15,7 @@ mod test {
         let attr: AttributeValue = serde_json::from_value(value.clone()).unwrap();
         match attr {
             AttributeValue::Null(true) => {}
-            other => panic!("unexpected value {:?}", other),
+            other => panic!("unexpected value {other:?}"),
         }
 
         let reparsed = serde_json::to_value(attr).unwrap();
@@ -31,7 +31,7 @@ mod test {
         let attr: AttributeValue = serde_json::from_value(value.clone()).unwrap();
         match attr {
             AttributeValue::S(ref s) => assert_eq!("value", s.as_str()),
-            other => panic!("unexpected value {:?}", other),
+            other => panic!("unexpected value {other:?}"),
         }
 
         let reparsed = serde_json::to_value(attr).unwrap();
@@ -47,7 +47,7 @@ mod test {
         let attr: AttributeValue = serde_json::from_value(value.clone()).unwrap();
         match attr {
             AttributeValue::N(ref n) => assert_eq!("123.45", n.as_str()),
-            other => panic!("unexpected value {:?}", other),
+            other => panic!("unexpected value {other:?}"),
         }
 
         let reparsed = serde_json::to_value(attr).unwrap();
@@ -68,7 +68,7 @@ mod test {
                     .unwrap();
                 assert_eq!(&expected, b)
             }
-            other => panic!("unexpected value {:?}", other),
+            other => panic!("unexpected value {other:?}"),
         }
 
         let reparsed = serde_json::to_value(attr).unwrap();
@@ -84,7 +84,7 @@ mod test {
         let attr: AttributeValue = serde_json::from_value(value.clone()).unwrap();
         match attr {
             AttributeValue::Bool(b) => assert!(b),
-            other => panic!("unexpected value {:?}", other),
+            other => panic!("unexpected value {other:?}"),
         }
 
         let reparsed = serde_json::to_value(attr).unwrap();
@@ -103,7 +103,7 @@ mod test {
                 let expected = vec!["Giraffe", "Hippo", "Zebra"];
                 assert_eq!(expected, s.iter().collect::<Vec<_>>());
             }
-            other => panic!("unexpected value {:?}", other),
+            other => panic!("unexpected value {other:?}"),
         }
 
         let reparsed = serde_json::to_value(attr).unwrap();
@@ -122,7 +122,7 @@ mod test {
                 let expected = vec!["42.2", "-19", "7.5", "3.14"];
                 assert_eq!(expected, s.iter().collect::<Vec<_>>());
             }
-            other => panic!("unexpected value {:?}", other),
+            other => panic!("unexpected value {other:?}"),
         }
 
         let reparsed = serde_json::to_value(attr).unwrap();
@@ -144,7 +144,7 @@ mod test {
                     .collect::<Vec<_>>();
                 assert_eq!(&expected, s);
             }
-            other => panic!("unexpected value {:?}", other),
+            other => panic!("unexpected value {other:?}"),
         }
 
         let reparsed = serde_json::to_value(attr).unwrap();
@@ -167,7 +167,7 @@ mod test {
                 ];
                 assert_eq!(&expected, s);
             }
-            other => panic!("unexpected value {:?}", other),
+            other => panic!("unexpected value {other:?}"),
         }
 
         let reparsed = serde_json::to_value(attr).unwrap();
@@ -188,7 +188,7 @@ mod test {
                 expected.insert("Age".into(), AttributeValue::N("35".into()));
                 assert_eq!(expected, s);
             }
-            other => panic!("unexpected value {:?}", other),
+            other => panic!("unexpected value {other:?}"),
         }
     }
 }

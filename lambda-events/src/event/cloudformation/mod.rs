@@ -50,7 +50,7 @@ where
     pub other: serde_json::Map<String, Value>,
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Default, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct UpdateRequest<P1 = Value, P2 = Value>
 where
@@ -79,7 +79,7 @@ where
     pub other: serde_json::Map<String, Value>,
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Default, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct DeleteRequest<P2 = Value>
 where

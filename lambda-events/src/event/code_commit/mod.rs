@@ -23,7 +23,7 @@ pub struct CodeCommitEvent {
 pub type CodeCommitEventTime = DateTime<Utc>;
 
 /// `CodeCommitRecord` represents a CodeCommit record
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodeCommitRecord {
     #[serde(default)]
@@ -63,7 +63,7 @@ pub struct CodeCommitRecord {
 }
 
 /// `CodeCommitCodeCommit` represents a CodeCommit object in a record
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodeCommitCodeCommit {
     pub references: Vec<CodeCommitReference>,
@@ -80,7 +80,7 @@ pub struct CodeCommitCodeCommit {
 }
 
 /// `CodeCommitReference` represents a Reference object in a CodeCommit object
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodeCommitReference {
     #[serde(default)]

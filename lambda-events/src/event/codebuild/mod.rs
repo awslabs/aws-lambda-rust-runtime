@@ -178,7 +178,7 @@ pub struct CodeBuildEnvironment {
 }
 
 /// `CodeBuildEnvironmentVariable` encapsulate environment variables for the code build
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodeBuildEnvironmentVariable {
     /// Name is the name of the environment variable.
@@ -239,7 +239,7 @@ pub struct CodeBuildLogs {
 }
 
 /// `CodeBuildPhase` represents the phase of a build and its details
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodeBuildPhase<T1 = Value>
 where

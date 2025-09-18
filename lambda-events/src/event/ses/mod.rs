@@ -18,7 +18,7 @@ pub struct SimpleEmailEvent {
     pub other: serde_json::Map<String, Value>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SimpleEmailRecord {
     #[serde(default)]
@@ -35,7 +35,7 @@ pub struct SimpleEmailRecord {
     pub other: serde_json::Map<String, Value>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SimpleEmailService {
     pub mail: SimpleEmailMessage,
@@ -50,7 +50,7 @@ pub struct SimpleEmailService {
     pub other: serde_json::Map<String, Value>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SimpleEmailMessage {
     pub common_headers: SimpleEmailCommonHeaders,
@@ -71,7 +71,7 @@ pub struct SimpleEmailMessage {
     pub other: serde_json::Map<String, Value>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SimpleEmailReceipt {
     pub recipients: Vec<String>,
@@ -94,7 +94,7 @@ pub struct SimpleEmailReceipt {
     pub other: serde_json::Map<String, Value>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SimpleEmailHeader {
     #[serde(default)]
@@ -110,7 +110,7 @@ pub struct SimpleEmailHeader {
     pub other: serde_json::Map<String, Value>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SimpleEmailCommonHeaders {
     pub from: Vec<String>,
@@ -136,7 +136,7 @@ pub struct SimpleEmailCommonHeaders {
 /// Types. For example, the FunctionARN and InvocationType fields are only
 /// present for the Lambda Type, and the BucketName and ObjectKey fields are only
 /// present for the S3 Type.
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SimpleEmailReceiptAction {
     #[serde(default)]
@@ -160,7 +160,7 @@ pub struct SimpleEmailReceiptAction {
     pub other: serde_json::Map<String, Value>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SimpleEmailVerdict {
     #[serde(default)]
@@ -177,7 +177,7 @@ pub struct SimpleEmailVerdict {
 pub type SimpleEmailDispositionValue = String;
 
 /// `SimpleEmailDisposition` disposition return for SES to control rule functions
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SimpleEmailDisposition {
     pub disposition: SimpleEmailDispositionValue,

@@ -31,7 +31,7 @@ pub struct LexEvent {
     pub other: serde_json::Map<String, Value>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LexBot {
     pub name: Option<String>,
@@ -84,7 +84,7 @@ pub struct LexAlternativeIntents {
     pub other: serde_json::Map<String, Value>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SlotDetail {
     pub resolutions: Option<Vec<HashMap<String, String>>>,
@@ -123,7 +123,7 @@ pub type SessionAttributes = HashMap<String, String>;
 
 pub type Slots = HashMap<String, Option<String>>;
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LexResponse {
     pub session_attributes: SessionAttributes,
@@ -152,7 +152,7 @@ pub struct LexResponseCard {
     pub other: serde_json::Map<String, Value>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Attachment {
     pub title: Option<String>,

@@ -13,6 +13,7 @@ use std::fmt;
 mod attributes;
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[non_exhaustive]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum StreamViewType {
     NewImage,
@@ -35,6 +36,7 @@ impl fmt::Display for StreamViewType {
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[non_exhaustive]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum StreamStatus {
     Enabling,
@@ -57,6 +59,7 @@ impl fmt::Display for StreamStatus {
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[non_exhaustive]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum SharedIteratorType {
     TrimHorizon,
@@ -79,6 +82,7 @@ impl fmt::Display for SharedIteratorType {
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[non_exhaustive]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum OperationType {
     #[default]
@@ -99,6 +103,7 @@ impl fmt::Display for OperationType {
 }
 
 #[derive(Clone, Default, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[non_exhaustive]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum KeyType {
     #[default]
